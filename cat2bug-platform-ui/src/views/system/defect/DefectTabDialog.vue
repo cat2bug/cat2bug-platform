@@ -157,15 +157,15 @@ export default {
 </script>
 
 <style scoped>
-.defect-tab-switch-row ::v-deep .el-form-item {
+.defect-tab-switch-row :deep(.el-form-item){
   margin-bottom: 18px;
 }
 
-.defect-tab-switch-row ::v-deep .el-form-item__label {
+.defect-tab-switch-row :deep(.el-form-item__label){
   line-height: 32px;
 }
 
-.defect-tab-switch-row ::v-deep .el-form-item__content {
+.defect-tab-switch-row :deep(.el-form-item__content){
   display: flex;
   align-items: center;
   min-height: 32px;

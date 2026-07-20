@@ -219,7 +219,7 @@ export default {
   flex-direction: row;
   align-items: center;
   gap: 10px;
-  ::v-deep .el-radio-button__inner {
+  :deep(.el-radio-button__inner){
     padding: 3px 5px;
   }
 }

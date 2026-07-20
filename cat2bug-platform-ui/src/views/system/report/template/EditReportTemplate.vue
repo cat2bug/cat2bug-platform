@@ -172,7 +172,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-page-header {
+:deep(.el-page-header){
   display: inline-flex;
   flex-direction: row;
   width: 100%;

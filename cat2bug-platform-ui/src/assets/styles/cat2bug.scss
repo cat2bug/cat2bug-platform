@@ -1308,6 +1308,7 @@ img.cat2bug-image-error__img {
 .defect-field-tools,
 .project-manage-tools,
 .project-option-list-tools,
+.git-tools,
 .defect-excel-tools.defect-view-toolbar {
   column-gap: var(--cat2bug-toolbar-section-gap, 10px) !important;
   row-gap: var(--cat2bug-toolbar-row-gap, 8px) !important;
@@ -1329,7 +1330,8 @@ img.cat2bug-image-error__img {
 .document-tools > .left,
 .report-tools > .left,
 .notice-tools > .left,
-.project-option-list-tools > .left {
+.project-option-list-tools > .left,
+.git-tools > .left {
   display: flex !important;
   flex-wrap: wrap;
   align-items: center;
@@ -1359,6 +1361,7 @@ img.cat2bug-image-error__img {
 .notice-tools-right,
 .project-manage-tools-right,
 .project-option-list-tools-right,
+.git-tools-right,
 .defect-excel-tools-right {
   gap: var(--cat2bug-toolbar-item-gap, 10px) !important;
 
@@ -1397,6 +1400,7 @@ img.cat2bug-image-error__img {
 .defect-field-tools,
 .project-manage-tools,
 .project-option-list-tools,
+.git-tools,
 .defect-excel-tools,
 .defect-excel-tools-left,
 .defect-excel-tools-right,
@@ -1413,6 +1417,10 @@ img.cat2bug-image-error__img {
 .document-tools-right,
 .report-tools-right,
 .notice-tools-right,
+.git-tools-right,
+.git-browse-toolbar,
+.git-browse-toolbar-left,
+.git-browse-toolbar-right,
 .app-container > .el-form.el-form--inline,
 .app-container > .el-form.el-form--inline + .el-row.mb8 {
   .el-form--inline .el-form-item {

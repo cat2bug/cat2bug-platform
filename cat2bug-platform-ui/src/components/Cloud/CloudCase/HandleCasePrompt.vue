@@ -105,7 +105,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-form-item__content {
+:deep(.el-form-item__content){
   margin-left: 0px !important;
   width: 100%;
 }
@@ -119,7 +119,7 @@ export default {
   > .el-input {
     flex: 1;
   }
-  ::v-deep +.el-form-item__error{
+  :deep(+.el-form-item__error){
     margin-left: 167px;
   }
   .variable-name {

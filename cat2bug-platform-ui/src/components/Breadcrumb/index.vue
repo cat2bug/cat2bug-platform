@@ -37,15 +37,20 @@ export default {
   },
   methods: {
     getBreadcrumb() {
-      // only show routes with meta.title
-      let matched = this.$route.matched.filter(item => item.meta && item.meta.title)
+      // only show routes with meta.title / titleI18nKey
+      let matched = this.$route.matched.filter(item => item.meta && (item.meta.title || item.meta.titleI18nKey))
+      const leaf = matched.length ? matched[matched.length - 1] : null
+      // 隐藏详情页等可通过 meta.breadcrumbParents 补齐上级（如：项目管理 / 源码管理 / 源码库）
+      if (leaf && Array.isArray(leaf.meta.breadcrumbParents) && leaf.meta.breadcrumbParents.length) {
+        matched = leaf.meta.breadcrumbParents.concat(matched)
+      }
       const first = matched[0]
 
       if (!this.isDashboard(first)) {
         matched = [{ path: '/index', meta: { titleI18nKey:'home', title: this.$i18n.t('home') }}].concat(matched)
       }
 
-      this.levelList = matched.filter(item => item.meta && item.meta.title && item.meta.breadcrumb !== false)
+      this.levelList = matched.filter(item => item.meta && (item.meta.title || item.meta.titleI18nKey) && item.meta.breadcrumb !== false)
     },
     isDashboard(route) {
       const name = route && route.name
@@ -56,6 +61,9 @@ export default {
     },
     handleLink(item) {
       const { redirect, path } = item
+      if (redirect === 'noRedirect') {
+        return
+      }
       if (redirect) {
         this.$router.push(redirect)
         return

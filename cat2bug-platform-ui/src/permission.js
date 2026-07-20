@@ -132,10 +132,11 @@ function handleInstallRestartWait(to, next, upgradeStatus, setupStatus) {
     return true
   }
   if (setupStatus.installed) {
+    // 安装完成待重启：允许 /setup 等待页与 /login；其它路径去登录
     if (to.path === '/setup' || to.path === '/login') {
       next()
     } else {
-      next('/setup')
+      next('/login')
     }
     return true
   }
@@ -226,7 +227,11 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  const refreshSetupStatus = (from.path === '/login' && !!getToken()) || to.path === '/login'
+  // 进出安装/登录页时强制刷新，避免 session 缓存把已安装误判为未安装而锁死在向导
+  const refreshSetupStatus = (from.path === '/login' && !!getToken())
+    || to.path === '/login'
+    || to.path === '/setup'
+    || from.path === '/setup'
   const refreshUpgradeStatus = to.path === '/upgrade' || from.path === '/upgrade'
 
   Promise.all([

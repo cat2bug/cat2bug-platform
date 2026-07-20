@@ -570,7 +570,7 @@ export default {
       margin-inline-end: 0;
       padding-inline-start: 40px;
     }
-    > ::v-deep .el-card__body {
+    > :deep(.el-card__body){
       > .thanks-member-avatar.member-avatar {
         margin-right: 0 !important;
         margin-bottom: 20px;

@@ -122,7 +122,7 @@ export default {
   z-index: 9;
   top: 7px;
   right: 40px;
-  ::v-deep .el-radio-button__inner {
+  :deep(.el-radio-button__inner){
     padding: 3px 5px;
   }
 }
@@ -145,7 +145,7 @@ export default {
   > span {
     font-size: 0.8rem;
   }
-  > ::v-deep .member-avatar {
+  > :deep(.member-avatar){
     margin-left: auto;
   }
 }

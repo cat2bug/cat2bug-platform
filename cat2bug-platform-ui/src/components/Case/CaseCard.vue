@@ -140,7 +140,7 @@ export default {
       padding: 5px;
       margin: 0px;
     }
-    .el-badge > ::v-deep.el-badge__content {
+    .el-badge > :deep(.el-badge__content){
       font-size: 0.6rem;
       height: 15px;
       width: 15px;

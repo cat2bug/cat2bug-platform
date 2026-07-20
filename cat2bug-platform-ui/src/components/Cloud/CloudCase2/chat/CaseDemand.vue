@@ -75,7 +75,7 @@ export default {
   min-height: 50px;
   h3 {
     color: #409EFF;
-    ::v-deep i {
+    :deep(i){
       margin-right: 5px;
     }
   }
@@ -100,14 +100,14 @@ export default {
     gap: 0px;
     > .el-input {
       flex: 1;
-      ::v-deep input {
+      :deep(input){
         font-size: 1rem;
         font-weight: 500;
         color: #606266;
       }
     }
   }
-  ::v-deep input {
+  :deep(input){
     border: 0px;
     font-size: 0.8rem;
     color: #C0C4CC;

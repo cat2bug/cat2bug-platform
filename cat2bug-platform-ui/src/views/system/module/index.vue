@@ -548,7 +548,7 @@ export default {
   width: 100%;
   box-sizing: border-box;
 }
-.module-page ::v-deep h3.module-project-label {
+.module-page :deep(h3.module-project-label){
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -579,13 +579,13 @@ export default {
   row-gap: 8px;
   column-gap: var(--cat2bug-toolbar-item-gap, 10px);
   box-sizing: border-box;
-  ::v-deep .el-form-item {
+  :deep(.el-form-item){
     flex: 0 0 auto;
     min-width: 0;
     margin-right: 0;
   }
-  ::v-deep .el-form-item .el-form-item__content,
-  ::v-deep .el-form-item .el-input {
+  :deep(.el-form-item .el-form-item__content),
+  :deep(.el-form-item .el-input){
     width: auto;
   }
 }
@@ -612,15 +612,15 @@ export default {
     flex-wrap: wrap;
     box-sizing: border-box;
   }
-  > .left ::v-deep .el-form-item {
+  > .left :deep(.el-form-item){
     display: inline-flex;
     flex: 1 1 0;
     min-width: 220px;
     margin-right: 0;
     margin-bottom: 0;
   }
-  > .left ::v-deep .el-form-item .el-form-item__content,
-  > .left ::v-deep .el-form-item .el-input {
+  > .left :deep(.el-form-item .el-form-item__content),
+  > .left :deep(.el-form-item .el-input){
     width: 100% !important;
     max-width: 100%;
     box-sizing: border-box;

@@ -2425,7 +2425,7 @@ export default {
       }
     }
   }
-  ::v-deep .md {
+  :deep(.md){
     margin: 0 24px;
     span {
       display: inline-block;
@@ -2463,7 +2463,7 @@ export default {
       font-weight: 600;
     }
   }
-  ::v-deep .el-dropdown-menu__item {
+  :deep(.el-dropdown-menu__item){
     > * {
       margin-right: 5px;
     }
@@ -2695,8 +2695,8 @@ export default {
       opacity: 0.85;
     }
   }
-  ::v-deep .report-annotation-highlight,
-  ::v-deep mark.report-annotation-highlight-mark {
+  :deep(.report-annotation-highlight),
+  :deep(mark.report-annotation-highlight-mark){
     background-color: transparent;
     color: inherit;
     padding: 0;
@@ -2710,18 +2710,18 @@ export default {
     text-underline-offset: 2px;
     transition: background-color 0.2s ease, text-decoration-color 0.2s ease;
   }
-  ::v-deep mark.report-annotation-highlight-mark {
+  :deep(mark.report-annotation-highlight-mark){
     padding: 0 1px;
   }
-  ::v-deep .report-annotation-highlight.is-active,
-  ::v-deep mark.report-annotation-highlight-mark.is-active {
+  :deep(.report-annotation-highlight.is-active),
+  :deep(mark.report-annotation-highlight-mark.is-active){
     background-color: rgba(245, 108, 108, 0.22);
     text-decoration-color: #f56c6c;
     outline: none;
     color: inherit;
   }
-  ::v-deep .report-annotation-highlight.is-flash,
-  ::v-deep mark.report-annotation-highlight-mark.is-flash {
+  :deep(.report-annotation-highlight.is-flash),
+  :deep(mark.report-annotation-highlight-mark.is-flash){
     animation: report-annotation-flash 0.9s ease;
   }
   @keyframes report-annotation-flash {

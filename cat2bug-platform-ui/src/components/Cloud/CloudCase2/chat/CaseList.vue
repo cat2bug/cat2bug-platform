@@ -138,7 +138,7 @@ export default {
   min-height: 100px;
   h3 {
     color: #409EFF;
-    ::v-deep svg {
+    :deep(svg){
       margin-right: 5px;
     }
   }
@@ -163,14 +163,14 @@ export default {
     gap: 0px;
     > .el-input {
       flex: 1;
-      ::v-deep input {
+      :deep(input){
         font-size: 1rem;
         font-weight: 500;
         color: #606266;
       }
     }
   }
-  ::v-deep input {
+  :deep(input){
     border: 0px;
     font-size: 0.8rem;
     color: #909399;
@@ -223,7 +223,7 @@ export default {
   justify-content: flex-end;
   flex-wrap: nowrap;
   margin-top: 5px;
-  ::v-deep .el-radio-button__inner {
+  :deep(.el-radio-button__inner){
     padding: 0px;
   }
 }

@@ -317,7 +317,7 @@ export default {
     }
     .defect-log-type-old {
       opacity: 0.82;
-      ::v-deep .defect-type-tag {
+      :deep(.defect-type-tag){
         text-decoration: line-through;
       }
     }

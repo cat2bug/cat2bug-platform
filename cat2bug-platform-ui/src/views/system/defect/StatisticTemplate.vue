@@ -517,7 +517,7 @@ export default {
     border-radius: 5px;
     padding: 10px;
     box-sizing: border-box;
-    ::v-deep .statistic-box:hover {
+    :deep(.statistic-box:hover){
       cursor: pointer;
     }
   }
@@ -538,7 +538,7 @@ export default {
     display: flex;
     flex-direction: column;
 
-    ::v-deep .statistic-panel {
+    :deep(.statistic-panel){
       flex: 0 0 auto;
     }
   }
@@ -556,7 +556,7 @@ export default {
     font-weight: 600;
     color: var(--text-color-regular, #606266);
   }
-  .statistic-template-kbd-nav ::v-deep .statistic-item.statistic-template-kbd-focused {
+  .statistic-template-kbd-nav :deep(.statistic-item.statistic-template-kbd-focused){
     position: relative;
     z-index: 2;
     outline: none;

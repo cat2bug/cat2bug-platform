@@ -102,8 +102,8 @@ public class SetupConfigWriter
         Map<String, Object> cache = new LinkedHashMap<>();
         cache.put("type", cacheType);
         cat2bug.put("cache", cache);
-        cat2bug.put("profile", request.getProfile());
-        cat2bug.put("temp", request.getTemp());
+        cat2bug.put("profile", toAbsolutePath(request.getProfile()));
+        cat2bug.put("temp", toAbsolutePath(request.getTemp()));
 
         Map<String, Object> ai = new LinkedHashMap<>();
         ai.put("enabled", Boolean.TRUE.equals(request.getAiEnabled()));
@@ -127,6 +127,18 @@ public class SetupConfigWriter
             overrides.put("logging", logging);
         }
         return overrides;
+    }
+
+    /**
+     * install 写入的 profile/temp 统一存绝对路径，保证 {@code {profile}/git/...} 不随进程 cwd 漂移。
+     */
+    static String toAbsolutePath(String path)
+    {
+        if (StringUtils.isEmpty(path))
+        {
+            return path;
+        }
+        return Paths.get(path.trim()).toAbsolutePath().normalize().toString();
     }
 
     @SuppressWarnings("unchecked")

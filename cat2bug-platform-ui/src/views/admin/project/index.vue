@@ -213,7 +213,7 @@ export default {
     align-items: center;
     flex-direction: row;
     margin-bottom: 10px;
-    ::v-deep .el-form-item {
+    :deep(.el-form-item){
       margin-bottom: 0px;
     }
   }

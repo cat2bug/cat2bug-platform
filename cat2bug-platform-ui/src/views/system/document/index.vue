@@ -832,35 +832,35 @@ export default {
   max-width: 100%;
   min-width: 0;
 }
-.document-table-root ::v-deep .cat2-bug-table-wrap {
+.document-table-root :deep(.cat2-bug-table-wrap){
   width: 100%;
   max-width: 100%;
   min-width: 0;
 }
-.document-table-root ::v-deep .cat2-bug-table-wrap .el-table {
+.document-table-root :deep(.cat2-bug-table-wrap .el-table){
   width: 100% !important;
 }
-.document-table-root ::v-deep .el-table__body-wrapper,
-.document-table-root ::v-deep .el-table__header-wrapper {
+.document-table-root :deep(.el-table__body-wrapper),
+.document-table-root :deep(.el-table__header-wrapper){
   overflow-x: hidden !important;
 }
-.document-table-root ::v-deep th.doc-name-col .cell {
+.document-table-root :deep(th.doc-name-col .cell){
   text-align: left !important;
   justify-content: flex-start !important;
 }
-.document-table-root ::v-deep th.doc-name-col .table-header,
-.document-table-root ::v-deep th.doc-name-col .header-title {
+.document-table-root :deep(th.doc-name-col .table-header),
+.document-table-root :deep(th.doc-name-col .header-title){
   text-align: left !important;
   justify-content: flex-start !important;
 }
-.document-table-root ::v-deep td.doc-name-col .cell {
+.document-table-root :deep(td.doc-name-col .cell){
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
   justify-content: flex-start !important;
   text-align: left !important;
 }
-.document-page ::v-deep h3.document-project-label {
+.document-page :deep(h3.document-project-label){
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -891,7 +891,7 @@ export default {
   row-gap: 8px;
   column-gap: var(--cat2bug-toolbar-item-gap, 10px);
   box-sizing: border-box;
-  ::v-deep .el-form-item {
+  :deep(.el-form-item){
     margin-right: 0;
   }
 }
@@ -915,17 +915,17 @@ export default {
     display: block;
     box-sizing: border-box;
   }
-  > .left ::v-deep .el-form-item {
+  > .left :deep(.el-form-item){
     display: block;
     width: 100% !important;
     margin-right: 0;
     margin-bottom: 8px;
   }
-  > .left ::v-deep .el-form-item:last-child {
+  > .left :deep(.el-form-item:last-child){
     margin-bottom: 0;
   }
-  > .left ::v-deep .el-form-item .el-form-item__content,
-  > .left ::v-deep .el-form-item .el-input {
+  > .left :deep(.el-form-item .el-form-item__content),
+  > .left :deep(.el-form-item .el-input){
     width: 100% !important;
     max-width: 100%;
     box-sizing: border-box;
@@ -982,7 +982,7 @@ export default {
     -webkit-box-pack: start;
     -webkit-box-align: start;
 
-    ::v-deep .el-link--inner {
+    :deep(.el-link--inner){
       display: block;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -995,7 +995,7 @@ export default {
   flex-shrink: 0;
 }
 /* 操作列：与缺陷/用例页对齐，避免 Safari 下表头与按钮被裁切 */
-.document-table-root ::v-deep th.cat2bug-operate-column .cell {
+.document-table-root :deep(th.cat2bug-operate-column .cell){
   box-sizing: border-box;
   overflow: visible !important;
   flex-wrap: nowrap;
@@ -1004,13 +1004,13 @@ export default {
   max-width: 100%;
   color: var(--table-header-color, inherit);
 }
-.document-table-root ::v-deep .cat2-bug-table-wrap:not([data-operate-at-cap='true']) td.cat2bug-operate-column .cell {
+.document-table-root :deep(.cat2-bug-table-wrap:not([data-operate-at-cap='true']) td.cat2bug-operate-column .cell){
   box-sizing: border-box;
   overflow: hidden;
   flex-wrap: nowrap;
   white-space: nowrap;
 }
-.document-table-root ::v-deep td.cat2bug-operate-column .cat2bug-operate-tools {
+.document-table-root :deep(td.cat2bug-operate-column .cat2bug-operate-tools){
   display: inline-flex;
   flex-direction: row;
   flex-wrap: nowrap !important;

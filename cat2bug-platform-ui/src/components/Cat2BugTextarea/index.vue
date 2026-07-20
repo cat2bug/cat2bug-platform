@@ -235,14 +235,14 @@ export default {
     $tools-icon-hover-bg: var(--cat2bug-textarea-tools-hover-bg, #f0f7ff);
     $tools-icon-radius: 3px;
     $tools-icon-gap: 4px;
-    ::v-deep .el-select .el-select__wrapper {
+    :deep(.el-select .el-select__wrapper){
       min-height: 0 !important;
       height: 100% !important;
       max-height: 24px !important;
       box-shadow: none !important;
       background: transparent !important;
     }
-    ::v-deep .el-tooltip__trigger {
+    :deep(.el-tooltip__trigger){
       display: inline-flex;
       align-items: center;
       align-self: center;

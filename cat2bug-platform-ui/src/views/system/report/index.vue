@@ -780,7 +780,7 @@ export default {
   width: 100%;
   box-sizing: border-box;
 }
-.report-page ::v-deep h3.report-project-label {
+.report-page :deep(h3.report-project-label){
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -826,7 +826,7 @@ export default {
   row-gap: 8px;
   column-gap: var(--cat2bug-toolbar-item-gap, 10px);
   box-sizing: border-box;
-  ::v-deep .el-form-item {
+  :deep(.el-form-item){
     margin-right: 0;
   }
 }
@@ -847,21 +847,21 @@ export default {
     display: block;
     box-sizing: border-box;
   }
-  > .left ::v-deep .el-form-item {
+  > .left :deep(.el-form-item){
     display: block;
     width: 100% !important;
     margin-right: 0;
     margin-bottom: 8px;
   }
-  > .left ::v-deep .el-form-item:last-child {
+  > .left :deep(.el-form-item:last-child){
     margin-bottom: 0;
   }
-  > .left ::v-deep .el-form-item .el-form-item__content,
-  > .left ::v-deep .el-form-item .el-input,
-  > .left ::v-deep .el-form-item .el-date-editor,
-  > .left ::v-deep .el-form-item .select-project-member,
-  > .left ::v-deep .el-form-item .el-popover__reference-wrapper,
-  > .left ::v-deep .el-form-item .select-project-member-input {
+  > .left :deep(.el-form-item .el-form-item__content),
+  > .left :deep(.el-form-item .el-input),
+  > .left :deep(.el-form-item .el-date-editor),
+  > .left :deep(.el-form-item .select-project-member),
+  > .left :deep(.el-form-item .el-popover__reference-wrapper),
+  > .left :deep(.el-form-item .select-project-member-input){
     width: 100% !important;
     max-width: 100%;
     box-sizing: border-box;
@@ -885,7 +885,7 @@ export default {
   flex-shrink: 0;
 }
 /* 操作列：与缺陷页对齐，避免 Safari 下表头与按钮被裁切 */
-.report-table-root ::v-deep th.cat2bug-operate-column .cell {
+.report-table-root :deep(th.cat2bug-operate-column .cell){
   box-sizing: border-box;
   overflow: visible !important;
   flex-wrap: nowrap;
@@ -894,14 +894,14 @@ export default {
   max-width: 100%;
   color: var(--table-header-color, inherit);
 }
-.report-table-root ::v-deep .cat2-bug-table-wrap:not([data-operate-at-cap='true']) td.cat2bug-operate-column .cell {
+.report-table-root :deep(.cat2-bug-table-wrap:not([data-operate-at-cap='true']) td.cat2bug-operate-column .cell){
   box-sizing: border-box;
   overflow: hidden;
   flex-wrap: nowrap;
   white-space: nowrap;
 }
-.report-table-root ::v-deep td.cat2bug-operate-column .cat2bug-operate-tools,
-.report-table-root ::v-deep td.cat2bug-operate-column .report-tools {
+.report-table-root :deep(td.cat2bug-operate-column .cat2bug-operate-tools),
+.report-table-root :deep(td.cat2bug-operate-column .report-tools){
   display: inline-flex;
   flex-direction: row;
   flex-wrap: nowrap !important;
@@ -912,7 +912,7 @@ export default {
   max-width: 100% !important;
 }
 .report-hint-batch-delete,
-::v-deep .report-hint-create {
+:deep(.report-hint-create){
   position: relative;
   overflow: visible !important;
 }

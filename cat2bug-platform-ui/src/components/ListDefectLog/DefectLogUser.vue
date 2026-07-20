@@ -89,7 +89,7 @@ export default {
   vertical-align: middle;
   line-height: 0;
 
-  ::v-deep .el-avatar {
+  :deep(.el-avatar){
     border-width: 1px;
   }
 }

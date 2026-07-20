@@ -96,6 +96,7 @@
 .project-list-page-host.document-page,
 .project-list-page-host.defect-field-page,
 .project-list-page-host.module-page,
+.project-list-page-host.git-repo-page,
 .project-list-page-host > .case-body.defect-page,
 .project-list-page-host .defect-page {
   display: flex;
@@ -135,7 +136,8 @@
 .project-list-page-host .report-tools,
 .project-list-page-host .document-tools,
 .project-list-page-host .module-tools,
-.project-list-page-host .defect-field-tools {
+.project-list-page-host .defect-field-tools,
+.project-list-page-host .git-tools {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
@@ -151,6 +153,8 @@
 .project-list-page-host .report-page ::v-deep h3.report-project-label,
 .project-list-page-host .document-page ::v-deep h3.document-project-label,
 .project-list-page-host .module-page ::v-deep h3.module-project-label,
-.project-list-page-host .defect-page ::v-deep h3.defect-project-label {
+.project-list-page-host .defect-page ::v-deep h3.defect-project-label,
+.project-list-page-host .git-repo-page ::v-deep h3.git-repo-project-label,
+.project-list-page-host ::v-deep .git-repo-project-label {
   margin-bottom: 0;
 }

@@ -87,6 +87,17 @@ public final class InstallConfigSupport
         {
             return Optional.of(workingDirectoryCandidate);
         }
+        // mvn -pl admin spring-boot:run 时 cwd 常为模块目录，向上查找仓库根下的 config/install
+        Path cursor = Paths.get("").toAbsolutePath().normalize();
+        for (int i = 0; i < 4 && cursor != null; i++)
+        {
+            Path parentCandidate = cursor.resolve(path).normalize();
+            if (Files.isRegularFile(parentCandidate))
+            {
+                return Optional.of(parentCandidate);
+            }
+            cursor = cursor.getParent();
+        }
         if (Paths.get(path).isAbsolute() || jarDirectory == null)
         {
             return Optional.empty();
@@ -95,6 +106,16 @@ public final class InstallConfigSupport
         if (Files.isRegularFile(jarDirectoryCandidate))
         {
             return Optional.of(jarDirectoryCandidate);
+        }
+        // IDE target/classes 的父目录是模块根，再上一级才是仓库根
+        Path jarParent = jarDirectory.getParent();
+        if (jarParent != null)
+        {
+            Path repoCandidate = jarParent.resolve(path).toAbsolutePath().normalize();
+            if (Files.isRegularFile(repoCandidate))
+            {
+                return Optional.of(repoCandidate);
+            }
         }
         return Optional.empty();
     }

@@ -72,14 +72,14 @@ export default {
     display: contents;
   }
 
-  .cat2bug-statistic-label__values ::v-deep span {
+  .cat2bug-statistic-label__values :deep(span){
     font-size: 12px;
     font-variant-numeric: tabular-nums;
     text-align: right;
     color: var(--text-color-primary, #303133);
   }
 
-  .cat2bug-statistic-label__values ::v-deep span:nth-child(1) {
+  .cat2bug-statistic-label__values :deep(span:nth-child(1)){
     font-weight: 600;
   }
 </style>

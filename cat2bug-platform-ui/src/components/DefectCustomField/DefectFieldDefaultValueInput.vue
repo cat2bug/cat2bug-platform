@@ -238,7 +238,7 @@ export default {
   margin-right: 6px;
   vertical-align: middle;
 }
-.defect-enum-select ::v-deep .el-input__inner {
+.defect-enum-select :deep(.el-input__inner){
   color: var(--defect-enum-color, inherit) !important;
 }
 .defect-field-default-value-unsupported {

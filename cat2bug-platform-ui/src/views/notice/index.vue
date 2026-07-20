@@ -448,7 +448,7 @@ export default {
   border-radius: 10px;
 }
 .notice-page {
-  .notice-list-table ::v-deep td.el-table-column--selection .cell {
+  .notice-list-table :deep(td.el-table-column--selection .cell){
     overflow: visible !important;
   }
   > .project-add-page-header {
@@ -461,16 +461,16 @@ export default {
   .tabs-tools-row {
     margin-bottom: 10px;
   }
-  .notice-hint-tabs ::v-deep .el-tabs__nav-wrap::after {
+  .notice-hint-tabs :deep(.el-tabs__nav-wrap::after){
     display: none !important;
   }
-  .notice-hint-tabs ::v-deep .el-tabs__header {
+  .notice-hint-tabs :deep(.el-tabs__header){
     margin-bottom: 0;
   }
-  .notice-hint-tabs ::v-deep .el-tabs__header,
-  .notice-hint-tabs ::v-deep .el-tabs__nav-wrap,
-  .notice-hint-tabs ::v-deep .el-tabs__nav-scroll,
-  .notice-hint-tabs ::v-deep .el-tabs__nav {
+  .notice-hint-tabs :deep(.el-tabs__header),
+  .notice-hint-tabs :deep(.el-tabs__nav-wrap),
+  .notice-hint-tabs :deep(.el-tabs__nav-scroll),
+  .notice-hint-tabs :deep(.el-tabs__nav){
     overflow: visible !important;
   }
   .notice-hint-tabs .el-tabs__item.is-active {
@@ -512,7 +512,7 @@ export default {
   row-gap: 8px;
   column-gap: var(--cat2bug-toolbar-item-gap, 10px);
   box-sizing: border-box;
-  ::v-deep .el-form-item {
+  :deep(.el-form-item){
     margin-right: 0;
   }
 }

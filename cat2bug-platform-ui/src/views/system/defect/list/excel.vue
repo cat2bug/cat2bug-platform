@@ -591,7 +591,7 @@ const EXCEL_LAST_DATA_ROW_NEAR_BOTTOM_PX = 160;
 const EXCEL_DATA_ROW_ESTIMATE_PX = 26;
 /** 表格可视区底部相对 .defect-excel-context 内底的留白(px)；高度优先用 context.clientHeight − gap */
 const EXCEL_VIEWPORT_BOTTOM_GAP = 20;
-/** 底部自定义横条 fallback(px)；与 ::v-deep .footer 高度一致 */
+/** 底部自定义横条 fallback(px)；与 :deep(.footer) 高度一致 */
 const VUE_EXCEL_EDITOR_FOOTER_BAR_PX = 8;
 /** 占位行状态列：批量创建队列中的展示（仅存于 defectStateText，非接口值） */
 const EXCEL_CREATE_ROW_QUEUED = "__CAT2BUG_EXCEL_CREATE_QUEUED__";
@@ -4653,12 +4653,12 @@ export default {
   display: block !important;
 }
 /* 纵向由 .table-content 滚动；隐藏库右侧假纵向条，避免误以为可上下拖 */
-.defect-vue-excel-editor ::v-deep .v-scroll {
+.defect-vue-excel-editor :deep(.v-scroll){
   display: none !important;
   pointer-events: none !important;
 }
 /* 与系统 Element 表格色系一致：浅边框 + 浅表头，避免过重 */
-.defect-vue-excel-editor ::v-deep .component-content {
+.defect-vue-excel-editor :deep(.component-content){
   border: 1px solid #dcdfe6;
   border-radius: 4px 4px 0 0;
   overflow: hidden;
@@ -4669,15 +4669,15 @@ export default {
   box-sizing: border-box;
 }
 /* 矩形选区 / 行选 / 填充预览：z 在序号列(11)之上、表头(16)之下；背景须透明，否则会盖住只读/交付物/序号列的格线 */
-.defect-vue-excel-editor ::v-deep .cell-range-overlay,
-.defect-vue-excel-editor ::v-deep .fill-drag-overlay {
+.defect-vue-excel-editor :deep(.cell-range-overlay),
+.defect-vue-excel-editor :deep(.fill-drag-overlay){
   z-index: 13 !important;
   border: 2px solid #1890ff !important;
   box-shadow: none !important;
   outline: none !important;
   background: transparent !important;
 }
-.defect-vue-excel-editor ::v-deep .fill-drag-overlay {
+.defect-vue-excel-editor :deep(.fill-drag-overlay){
   /* 填充预览略铺淡色即可，勿铺实底挡格线 */
   background: rgba(24, 144, 255, 0.06) !important;
 }
@@ -4685,30 +4685,30 @@ export default {
  * 活动格须高于选区(13)，且须低于吸顶表头(16)，滚动时不得盖住标题；
  * 编辑态仍用库内边框（input-square--editing），非编辑态矩形选区用 inset 与 overlay 一致。
  */
-.defect-vue-excel-editor ::v-deep .input-square {
+.defect-vue-excel-editor :deep(.input-square){
   z-index: 14 !important;
 }
 /* 勿再画蓝边：与 cell-range-overlay 叠成双框；库内已 border/background transparent，仅保留透明+无阴影 */
-.defect-vue-excel-editor ::v-deep .input-square.input-square--range-suppress:not(.input-square--editing) {
+.defect-vue-excel-editor :deep(.input-square.input-square--range-suppress:not(.input-square--editing)){
   border-color: transparent !important;
   background: transparent !important;
   box-shadow: none !important;
   outline: none !important;
 }
-.defect-vue-excel-editor ::v-deep .table-content {
+.defect-vue-excel-editor :deep(.table-content){
   text-shadow: none;
   font-size: 12px;
   background-color: var(--excel-table-bg, #fff);
   -webkit-overflow-scrolling: auto;
 }
-.defect-vue-excel-editor ::v-deep .table-content::-webkit-scrollbar {
+.defect-vue-excel-editor :deep(.table-content::-webkit-scrollbar){
   background: var(--excel-table-bg, #fff) !important;
 }
 /* 库默认 tbody tr / .first-col 为浅色底，Safari sticky 滚动时会先闪白 */
-.defect-vue-excel-editor ::v-deep .systable tbody tr {
+.defect-vue-excel-editor :deep(.systable tbody tr){
   background-color: transparent !important;
 }
-.defect-vue-excel-editor ::v-deep .systable .first-col {
+.defect-vue-excel-editor :deep(.systable .first-col){
   background-color: transparent !important;
 }
 html.dark .defect-excel-root .defect-vue-excel-editor {
@@ -4725,14 +4725,14 @@ html.dark .defect-excel-root .defect-vue-excel-editor {
   --excel-first-col-border: #ebeef5;
   --excel-cell-border: #ebeef5;
 }
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content {
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(.table-content){
   background-color: var(--excel-table-bg) !important;
 }
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content::-webkit-scrollbar {
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(.table-content::-webkit-scrollbar){
   background: var(--excel-table-bg) !important;
 }
 /* 库底部横向拖条为自定义 .h-scroll（table-content 原生条宽高为 0）；与 Cat2BugTable .cat2bug-custom-xbar 共用 token */
-.defect-vue-excel-editor ::v-deep .footer {
+.defect-vue-excel-editor :deep(.footer){
   height: 8px !important;
   min-height: 8px !important;
   line-height: 1 !important;
@@ -4741,14 +4741,14 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content::-
   border-top: 1px solid var(--border-color-light) !important;
   overflow: visible !important;
 }
-.defect-vue-excel-editor ::v-deep .footer .left-block {
+.defect-vue-excel-editor :deep(.footer .left-block){
   height: 100% !important;
   max-height: 7px;
   box-sizing: border-box;
   background-color: var(--table-header-bg) !important;
   border-right: 1px solid var(--border-color-light) !important;
 }
-.defect-vue-excel-editor ::v-deep .footer .h-scroll {
+.defect-vue-excel-editor :deep(.footer .h-scroll){
   z-index: 2;
   height: 100% !important;
   max-height: 7px;
@@ -4756,35 +4756,35 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content::-
   background-color: var(--cat2bug-xbar-thumb) !important;
   border-radius: 3px !important;
 }
-.defect-vue-excel-editor ::v-deep .footer .h-scroll:hover,
-.defect-vue-excel-editor ::v-deep .footer .h-scroll.focus,
-.defect-vue-excel-editor ::v-deep .footer:hover .h-scroll {
+.defect-vue-excel-editor :deep(.footer .h-scroll:hover),
+.defect-vue-excel-editor :deep(.footer .h-scroll.focus),
+.defect-vue-excel-editor :deep(.footer:hover .h-scroll){
   background-color: var(--cat2bug-xbar-thumb-hover) !important;
 }
 /* no-paging 时底部仍渲染英文 Selected|Filtered|Loaded，与本页无关，隐藏仅保留横条 */
-.defect-vue-excel-editor ::v-deep .footer > span:last-child {
+.defect-vue-excel-editor :deep(.footer > span:last-child){
   display: none !important;
 }
 /* 库内 systable 为 z-index:-1，会把整块表压在选区 overlay 之下，格线像「消失」；提到 0 与 overlay 同属一层叠上下文后再靠透明 overlay 露格线 */
-.defect-vue-excel-editor ::v-deep table.systable {
+.defect-vue-excel-editor :deep(table.systable){
   z-index: 0 !important;
 }
 /* 仅表头需要高于选区 overlay(13)；tbody 勿写 z-index（无效且易误导） */
-.defect-vue-excel-editor ::v-deep .systable thead th,
-.defect-vue-excel-editor ::v-deep .systable thead td {
+.defect-vue-excel-editor :deep(.systable thead th),
+.defect-vue-excel-editor :deep(.systable thead td){
   border-color: var(--excel-cell-border, #ebeef5) !important;
   z-index: 16 !important;
 }
-.defect-vue-excel-editor ::v-deep .systable th:not(:last-child) {
+.defect-vue-excel-editor :deep(.systable th:not(:last-child)){
   border-color: var(--excel-cell-border, #ebeef5) !important;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td {
+.defect-vue-excel-editor :deep(.systable tbody td){
   border-color: var(--excel-cell-border, #ebeef5) !important;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody tr:not(:last-child) td {
+.defect-vue-excel-editor :deep(.systable tbody tr:not(:last-child) td){
   border-bottom: 1px solid var(--excel-cell-border, #ebeef5) !important;
 }
-.defect-vue-excel-editor ::v-deep .systable thead th {
+.defect-vue-excel-editor :deep(.systable thead th){
   background-color: #f5f7fa !important;
   font-weight: 500;
   color: #606266;
@@ -4792,10 +4792,10 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content::-
   cursor: default !important;
 }
 /* 数据列表头：左右拖调整列顺序（行号列、列宽条除外） */
-.defect-vue-excel-editor ::v-deep .systable thead tr:first-child th:not(.first-col) {
+.defect-vue-excel-editor :deep(.systable thead tr:first-child th:not(.first-col)){
   cursor: grab !important;
 }
-.defect-excel-context.defect-excel-col-dragging .defect-vue-excel-editor ::v-deep .systable thead tr:first-child th {
+.defect-excel-context.defect-excel-col-dragging .defect-vue-excel-editor :deep(.systable thead tr:first-child th){
   cursor: grabbing !important;
 }
 /* 拖入列高亮蒙层（见 positionExcelColumnDropHighlightOverlay），默认隐藏 */
@@ -4811,11 +4811,11 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content::-
   border: none;
 }
 /* 固定首行表头高度并水平居中：用 !important 压过库内写在内联上的 height，避免点击列头时 offsetHeight 反馈随机撑高 */
-.defect-vue-excel-editor ::v-deep .systable thead tr:first-child {
+.defect-vue-excel-editor :deep(.systable thead tr:first-child){
   height: 32px !important;
   max-height: 32px !important;
 }
-.defect-vue-excel-editor ::v-deep .systable thead tr:first-child th {
+.defect-vue-excel-editor :deep(.systable thead tr:first-child th){
   height: 32px !important;
   max-height: 32px !important;
   min-height: 32px !important;
@@ -4829,14 +4829,14 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content::-
   position: sticky !important;
   top: 0 !important;
 }
-.defect-vue-excel-editor ::v-deep .systable thead tr:first-child th.first-col {
+.defect-vue-excel-editor :deep(.systable thead tr:first-child th.first-col){
   border-top-left-radius: 4px;
   top: 0 !important;
 }
-.defect-vue-excel-editor ::v-deep .systable thead tr:first-child th:last-child {
+.defect-vue-excel-editor :deep(.systable thead tr:first-child th:last-child){
   border-top-right-radius: 4px;
 }
-.defect-vue-excel-editor ::v-deep .systable thead tr:first-child th > div:first-child {
+.defect-vue-excel-editor :deep(.systable thead tr:first-child th > div:first-child){
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4845,17 +4845,17 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content::-
   padding-right: 8px;
   text-align: center;
 }
-.defect-vue-excel-editor ::v-deep .systable thead tr:first-child th .table-col-header {
+.defect-vue-excel-editor :deep(.systable thead tr:first-child th .table-col-header){
   text-align: center !important;
 }
 /* 左上角行号格：库内为 th > span，无包裹 div */
-.defect-vue-excel-editor ::v-deep .systable thead tr:first-child th.first-col > span {
+.defect-vue-excel-editor :deep(.systable thead tr:first-child th.first-col > span){
   display: flex;
   align-items: center;
   justify-content: center;
 }
 /* 与首行 th 同高（勿写死 26px）；库内 .col-sep 已为 position:absolute;height:100% */
-.defect-vue-excel-editor ::v-deep .systable thead tr:first-child th .col-sep {
+.defect-vue-excel-editor :deep(.systable thead tr:first-child th .col-sep){
   height: 100% !important;
   max-height: none !important;
   min-height: 0;
@@ -4863,9 +4863,9 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content::-
   cursor: col-resize !important;
 }
 /* 左上角行号表头：无菜单/全选，默认光标；筛选行首格仍可点清除筛选 */
-.defect-vue-excel-editor ::v-deep .systable thead th.first-col,
-.defect-vue-excel-editor ::v-deep .systable thead td.first-col,
-.defect-vue-excel-editor ::v-deep .systable tbody td.first-col {
+.defect-vue-excel-editor :deep(.systable thead th.first-col),
+.defect-vue-excel-editor :deep(.systable thead td.first-col),
+.defect-vue-excel-editor :deep(.systable tbody td.first-col){
   position: sticky !important;
   left: 0 !important;
   color: #909399;
@@ -4881,24 +4881,24 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content::-
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
-.defect-vue-excel-editor ::v-deep .systable thead th.first-col {
+.defect-vue-excel-editor :deep(.systable thead th.first-col){
   color: #606266;
   cursor: default !important;
   z-index: 18 !important;
 }
-.defect-vue-excel-editor ::v-deep .systable thead td.first-col {
+.defect-vue-excel-editor :deep(.systable thead td.first-col){
   color: #606266;
   cursor: pointer !important;
   z-index: 18 !important;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.first-col {
+.defect-vue-excel-editor :deep(.systable tbody td.first-col){
   cursor: pointer !important;
   user-select: none;
   z-index: 11 !important;
   vertical-align: middle !important;
   text-align: center !important;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.first-col > span {
+.defect-vue-excel-editor :deep(.systable tbody td.first-col > span){
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4906,29 +4906,29 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content::-
   box-sizing: border-box;
   text-align: center;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody tr:hover td.first-col {
+.defect-vue-excel-editor :deep(.systable tbody tr:hover td.first-col){
   box-shadow: inset 0 0 0 9999px var(--excel-first-col-fill-hover, #f0f2f5) !important;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody tr:hover td {
+.defect-vue-excel-editor :deep(.systable tbody tr:hover td){
   background-color: #fafafa;
 }
 /* 整行选中：数据格浅蓝底；行号列保持灰底（暗黑见 html.dark 与 theme-dark.scss） */
-.defect-vue-excel-editor ::v-deep .systable tbody tr.select td:not(.first-col) {
+.defect-vue-excel-editor :deep(.systable tbody tr.select td:not(.first-col)){
   background-color: #ecf5ff !important;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody tr.select:hover td:not(.first-col) {
+.defect-vue-excel-editor :deep(.systable tbody tr.select:hover td:not(.first-col)){
   background-color: #d9ecff !important;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody tr.select td.first-col,
-.defect-vue-excel-editor ::v-deep .systable tbody tr.select:hover td.first-col {
+.defect-vue-excel-editor :deep(.systable tbody tr.select td.first-col),
+.defect-vue-excel-editor :deep(.systable tbody tr.select:hover td.first-col){
   box-shadow: inset 0 0 0 9999px var(--excel-first-col-fill-hover, #f0f2f5) !important;
   color: #909399 !important;
 }
 /* 只读数据格：浅红斜线底纹（行号列除外；::before 在内容之下，不挡三角/文字） */
-.defect-vue-excel-editor ::v-deep .systable tbody td.readonly:not(.first-col) {
+.defect-vue-excel-editor :deep(.systable tbody td.readonly:not(.first-col)){
   position: relative;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.readonly:not(.first-col)::before {
+.defect-vue-excel-editor :deep(.systable tbody td.readonly:not(.first-col)::before){
   content: "";
   position: absolute;
   left: 0;
@@ -4947,7 +4947,7 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content::-
     transparent 7px
   );
 }
-.defect-vue-excel-editor ::v-deep .systable tbody tr.select td.readonly:not(.first-col)::before {
+.defect-vue-excel-editor :deep(.systable tbody tr.select td.readonly:not(.first-col)::before){
   background-image: repeating-linear-gradient(
     -45deg,
     rgba(245, 108, 108, 0.1) 0,
@@ -4956,46 +4956,46 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .table-content::-
     transparent 7px
   );
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.readonly:not(.first-col) .vue-excel-cell-html {
+.defect-vue-excel-editor :deep(.systable tbody td.readonly:not(.first-col) .vue-excel-cell-html){
   position: relative;
   z-index: 1;
 }
 /* 保存失败：单元格文字红色（与库内 td.error 角标配合） */
-.defect-vue-excel-editor ::v-deep .systable tbody td.error:not(.first-col),
-.defect-vue-excel-editor ::v-deep .systable tbody td.error:not(.first-col) .vue-excel-cell-html {
+.defect-vue-excel-editor :deep(.systable tbody td.error:not(.first-col)),
+.defect-vue-excel-editor :deep(.systable tbody td.error:not(.first-col) .vue-excel-cell-html){
   color: #f56c6c !important;
 }
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody td.error:not(.first-col),
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody td.error:not(.first-col) .vue-excel-cell-html {
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(.systable tbody td.error:not(.first-col)),
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(.systable tbody td.error:not(.first-col) .vue-excel-cell-html){
   color: #f78989 !important;
 }
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody tr.select td:not(.first-col) {
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(.systable tbody tr.select td:not(.first-col)){
   background-color: rgba(255, 193, 7, 0.12) !important;
 }
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody tr.select:hover td:not(.first-col) {
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(.systable tbody tr.select:hover td:not(.first-col)){
   background-color: rgba(255, 193, 7, 0.22) !important;
 }
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody tr.select td.first-col,
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody tr.select:hover td.first-col {
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(.systable tbody tr.select td.first-col),
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(.systable tbody tr.select:hover td.first-col){
   box-shadow: inset 0 0 0 9999px var(--excel-first-col-fill, var(--table-header-bg, #252529)) !important;
   color: var(--text-color-regular, #cfcfcf) !important;
 }
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody td.first-col.focus {
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(.systable tbody td.first-col.focus){
   box-shadow: inset 0 0 0 9999px var(--excel-first-col-fill-hover, var(--table-row-hover-bg, #2d2d31)) !important;
   color: var(--text-color-primary, #e5e5e5) !important;
   border-right: 1px solid #409eff !important;
 }
 /* 覆盖 vue-excel-editor 默认 td vertical-align: bottom */
-.defect-vue-excel-editor ::v-deep .systable tbody td[id$="-projectNum"] {
+.defect-vue-excel-editor :deep(.systable tbody td[id$="-projectNum"]){
   vertical-align: middle !important;
   text-align: center;
 }
 /* 除行号、# 编号列外，数据格垂直居中（下拉/日期/cellHtml 见下条专门覆盖） */
-.defect-vue-excel-editor ::v-deep .systable tbody td:not(.first-col):not([id$="-projectNum"]) {
+.defect-vue-excel-editor :deep(.systable tbody td:not(.first-col):not([id$="-projectNum"])){
   vertical-align: middle !important;
 }
 /* 纯文本列：单元格内保留 \\n 换行，行高随内容增高（缺陷名单独见下条；map 三角/日期/cellHtml 仍单行） */
-.defect-vue-excel-editor ::v-deep .systable tbody td:not(.first-col):not([id$="-projectNum"]):not([id$="-defectName"]):not([id$="-moduleName"]):not([id$="-moduleVersion"]):not([id$="-defectDescribe"]):not([id$="-createByText"]):not([id$="-updateTime"]):not(.cell-html):not(.select):not(.datepick) {
+.defect-vue-excel-editor :deep(.systable tbody td:not(.first-col):not([id$="-projectNum"]):not([id$="-defectName"]):not([id$="-moduleName"]):not([id$="-moduleVersion"]):not([id$="-defectDescribe"]):not([id$="-createByText"]):not([id$="-updateTime"]):not(.cell-html):not(.select):not(.datepick)){
   height: auto !important;
   min-height: 24px;
   white-space: pre-wrap !important;
@@ -5006,7 +5006,7 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody t
   vertical-align: middle !important;
 }
 /* 缺陷名称：换行与行高同其它纯文本列；不设 flex（会破坏 td 表格对齐），仅用 vertical-align 做格内上下居中 */
-.defect-vue-excel-editor ::v-deep .systable tbody td[id$="-defectName"]:not(.first-col) {
+.defect-vue-excel-editor :deep(.systable tbody td[id$="-defectName"]:not(.first-col)){
   height: auto !important;
   min-height: 24px;
   min-width: 160px;
@@ -5019,12 +5019,12 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody t
   vertical-align: middle !important;
   box-sizing: border-box;
 }
-.defect-vue-excel-editor ::v-deep .systable thead th[id$="-defectName"] {
+.defect-vue-excel-editor :deep(.systable thead th[id$="-defectName"]){
   min-width: 160px;
 }
 /* 交付物(moduleName)、版本(moduleVersion)：与缺陷名称一致，格内上下居中 */
-.defect-vue-excel-editor ::v-deep .systable tbody td[id$="-moduleName"]:not(.first-col),
-.defect-vue-excel-editor ::v-deep .systable tbody td[id$="-moduleVersion"]:not(.first-col) {
+.defect-vue-excel-editor :deep(.systable tbody td[id$="-moduleName"]:not(.first-col)),
+.defect-vue-excel-editor :deep(.systable tbody td[id$="-moduleVersion"]:not(.first-col)){
   height: auto !important;
   min-height: 24px;
   white-space: pre-wrap !important;
@@ -5035,7 +5035,7 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody t
   vertical-align: middle !important;
   box-sizing: border-box;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td[id$="-defectDescribe"]:not(.first-col) {
+.defect-vue-excel-editor :deep(.systable tbody td[id$="-defectDescribe"]:not(.first-col)){
   height: auto !important;
   min-height: 24px;
   min-width: 120px;
@@ -5049,8 +5049,8 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody t
   box-sizing: border-box;
 }
 /* 创建人、更新时间：只读单行为主，行变高时格内上下居中 */
-.defect-vue-excel-editor ::v-deep .systable tbody td[id$="-createByText"]:not(.first-col),
-.defect-vue-excel-editor ::v-deep .systable tbody td[id$="-updateTime"]:not(.first-col) {
+.defect-vue-excel-editor :deep(.systable tbody td[id$="-createByText"]:not(.first-col)),
+.defect-vue-excel-editor :deep(.systable tbody td[id$="-updateTime"]:not(.first-col)){
   height: auto !important;
   min-height: 24px;
   white-space: nowrap;
@@ -5061,28 +5061,28 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody t
   box-sizing: border-box;
 }
 /* 内联编辑框：库默认 nowrap 会压扁换行观感，改为与单元格一致的 pre-wrap */
-.defect-vue-excel-editor ::v-deep textarea.input-box {
+.defect-vue-excel-editor :deep(textarea.input-box){
   white-space: pre-wrap !important;
   word-break: break-word;
   overflow-x: hidden !important;
   overflow-y: auto !important;
 }
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .input-square.input-square--editing {
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(.input-square.input-square--editing){
   background-color: var(--input-bg) !important;
 }
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-box {
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(textarea.input-box){
   background-color: var(--input-bg) !important;
   color: var(--input-color) !important;
   caret-color: var(--text-color-primary) !important;
 }
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-box:focus,
-html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-box:active {
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(textarea.input-box:focus),
+html.dark .defect-excel-root .defect-vue-excel-editor :deep(textarea.input-box:active){
   background-color: var(--input-bg) !important;
   color: var(--input-color) !important;
   box-shadow: none !important;
 }
 /* 与补丁 .input-square--defect-name 一致：宿主提高优先级，凡可编辑非日期列编辑时文本在格内上下居中 */
-.defect-vue-excel-editor ::v-deep .input-square.input-square--defect-name > div:first-child {
+.defect-vue-excel-editor :deep(.input-square.input-square--defect-name > div:first-child){
   display: flex !important;
   flex-direction: column !important;
   justify-content: center !important;
@@ -5091,7 +5091,7 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   box-sizing: border-box;
   padding: 2px 0 1px 0 !important;
 }
-.defect-vue-excel-editor ::v-deep .input-square.input-square--defect-name textarea.input-box {
+.defect-vue-excel-editor :deep(.input-square.input-square--defect-name textarea.input-box){
   width: 100% !important;
   max-height: 100% !important;
   flex: 0 1 auto;
@@ -5099,13 +5099,13 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   line-height: 1.45;
   padding: 0.2rem 0.3rem !important;
 }
-.defect-vue-excel-editor ::v-deep .input-square.input-square--defect-name textarea.input-box:focus,
-.defect-vue-excel-editor ::v-deep .input-square.input-square--defect-name textarea.input-box:active {
+.defect-vue-excel-editor :deep(.input-square.input-square--defect-name textarea.input-box:focus),
+.defect-vue-excel-editor :deep(.input-square.input-square--defect-name textarea.input-box:active){
   box-shadow: none !important;
 }
 /* 库内 .input-square--defect-name + syncDefectNameInputBoxLayout(scrollHeight) */
 /* 图片列 cellHtml：多图横向平铺，突破库 tbody td 单行与固定行高 */
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html){
   height: auto !important;
   min-height: 32px;
   white-space: normal !important;
@@ -5117,13 +5117,13 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   text-align: left !important;
   vertical-align: middle !important;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .vue-excel-cell-html {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .vue-excel-cell-html){
   display: flex;
   align-items: center;
   min-height: 24px;
 }
 /* 两列 Grid：避免 flex-wrap 把上传钮挤到「下一行」贴底；右侧钮与左侧内容垂直居中 */
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-attach-cell {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-attach-cell){
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -5132,11 +5132,11 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   min-width: 0;
   box-sizing: border-box;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-attach-cell .defect-excel-img-row,
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-attach-cell .defect-excel-annex-stack {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-attach-cell .defect-excel-img-row),
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-attach-cell .defect-excel-annex-stack){
   min-width: 0;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-inline-upload-btn {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-inline-upload-btn){
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -5156,14 +5156,14 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   background: transparent;
   box-sizing: border-box;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-inline-upload-btn .cat2bug-inline-svg-icon {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-inline-upload-btn .cat2bug-inline-svg-icon){
   width: 12px;
   height: 12px;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-inline-upload-btn:hover {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-inline-upload-btn:hover){
   color: #409eff;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-row {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-img-row){
   display: inline-flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -5172,7 +5172,7 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   gap: 4px;
   max-width: 100%;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-wrap {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-img-wrap){
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -5187,7 +5187,7 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   border-radius: var(--cat2bug-border-radius, 4px);
   box-sizing: border-box;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-remove {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-img-remove){
   position: absolute;
   top: 0;
   right: 0;
@@ -5206,18 +5206,18 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   cursor: pointer;
   box-sizing: border-box;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-remove:hover {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-img-remove:hover){
   background: #f56c6c;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-remove .cat2bug-inline-svg-icon {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-img-remove .cat2bug-inline-svg-icon){
   width: 11px;
   height: 11px;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-row--empty {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-img-row--empty){
   min-height: 24px;
   min-width: 1px;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-tile {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-img-tile){
   display: block;
   flex: 0 0 auto;
   width: 100%;
@@ -5232,11 +5232,11 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   cursor: pointer;
   vertical-align: middle;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-wrap .defect-excel-img-tile {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-img-wrap .defect-excel-img-tile){
   max-width: 100%;
   max-height: 100%;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-stack {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-stack){
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -5244,7 +5244,7 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   line-height: 1.35;
   font-size: 12px;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-item {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-item){
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -5252,11 +5252,11 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   max-width: 100%;
   min-width: 0;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-item .defect-excel-annex-line {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-item .defect-excel-annex-line){
   flex: 1 1 auto;
   min-width: 0;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-remove {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-remove){
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
@@ -5272,14 +5272,14 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   cursor: pointer;
   box-sizing: border-box;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-remove:hover {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-remove:hover){
   background: #f56c6c;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-remove .cat2bug-inline-svg-icon {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-remove .cat2bug-inline-svg-icon){
   width: 11px;
   height: 11px;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-line){
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -5290,32 +5290,32 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   color: #409eff;
   text-align: left;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line .cat2bug-inline-svg-icon {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-line .cat2bug-inline-svg-icon){
   flex-shrink: 0;
   width: 12px;
   height: 12px;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-label {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-label){
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line:hover .defect-excel-annex-label {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-line:hover .defect-excel-annex-label){
   text-decoration: underline;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line--placeholder {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-line--placeholder){
   cursor: default;
   color: transparent;
   text-decoration: none;
   min-height: 1em;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line--placeholder:hover {
+.defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-line--placeholder:hover){
   text-decoration: none;
 }
 /* 列头仍可能进入 sort-asc / sort-des 态，去掉排序箭头提示 */
-.defect-vue-excel-editor ::v-deep .systable thead th.sort-asc-sign,
-.defect-vue-excel-editor ::v-deep .systable thead th.sort-des-sign {
+.defect-vue-excel-editor :deep(.systable thead th.sort-asc-sign),
+.defect-vue-excel-editor :deep(.systable thead th.sort-des-sign){
   background-image: none !important;
 }
 .table-tools.row {
@@ -5325,10 +5325,10 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   gap: 8px;
 }
 /* 内置 Table Setting：Default 会 resetColumn([]) 清空 fields，与声明式列不兼容，隐藏该按钮；面板内导入/导出与本页流程无关，一并隐藏 */
-.defect-vue-excel-editor ::v-deep #panelModal .panel-footer > button.panel-button:first-of-type {
+.defect-vue-excel-editor :deep(#panelModal .panel-footer > button.panel-button:first-of-type){
   display: none !important;
 }
-.defect-vue-excel-editor ::v-deep #panelModal .panel-content > .panel-action {
+.defect-vue-excel-editor :deep(#panelModal .panel-content > .panel-action){
   display: none !important;
 }
 /* 交付物：三角直达菜单时锚点无伪输入框，勿画边框（否则格与 popover 之间会出现一条灰线） */
@@ -5340,7 +5340,7 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   border: none;
   box-shadow: none;
 }
-.defect-excel-module-picker-anchor ::v-deep .select-module-input {
+.defect-excel-module-picker-anchor :deep(.select-module-input){
   border: none;
   min-height: 32px;
 }
@@ -5359,12 +5359,12 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   opacity: 0;
   pointer-events: none;
 }
-.defect-excel-plan-time-picker-anchor ::v-deep .el-date-editor.el-input {
+.defect-excel-plan-time-picker-anchor :deep(.el-date-editor.el-input){
   width: 1px;
   min-width: 0;
   height: 1px;
 }
-.defect-excel-plan-time-picker-anchor ::v-deep .el-date-editor .el-input__inner {
+.defect-excel-plan-time-picker-anchor :deep(.el-date-editor .el-input__inner){
   width: 1px;
   min-width: 0;
   height: 1px;
@@ -5374,8 +5374,8 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   opacity: 0;
   pointer-events: none;
 }
-.defect-excel-plan-time-picker-anchor ::v-deep .el-date-editor .el-input__prefix,
-.defect-excel-plan-time-picker-anchor ::v-deep .el-date-editor .el-input__suffix {
+.defect-excel-plan-time-picker-anchor :deep(.el-date-editor .el-input__prefix),
+.defect-excel-plan-time-picker-anchor :deep(.el-date-editor .el-input__suffix){
   display: none !important;
 }
 </style>

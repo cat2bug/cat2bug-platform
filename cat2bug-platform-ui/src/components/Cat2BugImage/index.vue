@@ -139,7 +139,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep.el-image {
+:deep(.el-image){
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -148,7 +148,7 @@ export default {
   background-color: var(--cat2bug-image-placeholder-bg, #ebeef5);
   box-sizing: border-box;
 }
-::v-deep .el-image__inner {
+:deep(.el-image__inner){
   display: block;
   max-width: 100%;
   max-height: 100%;

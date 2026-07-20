@@ -80,14 +80,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-drawer {
+:deep(.el-drawer){
   border-left: 3px solid #ffbe00;
 }
-::v-deep .el-drawer__header {
+:deep(.el-drawer__header){
   margin-bottom: 0px;
   max-width: calc(100vw);
 }
-::v-deep .el-drawer__close-btn {
+:deep(.el-drawer__close-btn){
   display: none;
 }
 .report-shop-header {

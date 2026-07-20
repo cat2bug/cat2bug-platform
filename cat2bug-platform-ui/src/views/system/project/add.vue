@@ -422,7 +422,7 @@ export default {
       }
     }
   }
-  ::v-deep .el-table__cell {
+  :deep(.el-table__cell){
     padding: 0;
   }
   .project-members {
@@ -440,7 +440,7 @@ export default {
       border-radius: 5px;
       cursor: pointer;
     }
-    ::v-deep .el-col[select="true"] {
+    :deep(.el-col[select="true"]){
       .member-nameplate-content {
         p {
           color: #1890ff;
@@ -460,7 +460,7 @@ export default {
       color: #1890ff;
     }
   }
-  ::v-deep .el-table {
+  :deep(.el-table){
     .el-form-item__error {
       display: none;
     }

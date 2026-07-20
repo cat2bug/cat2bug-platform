@@ -481,11 +481,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  ::v-deep .el-drawer__header {
+  :deep(.el-drawer__header){
     margin-bottom: 0px;
     overflow: visible;
   }
-  ::v-deep .el-drawer__close-btn {
+  :deep(.el-drawer__close-btn){
     display: none;
   }
   .defect-add-header {
@@ -526,7 +526,7 @@ export default {
       color: #909399;
     }
   }
-  ::v-deep .app-container {
+  :deep(.app-container){
     .save-form-cache {
       left: -25px;
     }

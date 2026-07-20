@@ -341,13 +341,13 @@ export default {
   border-radius: var(--cat2bug-border-radius, 4px);
   outline: none;
   box-sizing: border-box;
-  ::v-deep .el-button:focus {
+  :deep(.el-button:focus){
     outline: none;
   }
 }
 .upload-file-uploader {
   margin-bottom: 5px;
-  ::v-deep .el-upload__tip,
+  :deep(.el-upload__tip),
   .upload-file-tip {
     display: block;
     margin-top: 7px;

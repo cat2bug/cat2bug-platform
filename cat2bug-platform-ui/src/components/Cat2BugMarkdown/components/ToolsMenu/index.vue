@@ -101,7 +101,7 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   row-gap: 4px;
-  .el-menu-item, ::v-deep .el-submenu {
+  .el-menu-item, :deep(.el-submenu){
     height: 30px;
     width: 30px;
     line-height: 28px;
@@ -112,16 +112,16 @@ export default {
       padding: 0px;
     }
   }
-  .el-menu-item:hover, ::v-deep .el-submenu:hover {
+  .el-menu-item:hover, :deep(.el-submenu:hover){
     color: #1890ff;
     border-color: #badeff;
     background-color: #e8f4ff;
   }
-  .el-submenu ::v-deep .el-submenu__title {
+  .el-submenu :deep(.el-submenu__title){
     height: 30px;
     line-height: 28px;
   }
-  .el-submenu ::v-deep .el-submenu__title:hover {
+  .el-submenu :deep(.el-submenu__title:hover){
     background-color: #00000000;
   }
 }

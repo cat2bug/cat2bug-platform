@@ -267,6 +267,22 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (p) => p.replace(new RegExp(`^${baseApi}`), '')
         },
+        // Git Smart HTTP：clone/push 走与页面同源的 /git/**，转发到后端（勿返回 SPA HTML）
+        // 大仓 push 易超时/断流，需拉长代理超时并关闭响应缓冲
+        '/git': {
+          target: 'http://localhost:2020',
+          changeOrigin: true,
+          timeout: 0,
+          proxyTimeout: 0,
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq, req) => {
+              // 透传大 body；避免部分环境下提前结束
+              if (req.headers['content-length']) {
+                proxyReq.setHeader('Content-Length', req.headers['content-length'])
+              }
+            })
+          }
+        },
         [baseWs]: {
           target: 'ws://localhost:2020',
           changeOrigin: true,

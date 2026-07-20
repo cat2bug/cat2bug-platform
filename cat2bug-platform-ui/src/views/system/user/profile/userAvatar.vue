@@ -281,7 +281,7 @@ export default {
   display: inline-block;
   cursor: pointer;
 
-  ::v-deep .profile-user-avatar.member-avatar .el-avatar {
+  :deep(.profile-user-avatar.member-avatar .el-avatar){
     width: 120px;
     height: 120px;
     font-size: 48px;

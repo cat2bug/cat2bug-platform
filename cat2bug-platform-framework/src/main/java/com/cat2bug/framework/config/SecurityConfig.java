@@ -95,6 +95,8 @@ public class SecurityConfig {
                             ant("/register"),
                             ant("/captchaImage"),
                             ant("/version"),
+                            ant("/error"),
+                            ant("/favicon.ico"),
                             ant("/system/defect/*/shard/**"),
                             ant("/websocket/**")
                     ).permitAll();

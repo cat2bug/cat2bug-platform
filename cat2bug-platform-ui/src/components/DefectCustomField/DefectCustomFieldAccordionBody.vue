@@ -77,13 +77,13 @@ export default {
   align-items: flex-start;
   gap: 6px;
 
-  ::v-deep .annex-list-item {
+  :deep(.annex-list-item){
     display: block;
     width: 100%;
     border-bottom: none !important;
   }
 
-  ::v-deep .annex-list-item:last-child {
+  :deep(.annex-list-item:last-child){
     border-bottom: none !important;
     margin-bottom: 0;
     padding-bottom: 0;
@@ -107,9 +107,9 @@ export default {
   box-sizing: border-box;
   background-color: var(--cat2bug-image-placeholder-bg, #ebeef5);
 
-  ::v-deep .el-image__inner,
-  ::v-deep .el-image__placeholder,
-  ::v-deep .el-image__error {
+  :deep(.el-image__inner),
+  :deep(.el-image__placeholder),
+  :deep(.el-image__error){
     width: 100% !important;
     height: 100% !important;
     border-radius: inherit;
@@ -117,7 +117,7 @@ export default {
     object-position: center center;
   }
 
-  ::v-deep .cat2bug-image-error {
+  :deep(.cat2bug-image-error){
     border-radius: inherit;
     overflow: hidden;
   }

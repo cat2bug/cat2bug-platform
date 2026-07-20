@@ -101,15 +101,15 @@ export default {
   $project-option-card-gap: 20px;
 
   /* gutter 仅控制列间距，补相同 row-gap 使行列间隔一致 */
-  ::v-deep .el-row {
+  :deep(.el-row){
     margin-bottom: -$project-option-card-gap;
   }
 
-  ::v-deep .el-col {
+  :deep(.el-col){
     margin-bottom: $project-option-card-gap;
   }
 
-  ::v-deep .el-card__header {
+  :deep(.el-card__header){
     font-weight: 600;
     div:first-child {
       display: flex;
@@ -147,7 +147,7 @@ export default {
       height: 1em;
     }
   }
-  ::v-deep .el-card__body {
+  :deep(.el-card__body){
     min-height: 180px;
     display: flex;
     align-items: flex-start;
@@ -157,7 +157,7 @@ export default {
       margin-bottom: 15px;
     }
   }
-  ::v-deep .el-card__header {
+  :deep(.el-card__header){
     position: relative;
     overflow: visible !important;
   }

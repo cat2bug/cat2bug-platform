@@ -26,7 +26,7 @@ export default {
   min-height: 100px;
   h3 {
     color: #409EFF;
-    ::v-deep i {
+    :deep(i){
       margin-right: 5px;
     }
   }

@@ -872,7 +872,7 @@ export default {
   box-sizing: border-box;
   overflow: hidden;
 }
-.tree-module ::v-deep > .tree {
+.tree-module :deep(> .tree){
   flex: 1 1 0%;
   min-height: 0;
   display: flex;
@@ -902,7 +902,7 @@ export default {
   overflow-y: hidden;
 }
 /* ruoyi.scss 给分页容器 height:25px + 内部 absolute，预留高度不足会压住上方表格 */
-.plan-drawer-defect-list-pane ::v-deep .pagination-container {
+.plan-drawer-defect-list-pane :deep(.pagination-container){
   flex-shrink: 0;
   height: auto !important;
   display: flex;
@@ -910,7 +910,7 @@ export default {
   align-items: center;
   flex-wrap: wrap;
 }
-.plan-drawer-defect-list-pane ::v-deep .pagination-container .el-pagination {
+.plan-drawer-defect-list-pane :deep(.pagination-container .el-pagination){
   position: relative !important;
   right: auto !important;
 }
@@ -941,7 +941,7 @@ export default {
   max-width: 100%;
   box-sizing: border-box;
 }
-.plan-query-main ::v-deep .list-switch {
+.plan-query-main :deep(.list-switch){
   flex: 0 0 auto;
   flex-shrink: 0;
   white-space: nowrap;
@@ -959,7 +959,7 @@ export default {
   max-width: 100%;
   box-sizing: border-box;
 }
-.plan-query-main ::v-deep .el-form--inline .el-form-item {
+.plan-query-main :deep(.el-form--inline .el-form-item){
   flex: 0 1 auto;
   min-width: 0;
   margin-right: 0 !important;
@@ -967,11 +967,11 @@ export default {
   display: flex;
   align-items: center;
 }
-.plan-query-main ::v-deep .el-form--inline .el-form-item.plan-query-switch-item {
+.plan-query-main :deep(.el-form--inline .el-form-item.plan-query-switch-item){
   flex: 0 0 auto;
   min-width: 0;
 }
-.plan-query-main ::v-deep .plan-query-switch-item .el-form-item__content {
+.plan-query-main :deep(.plan-query-switch-item .el-form-item__content){
   width: auto !important;
   margin-left: 0 !important;
 }
@@ -980,18 +980,18 @@ export default {
     width: 100%;
     max-width: 100%;
   }
-  .plan-query-main ::v-deep .el-form--inline .el-form-item:not(.plan-query-switch-item) {
+  .plan-query-main :deep(.el-form--inline .el-form-item:not(.plan-query-switch-item)){
     flex: 1 1 100%;
     max-width: 100%;
   }
-  .plan-query-main ::v-deep .el-form-item__content {
+  .plan-query-main :deep(.el-form-item__content){
     width: 100% !important;
     max-width: 100%;
     box-sizing: border-box;
   }
-  .plan-query-main ::v-deep .el-input,
-  .plan-query-main ::v-deep .el-select,
-  .plan-query-main ::v-deep .select-project-member-input {
+  .plan-query-main :deep(.el-input),
+  .plan-query-main :deep(.el-select),
+  .plan-query-main :deep(.select-project-member-input){
     width: 100% !important;
     max-width: 100%;
     box-sizing: border-box;
@@ -1037,30 +1037,30 @@ export default {
 .plan-defect-sidebar-expand-trigger:focus-visible {
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
 }
-.plan-defect-sidebar-expand-trigger ::v-deep .plan-defect-sidebar-expand-svg {
+.plan-defect-sidebar-expand-trigger :deep(.plan-defect-sidebar-expand-svg){
   width: 12px;
   height: 12px;
   vertical-align: middle;
   display: block;
 }
-::v-deep .plan-defect-sidebar-expand-header-cell {
+:deep(.plan-defect-sidebar-expand-header-cell){
   padding: 0 !important;
   text-align: center;
 }
-::v-deep .plan-defect-sidebar-expand-header-cell .cell {
+:deep(.plan-defect-sidebar-expand-header-cell .cell){
   padding: 0 !important;
   overflow: visible !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
 }
-::v-deep .el-table__fixed-header-wrapper .plan-defect-sidebar-expand-header-cell .cell {
+:deep(.el-table__fixed-header-wrapper .plan-defect-sidebar-expand-header-cell .cell){
   overflow: visible !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
 }
-::v-deep .plan-defect-sidebar-expand-body-cell .cell {
+:deep(.plan-defect-sidebar-expand-body-cell .cell){
   padding: 4px 0 !important;
 }
 .plan-defect-sidebar-expand-body-placeholder {

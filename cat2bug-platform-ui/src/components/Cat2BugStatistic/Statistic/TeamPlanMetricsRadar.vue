@@ -335,16 +335,16 @@ export default {
 .plan-radar-card {
   overflow: visible;
 
-  ::v-deep .statistic-box {
+  :deep(.statistic-box){
     overflow: visible;
   }
 
-  ::v-deep .statistic-box-header {
+  :deep(.statistic-box-header){
     margin-bottom: 4px;
     padding-bottom: 4px;
   }
 
-  ::v-deep .statistic-box-body {
+  :deep(.statistic-box-body){
     padding: 0;
     overflow: visible;
     flex: 1 1 auto;

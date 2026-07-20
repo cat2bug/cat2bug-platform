@@ -219,22 +219,22 @@ export default {
   .defect-module-row:hover h4 {
     color: #409eff;
   }
-  ::v-deep .el-progress-bar {
+  :deep(.el-progress-bar){
     width: 100%;
     margin-right: 0;
     padding-right: 0;
   }
-  ::v-deep .el-progress__text {
+  :deep(.el-progress__text){
     display: none;
   }
-  ::v-deep .el-progress-bar__outer {
+  :deep(.el-progress-bar__outer){
     height: 4px !important;
     border-radius: 2px !important;
     overflow: hidden;
     background-color: var(--progress-track-bg, #ebeef5) !important;
     border: none !important;
   }
-  ::v-deep .el-progress-bar__inner {
+  :deep(.el-progress-bar__inner){
     height: 100% !important;
     line-height: 1 !important;
     border-radius: 0 !important;
@@ -254,10 +254,10 @@ export default {
     padding-top: 2px;
     line-height: 1;
   }
-  ::v-deep .el-pagination .el-icon {
+  :deep(.el-pagination .el-icon){
     font-size: 10px !important;
   }
-  ::v-deep .el-pagination button {
+  :deep(.el-pagination button){
     min-width: calc(var(--statistic-pagination-control-height, 15px) + 5px) !important;
     height: var(--statistic-pagination-control-height, 15px) !important;
     line-height: var(--statistic-pagination-control-height, 15px) !important;

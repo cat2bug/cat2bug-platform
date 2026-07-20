@@ -423,7 +423,7 @@ $cmdp-accent: #ffce3a;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-::v-deep .cmdp__hl {
+:deep(.cmdp__hl){
   background: rgba(255, 206, 58, 0.28);
   color: $cmdp-accent;
   border-radius: 2px;

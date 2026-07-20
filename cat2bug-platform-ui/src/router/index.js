@@ -318,6 +318,30 @@ export const dynamicRoutes = [
         }
       }
     ]
+  },
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/git/repo/browse'),
+        name: 'GitRepoBrowse',
+        meta: {
+          title: i18n.global.t('git.repo.library'),
+          titleI18nKey: 'git.repo.library',
+          activeMenu: '/project/git-repo',
+          projectListPage: true,
+          // 隐藏路由不在侧栏树中，需显式补齐：项目管理 / 源码管理 / 源码库
+          breadcrumbParents: [
+            { path: '/project', redirect: 'noRedirect', meta: { titleI18nKey: 'project.manage' } },
+            { path: '/project/git-repo', meta: { titleI18nKey: 'git.repo.menu' } }
+          ]
+        }
+      }
+    ]
   }
 ]
 

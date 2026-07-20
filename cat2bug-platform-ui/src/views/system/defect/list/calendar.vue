@@ -372,7 +372,7 @@ export default {
     display: inline-flex;
     justify-content: flex-start;
     margin-bottom: 0px;
-    ::v-deep .el-form-item {
+    :deep(.el-form-item){
       margin-bottom: 0px;
     }
   }
@@ -424,7 +424,7 @@ export default {
 .defect-calendar-picker {
   max-width: 180px;
   margin-left: 20px;
-  ::v-deep input {
+  :deep(input){
     border-width: 0px;
     font-size: 1.2rem;
     text-align: center;

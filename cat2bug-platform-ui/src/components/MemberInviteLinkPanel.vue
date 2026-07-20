@@ -145,11 +145,11 @@ export default {
 .member-invite-link-panel {
   overflow: visible;
 
-  ::v-deep .el-form-item__content {
+  :deep(.el-form-item__content){
     overflow: visible;
   }
 
-  ::v-deep .invite-role-select {
+  :deep(.invite-role-select){
     width: 100%;
     overflow: visible;
 
@@ -158,7 +158,7 @@ export default {
     }
   }
 
-  ::v-deep .invite-link-input.el-input-group .el-input__inner {
+  :deep(.invite-link-input.el-input-group .el-input__inner){
     border-top-right-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
   }

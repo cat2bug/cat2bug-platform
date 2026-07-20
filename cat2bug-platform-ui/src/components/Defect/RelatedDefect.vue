@@ -401,7 +401,7 @@ export default {
     display: inline-block;
     justify-content: flex-start;
     margin-bottom: 0px;
-    ::v-deep .el-form-item {
+    :deep(.el-form-item){
       margin-bottom: 0px;
     }
   }
@@ -425,7 +425,7 @@ export default {
   > * {
     font-size: 0.7rem;
   }
-  ::v-deep .el-button {
+  :deep(.el-button){
     width: 8px;
     height: 8px;
     margin: 0px;
@@ -466,7 +466,7 @@ export default {
   }
 }
 .el-table {
-  ::v-deep table {
+  :deep(table){
     width: 100% !important;
   }
 }

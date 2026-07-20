@@ -465,7 +465,7 @@ export default {
     align-items: center;
     gap: 4px;
     box-sizing: border-box;
-    ::v-deep .el-tooltip {
+    :deep(.el-tooltip){
       flex: 1;
       min-width: 0;
       overflow: hidden;
@@ -541,7 +541,7 @@ export default {
       background-color: #3a3a42;
     }
   }
-  .module-menu-add-wrap.is-keyboard-active ::v-deep .select-module-add-button {
+  .module-menu-add-wrap.is-keyboard-active :deep(.select-module-add-button){
     background-color: #ECF5FF;
     border-radius: 5px;
     @at-root html.dark & {

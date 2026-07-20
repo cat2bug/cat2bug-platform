@@ -451,7 +451,7 @@ export default {
     display: inline-block;
     justify-content: flex-start;
     margin-bottom: 0px;
-    ::v-deep .el-form-item {
+    :deep(.el-form-item){
       margin-bottom: 0px;
     }
   }

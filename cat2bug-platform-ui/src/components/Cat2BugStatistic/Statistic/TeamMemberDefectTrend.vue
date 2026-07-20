@@ -243,29 +243,29 @@ export default {
 .defect-trend-card {
   overflow: visible;
 
-  ::v-deep .statistic-box {
+  :deep(.statistic-box){
     overflow: visible;
   }
 
-  ::v-deep .statistic-box-header {
+  :deep(.statistic-box-header){
     min-height: var(--statistic-card-header-min-height, 17px);
     align-items: center;
     margin-bottom: 2px;
     padding-bottom: 2px;
   }
 
-  ::v-deep .statistic-box-header .cat2-bug-title {
+  :deep(.statistic-box-header .cat2-bug-title){
     display: flex;
     align-items: center;
     line-height: var(--statistic-card-header-min-height, 17px);
   }
 
-  ::v-deep .statistic-box-header .statistic-box-tools {
+  :deep(.statistic-box-header .statistic-box-tools){
     gap: 4px;
     align-items: center;
   }
 
-  ::v-deep .statistic-box-body {
+  :deep(.statistic-box-body){
     padding: 0;
     overflow: visible;
     flex: 1 1 auto;
@@ -276,7 +276,7 @@ export default {
 }
 
 .defect-trend-time-type {
-  ::v-deep .el-radio-button__inner {
+  :deep(.el-radio-button__inner){
     padding: 2px 5px;
     font-size: 10px;
   }

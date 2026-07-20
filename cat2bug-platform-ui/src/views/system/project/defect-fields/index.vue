@@ -1300,30 +1300,30 @@ html.dark .defect-field-page .sort-order-arrows .sort-arrow.is-disabled {
 }
 .defect-field-list-table {
   /* 覆盖 ruoyi 表头 word-break: break-word，避免「最大长度」等标题被挤成两行 */
-  ::v-deep .el-table__header-wrapper th.el-table__cell,
-  ::v-deep .el-table__fixed-header-wrapper th.el-table__cell {
+  :deep(.el-table__header-wrapper th.el-table__cell),
+  :deep(.el-table__fixed-header-wrapper th.el-table__cell){
     word-break: keep-all;
     > .cell {
       white-space: nowrap;
       flex-wrap: nowrap;
     }
   }
-  ::v-deep td.defect-field-source-col .cell,
-  ::v-deep th.defect-field-source-col .cell {
+  :deep(td.defect-field-source-col .cell),
+  :deep(th.defect-field-source-col .cell){
     overflow: visible;
     text-overflow: clip;
   }
-  ::v-deep .defect-field-source-tag {
+  :deep(.defect-field-source-tag){
     display: inline-flex;
     max-width: none;
     white-space: nowrap;
     vertical-align: middle;
   }
-  ::v-deep td.cat2bug-operate-column .cell,
-  ::v-deep th.cat2bug-operate-column .cell {
+  :deep(td.cat2bug-operate-column .cell),
+  :deep(th.cat2bug-operate-column .cell){
     overflow: visible;
   }
-  ::v-deep .defect-field-operate-tools {
+  :deep(.defect-field-operate-tools){
     display: inline-flex;
     flex-wrap: nowrap;
     white-space: nowrap;

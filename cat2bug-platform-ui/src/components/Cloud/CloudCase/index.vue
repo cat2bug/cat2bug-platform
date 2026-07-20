@@ -1051,14 +1051,14 @@ export default {
     .cat2bug-textarea {
       flex: 1 1 200px;
       min-width: 0;
-      ::v-deep textarea {
+      :deep(textarea){
         height: 100%;
         border-radius: 5px 0 0 5px;
         padding-left: 45px;
         border-color: #67c23a;
         border-width: 1px 0px 1px 1px ;
       }
-      ::v-deep textarea:hover {
+      :deep(textarea:hover){
         border-color: #85ce61;
       }
     }
@@ -1073,7 +1073,7 @@ export default {
       top: 7px;
       left: 15px;
     }
-    ::v-deep .el-button-group {
+    :deep(.el-button-group){
       height: 100%;
       .el-button {
         height: 100%;
@@ -1082,15 +1082,15 @@ export default {
         border-radius: 0px;
       }
     }
-    ::v-deep .el-button-group {
+    :deep(.el-button-group){
       margin: 0px;
       border-radius: 0px 5px 5px 0px;
     }
-    ::v-deep > .el-dropdown {
+    :deep(> .el-dropdown){
       flex: 0 0 auto;
       display: flex;
     }
-    ::v-deep > .el-dropdown > .el-button-group {
+    :deep(> .el-dropdown > .el-button-group){
       flex-shrink: 0;
       white-space: nowrap;
     }
@@ -1108,7 +1108,7 @@ export default {
       .el-table, .case-table-tools {
         width: 100%;
       }
-      ::v-deep .el-table td.cloud-case-table-case-cell .cell {
+      :deep(.el-table td.cloud-case-table-case-cell .cell){
         white-space: normal !important;
         word-break: break-word;
         text-align: left !important;
@@ -1130,10 +1130,10 @@ export default {
         align-items: center;
         gap: 10px;
         flex-shrink: 0;
-        ::v-deep > .el-button:last-child {
+        :deep(> .el-button:last-child){
           margin-left: 0;
         }
-        ::v-deep > .el-button.el-button--mini {
+        :deep(> .el-button.el-button--mini){
           display: inline-flex !important;
           align-items: center;
           justify-content: center;
@@ -1145,23 +1145,23 @@ export default {
         flex: 1 1 auto;
         display: flex;
         justify-content: flex-end;
-        ::v-deep .el-pagination {
+        :deep(.el-pagination){
           flex-wrap: nowrap;
         }
       }
       @container case-table-tools (max-width: 520px) {
         /* Element：icon 为 i，默认插槽包在紧随的 span 里；隐藏该 span，避免只隐藏内层仍占位 */
-        .case-table-batch-btns ::v-deep .el-button.el-button--mini > span {
+        .case-table-batch-btns :deep(.el-button.el-button--mini > span){
           display: none !important;
         }
-        .case-table-batch-btns ::v-deep .el-button.el-button--mini {
+        .case-table-batch-btns :deep(.el-button.el-button--mini){
           padding: 6px 0 !important;
           min-width: 32px;
           width: 32px;
           justify-content: center !important;
         }
-        .case-table-batch-btns ::v-deep .el-button--mini i[class^='el-icon-'],
-        .case-table-batch-btns ::v-deep .el-button--mini [class*='el-icon-'] {
+        .case-table-batch-btns :deep(.el-button--mini i[class^='el-icon-']),
+        .case-table-batch-btns :deep(.el-button--mini [class*='el-icon-']){
           margin-right: 0 !important;
           margin-left: 0 !important;
         }
@@ -1192,17 +1192,17 @@ export default {
 /* 不支持容器查询时：窄屏仍隐藏批量按钮文案，避免换行 */
 @supports not (container-type: inline-size) {
   @media (max-width: 900px) {
-    .case .case-table-tools .case-table-batch-btns ::v-deep .el-button.el-button--mini > span {
+    .case .case-table-tools .case-table-batch-btns :deep(.el-button.el-button--mini > span){
       display: none !important;
     }
-    .case .case-table-tools .case-table-batch-btns ::v-deep .el-button.el-button--mini {
+    .case .case-table-tools .case-table-batch-btns :deep(.el-button.el-button--mini){
       padding: 6px 0 !important;
       min-width: 32px;
       width: 32px;
       justify-content: center !important;
     }
-    .case .case-table-tools .case-table-batch-btns ::v-deep .el-button--mini i[class^='el-icon-'],
-    .case .case-table-tools .case-table-batch-btns ::v-deep .el-button--mini [class*='el-icon-'] {
+    .case .case-table-tools .case-table-batch-btns :deep(.el-button--mini i[class^='el-icon-']),
+    .case .case-table-tools .case-table-batch-btns :deep(.el-button--mini [class*='el-icon-']){
       margin-right: 0 !important;
       margin-left: 0 !important;
     }
@@ -1268,7 +1268,7 @@ export default {
         font-size: 10px;
         border-radius: 2px;
       }
-      .case-state-tag ::v-deep .el-tag__content {
+      .case-state-tag :deep(.el-tag__content){
         font-size: 10px;
         line-height: 1;
       }
@@ -1299,7 +1299,7 @@ export default {
       min-height: 0;
       text-align: left;
       /* el-tooltip 根节点不要 overflow:hidden，否则会破坏子节点 line-clamp 的省略号 */
-      ::v-deep .el-tooltip {
+      :deep(.el-tooltip){
         display: block !important;
         width: 100% !important;
         max-width: 100%;
@@ -1334,7 +1334,7 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  ::v-deep .el-button--mini {
+  :deep(.el-button--mini){
     margin-left: 0 !important;
     padding-top: 4px;
     padding-bottom: 4px;
@@ -1384,18 +1384,18 @@ export default {
     color: #F56C6C;
   }
 }
-::v-deep .el-drawer__body {
+:deep(.el-drawer__body){
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-::v-deep .el-drawer__header {
+:deep(.el-drawer__header){
   margin-bottom: 0px;
 }
-::v-deep .el-drawer__close-btn {
+:deep(.el-drawer__close-btn){
   display: none;
 }
-::v-deep .el-loading-spinner {
+:deep(.el-loading-spinner){
   circle {
     stroke: #13ce66;
   }

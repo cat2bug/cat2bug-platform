@@ -134,7 +134,7 @@ export default {
       flex: 1;
     }
   }
-  ::v-deep .el-progress {
+  :deep(.el-progress){
     > .el-progress-bar {
       padding-right: 5px;
     }

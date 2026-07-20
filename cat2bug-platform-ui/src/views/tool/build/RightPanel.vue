@@ -933,7 +933,7 @@ export default {
   .el-date-editor {
     width: 227px;
   }
-  ::v-deep .el-icon-time {
+  :deep(.el-icon-time){
     display: none;
   }
 }

@@ -645,22 +645,23 @@ export default {
     border-color: transparent;
     box-shadow: none;
   }
-  ::v-deep .el-button:focus,
-  ::v-deep .update-button:focus {
+  :deep(.el-button:focus),
+  :deep(.update-button:focus){
     outline: none;
   }
 }
 // .el-upload--picture-card 控制加号部分
-::v-deep.hide .el-upload--picture-card {
+:deep(.hide .el-upload--picture-card){
   display: none !important;
 }
 // 去掉动画效果
-::v-deep .el-list-enter-active,
-::v-deep .el-list-leave-active {
+:deep(.el-list-enter-active),
+:deep(.el-list-leave-active){
   transition: all 0s;
 }
 
-::v-deep .el-list-enter, .el-list-leave-active {
+:deep(.el-list-enter),
+:deep(.el-list-leave-active) {
   opacity: 0;
   transform: translateY(0);
 }
@@ -674,25 +675,25 @@ export default {
   font-size: 26px;
   flex-shrink: 0;
 }
-::v-deep .el-upload-list--picture-card .el-upload-list__item {
+:deep(.el-upload-list--picture-card .el-upload-list__item){
   width: 148px;
   height: 148px;
   border-radius: var(--cat2bug-border-radius, 4px);
   overflow: hidden;
 }
-::v-deep .el-upload-list--picture-card .el-upload-list__item-thumbnail {
+:deep(.el-upload-list--picture-card .el-upload-list__item-thumbnail){
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   border-radius: var(--cat2bug-border-radius, 4px);
 }
-::v-deep .el-upload-list--picture-card .el-upload-list__item.is-keyboard-focus {
+:deep(.el-upload-list--picture-card .el-upload-list__item.is-keyboard-focus){
   outline: none !important;
   border: 1px dashed var(--cat2bug-field-focus-color, #409eff) !important;
   z-index: 1;
 }
-::v-deep .update-button.is-keyboard-focus {
+:deep(.update-button.is-keyboard-focus){
   outline: none !important;
   border: 1px dashed var(--cat2bug-field-focus-color, #1890ff) !important;
 }
@@ -706,7 +707,7 @@ export default {
   gap: 8px;
 }
 // Element Plus：触发器在 .el-upload-list--picture-card 内，旧版为 .cat2bug-upload 直接子节点
-::v-deep.cat2bug-upload {
+:deep(.cat2bug-upload){
   .el-upload-list--picture-card {
     width: max-content !important;
     max-width: 100%;

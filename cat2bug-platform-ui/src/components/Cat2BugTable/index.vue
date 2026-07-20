@@ -1788,25 +1788,25 @@ export default {
   --cat2bug-col-handle-grip-color-active: var(--cat2bug-primary, #409eff);
 
   /* 覆盖 Element UI 默认 .el-table { background: #FFF } / .el-table tr { background: #FFF } */
-  ::v-deep .el-table {
+  :deep(.el-table){
     background-color: var(--table-bg) !important;
   }
 
-  ::v-deep .el-table__fixed-right {
+  :deep(.el-table__fixed-right){
     max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
     width: var(--cat2bug-operate-col-applied-width, 450px) !important;
     box-sizing: border-box;
     z-index: 31 !important;
   }
 
-  ::v-deep .el-table__fixed-right table {
+  :deep(.el-table__fixed-right table){
     table-layout: fixed;
     width: 100%;
     box-sizing: border-box;
   }
 
   /* 滚动条垫片：仅 gutter 宽，禁止与操作列同宽（否则会盖住「操作」表头） */
-  ::v-deep .el-table__fixed-right-patch {
+  :deep(.el-table__fixed-right-patch){
     width: auto !important;
     max-width: 20px !important;
     min-width: 0 !important;
@@ -1815,67 +1815,67 @@ export default {
     pointer-events: none;
   }
 
-  ::v-deep th.cat2bug-operate-column,
-  ::v-deep td.cat2bug-operate-column {
+  :deep(th.cat2bug-operate-column),
+  :deep(td.cat2bug-operate-column){
     max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
     width: var(--cat2bug-operate-col-applied-width, 450px) !important;
     min-width: 0 !important;
     box-sizing: border-box;
   }
 
-  ::v-deep th.cat2bug-operate-column .cell {
+  :deep(th.cat2bug-operate-column .cell){
     overflow: visible !important;
     color: var(--table-header-color, inherit);
   }
 
-  ::v-deep .el-table__body-wrapper,
-  ::v-deep .el-table__fixed-body-wrapper {
+  :deep(.el-table__body-wrapper),
+  :deep(.el-table__fixed-body-wrapper){
     background-color: var(--cat2bug-table-row-bg, var(--table-bg));
   }
 
   /* 表头 tr/th：覆盖 Element UI .el-table tr / th { background:#FFF } */
-  ::v-deep thead tr {
+  :deep(thead tr){
     background-color: var(--table-header-bg) !important;
   }
 
-  ::v-deep thead tr > th.el-table__cell,
-  ::v-deep .el-table__fixed thead tr > th.el-table__cell,
-  ::v-deep .el-table__fixed-right thead tr > th.el-table__cell {
+  :deep(thead tr > th.el-table__cell),
+  :deep(.el-table__fixed thead tr > th.el-table__cell),
+  :deep(.el-table__fixed-right thead tr > th.el-table__cell){
     background-color: var(--table-header-bg) !important;
     border-bottom: 1px solid var(--border-color-light) !important;
     color: var(--table-header-color, inherit) !important;
   }
 
   /* 表体：非固定列与固定列分层（参考浅色：主体 table-bg，固定列 block 色） */
-  ::v-deep tbody tr {
+  :deep(tbody tr){
     background-color: var(--cat2bug-table-row-bg, var(--table-bg)) !important;
   }
 
-  ::v-deep .el-table__body-wrapper tbody tr > td.el-table__cell {
+  :deep(.el-table__body-wrapper tbody tr > td.el-table__cell){
     background-color: var(--cat2bug-table-row-bg, var(--table-bg)) !important;
     border-bottom: 1px solid var(--border-color-light) !important;
   }
 
-  ::v-deep .el-table__fixed tbody tr > td.el-table__cell,
-  ::v-deep .el-table__fixed-right tbody tr > td.el-table__cell {
+  :deep(.el-table__fixed tbody tr > td.el-table__cell),
+  :deep(.el-table__fixed-right tbody tr > td.el-table__cell){
     background-color: var(--cat2bug-table-fixed-row-bg, var(--cat2bug-table-row-bg, var(--table-bg))) !important;
     border-bottom: 1px solid var(--border-color-light) !important;
   }
 
-  ::v-deep .el-table__body-wrapper tbody tr:hover > td.el-table__cell,
-  ::v-deep .el-table__body-wrapper tbody tr.hover-row > td.el-table__cell {
+  :deep(.el-table__body-wrapper tbody tr:hover > td.el-table__cell),
+  :deep(.el-table__body-wrapper tbody tr.hover-row > td.el-table__cell){
     background-color: var(--table-row-hover-bg) !important;
   }
 
-  ::v-deep .el-table__fixed tbody tr:hover > td.el-table__cell,
-  ::v-deep .el-table__fixed tbody tr.hover-row > td.el-table__cell,
-  ::v-deep .el-table__fixed-right tbody tr:hover > td.el-table__cell,
-  ::v-deep .el-table__fixed-right tbody tr.hover-row > td.el-table__cell {
+  :deep(.el-table__fixed tbody tr:hover > td.el-table__cell),
+  :deep(.el-table__fixed tbody tr.hover-row > td.el-table__cell),
+  :deep(.el-table__fixed-right tbody tr:hover > td.el-table__cell),
+  :deep(.el-table__fixed-right tbody tr.hover-row > td.el-table__cell){
     background-color: var(--table-row-hover-bg) !important;
   }
 
-  ::v-deep tbody tr:hover,
-  ::v-deep tbody tr.hover-row {
+  :deep(tbody tr:hover),
+  :deep(tbody tr.hover-row){
     background-color: var(--table-row-hover-bg) !important;
   }
 }
@@ -1918,7 +1918,7 @@ export default {
   color: #f56c6c;
 }
 
-::v-deep .table-header-ghost {
+:deep(.table-header-ghost){
   background-color: #ecf5ff !important;
   border-radius: 3px;
 }
@@ -2027,17 +2027,17 @@ export default {
   transition: color 0.15s ease;
 }
 
-::v-deep thead th.el-table__cell:hover .col-handle-drag__grip,
-::v-deep thead th.el-table__cell:hover .col-handle-resize {
+:deep(thead th.el-table__cell:hover .col-handle-drag__grip),
+:deep(thead th.el-table__cell:hover .col-handle-resize){
   color: var(--cat2bug-col-handle-grip-color-active, #409eff);
 }
 
 /* .cell 铺满 th（含 padding 的整列头高度），手柄按列头算高 */
-::v-deep thead th.cat2bug-col-header-handles {
+:deep(thead th.cat2bug-col-header-handles){
   position: relative;
 }
 
-::v-deep thead th.cat2bug-col-header-handles > .cell {
+:deep(thead th.cat2bug-col-header-handles > .cell){
   position: absolute;
   inset: 0;
   display: flex !important;
@@ -2048,36 +2048,36 @@ export default {
   height: 100%;
 }
 
-::v-deep th.is-sortable.cat2bug-col-header-handles .caret-wrapper {
+:deep(th.is-sortable.cat2bug-col-header-handles .caret-wrapper){
   order: 2;
   flex-shrink: 0;
   margin-left: 2px;
   align-self: center;
 }
 
-::v-deep thead th.el-table__cell:hover .col-handle-drag,
-::v-deep thead th.el-table__cell:hover .col-handle-resize {
+:deep(thead th.el-table__cell:hover .col-handle-drag),
+:deep(thead th.el-table__cell:hover .col-handle-resize){
   opacity: 1;
   pointer-events: auto;
 }
 
 /* 调宽进行中：隐藏其他列手柄，当前列保留 */
-.cat2-bug-table-wrap.is-column-resizing ::v-deep .col-handle-drag:not(.is-resizing-active),
-.cat2-bug-table-wrap.is-column-resizing ::v-deep .col-handle-resize:not(.is-resizing-active),
-.cat2-bug-table-wrap.is-column-resizing ::v-deep thead th.el-table__cell:hover .col-handle-drag:not(.is-resizing-active),
-.cat2-bug-table-wrap.is-column-resizing ::v-deep thead th.el-table__cell:hover .col-handle-resize:not(.is-resizing-active) {
+.cat2-bug-table-wrap.is-column-resizing :deep(.col-handle-drag:not(.is-resizing-active)),
+.cat2-bug-table-wrap.is-column-resizing :deep(.col-handle-resize:not(.is-resizing-active)),
+.cat2-bug-table-wrap.is-column-resizing :deep(thead th.el-table__cell:hover .col-handle-drag:not(.is-resizing-active)),
+.cat2-bug-table-wrap.is-column-resizing :deep(thead th.el-table__cell:hover .col-handle-resize:not(.is-resizing-active)){
   opacity: 0;
   pointer-events: none;
 }
 
-.cat2-bug-table-wrap.is-column-resizing ::v-deep .col-handle-drag.is-resizing-active,
-.cat2-bug-table-wrap.is-column-resizing ::v-deep .col-handle-resize.is-resizing-active {
+.cat2-bug-table-wrap.is-column-resizing :deep(.col-handle-drag.is-resizing-active),
+.cat2-bug-table-wrap.is-column-resizing :deep(.col-handle-resize.is-resizing-active){
   opacity: 1;
   pointer-events: auto;
 }
 
-.cat2-bug-table-wrap.is-column-resizing ::v-deep .col-handle-drag.is-resizing-active .col-handle-drag__grip,
-.cat2-bug-table-wrap.is-column-resizing ::v-deep .col-handle-resize.is-resizing-active {
+.cat2-bug-table-wrap.is-column-resizing :deep(.col-handle-drag.is-resizing-active .col-handle-drag__grip),
+.cat2-bug-table-wrap.is-column-resizing :deep(.col-handle-resize.is-resizing-active){
   color: var(--cat2bug-col-handle-grip-color-active, #409eff);
 }
 
@@ -2092,7 +2092,7 @@ export default {
   height: 100%;
   min-height: 100%;
 
-  ::v-deep .svg-icon {
+  :deep(.svg-icon){
     cursor: pointer;
     flex-shrink: 0;
     align-self: center;
@@ -2112,49 +2112,49 @@ export default {
 }
 
 /* 自定义表头 slot 后仍保留 Element 排序箭头，避免被挤没或点不到 */
-::v-deep th.is-sortable.cat2bug-col-header-handles > .cell {
+:deep(th.is-sortable.cat2bug-col-header-handles > .cell){
   vertical-align: middle;
   max-width: 100%;
 }
 
-::v-deep th.is-sortable:not(.cat2bug-col-header-handles) .caret-wrapper {
+:deep(th.is-sortable:not(.cat2bug-col-header-handles) .caret-wrapper){
   flex-shrink: 0;
   margin-left: 2px;
   align-self: center;
 }
 
-::v-deep thead .no-drag {
+:deep(thead .no-drag){
   background-color: var(--table-header-bg);
 }
 
-::v-deep tbody > .el-table__row > .el-table__cell {
+:deep(tbody > .el-table__row > .el-table__cell){
   padding: 5px 0;
 }
 
 /* 行高由 syncFixedDataRowHeights 按内容逐行同步三表 tr；单元格内容垂直居中 */
-::v-deep .el-table__body-wrapper .el-table__body td.el-table__cell,
-::v-deep .el-table__fixed .el-table__fixed-body-wrapper td.el-table__cell,
-::v-deep .el-table__fixed-right .el-table__fixed-body-wrapper td.el-table__cell {
+:deep(.el-table__body-wrapper .el-table__body td.el-table__cell),
+:deep(.el-table__fixed .el-table__fixed-body-wrapper td.el-table__cell),
+:deep(.el-table__fixed-right .el-table__fixed-body-wrapper td.el-table__cell){
   vertical-align: middle;
 }
 
 /* append 操作列：class-name 含 cat2bug-operate-column，内容包在 cat2bug-operate-tools 内 */
-::v-deep th.cat2bug-operate-column,
-::v-deep td.cat2bug-operate-column {
+:deep(th.cat2bug-operate-column),
+:deep(td.cat2bug-operate-column){
   width: var(--cat2bug-operate-col-applied-width, auto);
   max-width: var(--cat2bug-operate-col-max-width, 450px);
   box-sizing: border-box;
 }
 
-::v-deep th.cat2bug-operate-column {
+:deep(th.cat2bug-operate-column){
   overflow: visible;
 }
 
-::v-deep td.cat2bug-operate-column.el-table-fixed-column--right.is-first-column {
+:deep(td.cat2bug-operate-column.el-table-fixed-column--right.is-first-column){
   overflow: visible !important;
 }
 
-::v-deep th.cat2bug-operate-column .cell {
+:deep(th.cat2bug-operate-column .cell){
   overflow: visible;
   text-align: left;
   padding-left: var(--cat2bug-operate-col-padding-x, 20px);
@@ -2173,7 +2173,7 @@ export default {
   z-index: 1;
 }
 
-::v-deep td.cat2bug-operate-column .cell {
+:deep(td.cat2bug-operate-column .cell){
   overflow: hidden;
   text-align: left;
   padding-left: var(--cat2bug-operate-col-padding-x, 20px);
@@ -2190,7 +2190,7 @@ export default {
   z-index: 1;
 }
 
-.cat2-bug-table-wrap[data-operate-at-cap='true'] ::v-deep td.cat2bug-operate-column .cell {
+.cat2-bug-table-wrap[data-operate-at-cap='true'] :deep(td.cat2bug-operate-column .cell){
   flex-wrap: wrap;
   align-items: flex-start;
   align-content: flex-start;
@@ -2198,8 +2198,8 @@ export default {
   overflow: visible !important;
 }
 
-::v-deep td.cat2bug-operate-column .cat2bug-operate-tools,
-::v-deep td.cat2bug-operate-column .defect-operate-cell {
+:deep(td.cat2bug-operate-column .cat2bug-operate-tools),
+:deep(td.cat2bug-operate-column .defect-operate-cell){
   max-width: 100%;
   min-width: 0;
   width: auto;
@@ -2208,14 +2208,14 @@ export default {
   box-sizing: border-box;
 }
 
-.cat2-bug-table-wrap[data-operate-at-cap='true'] ::v-deep td.cat2bug-operate-column .cat2bug-operate-tools,
-.cat2-bug-table-wrap[data-operate-at-cap='true'] ::v-deep td.cat2bug-operate-column .defect-operate-cell {
+.cat2-bug-table-wrap[data-operate-at-cap='true'] :deep(td.cat2bug-operate-column .cat2bug-operate-tools),
+.cat2-bug-table-wrap[data-operate-at-cap='true'] :deep(td.cat2bug-operate-column .defect-operate-cell){
   width: 100%;
   flex-wrap: wrap;
   white-space: normal;
 }
 
-::v-deep .cat2bug-operate-tools {
+:deep(.cat2bug-operate-tools){
   column-gap: var(--cat2bug-operate-tools-gap, 10px);
   row-gap: var(--cat2bug-operate-tools-row-gap, 0);
 }

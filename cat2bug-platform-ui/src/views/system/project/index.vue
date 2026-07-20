@@ -637,7 +637,7 @@ h4 {
   .el-avatar--medium {
     line-height: 31px;
   }
-  ::v-deep .project-collects {
+  :deep(.project-collects){
     .el-card__body {
       padding: 10px 20px;
     }
@@ -677,7 +677,7 @@ h4 {
     align-items: center;
     flex-direction: row;
     margin-bottom: 10px;
-    ::v-deep .el-form-item {
+    :deep(.el-form-item){
       margin-bottom: 0px;
     }
   }

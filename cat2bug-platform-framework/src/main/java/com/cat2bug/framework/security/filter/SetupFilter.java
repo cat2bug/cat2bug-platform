@@ -38,6 +38,18 @@ public class SetupFilter extends OncePerRequestFilter
     {
         String path = requestUriPath(request);
 
+        // 安装状态查询：在 Filter 层直接返回，避免 MVC/异常转发到 /error 后被 Security 挡成 401，
+        // 导致前端误判「未安装」而锁死在安装向导。
+        if (isSetupStatusPath(path) && HttpMethod.GET.matches(request.getMethod()))
+        {
+            java.util.Map<String, Object> data = new java.util.HashMap<>(4);
+            data.put("installed", installService.isInstalled());
+            data.put("skipped", installService.isInstallSkipped());
+            data.put("restartRequired", installService.needsRestart());
+            ServletUtils.renderString(response, JSON.toJSONString(AjaxResult.success(data)));
+            return;
+        }
+
         if (installService.needsRestart())
         {
             if (isAllowedDuringRestartPending(path, request.getMethod()))

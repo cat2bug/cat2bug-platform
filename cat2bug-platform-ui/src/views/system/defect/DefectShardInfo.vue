@@ -373,10 +373,10 @@ export default {
       line-height: 36px;
       vertical-align: middle;
 
-      ::v-deep .defect-type-tag,
-      ::v-deep .project-member-icons,
-      ::v-deep .defect-state-tag,
-      ::v-deep .el-tag--dark.el-tag--danger {
+      :deep(.defect-type-tag),
+      :deep(.project-member-icons),
+      :deep(.defect-state-tag),
+      :deep(.el-tag--dark.el-tag--danger){
         float: none;
         margin: 0;
       }
@@ -448,7 +448,7 @@ label {
     gap: 10px;
   }
 }
-::v-deep .lang{
+:deep(.lang){
   .dropdown-title {
     color: #FFFFFF;
   }

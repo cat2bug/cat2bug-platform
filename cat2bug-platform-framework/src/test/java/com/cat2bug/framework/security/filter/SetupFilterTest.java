@@ -78,4 +78,19 @@ class SetupFilterTest
         verify(filterChain).doFilter(request, response);
         assertEquals(200, response.getStatus());
     }
+
+    @Test
+    void doFilterInternal_rendersSetupStatusWithoutMvc() throws Exception
+    {
+        when(installService.isInstallSkipped()).thenReturn(false);
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/setup/status");
+
+        setupFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain, never()).doFilter(request, response);
+        assertEquals(200, response.getStatus());
+        String body = response.getContentAsString();
+        assertTrue(body.contains("\"installed\":true"));
+        assertTrue(body.contains("\"restartRequired\":false"));
+    }
 }

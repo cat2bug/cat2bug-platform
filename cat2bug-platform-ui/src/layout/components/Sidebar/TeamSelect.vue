@@ -439,7 +439,7 @@ export default {
   .team-select-footer[line="true"] {
     border-top: 1px solid var(--team-select-popper-border, #363637);
   }
-  ::v-deep .el-select-dropdown__wrap {
+  :deep(.el-select-dropdown__wrap){
     max-height: 100%;
   }
 </style>

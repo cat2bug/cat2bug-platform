@@ -216,7 +216,7 @@ export default {
     text-align: center;
     color: #FFFFFF;
   }
-  > ::v-deep .el-textarea {
+  > :deep(.el-textarea){
     flew: 1;
     .el-textarea__inner {
       border-width: 0px;
@@ -230,7 +230,7 @@ export default {
     justify-content: center;
     gap: 2px;
 
-    ::v-deep .case-step-tool-btn {
+    :deep(.case-step-tool-btn){
       padding: 0;
       min-width: auto;
       margin: 0;
@@ -245,11 +245,11 @@ export default {
       }
     }
 
-    ::v-deep .case-step-tool-btn--remove {
+    :deep(.case-step-tool-btn--remove){
       color: #f56c6c;
     }
 
-    ::v-deep .case-step-tool-btn--add {
+    :deep(.case-step-tool-btn--add){
       color: #13ce66;
     }
   }

@@ -51,6 +51,7 @@ public class EmbeddedSpaFallbackFilter extends OncePerRequestFilter
             "/version",
             "/setup/status",
             "/upgrade/status",
+            "/git/",
             "/error");
 
     private final Resource indexHtml;

@@ -279,7 +279,7 @@ export default {
   max-width: 100%;
   align-self: flex-start;
 
-  ::v-deep .statistic-box-header {
+  :deep(.statistic-box-header){
     width: max-content;
     max-width: 100%;
     min-height: var(--statistic-card-header-min-height, 17px);
@@ -287,7 +287,7 @@ export default {
     flex-wrap: nowrap;
   }
 
-  ::v-deep .statistic-box-header .cat2-bug-title {
+  :deep(.statistic-box-header .cat2-bug-title){
     flex: 0 1 auto;
     width: auto;
     display: flex;
@@ -295,13 +295,13 @@ export default {
     line-height: var(--statistic-card-header-min-height, 17px);
   }
 
-  ::v-deep .statistic-box-header .statistic-box-tools {
+  :deep(.statistic-box-header .statistic-box-tools){
     flex-shrink: 0;
     gap: 5px;
     align-items: center;
   }
 
-  ::v-deep .statistic-box-body {
+  :deep(.statistic-box-body){
     width: max-content;
     max-width: 100%;
     padding: 0;
@@ -315,7 +315,7 @@ export default {
   max-width: 108px;
   vertical-align: middle;
 
-  ::v-deep .el-select__wrapper {
+  :deep(.el-select__wrapper){
     height: calc(var(--statistic-card-header-min-height, 17px) - 2px) !important;
     min-height: calc(var(--statistic-card-header-min-height, 17px) - 2px) !important;
     line-height: calc(var(--statistic-card-header-min-height, 17px) - 2px) !important;
@@ -324,28 +324,28 @@ export default {
     overflow: hidden;
   }
 
-  ::v-deep .el-select__selection {
+  :deep(.el-select__selection){
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  ::v-deep .el-select__selected-item,
-  ::v-deep .el-select__placeholder {
+  :deep(.el-select__selected-item),
+  :deep(.el-select__placeholder){
     font-size: 11px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  ::v-deep .el-select__suffix {
+  :deep(.el-select__suffix){
     display: flex;
     align-items: center;
     height: 100%;
     right: 2px;
   }
 
-  ::v-deep .el-select__caret {
+  :deep(.el-select__caret){
     line-height: 1;
     font-size: 12px;
   }
@@ -380,7 +380,7 @@ export default {
   justify-content: center;
   gap: 5px;
 
-  ::v-deep .el-tooltip {
+  :deep(.el-tooltip){
     display: block;
     line-height: 1.25;
   }

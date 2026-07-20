@@ -34,6 +34,15 @@ public class Cat2BugConfig
     /** 上传路径 */
     private static String profile;
 
+    /**
+     * Git bare 仓配置（{@code cat2bug.git.*}）。
+     * 默认路径形态：{@code {profile}/{git.root}/{projectId}/{slug}.git}
+     */
+    private Git git = new Git();
+
+    /** 绑定后的 git.root（供静态工具读取） */
+    private static String gitRoot = "git";
+
     /** 获取地址开关 */
     private static boolean addressEnabled;
 
@@ -45,6 +54,23 @@ public class Cat2BugConfig
 
     /** 缓存配置 */
     private Cache cache = new Cache();
+
+    public static class Git
+    {
+        /** 相对 {@link Cat2BugConfig#profile} 的根目录名 */
+        private String root = "git";
+
+        public String getRoot()
+        {
+            return root;
+        }
+
+        public void setRoot(String root)
+        {
+            this.root = root;
+            Cat2BugConfig.gitRoot = StringUtils.isEmpty(root) ? "git" : root;
+        }
+    }
 
     public static class Cache
     {
@@ -109,7 +135,37 @@ public class Cat2BugConfig
 
     public void setProfile(String profile)
     {
-        Cat2BugConfig.profile = profile;
+        // 相对路径立即转绝对，避免后续 cwd 变化导致 {profile}/git/... 漂移
+        Cat2BugConfig.profile = toAbsolutePathOrNull(profile);
+    }
+
+    public Git getGit()
+    {
+        return git;
+    }
+
+    public void setGit(Git git)
+    {
+        this.git = git != null ? git : new Git();
+        if (this.git.getRoot() != null)
+        {
+            Cat2BugConfig.gitRoot = StringUtils.isEmpty(this.git.getRoot()) ? "git" : this.git.getRoot();
+        }
+    }
+
+    public static String getGitRoot()
+    {
+        return StringUtils.isEmpty(gitRoot) ? "git" : gitRoot;
+    }
+
+    /**
+     * 默认 Git bare 仓根目录绝对路径：{@code {profile}/{git.root}}。
+     * {@link #setProfile(String)} 已将 profile 绝对化，此处再 normalize 一次保证稳定。
+     */
+    public static String getGitRootPath()
+    {
+        File root = new File(getProfile(), getGitRoot());
+        return root.getAbsoluteFile().toPath().normalize().toString();
     }
 
     public static boolean isAddressEnabled()
@@ -220,5 +276,17 @@ public class Cat2BugConfig
             pathList.add(path);
         pathList.add("upload");
         return pathList.stream().collect(Collectors.joining(File.separator));
+    }
+
+    /**
+     * 将路径转为绝对路径；空值原样返回。绑定 install 的 profile 时调用，避免相对路径随 cwd 漂移。
+     */
+    static String toAbsolutePathOrNull(String path)
+    {
+        if (StringUtils.isEmpty(path))
+        {
+            return path;
+        }
+        return new File(path.trim()).getAbsoluteFile().toPath().normalize().toString();
     }
 }

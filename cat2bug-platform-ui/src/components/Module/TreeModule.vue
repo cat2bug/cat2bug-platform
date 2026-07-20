@@ -315,7 +315,7 @@ export default {
   overflow-y: hidden;
   overflow-x: auto;
   width: 100%;
-  ::v-deep > div[role="treeitem"]:first-child{
+  :deep(> div[role="treeitem"]:first-child){
     margin-top: 5px;
     .el-checkbox {
       display: none;

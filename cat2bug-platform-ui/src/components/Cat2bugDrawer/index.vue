@@ -80,10 +80,10 @@ export default {
     margin-bottom: 10px;
     text-align: left;
   }
-  ::v-deep .el-drawer__close-btn {
+  :deep(.el-drawer__close-btn){
     display: none;
   }
-  ::v-deep .el-drawer__header {
+  :deep(.el-drawer__header){
     margin-bottom: 0;
     padding: var(--cat2bug-drawer-header-padding-y) var(--cat2bug-drawer-header-padding-x) !important;
   }
@@ -103,7 +103,7 @@ export default {
   .marginRight5 {
     margin-right: 5px;
   }
-  ::v-deep .el-drawer__body {
+  :deep(.el-drawer__body){
     padding: 10px 15px;
   }
 </style>

@@ -294,11 +294,11 @@ export default {
 </script>
 
 <style scoped>
-.custom-field-filter-row--boolean ::v-deep .el-form-item__label {
+.custom-field-filter-row--boolean :deep(.el-form-item__label){
   line-height: 32px;
 }
 
-.custom-field-filter-row--boolean ::v-deep .el-form-item__content {
+.custom-field-filter-row--boolean :deep(.el-form-item__content){
   display: flex;
   align-items: center;
   min-height: 32px;
@@ -335,7 +335,7 @@ export default {
   margin-right: 6px;
   vertical-align: middle;
 }
-.defect-enum-select ::v-deep .el-input__inner {
+.defect-enum-select :deep(.el-input__inner){
   color: var(--defect-enum-color, inherit) !important;
 }
 </style>

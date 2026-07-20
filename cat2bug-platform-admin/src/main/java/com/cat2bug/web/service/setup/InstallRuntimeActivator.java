@@ -80,11 +80,11 @@ public class InstallRuntimeActivator
         props.put("cat2bug.cache.type", cacheType);
         if (StringUtils.isNotEmpty(request.getProfile()))
         {
-            props.put("cat2bug.profile", request.getProfile());
+            props.put("cat2bug.profile", SetupConfigWriter.toAbsolutePath(request.getProfile()));
         }
         if (StringUtils.isNotEmpty(request.getTemp()))
         {
-            props.put("cat2bug.temp", request.getTemp());
+            props.put("cat2bug.temp", SetupConfigWriter.toAbsolutePath(request.getTemp()));
         }
         if (StringUtils.isNotEmpty(request.getLogPath()))
         {

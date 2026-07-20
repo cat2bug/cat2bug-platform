@@ -247,7 +247,7 @@ export default {
       font-size: 1rem;
     }
   }
-  ::v-deep .el-select__wrapper {
+  :deep(.el-select__wrapper){
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
@@ -256,25 +256,25 @@ export default {
     padding-left: 0 !important;
     padding-right: 24px !important;
   }
-  ::v-deep .el-select__wrapper:hover,
-  ::v-deep .el-select__wrapper.is-focused,
-  ::v-deep .el-select__wrapper.is-hovering {
+  :deep(.el-select__wrapper:hover),
+  :deep(.el-select__wrapper.is-focused),
+  :deep(.el-select__wrapper.is-hovering){
     border: none !important;
     box-shadow: none !important;
   }
-  ::v-deep .el-select__selection,
-  ::v-deep .el-select__selected-item,
-  ::v-deep .el-select__placeholder {
+  :deep(.el-select__selection),
+  :deep(.el-select__selected-item),
+  :deep(.el-select__placeholder){
     opacity: 0 !important;
   }
-  ::v-deep .el-input,
-  ::v-deep .el-input__wrapper,
-  ::v-deep .el-input__inner {
+  :deep(.el-input),
+  :deep(.el-input__wrapper),
+  :deep(.el-input__inner){
     background-color: transparent !important;
     border-color: transparent !important;
     box-shadow: none !important;
   }
-  ::v-deep input {
+  :deep(input){
     width: 100%;
     height: 50px;
     line-height: 48px;
@@ -283,12 +283,12 @@ export default {
     -webkit-text-fill-color: transparent !important;
     background-color: transparent !important;
   }
-  ::v-deep .el-select__caret,
-  ::v-deep .el-select__suffix {
+  :deep(.el-select__caret),
+  :deep(.el-select__suffix){
     color: var(--text-color-secondary);
   }
-  ::v-deep .el-input__prefix,
-  ::v-deep .el-select__prefix {
+  :deep(.el-input__prefix),
+  :deep(.el-select__prefix){
     width: 100%;
     display: inline-flex;
     flex-direction: row;

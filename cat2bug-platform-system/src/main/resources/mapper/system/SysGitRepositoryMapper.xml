@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysGitRepositoryMapper">
+
+    <resultMap type="SysGitRepository" id="SysGitRepositoryResult">
+        <result property="repositoryId"    column="repository_id"    />
+        <result property="projectId"       column="project_id"       />
+        <result property="name"            column="name"             />
+        <result property="slug"            column="slug"             />
+        <result property="diskPath"        column="disk_path"        />
+        <result property="defaultBranch"   column="default_branch"   />
+        <result property="createBy"        column="create_by"        />
+        <result property="createTime"      column="create_time"      />
+        <result property="updateBy"        column="update_by"        />
+        <result property="updateTime"      column="update_time"      />
+        <result property="remark"          column="remark"           />
+    </resultMap>
+
+    <sql id="selectSysGitRepositoryVo">
+        select repository_id, project_id, name, slug, disk_path, default_branch,
+               create_by, create_time, update_by, update_time, remark
+        from sys_git_repository
+    </sql>
+
+    <select id="selectSysGitRepositoryByRepositoryId" parameterType="Long" resultMap="SysGitRepositoryResult">
+        <include refid="selectSysGitRepositoryVo"/>
+        where repository_id = #{repositoryId}
+    </select>
+
+    <select id="selectSysGitRepositoryByProjectIdAndSlug" resultMap="SysGitRepositoryResult">
+        <include refid="selectSysGitRepositoryVo"/>
+        where project_id = #{projectId} and slug = #{slug}
+    </select>
+
+    <select id="selectSysGitRepositoryList" parameterType="SysGitRepository" resultMap="SysGitRepositoryResult">
+        <include refid="selectSysGitRepositoryVo"/>
+        <where>
+            <if test="projectId != null "> and project_id = #{projectId}</if>
+            <if test="slug != null and slug != ''"> and slug = #{slug}</if>
+            <if test="name != null and name != ''"> and name like concat('%', #{name}, '%')</if>
+        </where>
+        order by create_time asc
+    </select>
+
+    <insert id="insertSysGitRepository" parameterType="SysGitRepository" useGeneratedKeys="true" keyProperty="repositoryId">
+        insert into sys_git_repository
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">project_id,</if>
+            <if test="name != null">name,</if>
+            <if test="slug != null">slug,</if>
+            <if test="diskPath != null">disk_path,</if>
+            <if test="defaultBranch != null">default_branch,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">#{projectId},</if>
+            <if test="name != null">#{name},</if>
+            <if test="slug != null">#{slug},</if>
+            <if test="diskPath != null">#{diskPath},</if>
+            <if test="defaultBranch != null">#{defaultBranch},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysGitRepository" parameterType="SysGitRepository">
+        update sys_git_repository
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null">name = #{name},</if>
+            <if test="slug != null">slug = #{slug},</if>
+            <if test="diskPath != null">disk_path = #{diskPath},</if>
+            <if test="defaultBranch != null">default_branch = #{defaultBranch},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where repository_id = #{repositoryId}
+    </update>
+
+    <delete id="deleteSysGitRepositoryByRepositoryId" parameterType="Long">
+        delete from sys_git_repository where repository_id = #{repositoryId}
+    </delete>
+
+    <delete id="deleteSysGitRepositoryByRepositoryIds" parameterType="String">
+        delete from sys_git_repository where repository_id in
+        <foreach item="repositoryId" collection="array" open="(" separator="," close=")">
+            #{repositoryId}
+        </foreach>
+    </delete>
+
+</mapper>

@@ -680,7 +680,7 @@ export default {
     display: inline-block;
     justify-content: flex-start;
     margin-bottom: 0px;
-    ::v-deep .el-form-item {
+    :deep(.el-form-item){
       margin-bottom: 0px;
     }
   }
@@ -709,7 +709,7 @@ export default {
       flex-wrap: wrap;
       gap: 4px 8px;
 
-      ::v-deep .el-checkbox {
+      :deep(.el-checkbox){
         margin-right: 0;
         height: 24px;
         line-height: 24px;

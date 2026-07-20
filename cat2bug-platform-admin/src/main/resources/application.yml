@@ -66,6 +66,9 @@ cat2bug:
     enabled: true
     # AI服务接口超时时间（秒）
     timeout: 300
+  # 项目 Git 仓库（bare 仓默认根目录相对 cat2bug.profile，如 uploadPath/git）
+  git:
+    root: git
   file:
     view-url: http://localhost:8012
 # 开发环境配置
@@ -78,6 +81,9 @@ server:
   tomcat:
     # tomcat的URI编码
     uri-encoding: UTF-8
+    # Git Smart HTTP 大包 push 可能较久
+    connection-timeout: 600000
+    max-swallow-size: -1
     # 连接数满后的排队数，默认为100
     accept-count: 1000
     threads:

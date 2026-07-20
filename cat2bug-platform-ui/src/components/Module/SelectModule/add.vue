@@ -138,7 +138,7 @@ export default {
       margin-top: 6px;
       margin-bottom: 0;
     }
-    ::v-deep .el-form-item__content {
+    :deep(.el-form-item__content){
       line-height: normal;
       overflow: visible;
     }
@@ -152,7 +152,7 @@ export default {
         box-shadow: inset 0 0 0 1px var(--cat2bug-field-focus-color, #1890ff);
       }
     }
-    ::v-deep .select-module-add-input.el-input-group {
+    :deep(.select-module-add-input.el-input-group){
       width: 100%;
       vertical-align: middle;
       table-layout: fixed;
@@ -213,7 +213,7 @@ export default {
         border-color: var(--border-color-base, #dcdfe6) !important;
       }
     }
-    ::v-deep .el-form-item__error {
+    :deep(.el-form-item__error){
       position: relative;
       padding-top: 2px;
       line-height: 1.2;

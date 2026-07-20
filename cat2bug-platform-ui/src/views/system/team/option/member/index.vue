@@ -379,14 +379,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  ::v-deep .member-operate .el-input__inner, ::v-deep .member-operate .el-select__tags {
+  :deep(.member-operate .el-input__inner), :deep(.member-operate .el-select__tags){
     min-width: 250px;
     display: flex;
     justify-content: center;
     background-color: #00000000;
     border-width: 0;
   }
-  ::v-deep .member-operate .el-select__tags {
+  :deep(.member-operate .el-select__tags){
     flex-wrap: inherit !important;
     overflow-x: auto !important;
     > span {
@@ -394,7 +394,7 @@ export default {
       margin-right: auto;
     }
   }
-  ::v-deep .el-table {
+  :deep(.el-table){
     span[teamLock="1"] {
       text-decoration: line-through;
       color: #DCDFE6;

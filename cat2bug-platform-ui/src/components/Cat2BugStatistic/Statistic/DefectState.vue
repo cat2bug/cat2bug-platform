@@ -205,13 +205,13 @@ export default {
     overflow-x: hidden;
     overflow-y: auto;
 
-    ::v-deep .el-tooltip {
+    :deep(.el-tooltip){
       display: block;
       width: 100%;
     }
   }
 
-  .defect-state-panel ::v-deep .el-tooltip.defect-state-label {
+  .defect-state-panel :deep(.el-tooltip.defect-state-label){
     display: grid;
     grid-template-columns: 16px minmax(48px, 1fr) 28px 36px 36px;
     column-gap: 6px;
@@ -231,15 +231,15 @@ export default {
     }
   }
 
-  .defect-state-panel ::v-deep span[flag="+"] {
+  .defect-state-panel :deep(span[flag="+"]){
     color: #f56c6c;
   }
 
-  .defect-state-panel ::v-deep span[flag="-"] {
+  .defect-state-panel :deep(span[flag="-"]){
     color: #67c23a;
   }
 
-  .defect-state-panel ::v-deep .el-tooltip.defect-state-label + .el-tooltip.defect-state-label {
+  .defect-state-panel :deep(.el-tooltip.defect-state-label + .el-tooltip.defect-state-label){
     border-top: 1px dashed var(--border-color-lighter, #f2f6fc);
   }
 </style>

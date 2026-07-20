@@ -29,11 +29,11 @@ export default {
 .defect-custom-field-empty {
   padding: 4px 0 0;
 
-  ::v-deep .el-empty__image {
+  :deep(.el-empty__image){
     margin-bottom: 10px;
   }
 
-  ::v-deep .el-empty__description {
+  :deep(.el-empty__description){
     margin-top: 0;
     line-height: 1.5;
   }

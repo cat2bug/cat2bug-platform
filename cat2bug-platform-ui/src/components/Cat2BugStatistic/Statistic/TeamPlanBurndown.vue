@@ -262,24 +262,24 @@ export default {
 <style lang="scss" scoped>
 .plan-burndown-card {
   /* 与其它统计块标题行统一：--statistic-card-header-min-height */
-  ::v-deep .statistic-box-header {
+  :deep(.statistic-box-header){
     min-height: var(--statistic-card-header-min-height, 17px);
     align-items: center;
   }
 
-  ::v-deep .statistic-box-header .cat2-bug-title {
+  :deep(.statistic-box-header .cat2-bug-title){
     display: flex;
     align-items: center;
     line-height: var(--statistic-card-header-min-height, 17px);
   }
 
-  ::v-deep .statistic-box-header .statistic-box-tools {
+  :deep(.statistic-box-header .statistic-box-tools){
     gap: 5px;
     align-items: center;
   }
 
   /* 与「我的参与」一致：内容区贴齐标题分割线下方 */
-  ::v-deep .statistic-box-body {
+  :deep(.statistic-box-body){
     padding: 0;
     overflow: hidden;
     align-items: flex-start;
@@ -291,7 +291,7 @@ export default {
   max-width: 140px;
   vertical-align: middle;
 
-  ::v-deep .el-select__wrapper {
+  :deep(.el-select__wrapper){
     height: calc(var(--statistic-card-header-min-height, 17px) - 2px) !important;
     min-height: calc(var(--statistic-card-header-min-height, 17px) - 2px) !important;
     line-height: calc(var(--statistic-card-header-min-height, 17px) - 2px) !important;
@@ -300,28 +300,28 @@ export default {
     overflow: hidden;
   }
 
-  ::v-deep .el-select__selection {
+  :deep(.el-select__selection){
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  ::v-deep .el-select__selected-item,
-  ::v-deep .el-select__placeholder {
+  :deep(.el-select__selected-item),
+  :deep(.el-select__placeholder){
     font-size: 11px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  ::v-deep .el-select__suffix {
+  :deep(.el-select__suffix){
     display: flex;
     align-items: center;
     height: 100%;
     right: 2px;
   }
 
-  ::v-deep .el-select__caret {
+  :deep(.el-select__caret){
     line-height: 1;
     font-size: 12px;
   }

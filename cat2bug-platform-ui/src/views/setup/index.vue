@@ -592,21 +592,29 @@ export default {
     const lang = this.$cache.local.get(I18N_LOCALE_KEY) || 'zh_CN'
     this.$i18n.locale = lang
     this.refreshFormRuleMessages()
-    this.loadPreflight()
     getSetupStatus().then(res => {
       const payload = (res && res.data) ? res.data : (res || {})
+      // 后端已标记安装完成且无需重启：直接去登录，避免继续调 /setup/* 被拦截
+      if (payload.installed === true && payload.restartRequired !== true) {
+        this.goToLogin()
+        return
+      }
       if (payload.restartRequired || sessionStorage.getItem(SETUP_AWAITING_READY_KEY) === '1') {
         this.finished = true
         this.restartRequired = payload.restartRequired === true
           || sessionStorage.getItem(SETUP_AWAITING_RESTART_KEY) === '1'
         this.startWaitingForReady()
+        return
       }
+      this.loadPreflight()
     }).catch(() => {
       if (sessionStorage.getItem(SETUP_AWAITING_READY_KEY) === '1') {
         this.finished = true
         this.restartRequired = sessionStorage.getItem(SETUP_AWAITING_RESTART_KEY) === '1'
         this.startWaitingForReady()
+        return
       }
+      this.loadPreflight()
     })
   },
   beforeDestroy() {
@@ -1422,12 +1430,12 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 }
 
 .setup-progress-bar {
-  ::v-deep .el-progress-bar__outer {
+  :deep(.el-progress-bar__outer){
     border-radius: 4px;
     background: #ebeef5;
   }
 
-  ::v-deep .el-progress-bar__inner {
+  :deep(.el-progress-bar__inner){
     border-radius: 4px;
   }
 }
@@ -1455,11 +1463,11 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 }
 
 .setup-inner-form {
-  ::v-deep .el-form-item {
+  :deep(.el-form-item){
     margin-bottom: 12px;
   }
 
-  ::v-deep .el-form-item__label {
+  :deep(.el-form-item__label){
     padding-bottom: 4px;
     line-height: 1.3;
     font-weight: 500;
@@ -1603,7 +1611,7 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 }
 
 .setup-switch-line {
-  ::v-deep .el-form-item__content {
+  :deep(.el-form-item__content){
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -1624,7 +1632,7 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   border: 1px solid #ebeef5;
   border-radius: 6px;
 
-  ::v-deep .el-form-item {
+  :deep(.el-form-item){
     margin-bottom: 14px;
 
     &:last-child {

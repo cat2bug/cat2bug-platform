@@ -248,7 +248,7 @@ export default {
   margin-top: 8px;
   padding-top: 4px;
 
-  ::v-deep .el-pagination.statistic-pagination {
+  :deep(.el-pagination.statistic-pagination){
     padding: 0;
 
     button,

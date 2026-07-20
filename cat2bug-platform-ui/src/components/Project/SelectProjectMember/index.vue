@@ -988,7 +988,7 @@ export default {
           overflow: hidden;
         }
       }
-      ::v-deep .select-project-member-tag.el-tag {
+      :deep(.select-project-member-tag.el-tag){
         margin: 0;
         flex-shrink: 0;
         max-width: 96px;
@@ -1070,14 +1070,14 @@ export default {
         min-width: 28px;
         min-height: 0;
         height: 100%;
-        ::v-deep .el-input__inner:focus,
-        ::v-deep .el-input__inner:focus-visible {
+        :deep(.el-input__inner:focus),
+        :deep(.el-input__inner:focus-visible){
           outline: none !important;
           box-shadow: none !important;
           border-color: transparent !important;
         }
         /* EP：padding 只放在 wrapper 一层，禁止 wrapper + inner 双层左内边距导致 placeholder 偏右 */
-        ::v-deep .el-input__wrapper {
+        :deep(.el-input__wrapper){
           padding-left: 10px;
           padding-right: 0;
           padding-top: 0;
@@ -1090,7 +1090,7 @@ export default {
           line-height: 1;
           box-sizing: border-box;
         }
-        ::v-deep .el-input__inner {
+        :deep(.el-input__inner){
           padding-left: 0 !important;
           padding-right: 0 !important;
           padding-top: 0;
@@ -1112,8 +1112,8 @@ export default {
         overflow: hidden;
         opacity: 0;
         pointer-events: none;
-        ::v-deep .el-input__wrapper,
-        ::v-deep .el-input__inner {
+        :deep(.el-input__wrapper),
+        :deep(.el-input__inner){
           padding: 0;
           width: 0;
           caret-color: transparent;
@@ -1186,7 +1186,7 @@ export default {
       .el-tag, i {
         display: inline-block;
       }
-      ::v-deep .member-nameplate-content p, i {
+      :deep(.member-nameplate-content p), i {
         color: #409eff;
       }
     }
@@ -1208,13 +1208,14 @@ export default {
       }
     }
   }
-  ::v-deep .el-tabs__item {
+  :deep(.el-tabs__item){
     height: 27px !important;
     line-height: 27px !important;
     font-size: 12px;
     padding: 0 8px !important;
   }
-  ::v-deep .el-tabs__nav-next, .el-tabs__nav-prev {
+  :deep(.el-tabs__nav-next),
+  :deep(.el-tabs__nav-prev) {
     line-height: 30px;
   }
   .el-pagination {

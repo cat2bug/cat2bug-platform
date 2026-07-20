@@ -277,13 +277,13 @@ export default {
 .margin-right-30 {
   margin-right: 30px;
 }
-.notice-option-hint-tabs ::v-deep .el-tabs__item,
-.notice-option-platform-hint-tabs ::v-deep .el-tabs__item {
+.notice-option-hint-tabs :deep(.el-tabs__item),
+.notice-option-platform-hint-tabs :deep(.el-tabs__item){
   position: relative;
   overflow: visible !important;
 }
-.notice-option-hint-tabs ::v-deep .el-tabs__header,
-.notice-option-platform-hint-tabs ::v-deep .el-tabs__header {
+.notice-option-hint-tabs :deep(.el-tabs__header),
+.notice-option-platform-hint-tabs :deep(.el-tabs__header){
   overflow: visible !important;
 }
 </style>

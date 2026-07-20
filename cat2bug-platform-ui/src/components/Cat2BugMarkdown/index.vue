@@ -622,7 +622,7 @@ export default {
   align-items: center;
   padding: 5px 10px;
   border-bottom: 1px solid #f2f6fc;
-  ::v-deep .el-submenu__icon-arrow {
+  :deep(.el-submenu__icon-arrow){
     display: none !important;
   }
 }

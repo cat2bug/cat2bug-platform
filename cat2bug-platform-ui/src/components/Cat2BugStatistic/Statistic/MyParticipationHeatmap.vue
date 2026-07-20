@@ -292,7 +292,7 @@ export default {
   width: max-content;
   max-width: 100%;
 
-  ::v-deep .statistic-box-body {
+  :deep(.statistic-box-body){
     overflow: visible;
     align-items: flex-start;
     justify-content: flex-start;

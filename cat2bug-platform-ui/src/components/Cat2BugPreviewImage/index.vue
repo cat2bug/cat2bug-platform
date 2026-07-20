@@ -117,7 +117,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-image {
+:deep(.el-image){
   background-color: var(--cat2bug-image-placeholder-bg, #f2f6fc);
   padding: 5px;
   border-radius: var(--cat2bug-border-radius, 4px);
@@ -156,7 +156,7 @@ export default {
   scale: 1.2;
 }
 .cat2bug-preview-image {
-  ::v-deep .el-popover__reference-wrapper {
+  :deep(.el-popover__reference-wrapper){
     display: inline-flex;
   }
 }

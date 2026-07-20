@@ -182,7 +182,7 @@ export default {
       .el-button {
         border-radius: 0px 5px 5px 0px;
       }
-      ::v-deep input {
+      :deep(input){
         border-width: 0px;
         padding-right: 0px;
       }

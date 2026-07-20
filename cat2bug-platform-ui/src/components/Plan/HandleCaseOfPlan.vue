@@ -337,10 +337,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-drawer__header {
+:deep(.el-drawer__header){
   margin-bottom: 0px;
 }
-::v-deep .el-drawer__close-btn {
+:deep(.el-drawer__close-btn){
   display: none;
 }
 .case-add-header {
@@ -381,7 +381,7 @@ export default {
   label {
     line-height: 24px;
   }
-  ::v-deep .el-radio-button__inner {
+  :deep(.el-radio-button__inner){
     padding: 0px;
   }
 }

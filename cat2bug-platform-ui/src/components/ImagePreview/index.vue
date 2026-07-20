@@ -65,7 +65,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-image {
+:deep(.el-image){
   border-radius: 5px;
   background-color: var(--cat2bug-image-placeholder-bg, #ebeef5);
   box-shadow: 0 0 5px 1px #ccc;

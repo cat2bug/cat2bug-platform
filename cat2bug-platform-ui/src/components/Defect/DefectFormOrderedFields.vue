@@ -327,7 +327,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.defect-form-ordered-fields ::v-deep .defect-plan-datetimerange.el-date-editor--datetimerange {
+.defect-form-ordered-fields :deep(.defect-plan-datetimerange.el-date-editor--datetimerange){
   width: 100% !important;
   max-width: var(--cat2bug-defect-form-plan-range-max-width, 480px);
   min-width: 0 !important;

@@ -211,11 +211,11 @@ h4 {
   line-height: 1;
 }
 
-::v-deep .el-pagination .el-icon {
+:deep(.el-pagination .el-icon){
   font-size: 10px !important;
 }
 
-::v-deep .el-pagination button {
+:deep(.el-pagination button){
   min-width: calc(var(--statistic-pagination-control-height, 15px) + 5px) !important;
   height: var(--statistic-pagination-control-height, 15px) !important;
   line-height: var(--statistic-pagination-control-height, 15px) !important;

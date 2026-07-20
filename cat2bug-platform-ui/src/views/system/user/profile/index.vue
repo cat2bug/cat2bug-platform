@@ -169,30 +169,30 @@ export default {
 .contact-display.is-empty {
   color: var(--text-color-secondary);
 }
-.profile-basic-card ::v-deep .el-card__header {
+.profile-basic-card :deep(.el-card__header){
   padding: 0 20px;
   border-bottom: none;
 }
 .profile-basic-card__header {
   margin: 0 -5px;
 }
-.profile-hint-tabs ::v-deep .el-tabs__header {
+.profile-hint-tabs :deep(.el-tabs__header){
   margin: 0;
 }
-.profile-hint-tabs ::v-deep .el-tabs__content {
+.profile-hint-tabs :deep(.el-tabs__content){
   display: none;
 }
-.profile-hint-tabs ::v-deep .el-tabs__header,
-.profile-hint-tabs ::v-deep .el-tabs__nav-wrap,
-.profile-hint-tabs ::v-deep .el-tabs__nav-scroll,
-.profile-hint-tabs ::v-deep .el-tabs__nav {
+.profile-hint-tabs :deep(.el-tabs__header),
+.profile-hint-tabs :deep(.el-tabs__nav-wrap),
+.profile-hint-tabs :deep(.el-tabs__nav-scroll),
+.profile-hint-tabs :deep(.el-tabs__nav){
   overflow: visible !important;
 }
-.profile-hint-tabs ::v-deep .el-tabs__item.is-active {
+.profile-hint-tabs :deep(.el-tabs__item.is-active){
   position: relative;
   overflow: visible !important;
 }
-.profile-hint-tabs ::v-deep .profile-tab-label {
+.profile-hint-tabs :deep(.profile-tab-label){
   position: relative;
   display: inline-block;
 }

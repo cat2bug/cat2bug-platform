@@ -129,7 +129,7 @@ export default {
   width: 100%;
   box-sizing: border-box;
 
-  ::v-deep .statistic-box {
+  :deep(.statistic-box){
     flex: 1 1 auto;
     height: 100%;
     max-height: 100%;
@@ -137,7 +137,7 @@ export default {
     width: 100%;
   }
 
-  ::v-deep .statistic-box-body {
+  :deep(.statistic-box-body){
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;

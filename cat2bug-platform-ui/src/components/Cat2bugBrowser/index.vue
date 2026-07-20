@@ -275,11 +275,11 @@ export default {
   }
   .el-input {
     width: 50px;
-    ::v-deep .el-input__inner {
+    :deep(.el-input__inner){
       padding: 0 5px;
       border-width: 0px;
     }
-    ::v-deep input {
+    :deep(input){
       height: 20px;
       line-height: 20px;
       background-color: #303133;

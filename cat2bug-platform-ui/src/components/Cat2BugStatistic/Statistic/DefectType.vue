@@ -117,7 +117,7 @@ export default {
   overflow-y: auto;
 }
 
-.defect-type-panel ::v-deep .defect-type-label {
+.defect-type-panel :deep(.defect-type-label){
   display: grid;
   grid-template-columns: 16px minmax(48px, 1fr) 28px;
   column-gap: 6px;
@@ -137,7 +137,7 @@ export default {
   }
 }
 
-.defect-type-panel ::v-deep .defect-type-label + .defect-type-label {
+.defect-type-panel :deep(.defect-type-label + .defect-type-label){
   border-top: 1px dashed var(--border-color-lighter, #f2f6fc);
 }
 </style>

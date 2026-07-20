@@ -63,7 +63,7 @@ export default {
     color: inherit;
   }
 
-  ::v-deep .el-submenu__icon-arrow {
+  :deep(.el-submenu__icon-arrow){
     display: none;
   }
 }

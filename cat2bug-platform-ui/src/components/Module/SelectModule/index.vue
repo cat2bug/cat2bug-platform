@@ -1549,14 +1549,14 @@ export default {
         flex: 1 1 auto;
         min-width: 0;
         width: 0;
-        ::v-deep .el-input__wrapper {
+        :deep(.el-input__wrapper){
           box-shadow: none !important;
           /* 与 Vue2 外层 el-input__inner 左内边距一致，避免 placeholder 贴边 */
           padding-left: 15px;
           padding-right: 0;
         }
-        ::v-deep .el-input__inner:focus,
-        ::v-deep .el-input__inner:focus-visible {
+        :deep(.el-input__inner:focus),
+        :deep(.el-input__inner:focus-visible){
           outline: none !important;
           box-shadow: none !important;
           border-color: transparent !important;
@@ -1566,7 +1566,7 @@ export default {
         flex: 1 1 auto;
         min-width: 0;
         width: 0;
-        ::v-deep .el-input__inner {
+        :deep(.el-input__inner){
           border-width: 0;
           display: block;
           width: 100%;
@@ -1600,7 +1600,7 @@ export default {
       transform: rotateZ(0deg);
     }
   }
-  ::v-deep .select-module-input .select-module-input__icon.is-open {
+  :deep(.select-module-input .select-module-input__icon.is-open){
     transform: rotateZ(0deg);
   }
   .select-module-menu {

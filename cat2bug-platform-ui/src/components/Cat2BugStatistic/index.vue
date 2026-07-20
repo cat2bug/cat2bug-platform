@@ -629,7 +629,7 @@ export default {
     height: var(--statistic-card-height, var(--statistic-life-card-height, 115px));
     max-height: var(--statistic-card-height, var(--statistic-life-card-height, 115px));
 
-    ::v-deep .statistic-box {
+    :deep(.statistic-box){
       flex: 1 1 auto;
       height: 100%;
       max-height: 100%;
@@ -717,7 +717,7 @@ export default {
     --statistic-item-max-width: none;
     overflow: visible;
 
-    ::v-deep .statistic-box {
+    :deep(.statistic-box){
       width: max-content;
       max-width: 100%;
       flex: 0 1 auto;

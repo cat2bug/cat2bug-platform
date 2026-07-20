@@ -357,11 +357,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-drawer__header {
+:deep(.el-drawer__header){
   margin-bottom: 0;
   overflow: visible;
 }
-::v-deep .el-drawer__close-btn {
+:deep(.el-drawer__close-btn){
   display: none;
 }
 .defect-edit-form-header {
@@ -398,7 +398,7 @@ export default {
     color: #909399;
   }
 }
-::v-deep .defect-edit-body {
+:deep(.defect-edit-body){
   .defect-plan-datetimerange.el-date-editor--datetimerange.el-input__inner {
     width: 100% !important;
     max-width: 100%;

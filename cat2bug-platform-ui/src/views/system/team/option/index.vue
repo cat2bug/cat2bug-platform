@@ -67,7 +67,7 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-  ::v-deep .el-card__header {
+  :deep(.el-card__header){
     font-weight: 600;
     div:first-child {
       display: flex;
@@ -99,7 +99,7 @@ export default {
       margin-top: 3px;
     }
   }
-  ::v-deep .el-card__body {
+  :deep(.el-card__body){
     min-height: 150px;
     display: flex;
     align-items: flex-start;
@@ -109,7 +109,7 @@ export default {
       margin-bottom: 15px;
     }
   }
-  ::v-deep .el-card__header {
+  :deep(.el-card__header){
     position: relative;
     overflow: visible !important;
   }

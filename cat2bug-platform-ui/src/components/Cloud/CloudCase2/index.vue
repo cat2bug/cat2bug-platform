@@ -262,7 +262,7 @@ export default {
   .el-input {
     flex: 1;
   }
-  ::v-deep textarea {
+  :deep(textarea){
     border-width: 0px;
   }
   .el-button {

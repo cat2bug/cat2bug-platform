@@ -1,0 +1,63 @@
+package com.cat2bug.web.controller.system;
+
+import com.cat2bug.common.core.controller.BaseController;
+import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.system.git.browse.service.ISysGitBrowseService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * 项目 Git 代码仓库浏览 Controller：分支 / 目录 / 文件内容 / 提交记录，均要求 pull 权限。
+ *
+ * <p>OpenSpec {@code project-git-repositories} 任务 4.1。仓库元数据的增删改查
+ * （{@code GET/POST/PUT/DELETE /system/git/repo}，含列表与详情）由 {@code SysGitRepositoryController}
+ * （任务 2.x）负责；Smart HTTP clone/push（任务 3.x）另行挂载。本 Controller 只读，专注仓库内容浏览，
+ * 不与前者的路径重叠。</p>
+ */
+@RestController
+public class SysGitBrowseController extends BaseController
+{
+    @Autowired
+    private ISysGitBrowseService gitBrowseService;
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/system/git/repo/{repositoryId}/branches")
+    public AjaxResult branches(@PathVariable Long repositoryId)
+    {
+        return success(gitBrowseService.listBranches(repositoryId));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/system/git/repo/{repositoryId}/tree")
+    public AjaxResult tree(
+            @PathVariable Long repositoryId,
+            @RequestParam(required = false) String ref,
+            @RequestParam(required = false) String path)
+    {
+        return success(gitBrowseService.listTree(repositoryId, ref, path));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/system/git/repo/{repositoryId}/blob")
+    public AjaxResult blob(
+            @PathVariable Long repositoryId,
+            @RequestParam(required = false) String ref,
+            @RequestParam String path)
+    {
+        return success(gitBrowseService.readBlob(repositoryId, ref, path));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/system/git/repo/{repositoryId}/commits")
+    public AjaxResult commits(
+            @PathVariable Long repositoryId,
+            @RequestParam(required = false) String ref,
+            @RequestParam(required = false) Integer limit)
+    {
+        return success(gitBrowseService.listCommits(repositoryId, ref, limit));
+    }
+}

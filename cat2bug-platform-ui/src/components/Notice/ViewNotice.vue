@@ -176,7 +176,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-drawer__header {
+:deep(.el-drawer__header){
   margin-bottom: 0;
 }
 .notice-header {
@@ -214,7 +214,7 @@ export default {
 }
 .notice-body {
   padding: 12px 30px 20px;
-  ::v-deep .el-collapse {
+  :deep(.el-collapse){
     border-width: 0;
     .el-collapse-item__header {
       font-size: 16px;
@@ -284,7 +284,7 @@ export default {
       color: #409eff;
     }
   }
-  ::v-deep .notice-defect-fields {
+  :deep(.notice-defect-fields){
     .defect-custom-field-display-col {
       margin-bottom: 4px;
       line-height: 1.5;

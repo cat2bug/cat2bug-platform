@@ -163,7 +163,7 @@ export default {
   label {
     line-height: 24px;
   }
-  ::v-deep .el-radio-button__inner {
+  :deep(.el-radio-button__inner){
     padding: 0px;
   }
 }

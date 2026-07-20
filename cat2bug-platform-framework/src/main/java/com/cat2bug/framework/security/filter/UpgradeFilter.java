@@ -36,6 +36,15 @@ public class UpgradeFilter extends OncePerRequestFilter
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException
     {
+        String path = requestUriPath(request);
+
+        // 与 SetupFilter 的 /setup/status 一致：状态查询在 Filter 层直接返回，避免 MVC 异常时前端路由卡死
+        if ("/upgrade/status".equals(path) && HttpMethod.GET.matches(request.getMethod()))
+        {
+            ServletUtils.renderString(response, JSON.toJSONString(AjaxResult.success(upgradeService.getStatus())));
+            return;
+        }
+
         // 未安装：仅 setup 路径，由 SetupFilter 管控，此处不拦截
         if (!installService.isInstalled())
         {
@@ -56,7 +65,6 @@ public class UpgradeFilter extends OncePerRequestFilter
             return;
         }
 
-        String path = requestUriPath(request);
         if (UpgradeSupport.STATE_RESTART_REQUIRED.equals(state))
         {
             if (isAllowedDuringUpgradeRestart(path, request.getMethod()))

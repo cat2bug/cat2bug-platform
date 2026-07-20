@@ -565,7 +565,7 @@ export default {
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 /* 缺陷统计组件根节点多为 el-tooltip，在格子内居中撑满 */
-.plan-statistical-item ::v-deep(.el-tooltip) {
+.plan-statistical-item :deep(.el-tooltip) {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -594,7 +594,7 @@ export default {
   column-gap: var(--cat2bug-operate-tools-gap, 10px);
   row-gap: var(--cat2bug-operate-tools-row-gap, 0);
   padding: 0 10px;
-  > ::v-deep button {
+  > :deep(button){
     margin: 0;
   }
 }

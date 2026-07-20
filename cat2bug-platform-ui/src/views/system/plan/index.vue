@@ -643,7 +643,7 @@ export default {
   -webkit-overflow-scrolling: touch;
 }
 /* ProjectLabel 根为 h3：类在根上，与用例页 h3 下边距一致 */
-.plan-page ::v-deep h3.plan-project-label {
+.plan-page :deep(h3.plan-project-label){
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -680,7 +680,7 @@ export default {
   row-gap: var(--cat2bug-toolbar-row-gap, 8px);
   column-gap: var(--cat2bug-toolbar-item-gap, 10px);
   box-sizing: border-box;
-  ::v-deep .el-form-item {
+  :deep(.el-form-item){
     margin-right: 0;
   }
 }
@@ -706,22 +706,22 @@ export default {
     display: block;
     box-sizing: border-box;
   }
-  > .left ::v-deep .el-form-item {
+  > .left :deep(.el-form-item){
     display: block;
     width: 100% !important;
     margin-right: 0;
     margin-bottom: 8px;
   }
-  > .left ::v-deep .el-form-item:last-child {
+  > .left :deep(.el-form-item:last-child){
     margin-bottom: 0;
   }
-  > .left ::v-deep .el-form-item .el-form-item__content,
-  > .left ::v-deep .el-form-item .el-input {
+  > .left :deep(.el-form-item .el-form-item__content),
+  > .left :deep(.el-form-item .el-input){
     width: 100% !important;
     max-width: 100%;
     box-sizing: border-box;
   }
-  > .left ::v-deep .el-form-item .el-input__inner {
+  > .left :deep(.el-form-item .el-input__inner){
     width: 100% !important;
     box-sizing: border-box;
   }
@@ -764,7 +764,7 @@ export default {
   align-items: center;
   > .el-progress {
     flex: 1;
-    ::v-deep .el-progress-bar {
+    :deep(.el-progress-bar){
       display: inline-flex;
       margin-right: 0px;
       padding-right: 5px;
@@ -776,7 +776,7 @@ export default {
         background-color: var(--progress-fill-color, #409eff);
       }
     }
-    ::v-deep .el-progress__text {
+    :deep(.el-progress__text){
       display: none;
     }
   }

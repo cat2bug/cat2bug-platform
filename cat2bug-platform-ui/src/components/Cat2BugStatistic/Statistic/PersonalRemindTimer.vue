@@ -848,7 +848,7 @@ export default {
   width: 100%;
   box-sizing: border-box;
 
-  ::v-deep .statistic-box {
+  :deep(.statistic-box){
     flex: 1 1 auto;
     height: 100%;
     max-height: 100%;
@@ -856,13 +856,13 @@ export default {
     width: 100%;
   }
 
-  ::v-deep .statistic-box-header {
+  :deep(.statistic-box-header){
     min-height: 0;
     margin-bottom: 2px;
     padding-bottom: 2px;
   }
 
-  ::v-deep .statistic-box-body {
+  :deep(.statistic-box-body){
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
@@ -904,7 +904,7 @@ export default {
   box-sizing: border-box;
   overflow: hidden;
 
-  ::v-deep .statistic-countdown-nixie--hero {
+  :deep(.statistic-countdown-nixie--hero){
     width: auto;
     max-width: none;
     height: auto;

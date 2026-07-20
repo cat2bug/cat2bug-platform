@@ -469,7 +469,7 @@ $c2b-combo-robot-caret-gap: 4px;
   line-height: 1;
 }
 
-.c2b-model-select__robot ::v-deep .svg-icon {
+.c2b-model-select__robot :deep(.svg-icon){
   width: 14px;
   height: 14px;
   display: block;
@@ -493,7 +493,7 @@ $c2b-combo-robot-caret-gap: 4px;
   align-items: stretch;
 }
 
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo.el-select {
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo.el-select){
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
@@ -506,7 +506,7 @@ $c2b-combo-robot-caret-gap: 4px;
   overflow: visible;
 }
 
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-input {
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo .el-input){
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
@@ -518,7 +518,7 @@ $c2b-combo-robot-caret-gap: 4px;
   overflow: visible;
 }
 
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-input__inner {
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo .el-input__inner){
   height: 100% !important;
   min-height: 0 !important;
   line-height: 1.2 !important;
@@ -536,7 +536,7 @@ $c2b-combo-robot-caret-gap: 4px;
 }
 
 /* Element Plus：组合内 select 使用 el-select__wrapper，须去掉全站 32px 与白底描边 */
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-select__wrapper {
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo .el-select__wrapper){
   height: 100% !important;
   min-height: 0 !important;
   max-height: 100% !important;
@@ -557,23 +557,23 @@ $c2b-combo-robot-caret-gap: 4px;
   align-self: center;
 }
 
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo.is-focused .el-select__wrapper,
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-select__wrapper.is-focused {
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo.is-focused .el-select__wrapper),
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo .el-select__wrapper.is-focused){
   box-shadow: none !important;
 }
 
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-select__selection {
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo .el-select__selection){
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
 }
 
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-select__selected-item,
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-select__placeholder {
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo .el-select__selected-item),
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo .el-select__placeholder){
   display: none;
 }
 
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-select__suffix {
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo .el-select__suffix){
   position: static;
   flex: 0 0 auto;
   display: inline-flex;
@@ -585,12 +585,12 @@ $c2b-combo-robot-caret-gap: 4px;
   width: auto;
 }
 
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-input.is-focus .el-input__inner {
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo .el-input.is-focus .el-input__inner){
   border: none;
   box-shadow: none;
 }
 
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-input__suffix {
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo .el-input__suffix){
   position: absolute;
   top: 0;
   left: 0;
@@ -608,12 +608,12 @@ $c2b-combo-robot-caret-gap: 4px;
   z-index: 2;
 }
 
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-input__suffix-inner {
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo .el-input__suffix-inner){
   display: flex;
   align-items: center;
   line-height: 1;
 }
-::v-deep .c2b-model-select:not(.c2b-model-select--in-combo) .el-input__inner {
+:deep(.c2b-model-select:not(.c2b-model-select--in-combo) .el-input__inner){
   height: $c2b-tool-h;
   line-height: $c2b-tool-h;
   padding: 0 $c2b-caret-side 0 7px;
@@ -623,23 +623,23 @@ $c2b-combo-robot-caret-gap: 4px;
   box-sizing: border-box;
 }
 
-::v-deep .c2b-model-select:not(.c2b-model-select--in-combo) .el-input.is-focus .el-input__inner {
+:deep(.c2b-model-select:not(.c2b-model-select--in-combo) .el-input.is-focus .el-input__inner){
   border-color: $c2b-focus;
 }
 
-::v-deep .c2b-model-select:not(.c2b-model-select--in-combo):hover .el-input__inner {
+:deep(.c2b-model-select:not(.c2b-model-select--in-combo):hover .el-input__inner){
   border-color: $c2b-border-hover;
 }
 
-::v-deep .c2b-model-select .el-input__icon {
+:deep(.c2b-model-select .el-input__icon){
   line-height: $c2b-tool-h;
 }
 
-.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-input__icon {
+.c2b-model-select__trigger-shell--combo :deep(.c2b-model-select--in-combo .el-input__icon){
   line-height: 1 !important;
 }
 
-::v-deep .c2b-model-select .el-input__suffix {
+:deep(.c2b-model-select .el-input__suffix){
   right: 0;
   display: flex;
   align-items: center;
@@ -647,7 +647,7 @@ $c2b-combo-robot-caret-gap: 4px;
   box-sizing: border-box;
 }
 
-::v-deep .c2b-model-select .el-input__suffix-inner .el-select__caret {
+:deep(.c2b-model-select .el-input__suffix-inner .el-select__caret){
   font-size: $c2b-caret-fs;
   line-height: 1;
 }
@@ -657,20 +657,17 @@ $c2b-combo-robot-caret-gap: 4px;
  * 三角始终朝下，取消 Element 在展开态对 .el-select__caret 的旋转。is-loading 时不改后缀，保留转圈。
  */
 .c2b-model-select__trigger-shell--combo
-  ::v-deep
-  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  :deep(.c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-input__suffix-inner
-  .el-select__caret,
+  .el-select__caret),
 .c2b-model-select__trigger-shell--combo
-  ::v-deep
-  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  :deep(.c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-select__suffix
-  .el-select__caret,
+  .el-select__caret),
 .c2b-model-select__trigger-shell--combo
-  ::v-deep
-  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  :deep(.c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-select__suffix
-  .el-select__icon {
+  .el-select__icon){
   position: relative;
   display: inline-flex !important;
   align-items: center;
@@ -687,38 +684,32 @@ $c2b-combo-robot-caret-gap: 4px;
 }
 
 .c2b-model-select__trigger-shell--combo
-  ::v-deep
-  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  :deep(.c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-input__suffix-inner
-  .el-select__caret::before,
+  .el-select__caret::before),
 .c2b-model-select__trigger-shell--combo
-  ::v-deep
-  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  :deep(.c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-select__suffix
-  .el-select__caret::before,
+  .el-select__caret::before),
 .c2b-model-select__trigger-shell--combo
-  ::v-deep
-  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  :deep(.c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-select__suffix
-  .el-select__icon::before {
+  .el-select__icon::before){
   display: none !important;
 }
 
 .c2b-model-select__trigger-shell--combo
-  ::v-deep
-  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  :deep(.c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-input__suffix-inner
-  .el-select__caret::after,
+  .el-select__caret::after),
 .c2b-model-select__trigger-shell--combo
-  ::v-deep
-  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  :deep(.c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-select__suffix
-  .el-select__caret::after,
+  .el-select__caret::after),
 .c2b-model-select__trigger-shell--combo
-  ::v-deep
-  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  :deep(.c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-select__suffix
-  .el-select__icon::after {
+  .el-select__icon::after){
   content: '';
   position: absolute;
   left: 50%;
@@ -733,71 +724,70 @@ $c2b-combo-robot-caret-gap: 4px;
 }
 
 .c2b-model-select__trigger-shell--combo
-  ::v-deep
-  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  :deep(.c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-select__suffix
   .el-select__icon
-  svg {
+  svg){
   display: none !important;
 }
 
-::v-deep .c2b-model-select.el-select--mini .el-input__inner,
-::v-deep .c2b-model-select.el-select--small .el-input__wrapper,
-::v-deep .c2b-model-select.el-select--small .el-select__wrapper {
+:deep(.c2b-model-select.el-select--mini .el-input__inner),
+:deep(.c2b-model-select.el-select--small .el-input__wrapper),
+:deep(.c2b-model-select.el-select--small .el-select__wrapper){
   font-size: $c2b-tool-fs;
 }
 
-::v-deep .c2b-model-select:not(.c2b-model-select--in-combo) {
+:deep(.c2b-model-select:not(.c2b-model-select--in-combo)){
   min-width: 34px;
 }
 
-::v-deep .c2b-model-select .el-input {
+:deep(.c2b-model-select .el-input){
   font-size: $c2b-tool-fs;
 }
 
 /* 收起态始终隐藏输入框内的选中/回退文案（Element 在选项未就绪时会写 String(value)） */
-::v-deep .c2b-model-select .el-input__inner,
-::v-deep .c2b-model-select .el-select__input,
-::v-deep .c2b-model-select .el-select__placeholder span {
+:deep(.c2b-model-select .el-input__inner),
+:deep(.c2b-model-select .el-select__input),
+:deep(.c2b-model-select .el-select__placeholder span){
   color: transparent !important;
   caret-color: transparent;
 }
 
 /* 非组合：占位符可见；组合：不展示任何占位（避免 Element 默认「请选择」与首屏闪现） */
-::v-deep .c2b-model-select:not(.c2b-model-select--in-combo) .el-input__inner::placeholder {
+:deep(.c2b-model-select:not(.c2b-model-select--in-combo) .el-input__inner::placeholder){
   color: #c0c4cc;
   opacity: 1;
 }
 
-::v-deep .c2b-model-select:not(.c2b-model-select--in-combo) .el-input__inner::-webkit-input-placeholder {
+:deep(.c2b-model-select:not(.c2b-model-select--in-combo) .el-input__inner::-webkit-input-placeholder){
   color: #c0c4cc;
   opacity: 1;
 }
 
-::v-deep .c2b-model-select:not(.c2b-model-select--in-combo) .el-input__inner:-ms-input-placeholder {
+:deep(.c2b-model-select:not(.c2b-model-select--in-combo) .el-input__inner:-ms-input-placeholder){
   color: #c0c4cc;
 }
 
-::v-deep .c2b-model-select:not(.c2b-model-select--in-combo) .el-input__inner::-ms-input-placeholder {
+:deep(.c2b-model-select:not(.c2b-model-select--in-combo) .el-input__inner::-ms-input-placeholder){
   color: #c0c4cc;
 }
 
-::v-deep .c2b-model-select--in-combo .el-input__inner::placeholder {
+:deep(.c2b-model-select--in-combo .el-input__inner::placeholder){
   color: transparent !important;
   opacity: 0 !important;
 }
 
-::v-deep .c2b-model-select--in-combo .el-input__inner::-webkit-input-placeholder {
+:deep(.c2b-model-select--in-combo .el-input__inner::-webkit-input-placeholder){
   color: transparent !important;
   opacity: 0 !important;
   -webkit-text-fill-color: transparent;
 }
 
-::v-deep .c2b-model-select--in-combo .el-input__inner:-ms-input-placeholder {
+:deep(.c2b-model-select--in-combo .el-input__inner:-ms-input-placeholder){
   color: transparent !important;
 }
 
-::v-deep .c2b-model-select--in-combo .el-input__inner::-ms-input-placeholder {
+:deep(.c2b-model-select--in-combo .el-input__inner::-ms-input-placeholder){
   color: transparent !important;
 }
 </style>

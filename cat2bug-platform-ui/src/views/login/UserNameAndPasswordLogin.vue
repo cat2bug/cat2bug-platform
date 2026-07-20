@@ -157,7 +157,8 @@ export default {
       },
       loginRules: {},
       loading: false,
-      captchaEnabled: true,
+      // 与后端 selectCaptchaEnabled() 空配置默认 false 对齐；接口失败时不误开验证码
+      captchaEnabled: false,
       register: false,
       redirect: undefined,
     }
@@ -340,7 +341,7 @@ export default {
     },
     getCode() {
       getCodeImg().then(res => {
-        this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
+        this.captchaEnabled = res.captchaEnabled === undefined ? false : res.captchaEnabled;
         this.register = res.registerEnabled === undefined ? true : res.registerEnabled;
         if (this.captchaEnabled) {
           this.captchaExpr = res.captchaExpr || "";
@@ -350,6 +351,13 @@ export default {
           this.loginForm.code = "";
           this.loginForm.uuid = "";
         }
+        this.syncLoginRules();
+      }).catch(() => {
+        // /captchaImage 不可用时不要展示空白验证码框，按未开启处理
+        this.captchaEnabled = false;
+        this.captchaExpr = "";
+        this.loginForm.code = "";
+        this.loginForm.uuid = "";
         this.syncLoginRules();
       });
     },
@@ -430,12 +438,12 @@ export default {
   position: relative;
   z-index: 3;
 
-  ::v-deep .el-form-item {
+  :deep(.el-form-item){
     margin-bottom: 0;
   }
 
   /* 登录页控件高度对齐 Vue2（输入 35px / 按钮 39px），覆盖全站 32px */
-  ::v-deep .el-input {
+  :deep(.el-input){
     .el-input__wrapper {
       height: 35px !important;
       min-height: 35px !important;
@@ -534,7 +542,7 @@ html.dark .login-form {
   margin: 8px 0 12px;
 }
 
-.login-form ::v-deep .login-btn {
+.login-form :deep(.login-btn){
   width: 100%;
   height: 39px !important;
   min-height: 39px !important;
@@ -581,14 +589,14 @@ html.dark .login-form {
   justify-content: space-between;
   align-items: center;
   margin: 2px 0 0;
-  ::v-deep .el-checkbox__label {
+  :deep(.el-checkbox__label){
     font-size: 13px;
     color: var(--login-text-regular, var(--text-color-regular));
   }
 }
 
-.form-options ::v-deep .el-checkbox__input.is-checked .el-checkbox__inner,
-.form-options ::v-deep .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+.form-options :deep(.el-checkbox__input.is-checked .el-checkbox__inner),
+.form-options :deep(.el-checkbox__input.is-indeterminate .el-checkbox__inner){
   background-color: var(--login-accent, #ffc107);
   border-color: var(--login-accent, #ffc107);
 }

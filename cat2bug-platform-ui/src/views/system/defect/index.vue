@@ -2813,12 +2813,12 @@ export default {
   padding-top: 2px;
   box-sizing: border-box;
 }
-.defect-page.defect-page--excel-view .defect-tools-search ::v-deep .defect-list-query-nav-item.defect-query-nav-focused {
+.defect-page.defect-page--excel-view .defect-tools-search :deep(.defect-list-query-nav-item.defect-query-nav-focused){
   position: relative;
   z-index: 2;
   overflow: visible !important;
 }
-.defect-page ::v-deep h3.defect-project-label {
+.defect-page :deep(h3.defect-project-label){
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -2832,7 +2832,7 @@ export default {
   /* 勿设 width:100%：与工具栏同行时 flex 子项会按父宽 100% 占位，右侧 .table-tools 会被挤换行 */
   max-width: 100%;
   box-sizing: border-box;
-  ::v-deep .el-form.el-form--inline {
+  :deep(.el-form.el-form--inline){
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
@@ -2844,17 +2844,17 @@ export default {
     max-width: 100%;
     box-sizing: border-box;
   }
-  ::v-deep .el-form--inline .el-form-item {
+  :deep(.el-form--inline .el-form-item){
     margin-right: 0;
     margin-bottom: 0;
     display: flex;
     align-items: flex-start;
     vertical-align: top;
   }
-  ::v-deep .el-form--inline .el-form-item__label {
+  :deep(.el-form--inline .el-form-item__label){
     display: none;
   }
-  ::v-deep .el-form--inline .el-form-item__content {
+  :deep(.el-form--inline .el-form-item__content){
     display: inline-flex !important;
     align-items: flex-start !important;
     line-height: 1 !important;
@@ -2864,7 +2864,7 @@ export default {
   @media screen and (max-width: 576px) {
     width: 100%;
     max-width: 100%;
-    ::v-deep .el-form.el-form--inline {
+    :deep(.el-form.el-form--inline){
       display: grid;
       width: 100%;
       max-width: 100%;
@@ -2874,18 +2874,18 @@ export default {
       row-gap: 8px;
       align-items: start;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(1) {
+    :deep(.el-form--inline .el-form-item:nth-child(1)){
       grid-column: 1;
       grid-row: 1;
       align-self: start;
       align-items: flex-start;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(1) .el-form-item__content {
+    :deep(.el-form--inline .el-form-item:nth-child(1) .el-form-item__content){
       line-height: 1;
       margin-top: 0;
       padding-top: 0;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(2) {
+    :deep(.el-form--inline .el-form-item:nth-child(2)){
       grid-column: 2;
       grid-row: 1;
       min-width: 0;
@@ -2896,7 +2896,7 @@ export default {
       align-items: flex-start;
     }
     /* Element：控件在 .el-form-item__content 内，勿用 > .el-dropdown */
-    ::v-deep .el-form--inline .el-form-item:nth-child(2) .el-form-item__content {
+    :deep(.el-form--inline .el-form-item:nth-child(2) .el-form-item__content){
       flex: 1 1 auto;
       min-width: 0;
       width: 100%;
@@ -2906,29 +2906,29 @@ export default {
       padding-top: 0;
       line-height: 1;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(2) .el-form-item__content .el-dropdown {
+    :deep(.el-form--inline .el-form-item:nth-child(2) .el-form-item__content .el-dropdown){
       min-width: 0;
       width: 100% !important;
       max-width: 100%;
       display: block !important;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(2) .el-button-group {
+    :deep(.el-form--inline .el-form-item:nth-child(2) .el-button-group){
       width: 100%;
       max-width: 100%;
       display: flex;
       flex: 1 1 auto;
       min-width: 0;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(2) .el-button:first-child {
+    :deep(.el-form--inline .el-form-item:nth-child(2) .el-button:first-child){
       flex: 1 1 auto;
       min-width: 0;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(2) .el-button:last-child {
+    :deep(.el-form--inline .el-form-item:nth-child(2) .el-button:last-child){
       flex-shrink: 0;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(3),
-    ::v-deep .el-form--inline .el-form-item:nth-child(4),
-    ::v-deep .el-form--inline .el-form-item:nth-child(5) {
+    :deep(.el-form--inline .el-form-item:nth-child(3)),
+    :deep(.el-form--inline .el-form-item:nth-child(4)),
+    :deep(.el-form--inline .el-form-item:nth-child(5)){
       grid-column: 1 / -1;
       width: 100%;
       max-width: 100%;
@@ -2936,55 +2936,55 @@ export default {
       display: flex;
       align-items: stretch;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-form-item__content,
-    ::v-deep .el-form--inline .el-form-item:nth-child(4) .el-form-item__content,
-    ::v-deep .el-form--inline .el-form-item:nth-child(5) .el-form-item__content {
+    :deep(.el-form--inline .el-form-item:nth-child(3) .el-form-item__content),
+    :deep(.el-form--inline .el-form-item:nth-child(4) .el-form-item__content),
+    :deep(.el-form--inline .el-form-item:nth-child(5) .el-form-item__content){
       display: block;
       width: 100%;
       max-width: 100%;
       min-width: 0;
       box-sizing: border-box;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-form-item__content > *,
-    ::v-deep .el-form--inline .el-form-item:nth-child(4) .el-form-item__content > *,
-    ::v-deep .el-form--inline .el-form-item:nth-child(5) .el-form-item__content > * {
+    :deep(.el-form--inline .el-form-item:nth-child(3) .el-form-item__content > *),
+    :deep(.el-form--inline .el-form-item:nth-child(4) .el-form-item__content > *),
+    :deep(.el-form--inline .el-form-item:nth-child(5) .el-form-item__content > *){
       display: block;
       min-width: 0;
       width: 100% !important;
       max-width: 100%;
       box-sizing: border-box;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select,
-    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select.defect-state-select {
+    :deep(.el-form--inline .el-form-item:nth-child(3) .el-select),
+    :deep(.el-form--inline .el-form-item:nth-child(3) .el-select.defect-state-select){
       display: block;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select,
-    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-input {
+    :deep(.el-form--inline .el-form-item:nth-child(3) .el-select),
+    :deep(.el-form--inline .el-form-item:nth-child(3) .el-input){
       width: 100% !important;
       max-width: 100%;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select__wrapper,
-    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-input__wrapper,
-    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-input__inner {
+    :deep(.el-form--inline .el-form-item:nth-child(3) .el-select__wrapper),
+    :deep(.el-form--inline .el-form-item:nth-child(3) .el-input__wrapper),
+    :deep(.el-form--inline .el-form-item:nth-child(3) .el-input__inner){
       width: 100% !important;
       box-sizing: border-box;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(4) .select-project-member-input {
+    :deep(.el-form--inline .el-form-item:nth-child(4) .select-project-member-input){
       width: 100% !important;
       max-width: 100%;
       box-sizing: border-box;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(5) .el-input {
+    :deep(.el-form--inline .el-form-item:nth-child(5) .el-input){
       width: 100% !important;
       max-width: 100%;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(5) .el-input__inner {
+    :deep(.el-form--inline .el-form-item:nth-child(5) .el-input__inner){
       width: 100% !important;
       box-sizing: border-box;
     }
   }
   /* 键盘导航：聚焦环由全站 :focus / :focus-within 统一绘制，此处仅抬升层级避免被裁切 */
-  &.defect-query-keyboard-nav ::v-deep .defect-list-query-nav-item.defect-query-nav-focused {
+  &.defect-query-keyboard-nav :deep(.defect-list-query-nav-item.defect-query-nav-focused){
     position: relative;
     z-index: 2;
     overflow: visible !important;
@@ -3028,35 +3028,35 @@ export default {
     z-index: 1;
   }
   /* 全宽底线覆盖右侧统计按钮；避免与 el-tabs 内置 nav-wrap 底线叠成双线 */
-  ::v-deep .el-tabs__nav-wrap::after {
+  :deep(.el-tabs__nav-wrap::after){
     display: none !important;
   }
   /* el-tabs 默认表头 margin-bottom:15px + 空 content，会在 Tab 与下方查询条之间多出一段空白 */
-  ::v-deep .el-tabs__header {
+  :deep(.el-tabs__header){
     margin-bottom: 0 !important;
     height: 100%;
     display: flex;
     align-items: stretch;
     box-sizing: border-box;
   }
-  ::v-deep .el-tabs__nav-wrap {
+  :deep(.el-tabs__nav-wrap){
     flex: 1;
     min-height: 100%;
     margin-bottom: 0 !important;
     overflow: visible !important;
   }
-  ::v-deep .el-tabs__nav-scroll {
+  :deep(.el-tabs__nav-scroll){
     overflow: visible !important;
   }
-  ::v-deep .el-tabs__nav {
+  :deep(.el-tabs__nav){
     overflow: visible !important;
   }
-  ::v-deep .el-tabs__active-bar {
+  :deep(.el-tabs__active-bar){
     height: 2px !important;
     bottom: 0 !important;
     z-index: 2;
   }
-  ::v-deep .el-tabs__content {
+  :deep(.el-tabs__content){
     display: none !important;
     height: 0 !important;
     min-height: 0 !important;
@@ -3073,11 +3073,11 @@ export default {
     max-height: 100%;
     overflow: visible;
   }
-  ::v-deep .el-tabs__item:not(#tab-__defect_add_tab__) {
+  :deep(.el-tabs__item:not(#tab-__defect_add_tab__)){
     max-width: 200px;
     overflow: visible !important;
   }
-  ::v-deep #tab-__defect_add_tab__.el-tabs__item {
+  :deep(#tab-__defect_add_tab__.el-tabs__item){
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
@@ -3090,18 +3090,18 @@ export default {
       color: #303133;
     }
   }
-  ::v-deep .defect-tab-add-btn.svg-icon {
+  :deep(.defect-tab-add-btn.svg-icon){
     vertical-align: middle !important;
     width: 15px !important;
     height: 15px !important;
     font-size: 11px;
   }
-  ::v-deep .defect-tab-add-btn.defect-tab-shortcut-active {
+  :deep(.defect-tab-add-btn.defect-tab-shortcut-active){
     position: relative;
     z-index: 4;
     box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color);
   }
-  ::v-deep .defect-tab-add-btn {
+  :deep(.defect-tab-add-btn){
     flex-shrink: 0;
     width: 15px !important;
     height: 15px !important;
@@ -3125,11 +3125,11 @@ export default {
       background-color: #ecf5ff;
     }
   }
-  ::v-deep .el-tabs__item.is-active {
+  :deep(.el-tabs__item.is-active){
     overflow: visible !important;
   }
   /* 键盘导航：聚焦环贴合 label 内容宽度，底边与 Tab 灰线重叠 */
-  &.defect-tab-keyboard-nav ::v-deep .el-tabs__item.defect-tab-nav-focused:not(#tab-__defect_add_tab__) {
+  &.defect-tab-keyboard-nav :deep(.el-tabs__item.defect-tab-nav-focused:not(#tab-__defect_add_tab__)){
     position: relative;
     z-index: 4;
     overflow: visible !important;
@@ -3156,26 +3156,26 @@ export default {
       }
     }
   }
-  &.defect-tab-keyboard-nav ::v-deep .el-tabs__item.defect-tab-nav-focused:focus,
-  &.defect-tab-keyboard-nav ::v-deep .el-tabs__item.defect-tab-nav-focused:focus-visible {
+  &.defect-tab-keyboard-nav :deep(.el-tabs__item.defect-tab-nav-focused:focus),
+  &.defect-tab-keyboard-nav :deep(.el-tabs__item.defect-tab-nav-focused:focus-visible){
     outline: none !important;
   }
-  &.defect-tab-keyboard-nav ::v-deep .defect-tab-add-btn.defect-tab-nav-focused {
+  &.defect-tab-keyboard-nav :deep(.defect-tab-add-btn.defect-tab-nav-focused){
     position: relative;
     z-index: 4;
     outline: none;
     box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color);
   }
-  &.defect-tab-keyboard-nav ::v-deep .defect-tab-add-btn.defect-tab-nav-focused:focus,
-  &.defect-tab-keyboard-nav ::v-deep .defect-tab-add-btn.defect-tab-nav-focused:focus-visible {
+  &.defect-tab-keyboard-nav :deep(.defect-tab-add-btn.defect-tab-nav-focused:focus),
+  &.defect-tab-keyboard-nav :deep(.defect-tab-add-btn.defect-tab-nav-focused:focus-visible){
     outline: none !important;
   }
-  ::v-deep .el-tabs__item:focus,
-  ::v-deep .el-tabs__item:focus-visible {
+  :deep(.el-tabs__item:focus),
+  :deep(.el-tabs__item:focus-visible){
     outline: none !important;
   }
-  ::v-deep .el-tabs__header,
-  ::v-deep .el-tabs__nav-wrap {
+  :deep(.el-tabs__header),
+  :deep(.el-tabs__nav-wrap){
     overflow: visible !important;
   }
   .defect-tools-tab-right {
@@ -3194,7 +3194,7 @@ export default {
   overflow: visible;
   flex-shrink: 0;
   min-width: 0;
-  &.defect-statistic-keyboard-nav ::v-deep .statistic-item.defect-statistic-nav-focused {
+  &.defect-statistic-keyboard-nav :deep(.statistic-item.defect-statistic-nav-focused){
     position: relative;
     z-index: 2;
     &::after {
@@ -3210,8 +3210,8 @@ export default {
       pointer-events: none;
     }
   }
-  &.defect-statistic-keyboard-nav ::v-deep .statistic-item.defect-statistic-nav-focused:focus,
-  &.defect-statistic-keyboard-nav ::v-deep .statistic-item.defect-statistic-nav-focused:focus-visible {
+  &.defect-statistic-keyboard-nav :deep(.statistic-item.defect-statistic-nav-focused:focus),
+  &.defect-statistic-keyboard-nav :deep(.statistic-item.defect-statistic-nav-focused:focus-visible){
     outline: none;
   }
   .defect-list-hint-stat-nav {
@@ -3250,7 +3250,7 @@ export default {
     line-height: 1;
     vertical-align: middle;
 
-    ::v-deep .svg-icon {
+    :deep(.svg-icon){
       width: 16px;
       height: 16px;
       pointer-events: none;
@@ -3272,7 +3272,7 @@ export default {
   max-width: 100%;
   min-width: 0;
   overflow: visible !important;
-  ::v-deep .defect-tab-icon {
+  :deep(.defect-tab-icon){
     font-size: 14px;
     flex-shrink: 0;
     vertical-align: middle;
@@ -3332,23 +3332,23 @@ export default {
 .defect-add-dropdown {
   margin-right: 0px;
   position: relative;
-  ::v-deep .el-button-group {
+  :deep(.el-button-group){
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
   }
-  ::v-deep button {
+  :deep(button){
     color: #ffffff;
     background: #409eff;
     border-color: #409eff;
   }
-  ::v-deep button:hover,
-  ::v-deep button:focus {
+  :deep(button:hover),
+  :deep(button:focus){
     background: #66b1ff;
     border-color: #66b1ff;
     color: #ffffff;
   }
-  ::v-deep .el-dropdown__caret-button::before {
+  :deep(.el-dropdown__caret-button::before){
     background-color: rgba(255, 255, 255, 0.45);
 
     @at-root html.dark & {
@@ -3357,13 +3357,13 @@ export default {
   }
 
   @at-root html.dark & {
-    ::v-deep button {
+    :deep(button){
       color: #141414 !important;
       background: #ffc107 !important;
       border-color: #ffc107 !important;
     }
-    ::v-deep button:hover,
-    ::v-deep button:focus {
+    :deep(button:hover),
+    :deep(button:focus){
       color: #141414 !important;
       background: #ffd54f !important;
       border-color: #ffd54f !important;
@@ -3378,7 +3378,7 @@ export default {
   margin-bottom: 5px;
 }
 /* 右侧工具栏键盘导航：聚焦环由全站 :focus 绘制，此处保证不被裁切 */
-.defect-page ::v-deep .defect-toolbar-nav-focused {
+.defect-page :deep(.defect-toolbar-nav-focused){
   position: relative;
   z-index: 2;
 }
@@ -3387,7 +3387,7 @@ export default {
   vertical-align: top;
   flex-shrink: 0;
   /* 三等分格：等宽等高，避免 table/date/excel2 矢量留白不同导致「格与格」观感不一 */
-  ::v-deep .el-radio-button__inner {
+  :deep(.el-radio-button__inner){
     padding: 0 !important;
     width: 36px !important;
     /* 与右侧「全部类型」(el-dropdown split-button size=small) 高度对齐 */
@@ -3407,7 +3407,7 @@ export default {
     flex-shrink: 0;
     line-height: 0;
   }
-  .defect-content-view-switch-inner ::v-deep .svg-icon {
+  .defect-content-view-switch-inner :deep(.svg-icon){
     width: 18px !important;
     height: 18px !important;
     vertical-align: top;

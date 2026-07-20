@@ -10,6 +10,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -67,6 +68,25 @@ class SetupConfigWriterTest
         assertTrue(String.valueOf(nested(root, "spring", "datasource", "druid", "master", "url")).contains("cat2bug_platform"));
         assertEquals("127.0.0.1", nested(root, "spring", "redis", "host"));
         assertNotNull(nested(root, "spring", "datasource", "druid", "initialSize"));
+    }
+
+    @Test
+    void write_relativeProfileAndTemp_persistedAsAbsolute(@TempDir Path dir) throws Exception
+    {
+        installProperties.setConfigPath(dir.resolve("application-install.yml").toString());
+        SetupSubmitRequest request = baseRequest("h2", "local");
+        request.setProfile("uploadPath");
+        request.setTemp("uploadTemp");
+
+        writer.write(request);
+
+        Map<String, Object> root = readYaml(installProperties.resolveConfigPath());
+        String profile = String.valueOf(nested(root, "cat2bug", "profile"));
+        String temp = String.valueOf(nested(root, "cat2bug", "temp"));
+        assertTrue(Paths.get(profile).isAbsolute());
+        assertTrue(Paths.get(temp).isAbsolute());
+        assertTrue(profile.endsWith("uploadPath"));
+        assertTrue(temp.endsWith("uploadTemp"));
     }
 
     private static SetupSubmitRequest baseRequest(String databaseType, String cacheType)

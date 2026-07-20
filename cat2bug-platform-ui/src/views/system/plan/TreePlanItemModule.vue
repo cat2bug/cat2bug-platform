@@ -336,13 +336,13 @@ export default {
   color: var(--table-header-color);
   box-sizing: border-box;
   /* 树/优先级列表在 Tab 内容区内留 5px，避免贴边 */
-  ::v-deep .el-tabs {
+  :deep(.el-tabs){
     display: flex;
     flex-direction: column;
     flex: 1 1 0%;
     min-height: 0;
   }
-  ::v-deep .el-tabs__header {
+  :deep(.el-tabs__header){
     flex-shrink: 0;
     margin: 0;
     padding: 0;
@@ -350,7 +350,7 @@ export default {
     background-color: var(--table-header-bg);
   }
   /* 与右侧 el-table 表头同色同高：固定 height（不只 min-height），避免 Tab 默认行高低于 th */
-  ::v-deep .tree-plan-item-tabs > .el-tabs__header {
+  :deep(.tree-plan-item-tabs > .el-tabs__header){
     padding-right: 28px;
     box-sizing: border-box;
     height: var(--plan-tree-tabs-sync-height, 48px);
@@ -359,7 +359,7 @@ export default {
     align-items: stretch;
     border-bottom: 1px solid var(--border-color-light);
   }
-  ::v-deep .tree-plan-item-tabs > .el-tabs__header .el-tabs__nav-wrap {
+  :deep(.tree-plan-item-tabs > .el-tabs__header .el-tabs__nav-wrap){
     flex: 1;
     min-height: 100%;
     display: flex;
@@ -368,10 +368,10 @@ export default {
     /* Element 默认 ::after 高度 2px，与下方 header 的 1px 底边叠加会「一段粗一段细」 */
     margin-bottom: 0 !important;
   }
-  ::v-deep .tree-plan-item-tabs > .el-tabs__header .el-tabs__nav-wrap::after {
+  :deep(.tree-plan-item-tabs > .el-tabs__header .el-tabs__nav-wrap::after){
     display: none !important;
   }
-  ::v-deep .el-tabs__nav-wrap {
+  :deep(.el-tabs__nav-wrap){
     padding-left: 5px;
     padding-right: 5px;
     box-sizing: border-box;
@@ -380,16 +380,16 @@ export default {
    * Element 默认 TabBar 用 JS 算宽度/位移，在 stretch + 侧栏拖拽变宽时经常错位。
    * 隐藏 TabBar，用每个 tab 格子的 border-bottom 作为选中指示线，宽度随 flex 自动正确。
    */
-  ::v-deep .el-tabs__active-bar {
+  :deep(.el-tabs__active-bar){
     display: none !important;
   }
   /* stretch 下 nav 已 flex；item 默认 inline-block 会让文案视觉上偏左，改为 flex 居中 */
-  ::v-deep .tree-plan-item-tabs .el-tabs__nav {
+  :deep(.tree-plan-item-tabs .el-tabs__nav){
     width: 100%;
     float: none;
   }
   /* Tab 格纵向铺满标题栏高度，文案 flex 居中（与表头 th 内 .cell 观感一致） */
-  ::v-deep .tree-plan-item-tabs .el-tabs__item {
+  :deep(.tree-plan-item-tabs .el-tabs__item){
     display: flex !important;
     align-items: center;
     justify-content: center;
@@ -402,11 +402,11 @@ export default {
     box-sizing: border-box;
     color: var(--table-header-color);
   }
-  ::v-deep .tree-plan-item-tabs .el-tabs__item.is-active {
+  :deep(.tree-plan-item-tabs .el-tabs__item.is-active){
     color: #1890ff;
     position: relative;
   }
-  ::v-deep .tree-plan-item-tabs .el-tabs__item.is-active::after {
+  :deep(.tree-plan-item-tabs .el-tabs__item.is-active::after){
     content: '';
     position: absolute;
     left: 0;
@@ -416,7 +416,7 @@ export default {
     background-color: #1890ff;
     z-index: 2;
   }
-  ::v-deep .el-tabs__content {
+  :deep(.el-tabs__content){
     flex: 1 1 0%;
     min-height: 0;
     overflow: hidden;
@@ -424,7 +424,7 @@ export default {
     box-sizing: border-box;
     background-color: var(--table-bg);
   }
-  ::v-deep .el-tab-pane {
+  :deep(.el-tab-pane){
     height: 100%;
   }
 }
@@ -491,7 +491,7 @@ export default {
     width: 0;
     height: 0;
   }
-  ::v-deep > div[role="treeitem"]:first-child{
+  :deep(> div[role="treeitem"]:first-child){
     .el-checkbox {
       display: none;
     }
