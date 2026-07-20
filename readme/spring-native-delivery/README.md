@@ -32,9 +32,9 @@ mvn -pl cat2bug-platform-admin -am package -DskipTests
 
 ## 与 Quarkus 线关系
 
-- `feature/quarkus-full-migration`：**已冻结为对照/reference**（体积基线 190/42 MB、FastExcel/Captcha 实现源）
+- `feature/quarkus-full-migration`：**已冻结为对照/reference**（体积基线 190/42 MB、FastExcel/Captcha 实现源；历史分支仍可查阅）
 - 生产默认交付：**Spring Native**（`./deploy/build-native-spring.sh`）
-- Quarkus 模块（`cat2bug-platform-quarkus-*`）仍保留在仓库供回归对照，不作为默认 Release
+- Quarkus 模块（`cat2bug-platform-quarkus-*`）已从本仓库移除
 
 ## OpenSpec
 
