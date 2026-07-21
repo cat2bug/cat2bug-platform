@@ -114,8 +114,11 @@ service.interceptors.response.use(res => {
       ElMessage({ message: msg, type: 'warning' })
       return Promise.reject('error')
     } else if (code !== 200) {
-      ElNotification.error({ title: msg })
-      return Promise.reject('error')
+      const silent = res.config.silentError === true
+      if (!silent) {
+        ElNotification.error({ title: msg })
+      }
+      return Promise.reject(silent ? res.data : 'error')
     } else {
       return res.data
     }

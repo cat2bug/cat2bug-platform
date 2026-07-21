@@ -3392,12 +3392,12 @@ html.dark {
     }
   }
 
-  // 全局适配输入框附加组 (el-input-group__append / el-input-group__prepend)
+  // 全局适配输入框附加组：对齐 Element Plus 复合型输入框（三边 inset 描边，勿用完整 border）
   .el-input-group__append,
   .el-input-group__prepend {
     background-color: var(--bg-color-block) !important;
-    border-color: var(--border-color-base) !important;
-    color: var(--text-color-regular) !important;
+    color: var(--text-color-secondary) !important;
+    border: none !important;
 
     .el-button {
       background-color: transparent !important;
@@ -3408,6 +3408,20 @@ html.dark {
         color: #FFC107 !important;
       }
     }
+  }
+
+  .el-input-group__prepend {
+    box-shadow:
+      1px 0 0 0 var(--input-border) inset,
+      0 1px 0 0 var(--input-border) inset,
+      0 -1px 0 0 var(--input-border) inset !important;
+  }
+
+  .el-input-group__append {
+    box-shadow:
+      0 1px 0 0 var(--input-border) inset,
+      0 -1px 0 0 var(--input-border) inset,
+      -1px 0 0 0 var(--input-border) inset !important;
   }
 
   // 16. 适配自定义文本域组件 (Cat2BugTextarea) 暗黑模式

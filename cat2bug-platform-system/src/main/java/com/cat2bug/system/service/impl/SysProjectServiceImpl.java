@@ -1,10 +1,12 @@
 package com.cat2bug.system.service.impl;
 
+import com.cat2bug.common.constant.HttpStatus;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.entity.SysProjectPush;
 import com.cat2bug.common.core.domain.entity.SysReport;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
+import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.common.utils.*;
 import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.system.domain.*;
@@ -102,6 +104,42 @@ public class SysProjectServiceImpl implements ISysProjectService
         return sysProjectMapper.selectSysProjectByProjectId(projectId,SecurityUtils.getUserId());
     }
 
+    @Override
+    public SysProject selectSysProjectByTeamAndProjectKey(String teamKey, String projectKey)
+    {
+        if (StringUtils.isEmpty(teamKey) || StringUtils.isEmpty(projectKey))
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.project-not-found"), HttpStatus.NOT_FOUND);
+        }
+        SysProject resolved = sysProjectMapper.selectSysProjectByTeamAndProjectKey(teamKey, projectKey);
+        if (resolved == null)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.project-not-found"), HttpStatus.NOT_FOUND);
+        }
+        Long userId = SecurityUtils.getUserId();
+        if (!userCanAccessProject(userId, resolved))
+        {
+            throw new ServiceException(MessageUtils.message("no-permission"), HttpStatus.FORBIDDEN);
+        }
+        return sysProjectMapper.selectSysProjectByProjectId(resolved.getProjectId(), userId);
+    }
+
+    private boolean userCanAccessProject(Long userId, SysProject project)
+    {
+        if (userId == null || project.getProjectId() == null)
+        {
+            return false;
+        }
+        if (String.valueOf(userId).equals(project.getCreateBy()))
+        {
+            return true;
+        }
+        SysUserProject membership = new SysUserProject();
+        membership.setUserId(userId);
+        membership.setProjectId(project.getProjectId());
+        return !sysUserProjectMapper.selectSysUserProjectList(membership).isEmpty();
+    }
+
     /**
      * 查询项目列表
      * 
@@ -138,6 +176,13 @@ public class SysProjectServiceImpl implements ISysProjectService
     {
         // 新增项目
         Long userId = SecurityUtils.getUserId();
+        String projectKey = PathKeyValidator.normalizeOrNull(sysProject.getProjectKey());
+        Preconditions.checkNotNull(projectKey, MessageUtils.message("project.path-key-invalid"));
+        Preconditions.checkNotNull(sysProject.getTeamId(), MessageUtils.message("project.team_cannot_empty"));
+        Preconditions.checkState(
+                sysProjectMapper.countByTeamIdAndProjectKey(sysProject.getTeamId(), projectKey, null) == 0,
+                MessageUtils.message("project.path-key-duplicate"));
+        sysProject.setProjectKey(projectKey);
         sysProject.setCreateBy(String.valueOf(userId));
         sysProject.setCreateTime(DateUtils.getNowDate());
         sysProject.setUpdateBy(String.valueOf(userId));
@@ -190,6 +235,25 @@ public class SysProjectServiceImpl implements ISysProjectService
     public int updateSysProject(SysProject sysProject)
     {
         sysProject.setUpdateTime(DateUtils.getNowDate());
+        if (StringUtils.isNotEmpty(sysProject.getProjectKey()))
+        {
+            String projectKey = PathKeyValidator.normalizeOrNull(sysProject.getProjectKey());
+            Preconditions.checkNotNull(projectKey, MessageUtils.message("project.path-key-invalid"));
+            Long teamId = sysProject.getTeamId();
+            if (teamId == null && sysProject.getProjectId() != null)
+            {
+                SysProject existing = sysProjectMapper.selectSysProjectByProjectId(sysProject.getProjectId(), SecurityUtils.getUserId());
+                if (existing != null)
+                {
+                    teamId = existing.getTeamId();
+                }
+            }
+            Preconditions.checkNotNull(teamId, MessageUtils.message("project.team_cannot_empty"));
+            Preconditions.checkState(
+                    sysProjectMapper.countByTeamIdAndProjectKey(teamId, projectKey, sysProject.getProjectId()) == 0,
+                    MessageUtils.message("project.path-key-duplicate"));
+            sysProject.setProjectKey(projectKey);
+        }
         return sysProjectMapper.updateSysProject(sysProject);
     }
 

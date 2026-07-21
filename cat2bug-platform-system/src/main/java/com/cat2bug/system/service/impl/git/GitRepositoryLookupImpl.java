@@ -45,4 +45,24 @@ public class GitRepositoryLookupImpl implements GitRepositoryLookup
         return Optional.of(new GitRepositoryRef(repository.getRepositoryId(), repository.getProjectId(),
                 repository.getSlug(), diskPath, repository.getDefaultBranch()));
     }
+
+    @Override
+    public Optional<GitRepositoryRef> findByTeamKeyAndProjectKeyAndSlug(String teamKey, String projectKey, String slug)
+    {
+        if (teamKey == null || teamKey.isEmpty()
+                || projectKey == null || projectKey.isEmpty()
+                || slug == null || slug.isEmpty())
+        {
+            return Optional.empty();
+        }
+        SysGitRepository repository = sysGitRepositoryMapper.selectSysGitRepositoryByTeamKeyAndProjectKeyAndSlug(
+                teamKey, projectKey, slug);
+        if (repository == null)
+        {
+            return Optional.empty();
+        }
+        String diskPath = gitPathValidator.resolveStoredDiskPath(repository.getDiskPath());
+        return Optional.of(new GitRepositoryRef(repository.getRepositoryId(), repository.getProjectId(),
+                repository.getSlug(), diskPath, repository.getDefaultBranch()));
+    }
 }

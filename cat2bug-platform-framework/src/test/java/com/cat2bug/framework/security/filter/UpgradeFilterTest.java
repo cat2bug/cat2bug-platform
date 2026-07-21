@@ -95,12 +95,15 @@ class UpgradeFilterTest
     @Test
     void doFilterInternal_allowsUpgradeStatusWhenActive() throws Exception
     {
-        when(upgradeService.resolveState()).thenReturn(UpgradeSupport.STATE_PENDING);
+        // /upgrade/status 在 Filter 内直接写 JSON（与 SetupFilter /setup/status 一致），不进入 MVC
+        when(upgradeService.getStatus()).thenReturn(java.util.Collections.singletonMap("state", UpgradeSupport.STATE_PENDING));
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/upgrade/status");
 
         upgradeFilter.doFilterInternal(request, response, filterChain);
 
-        verify(filterChain).doFilter(request, response);
+        verify(filterChain, never()).doFilter(request, response);
+        assertEquals(200, response.getStatus());
+        assertTrue(response.getContentAsString().contains("pending"));
     }
 
     @Test

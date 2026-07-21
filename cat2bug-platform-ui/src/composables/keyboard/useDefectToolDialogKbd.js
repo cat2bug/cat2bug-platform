@@ -53,6 +53,8 @@ const legacyMixin = {
   }
 }
 
+export { legacyMixin as defectToolDialogKbdMixin }
+
 export function useDefectToolDialogKbd() {
   return useLegacyKeyboardMixin(legacyMixin)
 }

@@ -39,12 +39,9 @@ Clone URL 形态：`http(s)://{host}/git/p/{projectId}/{slug}.git`
 # 开发账号 clone
 git clone http://develop:PASSWORD@127.0.0.1:2020/git/p/{projectId}/{slug}.git
 
-# 推送（快进）；本地 identity 须与平台账号一致（user.name / user.email）
-cd {slug} && git config user.name develop && git config user.email develop@example.com
+# 推送（快进）；推送人由 HTTP Basic 识别，不强制 commit author 与账号一致
+cd {slug}
 echo test >> README.md && git add . && git commit -m t && git push
-
-# 作者非推送账号应被拒绝（例如 user.name=t 而 Basic 登录为 develop）
-git config user.name t && echo x >> README.md && git add . && git commit -m bad && git push
 
 # 非管理员 force-push 应失败
 git push --force
@@ -52,7 +49,7 @@ git push --force
 # 管理员 force-push 允许（可选）
 ```
 
-否定：错误密码 → 401；无角色成员 → 403/拒绝 pack；commit author/committer 与推送账号不匹配 → receive-pack 拒绝。
+否定：错误密码 → 401；无角色成员 → 403/拒绝 pack。
 
 ## 进程约束
 

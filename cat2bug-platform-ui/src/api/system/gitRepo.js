@@ -45,6 +45,15 @@ export function delGitRepo(repositoryIds, wipeDisk) {
   })
 }
 
+// 关注 / 取消关注代码仓库
+export function collectGitRepo(repositoryId, collect) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/collect',
+    method: 'post',
+    data: { collect: !!collect }
+  })
+}
+
 // 查询仓库分支列表（pull 权限）
 export function listGitRepoBranches(repositoryId) {
   return request({

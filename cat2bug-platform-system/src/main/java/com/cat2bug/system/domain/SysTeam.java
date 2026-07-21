@@ -26,6 +26,10 @@ public class SysTeam extends BaseEntity
     @Excel(name = "团队名称")
     private String teamName;
 
+    /** 英文路径键（全局唯一） */
+    @Excel(name = "团队路径键")
+    private String teamKey;
+
     /** 团队图标 */
     @Excel(name = "团队图标")
     private String teamIcon;
@@ -58,6 +62,7 @@ public class SysTeam extends BaseEntity
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
             .append("teamId", getTeamId())
             .append("teamName", getTeamName())
+            .append("teamKey", getTeamKey())
             .append("teamIcon", getTeamIcon())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())

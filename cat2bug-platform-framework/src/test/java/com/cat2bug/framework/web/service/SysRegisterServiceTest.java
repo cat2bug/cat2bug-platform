@@ -49,7 +49,7 @@ class SysRegisterServiceTest
         {
             MessageSource messageSource = mock(MessageSource.class);
             ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
-            when(messageSource.getMessage(anyString(), any(), any())).thenReturn("ok");
+            when(messageSource.getMessage(anyString(), any(), any(), any())).thenReturn("ok");
             springUtils.when(() -> SpringUtils.getBean(MessageSource.class)).thenReturn(messageSource);
             springUtils.when(() -> SpringUtils.getBean("scheduledExecutorService")).thenReturn(executor);
 
@@ -74,7 +74,7 @@ class SysRegisterServiceTest
         {
             MessageSource messageSource = mock(MessageSource.class);
             ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
-            when(messageSource.getMessage(anyString(), any(), any())).thenReturn("ok");
+            when(messageSource.getMessage(anyString(), any(), any(), any())).thenReturn("ok");
             springUtils.when(() -> SpringUtils.getBean(MessageSource.class)).thenReturn(messageSource);
             springUtils.when(() -> SpringUtils.getBean("scheduledExecutorService")).thenReturn(executor);
 
@@ -96,7 +96,7 @@ class SysRegisterServiceTest
         {
             MessageSource messageSource = mock(MessageSource.class);
             ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
-            when(messageSource.getMessage(anyString(), any(), any())).thenReturn("ok");
+            when(messageSource.getMessage(anyString(), any(), any(), any())).thenReturn("ok");
             springUtils.when(() -> SpringUtils.getBean(MessageSource.class)).thenReturn(messageSource);
             springUtils.when(() -> SpringUtils.getBean("scheduledExecutorService")).thenReturn(executor);
 

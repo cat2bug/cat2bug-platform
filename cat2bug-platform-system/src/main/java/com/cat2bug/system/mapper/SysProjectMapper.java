@@ -29,6 +29,18 @@ public interface SysProjectMapper
     public List<SysProject> selectSysProjectList(@Param("userId") Long userId, @Param("sysProject") SysProject sysProject);
 
     /**
+     * 按团队路径键 + 项目路径键解析项目
+     */
+    public SysProject selectSysProjectByTeamAndProjectKey(@Param("teamKey") String teamKey, @Param("projectKey") String projectKey);
+
+    /**
+     * 统计团队内 project_key 占用（用于唯一性校验，不受当前用户项目成员过滤）
+     */
+    public int countByTeamIdAndProjectKey(@Param("teamId") Long teamId,
+                                          @Param("projectKey") String projectKey,
+                                          @Param("excludeProjectId") Long excludeProjectId);
+
+    /**
      * 新增项目
      * 
      * @param sysProject 项目

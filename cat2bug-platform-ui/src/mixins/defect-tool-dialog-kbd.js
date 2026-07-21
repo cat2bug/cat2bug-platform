@@ -1,10 +1,7 @@
 /**
- * @deprecated Use {@link useDefectToolDialogKbd} from `@/composables/keyboard/useDefectToolDialogKbd`.
+ * Options API mixin for defect tool dialog keyboard integration.
+ * Composition API: use {@link useDefectToolDialogKbd} from the composable module.
  */
-import { useDefectToolDialogKbd } from '@/composables/keyboard/useDefectToolDialogKbd'
+import { defectToolDialogKbdMixin } from '@/composables/keyboard/useDefectToolDialogKbd'
 
-export default {
-  setup() {
-    return useDefectToolDialogKbd()
-  }
-}
+export default defectToolDialogKbdMixin

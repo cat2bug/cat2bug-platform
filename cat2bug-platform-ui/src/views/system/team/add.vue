@@ -4,6 +4,10 @@
       <el-form-item :label="$t('team.name')" prop="teamName">
         <el-input v-model="form.teamName" :placeholder="$t('team.please-enter-name')" maxlength="64" />
       </el-form-item>
+      <el-form-item :label="$t('team.path-key')" prop="teamKey">
+        <el-input v-model="form.teamKey" :placeholder="$t('team.path-key-placeholder')" maxlength="100" />
+        <div class="form-tip">{{ $t('team.path-key-hint') }}</div>
+      </el-form-item>
       <el-form-item prop="teamIcon" class="cat2bug-form-item-upload">
         <template #label>{{ $t('team.icon') }}</template>
         <image-upload v-model="form.teamIcon" :limit="1"/>
@@ -30,6 +34,7 @@ import {removeCurrentProjectId} from "@/utils/project";
 import { useUserStore } from '@/stores/user'
 import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts'
 import formFieldHints from '@/mixins/form-field-hints'
+import { createPathKeyValidator } from '@/utils/path-key'
 
 export default {
   name: "TeamAdd",
@@ -45,6 +50,14 @@ export default {
       rules: {
         teamName: [
           { required: true, message: this.$t('team.name-cannot-empty'), trigger: "blur" }
+        ],
+        teamKey: [
+          { required: true, message: this.$t('team.path-key-required'), trigger: 'blur' },
+          { validator: createPathKeyValidator({
+            required: this.$t('team.path-key-required'),
+            reserved: this.$t('path-key.reserved'),
+            format: this.$t('path-key.format-invalid')
+          }), trigger: 'blur' }
         ],
         teamIcon: [
           { required: true, message: this.$t('team.icon-cannot-empty'), trigger: "blur" }
@@ -63,6 +76,7 @@ export default {
       this.form = {
         teamId: null,
         teamName: null,
+        teamKey: null,
         teamIcon: null,
         createBy: null,
         createTime: null,

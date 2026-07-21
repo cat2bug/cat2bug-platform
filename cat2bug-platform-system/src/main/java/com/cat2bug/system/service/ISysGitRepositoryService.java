@@ -35,7 +35,7 @@ public interface ISysGitRepositoryService
     /**
      * 新增仓库：校验 manage 权限、slug 格式与项目内唯一性，随后通过 JGit 在磁盘初始化 bare 仓
      *
-     * @param sysGitRepository 仓库（未显式指定 diskPath 时使用默认路径）
+     * @param sysGitRepository 仓库（磁盘路径由系统按 teamKey/projectKey/slug 自动生成）
      * @return 新增后的仓库（含计算出的磁盘路径与 clone 地址）
      */
     public SysGitRepository insertSysGitRepository(SysGitRepository sysGitRepository);
@@ -65,4 +65,13 @@ public interface ISysGitRepositoryService
      * @return 结果
      */
     public int deleteSysGitRepositoryByRepositoryIds(Long[] repositoryIds, boolean wipeDisk);
+
+    /**
+     * 关注 / 取消关注仓库（要求当前用户对该仓库具备 pull 及以上权限）
+     *
+     * @param repositoryId 仓库主键
+     * @param collect 是否关注
+     * @return 影响行数
+     */
+    public int collectSysGitRepository(Long repositoryId, boolean collect);
 }

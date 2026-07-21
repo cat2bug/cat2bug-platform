@@ -12,6 +12,21 @@
             <el-form-item :label="$t('project.name')" prop="projectName">
               <el-input v-model="form.projectName" maxlength="64" :placeholder="$t('project.enter-project-name')"></el-input>
             </el-form-item>
+            <el-form-item :label="$t('project.path-key')" prop="projectKey">
+              <el-input v-model="form.projectKey" maxlength="100" :placeholder="$t('project.path-key-placeholder')"></el-input>
+              <div class="form-tip">{{ $t('project.path-key-hint') }}</div>
+            </el-form-item>
+            <el-form-item :label="$t('project.path-share')" v-if="projectSharePath">
+              <el-input :model-value="projectSharePath" readonly>
+                <template #append>
+                  <el-button
+                    v-clipboard:copy="projectShareUrl"
+                    v-clipboard:success="clipboardShareSuccess"
+                    v-clipboard:error="clipboardShareError"
+                  >{{ $t('copy') }}</el-button>
+                </template>
+              </el-input>
+            </el-form-item>
             <el-form-item :label="$t('project.introduction')">
               <el-input
                 type="textarea"
@@ -101,6 +116,12 @@ import {
 } from '@/utils/project-icon-popover-kbd'
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/user'
+import {
+  buildProjectPathSegment,
+  buildProjectShareUrl,
+  confirmPathKeyRename,
+  createPathKeyValidator
+} from '@/utils/path-key'
 
 export default {
   name: "ProjectEdit",
@@ -133,10 +154,18 @@ export default {
       },                                // 提交的表单
       projectIconPopperVisible: false,  // 是否显示项目图标弹窗
       activeProjectIconIndex: 1,        // 当前选中的项目图标索引
-      // 表单校验
+      originalProjectKey: null,
       rules: {
         projectName: [
           { required: true, message: this.$i18n.t('project.project-name-cannot-empty'), trigger: "blur" }
+        ],
+        projectKey: [
+          { required: true, message: this.$i18n.t('project.path-key-required'), trigger: 'blur' },
+          { validator: createPathKeyValidator({
+            required: this.$i18n.t('project.path-key-required'),
+            reserved: this.$i18n.t('path-key.reserved'),
+            format: this.$i18n.t('path-key.format-invalid')
+          }), trigger: 'blur' }
         ],
         roleIds: [
           { type: 'array', required: true, message: this.$i18n.t('member.please-select-role'), trigger: 'change'}
@@ -145,6 +174,12 @@ export default {
     }
   },
   computed: {
+    projectSharePath() {
+      return buildProjectPathSegment(this.form.teamKey, this.form.projectKey)
+    },
+    projectShareUrl() {
+      return buildProjectShareUrl(this.form.teamKey, this.form.projectKey)
+    },
     /** 计算当前项目图标地址 */
     activeProjectIconUrl() {
       return (index) => getDefaultProjectIconUrl(index)
@@ -219,6 +254,7 @@ export default {
     getProject() {
       getProject(this.getProjectId()).then(res=>{
         this.form = res.data;
+        this.originalProjectKey = res.data && res.data.projectKey ? res.data.projectKey : null;
         this.$nextTick(() => this.capturePageFormCloseBaseline());
       });
     },
@@ -298,12 +334,22 @@ export default {
     onSubmit() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          updateProject(this.form).then(response => {
-            this.$modal.msgSuccess(this.$i18n.t('update.success'));
-            this.goBack();
+          confirmPathKeyRename(this, this.originalProjectKey, this.form.projectKey, () => {
+            updateProject(this.form).then(response => {
+              this.$modal.msgSuccess(this.$i18n.t('update.success'));
+              this.originalProjectKey = this.form.projectKey;
+              this.pageFormCloseBaseline = null;
+              this.goBack();
+            });
           });
         }
       });
+    },
+    clipboardShareSuccess() {
+      this.$modal.msgSuccess(this.$t('project.path-share-copied'));
+    },
+    clipboardShareError() {
+      this.$modal.msgError(this.$t('git.repo.copy-failed'));
     },
   }
 }

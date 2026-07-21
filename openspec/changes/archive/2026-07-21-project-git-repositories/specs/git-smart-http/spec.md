@@ -66,16 +66,16 @@ The system SHALL reject non-fast-forward updates for users who lack repository m
 - **WHEN** a project admin attempts a non-fast-forward push to a repository in their project
 - **THEN** the system accepts the push
 
-### Requirement: Commit author must match push account
+### Requirement: Push identity comes from HTTP authentication
 
-The system SHALL reject receive-pack updates that introduce new commits whose author or committer identity does not match the authenticated push user. Identity match MUST accept either a case-insensitive email match against the platform user email, or a case-insensitive name match against the platform `userName` or `nickName`. Because push already requires a project role with push permission, matching the push account also ensures the commit identity is a project member.
+The system SHALL identify the push actor solely via Smart HTTP authentication (HTTP Basic against the platform account) and project push authorization. The system SHALL NOT reject receive-pack updates merely because commit author or committer `user.name` / `user.email` differ from the authenticated account, so existing repository history can be imported without rewriting every commit.
 
-#### Scenario: Non-member local identity rejected
+#### Scenario: History with foreign authors accepted
 
-- **WHEN** an authenticated project member with push permission pushes a new commit whose author name/email does not match their platform account (e.g. local `user.name=t` while logged in as `demo`)
-- **THEN** the server rejects the ref update with an error explaining that author must match the push account
+- **WHEN** an authenticated project member with push permission pushes commits whose author/committer do not match their platform account
+- **THEN** the server accepts the push (subject to other receive-pack rules such as fast-forward and force-push policy)
 
-#### Scenario: Matching identity accepted
+#### Scenario: Unauthenticated or unauthorized push still rejected
 
-- **WHEN** an authenticated project member pushes a new commit whose author and committer match their platform `userName`/`nickName` or `email`
-- **THEN** the server accepts the push (subject to other receive-pack rules such as fast-forward)
+- **WHEN** a client pushes without valid Basic credentials or without project push permission
+- **THEN** the system rejects the request before applying the pack

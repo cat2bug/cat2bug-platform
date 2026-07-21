@@ -28,7 +28,7 @@ class SetupMysqlDatabaseServiceTest
         try (MockedStatic<SpringUtils> springUtils = mockStatic(SpringUtils.class))
         {
             MessageSource messageSource = mock(MessageSource.class);
-            when(messageSource.getMessage(anyString(), any(), any())).thenReturn("invalid database name");
+            when(messageSource.getMessage(anyString(), any(), any(), any())).thenReturn("invalid database name");
             springUtils.when(() -> SpringUtils.getBean(MessageSource.class)).thenReturn(messageSource);
 
             assertThrows(ServiceException.class,

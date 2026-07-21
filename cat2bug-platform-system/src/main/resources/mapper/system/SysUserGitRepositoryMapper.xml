@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysUserGitRepositoryMapper">
+
+    <resultMap type="SysUserGitRepository" id="SysUserGitRepositoryResult">
+        <result property="userGitRepositoryId" column="user_git_repository_id" />
+        <result property="userId"              column="user_id" />
+        <result property="repositoryId"        column="repository_id" />
+        <result property="collect"             column="collect" />
+        <result property="createBy"            column="create_by" />
+        <result property="updateBy"            column="update_by" />
+    </resultMap>
+
+    <select id="selectByUserIdAndRepositoryId" resultMap="SysUserGitRepositoryResult">
+        select user_git_repository_id, user_id, repository_id, collect, create_by, update_by
+        from sys_user_git_repository
+        where user_id = #{userId} and repository_id = #{repositoryId}
+    </select>
+
+    <insert id="insertSysUserGitRepository" parameterType="SysUserGitRepository" useGeneratedKeys="true" keyProperty="userGitRepositoryId">
+        insert into sys_user_git_repository (user_id, repository_id, collect, create_by, create_time, update_by, update_time)
+        values (#{userId}, #{repositoryId}, #{collect}, #{createBy}, now(), #{updateBy}, now())
+    </insert>
+
+    <update id="updateCollectByUserIdAndRepositoryId" parameterType="SysUserGitRepository">
+        update sys_user_git_repository
+        set collect = #{collect},
+            update_by = #{updateBy},
+            update_time = now()
+        where user_id = #{userId} and repository_id = #{repositoryId}
+    </update>
+
+    <delete id="deleteByRepositoryId">
+        delete from sys_user_git_repository where repository_id = #{repositoryId}
+    </delete>
+</mapper>

@@ -8,6 +8,8 @@ export const useUserStore = defineStore('user', {
     token: getToken(),
     id: '',
     name: '',
+    nickName: '',
+    email: '',
     avatar: '',
     roles: [],
     permissions: [],
@@ -57,6 +59,8 @@ export const useUserStore = defineStore('user', {
         this.contextTeam = res.contextTeam || null
         this.id = user.userId
         this.name = user.userName
+        this.nickName = user.nickName || ''
+        this.email = user.email || ''
         this.avatar = avatar
         this.phoneNumber = user.phoneNumber || ''
         return res

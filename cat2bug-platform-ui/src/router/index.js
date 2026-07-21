@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import i18n from '@/utils/i18n/i18n.js'
+import { isPathKeyReserved } from '@/utils/path-key.js'
 
 /* Layout */
 import Layout from '@/layout'
@@ -237,6 +238,26 @@ export const constantRoutes = [
         component: () => import('@/views/notice'),
         name: 'SystemNotice',
         meta: { title: i18n.global.t('notice'), titleI18nKey:'notice' }
+      }
+    ]
+  },
+  {
+    path: '/:teamKey/:projectKey',
+    component: Layout,
+    hidden: true,
+    beforeEnter: (to, from, next) => {
+      if (isPathKeyReserved(to.params.teamKey)) {
+        next({ path: '/404', replace: true })
+        return
+      }
+      next()
+    },
+    children: [
+      {
+        path: '',
+        name: 'ProjectPathShare',
+        component: () => import('@/views/system/project/path-entry'),
+        meta: { title: i18n.global.t('dashboard'), titleI18nKey: 'dashboard' }
       }
     ]
   }

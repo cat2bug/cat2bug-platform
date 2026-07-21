@@ -195,15 +195,15 @@ public class SysGitRepositoryServiceTest
         loginAs(1L, 11L); // project.create-by
         when(gitPathValidator.validateSlug("api")).thenReturn("api");
         when(sysGitRepositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(PROJECT_ID, "api")).thenReturn(null);
-        when(gitPathValidator.buildDefaultDiskPath(PROJECT_ID, "api")).thenReturn("/data/git/10/api.git");
+        when(gitPathValidator.buildDefaultDiskPath("acme", "app", "api")).thenReturn("/data/git/acme/app/api.git");
         when(sysGitRepositoryMapper.insertSysGitRepository(any())).thenReturn(1);
 
         SysGitRepository result = service.insertSysGitRepository(newRepositoryRequest("api"));
 
-        assertEquals("/data/git/10/api.git", result.getDiskPath());
+        assertEquals("/data/git/acme/app/api.git", result.getDiskPath());
         assertEquals("api", result.getSlug());
-        verify(jGitBareRepositoryHelper).initBareRepository("/data/git/10/api.git", "main");
-        verify(gitPathValidator).ensureParentWritable("/data/git/10/api.git");
+        verify(jGitBareRepositoryHelper).initBareRepository("/data/git/acme/app/api.git", "master");
+        verify(gitPathValidator).ensureParentWritable("/data/git/acme/app/api.git");
     }
 
     @Test
@@ -233,8 +233,8 @@ public class SysGitRepositoryServiceTest
         loginAs(1L, 6L);
         when(gitPathValidator.validateSlug("api")).thenReturn("api");
         when(gitPathValidator.validateSlug("web")).thenReturn("web");
-        when(gitPathValidator.buildDefaultDiskPath(PROJECT_ID, "api")).thenReturn("/data/git/10/api.git");
-        when(gitPathValidator.buildDefaultDiskPath(PROJECT_ID, "web")).thenReturn("/data/git/10/web.git");
+        when(gitPathValidator.buildDefaultDiskPath("acme", "app", "api")).thenReturn("/data/git/acme/app/api.git");
+        when(gitPathValidator.buildDefaultDiskPath("acme", "app", "web")).thenReturn("/data/git/acme/app/web.git");
         when(sysGitRepositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(eq(PROJECT_ID), anyString())).thenReturn(null);
         when(sysGitRepositoryMapper.insertSysGitRepository(any())).thenReturn(1);
 
@@ -251,7 +251,7 @@ public class SysGitRepositoryServiceTest
     {
         loginAs(1L, 6L);
         when(gitPathValidator.validateSlug("api")).thenReturn("api");
-        when(gitPathValidator.buildDefaultDiskPath(PROJECT_ID, "api")).thenReturn("/data/git/10/api.git");
+        when(gitPathValidator.buildDefaultDiskPath("acme", "app", "api")).thenReturn("/data/git/acme/app/api.git");
         when(sysGitRepositoryMapper.insertSysGitRepository(any())).thenReturn(0);
 
         try
@@ -263,7 +263,7 @@ public class SysGitRepositoryServiceTest
         {
             // 插入失败
         }
-        verify(jGitBareRepositoryHelper).wipeBareRepository("/data/git/10/api.git");
+        verify(jGitBareRepositoryHelper).wipeBareRepository("/data/git/acme/app/api.git");
     }
 
     @Test
@@ -289,12 +289,13 @@ public class SysGitRepositoryServiceTest
     {
         loginAs(1L, 6L);
         SysGitRepository existing = repository(1L, "api");
-        existing.setDiskPath("/data/git/10/api.git");
+        existing.setDiskPath("/data/git/acme/app/api.git");
         when(sysGitRepositoryMapper.selectSysGitRepositoryByRepositoryId(1L)).thenReturn(existing);
         when(gitPathValidator.validateSlug("api-v2")).thenReturn("api-v2");
         when(sysGitRepositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(PROJECT_ID, "api-v2")).thenReturn(null);
-        when(gitPathValidator.buildDefaultDiskPath(PROJECT_ID, "api")).thenReturn("/data/git/10/api.git");
-        when(gitPathValidator.buildDefaultDiskPath(PROJECT_ID, "api-v2")).thenReturn("/data/git/10/api-v2.git");
+        when(gitPathValidator.buildDefaultDiskPath("acme", "app", "api")).thenReturn("/data/git/acme/app/api.git");
+        when(gitPathValidator.buildDefaultDiskPath("acme", "app", "api-v2")).thenReturn("/data/git/acme/app/api-v2.git");
+        when(gitPathValidator.buildLegacyDefaultDiskPath(PROJECT_ID, "api")).thenReturn("/data/git/10/api.git");
         when(sysGitRepositoryMapper.updateSysGitRepository(any())).thenReturn(1);
 
         SysGitRepository input = new SysGitRepository();
@@ -305,8 +306,33 @@ public class SysGitRepositoryServiceTest
 
         assertTrue(result.isSlugChanged());
         assertEquals("api-v2", result.getSlug());
-        assertEquals("/data/git/10/api-v2.git", result.getDiskPath());
-        verify(jGitBareRepositoryHelper).moveBareRepository("/data/git/10/api.git", "/data/git/10/api-v2.git");
+        assertEquals("/data/git/acme/app/api-v2.git", result.getDiskPath());
+        verify(jGitBareRepositoryHelper).moveBareRepository("/data/git/acme/app/api.git", "/data/git/acme/app/api-v2.git");
+    }
+
+    @Test
+    public void updateSysGitRepository_slugRenameOnLegacyDefaultPath_movesToNamespacedPath()
+    {
+        loginAs(1L, 6L);
+        SysGitRepository existing = repository(1L, "api");
+        existing.setDiskPath("/data/git/10/api.git");
+        when(sysGitRepositoryMapper.selectSysGitRepositoryByRepositoryId(1L)).thenReturn(existing);
+        when(gitPathValidator.validateSlug("api-v2")).thenReturn("api-v2");
+        when(sysGitRepositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(PROJECT_ID, "api-v2")).thenReturn(null);
+        when(gitPathValidator.buildDefaultDiskPath("acme", "app", "api")).thenReturn("/data/git/acme/app/api.git");
+        when(gitPathValidator.buildDefaultDiskPath("acme", "app", "api-v2")).thenReturn("/data/git/acme/app/api-v2.git");
+        when(gitPathValidator.buildLegacyDefaultDiskPath(PROJECT_ID, "api")).thenReturn("/data/git/10/api.git");
+        when(sysGitRepositoryMapper.updateSysGitRepository(any())).thenReturn(1);
+
+        SysGitRepository input = new SysGitRepository();
+        input.setRepositoryId(1L);
+        input.setSlug("api-v2");
+
+        SysGitRepository result = service.updateSysGitRepository(input);
+
+        assertTrue(result.isSlugChanged());
+        assertEquals("/data/git/acme/app/api-v2.git", result.getDiskPath());
+        verify(jGitBareRepositoryHelper).moveBareRepository("/data/git/10/api.git", "/data/git/acme/app/api-v2.git");
     }
 
     @Test
@@ -318,7 +344,8 @@ public class SysGitRepositoryServiceTest
         when(sysGitRepositoryMapper.selectSysGitRepositoryByRepositoryId(1L)).thenReturn(existing);
         when(gitPathValidator.validateSlug("api-v2")).thenReturn("api-v2");
         when(sysGitRepositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(PROJECT_ID, "api-v2")).thenReturn(null);
-        when(gitPathValidator.buildDefaultDiskPath(PROJECT_ID, "api")).thenReturn("/data/git/10/api.git");
+        when(gitPathValidator.buildDefaultDiskPath("acme", "app", "api")).thenReturn("/data/git/acme/app/api.git");
+        when(gitPathValidator.buildLegacyDefaultDiskPath(PROJECT_ID, "api")).thenReturn("/data/git/10/api.git");
         when(sysGitRepositoryMapper.updateSysGitRepository(any())).thenReturn(1);
 
         SysGitRepository input = new SysGitRepository();
@@ -472,7 +499,7 @@ public class SysGitRepositoryServiceTest
         repository.setProjectId(PROJECT_ID);
         repository.setSlug(slug);
         repository.setName(slug);
-        repository.setDefaultBranch("main");
+        repository.setDefaultBranch("master");
         return repository;
     }
 
@@ -480,6 +507,8 @@ public class SysGitRepositoryServiceTest
     {
         SysProject project = new SysProject();
         project.setProjectId(PROJECT_ID);
+        project.setTeamKey("acme");
+        project.setProjectKey("app");
         return project;
     }
 }

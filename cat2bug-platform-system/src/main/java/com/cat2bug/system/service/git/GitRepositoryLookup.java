@@ -24,4 +24,9 @@ public interface GitRepositoryLookup
      * @return 存在则返回，否则 {@link Optional#empty()}
      */
     Optional<GitRepositoryRef> findByProjectIdAndSlug(Long projectId, String slug);
+
+    /**
+     * 按团队/项目 path key + slug 查询仓库引用（namespaced Smart HTTP）。
+     */
+    Optional<GitRepositoryRef> findByTeamKeyAndProjectKeyAndSlug(String teamKey, String projectKey, String slug);
 }

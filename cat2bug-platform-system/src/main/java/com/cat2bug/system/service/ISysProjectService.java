@@ -21,6 +21,15 @@ public interface ISysProjectService
     public SysProject selectSysProjectByProjectId(Long projectId);
 
     /**
+     * 按团队/项目路径键解析项目（须为项目成员或创建人）。
+     *
+     * @param teamKey    团队 path key
+     * @param projectKey 项目 path key
+     * @return 项目（含 teamKey、projectKey 等）
+     */
+    public SysProject selectSysProjectByTeamAndProjectKey(String teamKey, String projectKey);
+
+    /**
      * 查询项目列表
      * 
      * @param sysProject 项目

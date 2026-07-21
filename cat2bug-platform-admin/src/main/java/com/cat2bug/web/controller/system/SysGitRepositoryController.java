@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
  * REST 挂载在 {@code /system/git/repo}；由本 Controller 负责元数据 CRUD 与磁盘 bare 仓生命周期，
  * 不涉及 Smart HTTP（clone/push 协议见后续任务 3）。
  *
- * clone 地址形态：{@code /git/p/{projectId}/{slug}.git}（见 {@link SysGitRepository#getCloneUrl()}）。
+ * clone 地址形态：{@code /{teamKey}/{projectKey}/code/{slug}.git}（见 {@link SysGitRepository#getCloneUrl()}）。
  *
  * 权限：{@code @PreAuthorize} 仅做入口层的粗粒度过滤（菜单权限字符串）；真正的「项目角色」校验
  * 在 {@link ISysGitRepositoryService} 内按目标 projectId 显式判定，系统管理员/团队管理员若未被
@@ -64,8 +64,7 @@ public class SysGitRepositoryController extends BaseController
     }
 
     /**
-     * 新增仓库：默认磁盘路径 {@code {cat2bug.git.root}/{projectId}/{slug}.git}，
-     * 可在请求体 {@code diskPath} 显式传入绝对路径覆盖（manage 权限）
+     * 新增仓库：默认磁盘路径 {@code {cat2bug.git.root}/{teamKey}/{projectKey}/{slug}.git}（manage 权限）
      */
     @PreAuthorize("@ss.hasPermi('system:git:repo:manage')")
     @Log(title = "代码仓库", businessType = BusinessType.INSERT)
@@ -105,5 +104,17 @@ public class SysGitRepositoryController extends BaseController
         @RequestParam(value = "wipeDisk", defaultValue = "true") boolean wipeDisk)
     {
         return toAjax(sysGitRepositoryService.deleteSysGitRepositoryByRepositoryIds(repositoryIds, wipeDisk));
+    }
+
+    /**
+     * 关注 / 取消关注仓库（pull 及以上权限）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @Log(title = "代码仓库", businessType = BusinessType.UPDATE)
+    @PostMapping("/{repositoryId}/collect")
+    public AjaxResult collect(@PathVariable Long repositoryId, @RequestBody SysGitRepository body)
+    {
+        boolean collect = body != null && Boolean.TRUE.equals(body.getCollect());
+        return toAjax(sysGitRepositoryService.collectSysGitRepository(repositoryId, collect));
     }
 }

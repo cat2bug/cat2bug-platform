@@ -6,6 +6,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <resultMap type="SysTeam" id="SysTeamResult">
         <result property="teamId"    column="team_id"    />
         <result property="teamName"    column="team_name"    />
+        <result property="teamKey"    column="team_key"    />
         <result property="teamIcon"    column="team_icon"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
@@ -20,7 +21,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectSysTeamVo">
-        select t.team_id, t.team_name, t.team_icon, t.create_by, t.create_time, t.update_by, t.update_time,
+        select t.team_id, t.team_name, t.team_key, t.team_icon, t.create_by, t.create_time, t.update_by, t.update_time,
                t.introduce, t.is_del, t.is_lock, t.lock_remark,
                IFNULL(p.project_count,0) as project_count,
                IFNULL(m.member_count,0) as member_count
@@ -41,6 +42,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectSysTeamVo"/>
         <where>  
             <if test="teamName != null  and teamName != ''"> and t.team_name like concat('%', #{teamName}, '%')</if>
+            <if test="teamKey != null  and teamKey != ''"> and t.team_key = #{teamKey}</if>
         </where>
     </select>
 
@@ -48,6 +50,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         SELECT
             t.team_id,
             t.team_name,
+            t.team_key,
             t.team_icon,
             t.create_by,
             t.create_time,
@@ -74,11 +77,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where t.team_name = #{teamName}
     </select>
 
+    <select id="selectSysTeamByTeamKey" parameterType="String" resultMap="SysTeamResult">
+        <include refid="selectSysTeamVo"/>
+        where t.team_key = #{teamKey}
+    </select>
+
     <insert id="insertSysTeam" parameterType="SysTeam" useGeneratedKeys="true" keyProperty="teamId">
         insert into sys_team
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="teamId != null">team_id,</if>
             <if test="teamName != null">team_name,</if>
+            <if test="teamKey != null">team_key,</if>
             <if test="teamIcon != null">team_icon,</if>
             <if test="createBy != null">create_by,</if>
             <if test="createTime != null">create_time,</if>
@@ -90,6 +99,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="teamId != null">#{teamId},</if>
             <if test="teamName != null">#{teamName},</if>
+            <if test="teamKey != null">#{teamKey},</if>
             <if test="teamIcon != null">#{teamIcon},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="createTime != null">#{createTime},</if>
@@ -104,6 +114,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         update sys_team
         <trim prefix="SET" suffixOverrides=",">
             <if test="teamName != null">team_name = #{teamName},</if>
+            <if test="teamKey != null">team_key = #{teamKey},</if>
             <if test="teamIcon != null">team_icon = #{teamIcon},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>

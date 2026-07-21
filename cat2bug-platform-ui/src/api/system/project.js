@@ -25,6 +25,15 @@ export function getProject(projectId) {
   })
 }
 
+// 按 teamKey + projectKey 解析项目（分享链接）
+export function getProjectByPathKeys(teamKey, projectKey) {
+  return request({
+    url: `/system/project/path/${encodeURIComponent(teamKey)}/${encodeURIComponent(projectKey)}`,
+    method: 'get',
+    silentError: true
+  })
+}
+
 // 新增项目
 export function addProject(data) {
   return request({

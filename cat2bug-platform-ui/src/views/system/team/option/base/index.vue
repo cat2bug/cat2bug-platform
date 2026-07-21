@@ -25,6 +25,10 @@
               <el-form-item :label="$t('team.name')" prop="teamName">
                 <el-input v-model="form.teamName" :placeholder="$t('team.please-enter-name')" maxlength="64" />
               </el-form-item>
+              <el-form-item :label="$t('team.path-key')" prop="teamKey">
+                <el-input v-model="form.teamKey" :placeholder="$t('team.path-key-placeholder')" maxlength="100" />
+                <div class="form-tip">{{ $t('team.path-key-hint') }}</div>
+              </el-form-item>
               <el-form-item prop="teamIcon" class="cat2bug-form-item-upload">
                 <template #label>{{ $t('team.icon') }}</template>
                 <image-upload v-model="form.teamIcon" :limit="1"/>
@@ -54,6 +58,7 @@ import {getTeam, updateTeam} from "@/api/system/team";
 import teamOptionSubFormKbd from '@/mixins/team-option-sub-form-kbd'
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/user'
+import { confirmPathKeyRename, createPathKeyValidator } from '@/utils/path-key'
 
 export default {
   name: "TeamBaseInfo",
@@ -67,9 +72,18 @@ export default {
     return {
       loading: true,
       form: {},
+      originalTeamKey: null,
       rules: {
         teamName: [
           { required: true, message: this.$t('team.name-cannot-empty'), trigger: "blur" }
+        ],
+        teamKey: [
+          { required: true, message: this.$t('team.path-key-required'), trigger: 'blur' },
+          { validator: createPathKeyValidator({
+            required: this.$t('team.path-key-required'),
+            reserved: this.$t('path-key.reserved'),
+            format: this.$t('path-key.format-invalid')
+          }), trigger: 'blur' }
         ],
         teamIcon: [
           { required: true, message: this.$t('team.icon-cannot-empty'), trigger: "blur" }
@@ -91,6 +105,7 @@ export default {
       getTeam(this.getTeamId()).then(res=>{
         this.loading = false;
         this.form = res.data;
+        this.originalTeamKey = res.data && res.data.teamKey ? res.data.teamKey : null;
         this.$nextTick(() => this.capturePageFormCloseBaseline())
       });
     },
@@ -112,10 +127,13 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          updateTeam(this.form).then(() => {
-            this.$modal.msgSuccess(this.$t('save.success'));
-            this.capturePageFormCloseBaseline()
-            this.$router.go(0);
+          confirmPathKeyRename(this, this.originalTeamKey, this.form.teamKey, () => {
+            updateTeam(this.form).then(() => {
+              this.$modal.msgSuccess(this.$t('save.success'));
+              this.originalTeamKey = this.form.teamKey;
+              this.capturePageFormCloseBaseline()
+              this.$router.go(0);
+            });
           });
         }
       });

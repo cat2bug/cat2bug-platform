@@ -14,6 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -51,8 +53,10 @@ public class SysDefectStatisticServicePlanParticipationTest {
 
     @Test
     public void participationMy_fillsMissingDaysWithZero() {
+        // 相对「今天」落在 30 天窗口内，避免写死日期滚出窗口导致断言失效
+        String activeDay = LocalDate.now().minusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE);
         when(sysDefectStatisticMapper.participationByDay(eq(100L), eq(1L), any()))
-                .thenReturn(Collections.singletonList(new SysDefectParticipationDay("2026-05-31", 2)));
+                .thenReturn(Collections.singletonList(new SysDefectParticipationDay(activeDay, 2)));
 
         List<SysDefectParticipationDay> list = sysDefectStatisticService.participationMy(100L, 1L, 30);
 

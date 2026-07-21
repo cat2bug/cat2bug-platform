@@ -41,6 +41,17 @@ function excludeToolViewsPlugin(enabled) {
   }
 }
 
+/**
+ * Git Smart HTTP 开发代理：透传 Content-Length，避免大 body push 被截断。
+ */
+function configureGitSmartHttpProxy(proxy) {
+  proxy.on('proxyReq', (proxyReq, req) => {
+    if (req.headers['content-length']) {
+      proxyReq.setHeader('Content-Length', req.headers['content-length'])
+    }
+  })
+}
+
 /** 开发环境 /docs 静态目录（与 vue.config devServer.before 对齐） */
 function docsDevMiddleware() {
   return {
@@ -274,14 +285,15 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           timeout: 0,
           proxyTimeout: 0,
-          configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq, req) => {
-              // 透传大 body；避免部分环境下提前结束
-              if (req.headers['content-length']) {
-                proxyReq.setHeader('Content-Length', req.headers['content-length'])
-              }
-            })
-          }
+          configure: configureGitSmartHttpProxy
+        },
+        // 命名空间 clone：/{teamKey}/{projectKey}/code/{slug}.git/**
+        '^/[^/]+/[^/]+/code/[^/]+\\.git': {
+          target: 'http://localhost:2020',
+          changeOrigin: true,
+          timeout: 0,
+          proxyTimeout: 0,
+          configure: configureGitSmartHttpProxy
         },
         [baseWs]: {
           target: 'ws://localhost:2020',

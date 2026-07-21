@@ -17,16 +17,14 @@ import java.util.regex.Pattern;
 /**
  * Git 仓库磁盘路径与 slug 校验器。
  *
- * 职责（对应 design.md D6 / tasks 2.2）：
+ * 职责：
  * <ul>
- *     <li>校验 slug 格式，拼装默认磁盘路径 {@code {cat2bug.git.root}/{projectId}/{slug}.git}</li>
- *     <li>规范化 manage 用户提交的绝对路径，拒绝包含 {@code ..} 的路径穿越写法</li>
- *     <li>最小黑名单：拒绝根目录及若干系统关键目录，避免服务端进程被诱导写穿系统盘</li>
+ *     <li>校验 slug（路径名称）格式，拼装默认磁盘路径
+ *         {@code {cat2bug.git.root}/{teamKey}/{projectKey}/{slug}.git}（与 Clone URL 路径对齐）</li>
+ *     <li>规范化绝对路径，拒绝包含 {@code ..} 的路径穿越写法</li>
+ *     <li>最小黑名单：拒绝根目录及若干系统关键目录</li>
  *     <li>校验目标父目录可写（不存在则尝试创建）</li>
  * </ul>
- *
- * 不做符号链接穿透的深度检测（如 realpath 逃逸黑名单目录）；MVP 仅覆盖显而易见的误配置/恶意输入，
- * 生产部署仍应限制运行账号对系统目录的写权限作为纵深防御。
  */
 @Component
 public class GitPathValidator
@@ -58,9 +56,45 @@ public class GitPathValidator
     }
 
     /**
-     * 默认磁盘路径：{@code {cat2bug.git.root}/{projectId}/{slug}.git}（绝对路径）。
+     * 由仓库名称推导路径名称：仅保留字母数字与 . _ -，其它字符转为 {@code -}，并裁剪首尾非法段。
+     * 无法得到合法候选时返回 {@code null}（例如纯中文名称）。
      */
-    public String buildDefaultDiskPath(Long projectId, String slug)
+    public String suggestSlugFromName(String name)
+    {
+        if (StringUtils.isEmpty(name))
+        {
+            return null;
+        }
+        String s = name.trim().replaceAll("[^a-zA-Z0-9._-]+", "-");
+        s = s.replaceAll("[-._]{2,}", "-");
+        s = s.replaceAll("^[^a-zA-Z0-9]+", "").replaceAll("[^a-zA-Z0-9]+$", "");
+        if (s.length() > 100)
+        {
+            s = s.substring(0, 100).replaceAll("[^a-zA-Z0-9]+$", "");
+        }
+        return StringUtils.isEmpty(s) ? null : s;
+    }
+
+    /**
+     * 默认磁盘路径：{@code {cat2bug.git.root}/{teamKey}/{projectKey}/{slug}.git}（绝对路径）。
+     */
+    public String buildDefaultDiskPath(String teamKey, String projectKey, String slug)
+    {
+        if (StringUtils.isEmpty(teamKey) || StringUtils.isEmpty(projectKey) || StringUtils.isEmpty(slug))
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.path-required"));
+        }
+        return Paths.get(Cat2BugConfig.getGitRootPath(), teamKey.trim(), projectKey.trim(), slug + ".git")
+            .toAbsolutePath()
+            .normalize()
+            .toString();
+    }
+
+    /**
+     * 历史默认路径（1.1 前）：{@code {cat2bug.git.root}/{projectId}/{slug}.git}。
+     * 仅用于判断存量仓库是否仍落在旧规则目录，以便 slug 改名时迁移。
+     */
+    public String buildLegacyDefaultDiskPath(Long projectId, String slug)
     {
         return Paths.get(Cat2BugConfig.getGitRootPath(), String.valueOf(projectId), slug + ".git")
             .toAbsolutePath()

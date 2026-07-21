@@ -121,6 +121,12 @@ module.exports = {
           ['^' + process.env.VUE_APP_BASE_API]: ''
         }
       },
+      // Git Smart HTTP（legacy + namespaced）
+      '/git': {
+        target: `http://localhost:2020`,
+        changeOrigin: true,
+        onError: proxyOnError
+      },
       [process.env.VUE_APP_BASE_WEBSOCKET]: {
         target: `ws://localhost:2020`,
         changeOrigin: true,
@@ -141,6 +147,18 @@ module.exports = {
           ['^' + process.env.VUE_APP_FILE_VIEW]: ''
         }
       }
+    },
+    // 命名空间 Git：/{team}/{project}/code/{slug}.git → 后端（webpack 用 context 函数）
+    after(app) {
+      const { createProxyMiddleware } = require('http-proxy-middleware')
+      app.use(createProxyMiddleware(
+        (pathname) => /\/[^/]+\/[^/]+\/code\/[^/]+\.git(\/|$)/.test(pathname),
+        {
+          target: 'http://localhost:2020',
+          changeOrigin: true,
+          onError: proxyOnError
+        }
+      ))
     },
     disableHostCheck: true
   },

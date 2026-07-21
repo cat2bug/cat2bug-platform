@@ -78,11 +78,20 @@ public class GitPathValidatorTest
     }
 
     @Test
+    public void suggestSlugFromName_sanitizesInvalidCharacters()
+    {
+        assertEquals("My-Repo", validator.suggestSlugFromName(" My Repo "));
+        assertEquals("api_v2", validator.suggestSlugFromName("api_v2"));
+        assertEquals(null, validator.suggestSlugFromName("中文仓库"));
+        assertEquals(null, validator.suggestSlugFromName(""));
+    }
+
+    @Test
     public void buildDefaultDiskPath_composesFromConfiguredGitRoot()
     {
         withGitRoot(temporaryFolder.getRoot().getAbsolutePath(), () -> {
-            String expected = Paths.get(Cat2BugConfig.getGitRootPath(), "5", "api.git").toString();
-            assertEquals(expected, validator.buildDefaultDiskPath(5L, "api"));
+            String expected = Paths.get(Cat2BugConfig.getGitRootPath(), "acme", "app", "api.git").toString();
+            assertEquals(expected, validator.buildDefaultDiskPath("acme", "app", "api"));
         });
     }
 
@@ -90,9 +99,18 @@ public class GitPathValidatorTest
     public void buildDefaultDiskPath_distinctSlugsUnderSameProject_produceDistinctPaths()
     {
         withGitRoot(temporaryFolder.getRoot().getAbsolutePath(), () -> {
-            String pathA = validator.buildDefaultDiskPath(5L, "api");
-            String pathB = validator.buildDefaultDiskPath(5L, "web");
+            String pathA = validator.buildDefaultDiskPath("acme", "app", "api");
+            String pathB = validator.buildDefaultDiskPath("acme", "app", "web");
             assertFalse(pathA.equals(pathB));
+        });
+    }
+
+    @Test
+    public void buildLegacyDefaultDiskPath_usesProjectIdLayout()
+    {
+        withGitRoot(temporaryFolder.getRoot().getAbsolutePath(), () -> {
+            String expected = Paths.get(Cat2BugConfig.getGitRootPath(), "5", "api.git").toString();
+            assertEquals(expected, validator.buildLegacyDefaultDiskPath(5L, "api"));
         });
     }
 

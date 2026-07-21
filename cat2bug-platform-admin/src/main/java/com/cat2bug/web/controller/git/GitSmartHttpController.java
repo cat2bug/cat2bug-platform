@@ -1,11 +1,7 @@
 package com.cat2bug.web.controller.git;
 
-import com.cat2bug.common.core.domain.entity.SysUser;
-import com.cat2bug.common.core.domain.model.LoginUser;
-import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.framework.security.git.GitPackRequestContext;
 import com.cat2bug.system.domain.git.GitRepositoryRef;
-import com.cat2bug.system.service.git.GitReceivePackCommitAuthorHook;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jgit.lib.Repository;
@@ -19,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,7 +42,6 @@ import java.util.zip.GZIPInputStream;
  */
 @RestController
 @ConditionalOnClass({Repository.class, GitPackRequestContext.class})
-@RequestMapping("/git/p/{projectId}/{slug}.git")
 public class GitSmartHttpController
 {
     private static final Logger log = LoggerFactory.getLogger(GitSmartHttpController.class);
@@ -55,7 +49,10 @@ public class GitSmartHttpController
     private static final String SERVICE_UPLOAD_PACK = "git-upload-pack";
     private static final String SERVICE_RECEIVE_PACK = "git-receive-pack";
 
-    @GetMapping("/info/refs")
+    private static final String LEGACY_BASE = "/git/p/{projectId}/{slug}.git";
+    private static final String NAMESPACED_BASE = "/{teamKey}/{projectKey}/code/{slug}.git";
+
+    @GetMapping({LEGACY_BASE + "/info/refs", NAMESPACED_BASE + "/info/refs"})
     public void infoRefs(@RequestParam(value = "service", required = false) String service,
             HttpServletRequest request, HttpServletResponse response) throws IOException
     {
@@ -107,7 +104,8 @@ public class GitSmartHttpController
         }
     }
 
-    @PostMapping(value = "/git-upload-pack", consumes = "application/x-git-upload-pack-request")
+    @PostMapping(value = {LEGACY_BASE + "/git-upload-pack", NAMESPACED_BASE + "/git-upload-pack"},
+            consumes = "application/x-git-upload-pack-request")
     public void uploadPack(HttpServletRequest request, HttpServletResponse response) throws IOException
     {
         GitPackRequestContext context = requireContext(request, response);
@@ -137,7 +135,8 @@ public class GitSmartHttpController
         }
     }
 
-    @PostMapping(value = "/git-receive-pack", consumes = "application/x-git-receive-pack-request")
+    @PostMapping(value = {LEGACY_BASE + "/git-receive-pack", NAMESPACED_BASE + "/git-receive-pack"},
+            consumes = "application/x-git-receive-pack-request")
     public void receivePack(HttpServletRequest request, HttpServletResponse response) throws IOException
     {
         GitPackRequestContext context = requireContext(request, response);
@@ -160,8 +159,8 @@ public class GitSmartHttpController
             receivePack.setBiDirectionalPipe(false);
             // 3.4：非 manage 用户不允许非快进；JGit 内建校验会按此逐条拒绝非快进的 ref update
             receivePack.setAllowNonFastForwards(context.isForcePushAllowed());
-            // 提交 author/committer 必须与当前推送账号一致（推送人已是有 push 权限的项目成员）
-            receivePack.setPreReceiveHook(new GitReceivePackCommitAuthorHook(currentPusher()));
+            // 推送人身份仅由 HTTP Basic + 项目 push 权限识别，不强制 commit author/committer 与账号一致
+            // （便于导入既有历史；提交作者仍保留在 Git 元数据中供浏览展示）
             try
             {
                 receivePack.receive(requestBody(request), response.getOutputStream(), null);
@@ -177,20 +176,6 @@ public class GitSmartHttpController
         finally
         {
             repository.close();
-        }
-    }
-
-    private SysUser currentPusher()
-    {
-        try
-        {
-            LoginUser loginUser = SecurityUtils.getLoginUser();
-            return loginUser != null ? loginUser.getUser() : null;
-        }
-        catch (Exception e)
-        {
-            log.warn("git-receive-pack 无法获取当前推送用户：{}", e.toString());
-            return null;
         }
     }
 

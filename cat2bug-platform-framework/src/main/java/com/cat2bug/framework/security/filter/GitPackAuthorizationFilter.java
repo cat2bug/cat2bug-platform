@@ -2,6 +2,8 @@ package com.cat2bug.framework.security.filter;
 
 import com.cat2bug.common.core.domain.model.LoginUser;
 import com.cat2bug.framework.security.git.GitPackRequestContext;
+import com.cat2bug.framework.security.git.GitSmartHttpPathSupport;
+import com.cat2bug.framework.security.git.GitSmartHttpPathSupport.GitSmartHttpPathMatch;
 import com.cat2bug.system.domain.git.GitRepositoryRef;
 import com.cat2bug.system.service.git.GitRepositoryAccessService;
 import com.cat2bug.system.service.git.GitRepositoryLookup;
@@ -17,8 +19,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Git Smart HTTP 授权关卡（specs/git-smart-http/spec.md 全部四条 Requirement 的授权部分）。
@@ -34,13 +34,6 @@ import java.util.regex.Pattern;
 public class GitPackAuthorizationFilter extends OncePerRequestFilter
 {
     private static final Logger log = LoggerFactory.getLogger(GitPackAuthorizationFilter.class);
-
-    /**
-     * design.md D8 / Open Questions：clone URL 采用 {@code /git/p/{projectId}/{slug}.git/**}。
-     * 仅承载 info/refs 与两个 pack service；dumb protocol 不支持（design.md D1：不落地外部 git 进程）。
-     */
-    private static final Pattern PACK_PATH = Pattern.compile(
-            "^/git/p/(\\d+)/([^/]+)\\.git/(info/refs|git-upload-pack|git-receive-pack)$");
 
     private static final String SERVICE_UPLOAD_PACK = "git-upload-pack";
     private static final String SERVICE_RECEIVE_PACK = "git-receive-pack";
@@ -69,7 +62,7 @@ public class GitPackAuthorizationFilter extends OncePerRequestFilter
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request)
     {
-        return !requestPath(request).startsWith("/git/");
+        return !GitSmartHttpPathSupport.matchesGitSecurityChain(requestPath(request));
     }
 
     @Override
@@ -77,16 +70,16 @@ public class GitPackAuthorizationFilter extends OncePerRequestFilter
             throws ServletException, IOException
     {
         String path = requestPath(request);
-        Matcher matcher = PACK_PATH.matcher(path);
-        if (!matcher.matches())
+        Optional<GitSmartHttpPathMatch> pathMatch = GitSmartHttpPathSupport.parsePackPath(path);
+        if (!pathMatch.isPresent())
         {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        Long projectId = Long.valueOf(matcher.group(1));
-        String slug = matcher.group(2);
-        String endpoint = matcher.group(3);
+        GitSmartHttpPathMatch match = pathMatch.get();
+        String slug = match.getSlug();
+        String endpoint = match.getEndpoint();
 
         String service = resolveService(request, endpoint);
         if (service == null)
@@ -104,13 +97,17 @@ public class GitPackAuthorizationFilter extends OncePerRequestFilter
             return;
         }
 
-        Optional<GitRepositoryRef> repository = gitRepositoryLookup.findByProjectIdAndSlug(projectId, slug);
+        Optional<GitRepositoryRef> repository = match.isLegacy()
+                ? gitRepositoryLookup.findByProjectIdAndSlug(match.getProjectId(), slug)
+                : gitRepositoryLookup.findByTeamKeyAndProjectKeyAndSlug(
+                        match.getTeamKey(), match.getProjectKey(), slug);
         if (!repository.isPresent())
         {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
+        Long projectId = repository.get().getProjectId();
         boolean granted = SERVICE_UPLOAD_PACK.equals(service)
                 ? gitRepositoryAccessService.canPull(userId, projectId)
                 : gitRepositoryAccessService.canPush(userId, projectId);

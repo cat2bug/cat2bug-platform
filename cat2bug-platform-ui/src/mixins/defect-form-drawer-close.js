@@ -1,10 +1,7 @@
 /**
- * @deprecated Use {@link useDefectFormDrawerClose} from `@/composables/keyboard/useDefectFormDrawerClose`.
+ * Options API mixin for defect create/edit drawers.
+ * Composition API: use {@link useDefectFormDrawerClose} from the same module path.
  */
-import { useDefectFormDrawerClose } from '@/composables/keyboard/useDefectFormDrawerClose'
+import { defectFormDrawerCloseMixin } from '@/composables/keyboard/useDefectFormDrawerClose'
 
-export default {
-  setup() {
-    return useDefectFormDrawerClose()
-  }
-}
+export default defectFormDrawerCloseMixin

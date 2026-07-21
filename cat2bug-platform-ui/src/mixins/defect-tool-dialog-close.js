@@ -1,10 +1,7 @@
 /**
- * @deprecated Use {@link useDefectToolDialogClose} from `@/composables/keyboard/useDefectToolDialogClose`.
+ * Options API mixin for defect tool dialogs (assign/repair/pass/etc.).
+ * Composition API: use {@link useDefectToolDialogClose} from the composable module.
  */
-import { useDefectToolDialogClose } from '@/composables/keyboard/useDefectToolDialogClose'
+import { defectToolDialogCloseMixin } from '@/composables/keyboard/useDefectToolDialogClose'
 
-export default {
-  setup() {
-    return useDefectToolDialogClose()
-  }
-}
+export default defectToolDialogCloseMixin

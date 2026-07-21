@@ -341,6 +341,67 @@ html.dark .report-template-editor .report-milkdown-editor.milkdown .ProseMirror,
   --prosemirror-virtual-cursor-color: #e5eaf3;
 }
 
+/*
+ * 外层 multipane 带有 .markdown-body，全局 markdown.css 将 h1–h6 写死为 #24292e，
+ * 暗色背景下标题几乎不可见（正文/表格仍继承 ProseMirror 浅色）。
+ */
+html.dark .report-template-editor .markdown-body .ProseMirror h1,
+html.dark .report-template-editor .markdown-body .ProseMirror h2,
+html.dark .report-template-editor .markdown-body .ProseMirror h3,
+html.dark .report-template-editor .markdown-body .ProseMirror h4,
+html.dark .report-template-editor .markdown-body .ProseMirror h5,
+html.dark .report-template-editor .markdown-body .ProseMirror h6,
+.report-template-editor.report-template-editor--dark .markdown-body .ProseMirror h1,
+.report-template-editor.report-template-editor--dark .markdown-body .ProseMirror h2,
+.report-template-editor.report-template-editor--dark .markdown-body .ProseMirror h3,
+.report-template-editor.report-template-editor--dark .markdown-body .ProseMirror h4,
+.report-template-editor.report-template-editor--dark .markdown-body .ProseMirror h5,
+.report-template-editor.report-template-editor--dark .markdown-body .ProseMirror h6,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror h1,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror h2,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror h3,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror h4,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror h5,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror h6 {
+  color: #e5eaf3 !important;
+  border-bottom-color: #45454d !important;
+}
+
+/*
+ * 暗色选中态：经典 Crepe / 系统默认常为浅奶油底，浅色正文会看不清。
+ * 统一为金色半透明底 + 深色字；表格 selectedCell 覆盖层同步。
+ */
+html.dark .report-template-editor .report-milkdown-editor.milkdown .ProseMirror ::selection,
+html.dark .report-template-editor .report-milkdown-editor.milkdown .ProseMirror *::selection,
+.report-template-editor.report-template-editor--dark .report-milkdown-editor.milkdown .ProseMirror ::selection,
+.report-template-editor.report-template-editor--dark .report-milkdown-editor.milkdown .ProseMirror *::selection,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror ::selection,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror *::selection {
+  background: rgba(244, 189, 111, 0.55) !important;
+  color: #1a1a1c !important;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .ProseMirror ::-moz-selection,
+html.dark .report-template-editor .report-milkdown-editor.milkdown .ProseMirror *::-moz-selection,
+.report-template-editor.report-template-editor--dark .report-milkdown-editor.milkdown .ProseMirror ::-moz-selection,
+.report-template-editor.report-template-editor--dark .report-milkdown-editor.milkdown .ProseMirror *::-moz-selection,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror ::-moz-selection,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror *::-moz-selection {
+  background: rgba(244, 189, 111, 0.55) !important;
+  color: #1a1a1c !important;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .selectedCell::after,
+html.dark .report-template-editor .report-milkdown-editor.milkdown .milkdown-table-block .selectedCell::after,
+.report-template-editor.report-template-editor--dark .report-milkdown-editor.milkdown .selectedCell::after,
+.report-template-editor.report-template-editor--dark .report-milkdown-editor.milkdown .milkdown-table-block .selectedCell::after,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .selectedCell::after,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .milkdown-table-block .selectedCell::after {
+  background: rgba(244, 189, 111, 0.4) !important;
+  background-color: rgba(244, 189, 111, 0.4) !important;
+  opacity: 1 !important;
+}
+
 html.dark .report-template-editor .report-milkdown-editor.milkdown .ProseMirror-focused,
 .report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror-focused {
   --prosemirror-virtual-cursor-color: #e5eaf3;

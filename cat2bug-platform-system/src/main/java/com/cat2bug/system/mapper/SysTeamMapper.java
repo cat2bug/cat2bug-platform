@@ -30,6 +30,11 @@ public interface SysTeamMapper
     public SysTeam selectSysTeamByTeamName(String teamName);
 
     /**
+     * 按路径键查询团队
+     */
+    public SysTeam selectSysTeamByTeamKey(String teamKey);
+
+    /**
      * 查询团队列表
      * 
      * @param sysTeam 团队

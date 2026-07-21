@@ -30,6 +30,14 @@ public interface SysGitRepositoryMapper
     public SysGitRepository selectSysGitRepositoryByProjectIdAndSlug(@Param("projectId") Long projectId, @Param("slug") String slug);
 
     /**
+     * 按 teamKey + projectKey + slug 查询仓库（Smart HTTP namespaced URL）
+     */
+    public SysGitRepository selectSysGitRepositoryByTeamKeyAndProjectKeyAndSlug(
+            @Param("teamKey") String teamKey,
+            @Param("projectKey") String projectKey,
+            @Param("slug") String slug);
+
+    /**
      * 查询仓库列表
      *
      * @param sysGitRepository 仓库查询条件

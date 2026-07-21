@@ -13,47 +13,263 @@
     </div>
 
     <el-tabs v-model="activeTab" class="git-browse-tabs">
-      <el-tab-pane :label="$t('git.repo.tab.code')" name="code" />
-      <el-tab-pane :label="$t('git.repo.tab.commits')" name="commits" />
+      <el-tab-pane name="code">
+        <template #label>
+          <span class="git-browse-tab-label">
+            <el-icon><Document /></el-icon>
+            {{ $t('git.repo.tab.code') }}
+          </span>
+        </template>
+      </el-tab-pane>
+      <el-tab-pane name="commits">
+        <template #label>
+          <span class="git-browse-tab-label">
+            <el-icon><List /></el-icon>
+            {{ $t('git.repo.tab.commits') }}
+          </span>
+        </template>
+      </el-tab-pane>
     </el-tabs>
 
-    <div v-show="activeTab === 'code'" class="git-browse-layout">
+    <div
+      v-show="activeTab === 'code'"
+      class="git-browse-layout"
+      :class="{ 'has-side-tree': showSideFileTree }"
+    >
+      <!-- 左侧目录树：仅进入子目录后显示；分支选择在「文件」标题下 -->
+      <aside v-if="showSideFileTree" class="git-browse-file-tree">
+        <div class="git-browse-file-tree__head">
+          <span class="git-browse-file-tree__title">{{ $t('git.repo.files') }}</span>
+          <el-dropdown trigger="click" @command="onFileTreeAddCommand">
+            <el-button
+              class="git-browse-file-tree__add"
+              size="small"
+              link
+              :icon="Plus"
+              :title="$t('git.repo.files-add')"
+            />
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="new-file">
+                  <el-icon><Document /></el-icon>
+                  <span>{{ $t('git.repo.new-file') }}</span>
+                </el-dropdown-item>
+                <el-dropdown-item command="new-folder">
+                  <el-icon><Folder /></el-icon>
+                  <span>{{ $t('git.repo.new-folder') }}</span>
+                </el-dropdown-item>
+                <el-dropdown-item command="upload-file" divided>
+                  <el-icon><Upload /></el-icon>
+                  <span>{{ $t('git.repo.upload-file') }}</span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+        <div class="git-browse-file-tree__branch">
+          <el-select
+            v-model="currentRef"
+            size="small"
+            class="git-browse-branch-select git-browse-branch-select--side"
+            :placeholder="$t('git.repo.select-branch')"
+            :loading="branchesLoading"
+            @change="onRefChange"
+          >
+            <template #prefix>
+              <el-icon class="git-browse-branch-icon">
+                <git-branch-icon />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="b in branches"
+              :key="b.name"
+              :label="b.name"
+              :value="b.name"
+            >
+              <span class="git-browse-branch-option">
+                <el-icon class="git-browse-branch-icon">
+                  <git-branch-icon />
+                </el-icon>
+                <span>{{ b.name }}</span>
+              </span>
+            </el-option>
+          </el-select>
+        </div>
+        <div class="git-browse-file-tree__body" v-loading="sideTreeBootLoading">
+          <el-tree
+            v-if="currentRef"
+            :key="'side-tree-' + currentRef"
+            ref="sideFileTree"
+            class="git-browse-file-tree__el"
+            node-key="path"
+            lazy
+            highlight-current
+            :load="loadSideTreeNode"
+            :props="sideTreeProps"
+            :expand-on-click-node="false"
+            @node-click="onSideTreeNodeClick"
+          >
+            <template #default="{ data }">
+              <span
+                class="git-browse-file-tree__node"
+                :class="{ 'is-active': isSideTreeNodeActive(data) }"
+              >
+                <el-icon class="git-browse-file-tree__icon" :class="{ 'is-dir': data.type === 'tree' }">
+                  <Folder v-if="data.type === 'tree'" />
+                  <Document v-else />
+                </el-icon>
+                <span class="git-browse-file-tree__label" :title="data.name">{{ data.name }}</span>
+              </span>
+            </template>
+          </el-tree>
+          <div v-else class="git-browse-file-tree__empty">{{ $t('git.repo.select-branch') }}</div>
+        </div>
+      </aside>
+
       <div class="git-browse-main">
-        <!-- 工具栏 -->
+        <!-- 工具栏：根目录显示分支；子目录显示路径面包屑 -->
         <div class="git-browse-toolbar">
           <div class="git-browse-toolbar-left">
-            <el-select
-              v-model="currentRef"
-              size="small"
-              class="git-browse-branch-select"
-              :placeholder="$t('git.repo.select-branch')"
-              :loading="branchesLoading"
-              @change="onRefChange"
-            >
-              <template #prefix>
-                <el-icon><Share /></el-icon>
-              </template>
-              <el-option
-                v-for="b in branches"
-                :key="b.name"
-                :label="b.name"
-                :value="b.name"
-              />
-            </el-select>
-            <span class="git-browse-meta-chip">{{ $t('git.repo.branch-count', { n: branches.length }) }}</span>
+            <template v-if="showSideFileTree">
+              <div class="git-browse-breadcrumb git-browse-breadcrumb--toolbar">
+                <el-breadcrumb separator="/">
+                  <el-breadcrumb-item>
+                    <a href="javascript:;" @click="navigateToPath('')">{{ repoName || $t('git.repo.path-root') }}</a>
+                  </el-breadcrumb-item>
+                  <el-breadcrumb-item v-for="(seg, idx) in breadcrumbSegments" :key="idx">
+                    <a
+                      v-if="idx < breadcrumbSegments.length - 1 || viewMode === 'blob'"
+                      href="javascript:;"
+                      @click="navigateToPath(breadcrumbPathAt(idx))"
+                    >{{ seg }}</a>
+                    <span v-else>{{ seg }}</span>
+                  </el-breadcrumb-item>
+                </el-breadcrumb>
+                <el-button
+                  class="git-browse-path-copy"
+                  size="small"
+                  link
+                  :icon="CopyDocument"
+                  :title="$t('git.repo.copy-path')"
+                  @click="copyCurrentPath"
+                />
+              </div>
+            </template>
+            <template v-else>
+              <el-select
+                v-model="currentRef"
+                size="small"
+                class="git-browse-branch-select"
+                :placeholder="$t('git.repo.select-branch')"
+                :loading="branchesLoading"
+                @change="onRefChange"
+              >
+                <template #prefix>
+                  <el-icon class="git-browse-branch-icon">
+                    <git-branch-icon />
+                  </el-icon>
+                </template>
+                <el-option
+                  v-for="b in branches"
+                  :key="b.name"
+                  :label="b.name"
+                  :value="b.name"
+                >
+                  <span class="git-browse-branch-option">
+                    <el-icon class="git-browse-branch-icon">
+                      <git-branch-icon />
+                    </el-icon>
+                    <span>{{ b.name }}</span>
+                  </span>
+                </el-option>
+              </el-select>
+              <span class="git-browse-meta-chip">
+                <el-icon class="git-browse-meta-chip-icon">
+                  <git-branch-icon />
+                </el-icon>
+                {{ $t('git.repo.branch-count', { n: branches.length }) }}
+              </span>
+            </template>
           </div>
           <div class="git-browse-toolbar-right">
-            <el-dropdown trigger="click">
+            <el-dropdown
+              v-if="!showSideFileTree"
+              trigger="click"
+              @command="onFileTreeAddCommand"
+            >
+              <el-button
+                class="git-browse-toolbar-add"
+                size="small"
+                plain
+                :icon="Plus"
+                :title="$t('git.repo.files-add')"
+              />
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="new-file">
+                    <el-icon><Document /></el-icon>
+                    <span>{{ $t('git.repo.new-file') }}</span>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="new-folder">
+                    <el-icon><Folder /></el-icon>
+                    <span>{{ $t('git.repo.new-folder') }}</span>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="upload-file" divided>
+                    <el-icon><Upload /></el-icon>
+                    <span>{{ $t('git.repo.upload-file') }}</span>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <el-dropdown trigger="click" :hide-on-click="false">
               <el-button type="primary" plain size="small" class="git-browse-clone-btn">
                 {{ $t('git.repo.clone-download') }}
                 <el-icon class="el-icon--right"><ArrowDown /></el-icon>
               </el-button>
               <template #dropdown>
                 <div class="git-browse-clone-panel" @click.stop>
-                  <div class="git-browse-clone-label">HTTP</div>
+                  <div class="git-browse-clone-proto">HTTPS</div>
                   <div class="git-browse-clone-row">
                     <el-input :model-value="fullCloneUrl" readonly size="small" />
-                    <el-button size="small" type="primary" @click="copyCloneUrl">{{ $t('git.repo.copy') }}</el-button>
+                    <el-button
+                      size="small"
+                      :icon="CopyDocument"
+                      :title="$t('git.repo.copy')"
+                      @click="copyCloneUrl"
+                    />
+                  </div>
+
+                  <div class="git-browse-clone-tips">
+                    <div class="git-browse-clone-tips-title">{{ $t('git.repo.clone-tips') }}</div>
+
+                    <p class="git-browse-clone-tips-desc">{{ $t('git.repo.clone-cmd-hint') }}</p>
+                    <div class="git-browse-clone-code">
+                      <pre>{{ gitCloneCommand }}</pre>
+                      <el-button
+                        size="small"
+                        link
+                        :icon="CopyDocument"
+                        :title="$t('git.repo.copy')"
+                        @click="copyText(gitCloneCommand)"
+                      />
+                    </div>
+
+                    <p class="git-browse-clone-tips-desc">{{ $t('git.repo.clone-config-hint') }}</p>
+                    <div class="git-browse-clone-code">
+                      <pre>{{ gitConfigCommands }}</pre>
+                      <el-button
+                        size="small"
+                        link
+                        :icon="CopyDocument"
+                        :title="$t('git.repo.copy')"
+                        @click="copyText(gitConfigCommands)"
+                      />
+                    </div>
+
+                    <p class="git-browse-clone-tips-desc">{{ $t('git.repo.clone-https-auth-hint') }}</p>
+                    <div class="git-browse-clone-code git-browse-clone-code--example">
+                      <pre>{{ gitHttpsAuthExample }}</pre>
+                    </div>
                   </div>
                 </div>
               </template>
@@ -76,8 +292,8 @@
           </a>
         </div>
 
-        <!-- 面包屑 -->
-        <div class="git-browse-breadcrumb">
+        <!-- 根目录时面包屑仍放在提交条下方 -->
+        <div v-if="!showSideFileTree" class="git-browse-breadcrumb">
           <el-breadcrumb separator="/">
             <el-breadcrumb-item>
               <a href="javascript:;" @click="navigateToPath('')">{{ repoName || $t('git.repo.path-root') }}</a>
@@ -114,8 +330,89 @@
           <div v-if="!treeLoading && !treeEntries.length" class="git-browse-empty">{{ $t('git.repo.empty-repository') }}</div>
         </div>
 
+        <!-- 根目录 README / LICENSE（有正文才显示） -->
+        <div
+          v-if="showRootDocs"
+          v-loading="rootDocsLoading"
+          class="git-browse-root-docs"
+        >
+          <el-tabs v-model="activeRootDocTab" class="git-browse-root-docs-tabs">
+            <el-tab-pane
+              v-for="tab in displayRootDocTabs"
+              :key="tab.key"
+              :name="tab.key"
+            >
+              <template #label>
+                <span class="git-browse-root-doc-tab-label">
+                  <el-icon v-if="tab.key === 'readme'" class="git-browse-root-doc-tab-icon">
+                    <Document />
+                  </el-icon>
+                  <el-icon v-else class="git-browse-root-doc-tab-icon">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="1em"
+                      height="1em"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+                      <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+                      <path d="M7 21h10" />
+                      <path d="M12 3v18" />
+                      <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+                    </svg>
+                  </el-icon>
+                  {{ tab.label }}
+                </span>
+              </template>
+            </el-tab-pane>
+          </el-tabs>
+          <div v-if="activeRootDoc && hasRootDocBody" class="git-browse-root-docs-panel">
+            <div v-if="activeRootDocState.loading" class="git-browse-empty">{{ $t('loading') }}</div>
+            <div v-else class="git-browse-root-docs-content" :class="{ 'has-toc': rootDocToc.length > 0 }">
+              <aside
+                v-if="rootDocToc.length"
+                class="git-browse-doc-toc"
+                :style="{ width: rootDocTocWidth + 'px' }"
+              >
+                <div class="git-browse-doc-toc__title">{{ $t('git.repo.doc-toc') }}</div>
+                <ul class="git-browse-doc-toc__list">
+                  <li
+                    v-for="item in rootDocToc"
+                    :key="item.id"
+                    class="git-browse-doc-toc__item"
+                    :class="'is-level-' + Math.min(6, item.level || 1)"
+                    :style="{ paddingLeft: ((Math.max(1, item.level || 1) - 1) * 6 + 2) + 'px' }"
+                    :title="item.text"
+                    @click="scrollToRootDocHeading(item)"
+                  >
+                    <span class="git-browse-doc-toc__dot" aria-hidden="true" />
+                    <span class="git-browse-doc-toc__text">{{ item.text }}</span>
+                  </li>
+                </ul>
+              </aside>
+              <div
+                v-if="rootDocToc.length"
+                class="git-browse-doc-toc-resizer"
+                :title="$t('git.repo.resize-toc')"
+                @mousedown.prevent="startRootDocTocResize"
+              />
+              <div ref="rootDocMarkdown" class="git-browse-root-docs-body markdown-body">
+                <markdown-renderer
+                  :key="activeRootDoc.path + ':' + (activeRootDocState.content || '').length"
+                  :content="activeRootDocState.content"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- 文件内容 -->
-        <div v-else v-loading="blobLoading" class="git-browse-blob-card">
+        <div v-if="viewMode === 'blob'" v-loading="blobLoading" class="git-browse-blob-card">
           <template v-if="blob">
             <div v-if="blob.binary" class="git-browse-empty">{{ $t('git.repo.file-binary') }}</div>
             <div v-else-if="!blob.content" class="git-browse-empty">{{ $t('git.repo.file-empty') }}</div>
@@ -151,12 +448,12 @@
               <cat2-bug-avatar :member="memberForAuthor(c)" :size="24" />
               <div class="git-aside-activity-body">
                 <div class="git-aside-activity-text">
+                  <span class="git-aside-activity-time">{{ relativeTime(c.commitTime) }}</span>
                   <strong>{{ c.authorName || '-' }}</strong>
                   {{ $t('git.repo.aside.pushed') }}
                   <span class="git-aside-hash">{{ c.shortId }}</span>
                 </div>
                 <div class="git-aside-activity-msg" :title="c.message">{{ c.message }}</div>
-                <div class="git-aside-activity-time">{{ relativeTime(c.commitTime) }}</div>
               </div>
             </div>
           </div>
@@ -183,7 +480,8 @@
 </template>
 
 <script>
-import { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link } from '@element-plus/icons-vue'
+import { h } from 'vue'
+import { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link, List, CopyDocument, Plus, Upload } from '@element-plus/icons-vue'
 import {
   getGitRepo,
   listGitRepoBranches,
@@ -193,20 +491,81 @@ import {
 } from '@/api/system/gitRepo'
 import { listMemberOfProject } from '@/api/system/project'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
+import { MarkdownRenderer } from '@/components/Markdown'
+import { extractHeadings } from '@/components/Report/annotation/report-toc'
 import { useUserStore } from '@/stores/user'
 import { formatTime } from '@/utils/index'
 import { parseTime } from '@/utils/ruoyi'
 
+const README_NAMES = new Set(['readme.md'])
+const LICENSE_NAMES = new Set(['license', 'license.md', 'licence', 'licence.md'])
+const ROOT_DOC_TOC_WIDTH_DEFAULT = 200
+const ROOT_DOC_TOC_WIDTH_MIN = 140
+const ROOT_DOC_TOC_WIDTH_MAX = 360
+
+function clampRootDocTocWidth(width) {
+  const n = Number(width)
+  if (!Number.isFinite(n)) return ROOT_DOC_TOC_WIDTH_DEFAULT
+  return Math.min(ROOT_DOC_TOC_WIDTH_MAX, Math.max(ROOT_DOC_TOC_WIDTH_MIN, Math.round(n)))
+}
+
+/** 分支图标（render，避免 runtime template 在 Vite 下不编译导致空白） */
+const GitBranchIcon = {
+  name: 'GitBranchIcon',
+  render() {
+    return h(
+      'svg',
+      {
+        viewBox: '0 0 24 24',
+        width: '1em',
+        height: '1em',
+        fill: 'none',
+        stroke: 'currentColor',
+        'stroke-width': '2',
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+        'aria-hidden': 'true'
+      },
+      [
+        h('circle', { cx: '6', cy: '5', r: '2.5' }),
+        h('circle', { cx: '6', cy: '19', r: '2.5' }),
+        h('circle', { cx: '18', cy: '7', r: '2.5' }),
+        h('path', { d: 'M6 7.5v9' }),
+        h('path', { d: 'M8.5 5.5h2a5 5 0 0 1 5 5' })
+      ]
+    )
+  }
+}
+
 export default {
   name: 'GitRepoBrowse',
-  components: { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link, Cat2BugAvatar },
+  components: {
+    FolderOpened,
+    Folder,
+    Document,
+    Share,
+    ArrowDown,
+    ArrowRight,
+    Link,
+    List,
+    CopyDocument,
+    Plus,
+    Upload,
+    Cat2BugAvatar,
+    MarkdownRenderer,
+    GitBranchIcon
+  },
   data() {
     return {
+      CopyDocument,
+      Plus,
       repositoryId: null,
       repoName: '',
       repoRemark: '',
       repoSlug: '',
       repoProjectId: null,
+      repoTeamKey: '',
+      repoProjectKey: '',
       cloneUrlPath: '',
       defaultBranch: '',
       branches: [],
@@ -222,10 +581,73 @@ export default {
       commits: [],
       commitsLoading: false,
       pageLoading: false,
-      projectMembers: []
+      projectMembers: [],
+      /** 根目录文档 tab：[{ key, name, path }] */
+      rootDocTabs: [],
+      activeRootDocTab: '',
+      /** path -> { content, loading, binary } */
+      rootDocCache: {},
+      rootDocToc: [],
+      rootDocTocWidth: ROOT_DOC_TOC_WIDTH_DEFAULT,
+      rootDocTocResizing: false,
+      sideTreeBootLoading: false,
+      sideTreeProps: {
+        label: 'name',
+        children: 'children',
+        isLeaf: 'isLeaf'
+      }
     }
   },
   computed: {
+    /** 当前浏览路径（相对仓库根）：目录或文件 */
+    currentBrowsePath() {
+      if (this.viewMode === 'blob' && this.blob && this.blob.path) {
+        return this.blob.path
+      }
+      return this.currentPath || ''
+    },
+    /** 左侧树高亮路径：目录用 currentPath，文件用 blob.path */
+    sideTreeActivePath() {
+      return this.currentBrowsePath
+    },
+    /** 仅进入子目录（或子目录内文件）时显示左侧文件夹树；根目录隐藏 */
+    showSideFileTree() {
+      return !!(this.currentPath && String(this.currentPath).trim())
+    },
+    showRootDocs() {
+      if (this.viewMode !== 'tree' || this.currentPath) return false
+      if (this.rootDocsLoading) return this.rootDocTabs.length > 0
+      return this.visibleRootDocTabs.length > 0
+    },
+    rootDocsLoading() {
+      if (!this.rootDocTabs.length) return false
+      return this.rootDocTabs.some(tab => {
+        const state = this.rootDocCache[tab.path]
+        return !state || state.loading
+      })
+    },
+    /** 加载中展示候选 tab；加载完只保留有正文的 */
+    displayRootDocTabs() {
+      return this.rootDocsLoading ? this.rootDocTabs : this.visibleRootDocTabs
+    },
+    /** 仅展示有正文的文档 tab（空文件 / 二进制不占位） */
+    visibleRootDocTabs() {
+      return this.rootDocTabs.filter(tab => this.isRootDocContentVisible(this.rootDocCache[tab.path]))
+    },
+    hasRootDocBody() {
+      const state = this.activeRootDocState
+      return !!(state && (state.loading || this.isRootDocContentVisible(state)))
+    },
+    activeRootDoc() {
+      const tabs = this.displayRootDocTabs
+      return tabs.find(t => t.key === this.activeRootDocTab) || tabs[0] || null
+    },
+    activeRootDocState() {
+      if (!this.activeRootDoc) {
+        return { content: '', loading: false, binary: false }
+      }
+      return this.rootDocState(this.activeRootDoc.path)
+    },
     breadcrumbSegments() {
       const path = this.viewMode === 'blob' ? this.blob && this.blob.path : this.currentPath
       if (!path) return []
@@ -239,10 +661,59 @@ export default {
     },
     fullCloneUrl() {
       const path = this.cloneUrlPath
-        || (this.repoProjectId && this.repoSlug ? `/git/p/${this.repoProjectId}/${this.repoSlug}.git` : '')
+        || (this.repoTeamKey && this.repoProjectKey && this.repoSlug
+          ? `/${this.repoTeamKey}/${this.repoProjectKey}/code/${this.repoSlug}.git`
+          : (this.repoProjectId && this.repoSlug ? `/git/p/${this.repoProjectId}/${this.repoSlug}.git` : ''))
       if (!path) return ''
       return window.location.origin + path
+    },
+    gitCloneCommand() {
+      return this.fullCloneUrl ? `git clone ${this.fullCloneUrl}` : ''
+    },
+    gitAuthorName() {
+      const user = useUserStore()
+      return (user.nickName || user.name || '').trim() || 'Your Name'
+    },
+    gitAuthorEmail() {
+      const user = useUserStore()
+      return (user.email || '').trim() || 'you@example.com'
+    },
+    gitConfigCommands() {
+      return [
+        `git config --global user.name '${this.gitAuthorName}'`,
+        `git config --global user.email '${this.gitAuthorEmail}'`
+      ].join('\n')
+    },
+    gitHttpsAuthExample() {
+      const user = useUserStore()
+      const username = (user.name || 'username').trim() || 'username'
+      let protocol = window.location.protocol || 'http:'
+      let host = window.location.host || 'localhost'
+      try {
+        const url = new URL(this.fullCloneUrl || window.location.origin)
+        protocol = url.protocol
+        host = url.host
+      } catch (e) { /* keep defaults */ }
+      const origin = `${protocol}//${host}`
+      return [
+        `Username for '${origin}': ${username}`,
+        `Password for '${protocol}//${username}@${host}': ${this.$t('git.repo.clone-https-password-placeholder')}`
+      ].join('\n')
     }
+  },
+  watch: {
+    activeRootDocTab() {
+      this.scheduleRefreshRootDocToc()
+    },
+    activeRootDocState: {
+      deep: true,
+      handler() {
+        this.scheduleRefreshRootDocToc()
+      }
+    }
+  },
+  beforeUnmount() {
+    this.stopRootDocTocResize()
   },
   created() {
     this.repositoryId = Number(this.$route.params.repositoryId)
@@ -342,6 +813,33 @@ export default {
     copyCloneUrl() {
       this.copyText(this.fullCloneUrl)
     },
+    copyCurrentPath() {
+      const path = this.currentBrowsePath
+      if (!path) {
+        this.$modal.msgError(this.$t('git.repo.copy-path-empty'))
+        return
+      }
+      this.copyText(path)
+    },
+    onFileTreeAddCommand(command) {
+      if (command === 'new-file') {
+        this.handleNewFile()
+      } else if (command === 'new-folder') {
+        this.handleNewFolder()
+      } else if (command === 'upload-file') {
+        this.handleUploadFile()
+      }
+    },
+    handleNewFile() {
+      // 在线写仓 API 尚未就绪，先保留入口
+      this.$modal.msgWarning(this.$t('git.repo.write-coming-soon'))
+    },
+    handleNewFolder() {
+      this.$modal.msgWarning(this.$t('git.repo.write-coming-soon'))
+    },
+    handleUploadFile() {
+      this.$modal.msgWarning(this.$t('git.repo.write-coming-soon'))
+    },
     init() {
       this.pageLoading = true
       getGitRepo(this.repositoryId).then(response => {
@@ -351,6 +849,8 @@ export default {
         this.defaultBranch = repo.defaultBranch || ''
         this.repoSlug = repo.slug || ''
         this.repoProjectId = repo.projectId
+        this.repoTeamKey = repo.teamKey || ''
+        this.repoProjectKey = repo.projectKey || ''
         this.cloneUrlPath = repo.cloneUrl || ''
         this.loadProjectMembers(repo.projectId)
       }).catch(() => {}).finally(() => {
@@ -391,9 +891,72 @@ export default {
         this.loadBlob(row.path)
       }
     },
+    mapSideTreeEntries(entries) {
+      return (entries || []).map(row => ({
+        name: row.name,
+        path: row.path || row.name,
+        type: row.type,
+        isLeaf: row.type !== 'tree'
+      }))
+    },
+    loadSideTreeNode(node, resolve) {
+      if (!this.currentRef) {
+        resolve([])
+        return
+      }
+      const path = node.level === 0 ? '' : (node.data && node.data.path) || ''
+      if (node.level === 0) {
+        this.sideTreeBootLoading = true
+      }
+      listGitRepoTree(this.repositoryId, this.currentRef, path).then(response => {
+        resolve(this.mapSideTreeEntries(response.data || []))
+        this.$nextTick(() => this.syncSideTreeHighlight())
+      }).catch(() => {
+        resolve([])
+      }).finally(() => {
+        if (node.level === 0) {
+          this.sideTreeBootLoading = false
+        }
+      })
+    },
+    onSideTreeNodeClick(data, node) {
+      if (!data || !data.path) return
+      if (data.type === 'tree') {
+        if (node && !node.expanded && typeof node.expand === 'function') {
+          node.expand()
+        }
+        this.loadTree(data.path)
+      } else {
+        this.loadBlob(data.path)
+      }
+    },
+    isSideTreeNodeActive(data) {
+      if (!data || !data.path) return false
+      return data.path === this.sideTreeActivePath
+    },
+    syncSideTreeHighlight() {
+      const tree = this.$refs.sideFileTree
+      if (!tree || typeof tree.setCurrentKey !== 'function') return
+      const key = this.sideTreeActivePath || null
+      tree.setCurrentKey(key)
+      if (!key) return
+      // 尽量展开祖先目录，便于在树中看到当前项
+      const parts = String(key).split('/').filter(Boolean)
+      let acc = ''
+      parts.forEach((seg, idx) => {
+        acc = idx === 0 ? seg : `${acc}/${seg}`
+        const isLast = idx === parts.length - 1
+        if (isLast && this.viewMode === 'blob') return
+        const node = typeof tree.getNode === 'function' ? tree.getNode(acc) : null
+        if (node && node.data && node.data.type === 'tree' && !node.expanded && typeof node.expand === 'function') {
+          node.expand()
+        }
+      })
+    },
     loadTree(path) {
       if (!this.currentRef) {
         this.treeEntries = []
+        this.clearRootDocs()
         return
       }
       this.treeLoading = true
@@ -402,17 +965,168 @@ export default {
       listGitRepoTree(this.repositoryId, this.currentRef, this.currentPath).then(response => {
         this.treeEntries = response.data || []
         this.treeLoading = false
+        this.syncRootDocsFromTree()
+        this.$nextTick(() => this.syncSideTreeHighlight())
       }).catch(() => {
         this.treeEntries = []
         this.treeLoading = false
+        this.clearRootDocs()
       })
+    },
+    clearRootDocs() {
+      this.rootDocTabs = []
+      this.activeRootDocTab = ''
+      this.rootDocCache = {}
+      this.rootDocToc = []
+    },
+    findTreeFile(names) {
+      return (this.treeEntries || []).find(row => {
+        if (!row || row.type === 'tree') return false
+        const name = String(row.name || '').toLowerCase()
+        return names.has(name)
+      }) || null
+    },
+    /** tab 文案去掉 .md / .markdown / .txt 扩展名 */
+    rootDocTabLabel(fileName) {
+      return String(fileName || '').replace(/\.(md|markdown|txt)$/i, '')
+    },
+    syncRootDocsFromTree() {
+      if (this.currentPath || this.viewMode !== 'tree') {
+        this.rootDocTabs = []
+        this.activeRootDocTab = ''
+        return
+      }
+      const tabs = []
+      const readme = this.findTreeFile(README_NAMES)
+      if (readme) {
+        tabs.push({
+          key: 'readme',
+          name: readme.name,
+          label: this.rootDocTabLabel(readme.name),
+          path: readme.path || readme.name
+        })
+      }
+      const license = this.findTreeFile(LICENSE_NAMES)
+      if (license) {
+        tabs.push({
+          key: 'license',
+          name: license.name,
+          label: this.rootDocTabLabel(license.name),
+          path: license.path || license.name
+        })
+      }
+      this.rootDocTabs = tabs
+      if (!tabs.some(t => t.key === this.activeRootDocTab)) {
+        this.activeRootDocTab = tabs.length ? tabs[0].key : ''
+      }
+      // 切换分支时清空旧内容缓存，按新 ref 重拉
+      this.rootDocCache = {}
+      tabs.forEach(tab => this.loadRootDocContent(tab.path))
+    },
+    rootDocState(path) {
+      return this.rootDocCache[path] || { content: '', loading: true, binary: false }
+    },
+    isRootDocContentVisible(state) {
+      if (!state || state.binary) return false
+      return !!(String(state.content || '').trim())
+    },
+    ensureActiveRootDocTab() {
+      const visible = this.visibleRootDocTabs
+      if (!visible.length) {
+        this.activeRootDocTab = ''
+        this.rootDocToc = []
+        return
+      }
+      if (!visible.some(t => t.key === this.activeRootDocTab)) {
+        this.activeRootDocTab = visible[0].key
+      }
+    },
+    loadRootDocContent(path) {
+      if (!path || !this.currentRef) return
+      this.rootDocCache = {
+        ...this.rootDocCache,
+        [path]: { content: '', loading: true, binary: false }
+      }
+      getGitRepoBlob(this.repositoryId, this.currentRef, path).then(response => {
+        const data = response.data || {}
+        this.rootDocCache = {
+          ...this.rootDocCache,
+          [path]: {
+            content: data.binary ? '' : (data.content || ''),
+            loading: false,
+            binary: !!data.binary
+          }
+        }
+        this.ensureActiveRootDocTab()
+      }).catch(() => {
+        this.rootDocCache = {
+          ...this.rootDocCache,
+          [path]: { content: '', loading: false, binary: false }
+        }
+        this.ensureActiveRootDocTab()
+      })
+    },
+    scheduleRefreshRootDocToc() {
+      this.$nextTick(() => {
+        // markdown-it 渲染后再扫一轮，避免拿不到 h1-h6
+        window.setTimeout(() => this.refreshRootDocToc(), 0)
+      })
+    },
+    refreshRootDocToc() {
+      const root = this.$refs.rootDocMarkdown
+      if (!root || !this.activeRootDocState || !this.activeRootDocState.content) {
+        this.rootDocToc = []
+        return
+      }
+      const headings = extractHeadings(root)
+        .map(({ id, text, level }) => ({ id, text, level }))
+        .filter(h => h.text)
+      this.rootDocToc = headings
+    },
+    scrollToRootDocHeading(item) {
+      if (!item || !item.id) return
+      const root = this.$refs.rootDocMarkdown
+      const target = root && root.querySelector(`#${CSS.escape(item.id)}`)
+      if (!target) return
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    },
+    startRootDocTocResize(event) {
+      this.stopRootDocTocResize()
+      const startX = event.pageX
+      const startWidth = this.rootDocTocWidth
+      this.rootDocTocResizing = true
+      this._rootDocTocOnMove = (ev) => {
+        this.rootDocTocWidth = clampRootDocTocWidth(startWidth + (ev.pageX - startX))
+      }
+      this._rootDocTocOnUp = () => this.stopRootDocTocResize()
+      window.addEventListener('mousemove', this._rootDocTocOnMove)
+      window.addEventListener('mouseup', this._rootDocTocOnUp)
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+    },
+    stopRootDocTocResize() {
+      if (this._rootDocTocOnMove) {
+        window.removeEventListener('mousemove', this._rootDocTocOnMove)
+        this._rootDocTocOnMove = null
+      }
+      if (this._rootDocTocOnUp) {
+        window.removeEventListener('mouseup', this._rootDocTocOnUp)
+        this._rootDocTocOnUp = null
+      }
+      this.rootDocTocResizing = false
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
     },
     loadBlob(path) {
       this.blobLoading = true
       this.viewMode = 'blob'
+      // 进入文件时保留目录路径，便于面包屑回退；左侧树高亮用 blob.path
+      const slash = String(path || '').lastIndexOf('/')
+      this.currentPath = slash > 0 ? path.slice(0, slash) : ''
       getGitRepoBlob(this.repositoryId, this.currentRef, path).then(response => {
         this.blob = response.data || null
         this.blobLoading = false
+        this.$nextTick(() => this.syncSideTreeHighlight())
       }).catch(() => {
         this.blob = null
         this.blobLoading = false
@@ -442,6 +1156,14 @@ export default {
   padding: 16px 20px 24px;
   box-sizing: border-box;
   color: var(--text-color-regular);
+  /* 承接 AppMain 首子 flex + min-height:0，由本页纵向滚动，避免 README 过长被裁切 */
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-height: calc(100vh - 84px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .git-browse-top {
@@ -481,11 +1203,169 @@ export default {
   }
 }
 
+.git-browse-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  .el-icon {
+    font-size: 14px;
+  }
+}
+
 .git-browse-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 20px;
+  gap: 16px;
   align-items: start;
+
+  &.has-side-tree {
+    grid-template-columns: 220px minmax(0, 1fr) 280px;
+  }
+}
+
+.git-browse-file-tree {
+  position: sticky;
+  top: 0;
+  max-height: calc(100vh - 160px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color-light);
+  border-radius: 6px;
+  background: var(--card-bg);
+  overflow: hidden;
+  min-width: 0;
+  padding: 0 15px;
+}
+
+.git-browse-file-tree__head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0 0;
+  border-bottom: none;
+  background: transparent;
+}
+
+.git-browse-file-tree__add {
+  flex: 0 0 auto;
+  padding: 2px;
+  color: var(--text-color-secondary);
+
+  &:hover {
+    color: var(--el-color-primary);
+  }
+}
+
+.git-browse-file-tree__branch {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  border-bottom: none;
+  background: transparent;
+}
+
+.git-browse-file-tree__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color-primary);
+}
+
+.git-browse-file-tree__body {
+  flex: 1 1 auto;
+  min-height: 120px;
+  overflow: auto;
+  padding: 6px 0 10px;
+  background: var(--card-bg);
+}
+
+.git-browse-file-tree__empty {
+  padding: 16px 12px;
+  font-size: 12px;
+  color: var(--text-color-placeholder);
+}
+
+/* 覆盖全局/暗色主题 .el-tree 的 --bg-color-base，与外层卡片同色 */
+.git-browse-file-tree .git-browse-file-tree__el.el-tree,
+.git-browse-file-tree .git-browse-file-tree__el {
+  background: var(--card-bg) !important;
+  background-color: var(--card-bg) !important;
+  color: var(--text-color-regular);
+
+  :deep(.el-tree-node__content) {
+    height: 28px;
+    border-radius: 4px;
+    background: transparent;
+  }
+
+  :deep(.el-tree-node__content:hover) {
+    background: var(--table-row-hover-bg);
+  }
+
+  :deep(.el-tree-node.is-current > .el-tree-node__content) {
+    background: var(--table-row-hover-bg);
+  }
+
+  :deep(.el-tree-node__expand-icon) {
+    color: var(--text-color-secondary);
+  }
+}
+
+.git-browse-file-tree__node {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text-color-primary);
+  font-weight: 500;
+}
+
+.git-browse-file-tree__icon {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--text-color-secondary);
+
+  &.is-dir {
+    color: var(--text-color-regular);
+  }
+}
+
+.git-browse-file-tree__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .git-browse-layout {
+    grid-template-columns: minmax(0, 1fr);
+
+    &.has-side-tree {
+      grid-template-columns: 200px minmax(0, 1fr);
+    }
+  }
+
+  .git-browse-aside {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .git-browse-layout,
+  .git-browse-layout.has-side-tree {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .git-browse-file-tree {
+    display: none;
+  }
 }
 
 .git-browse-toolbar {
@@ -508,44 +1388,194 @@ export default {
 .git-browse-branch-select {
   width: 220px;
   min-width: 180px;
+
+  /* 侧栏整行：分支下拉占满宽度，保留 prefix / 下拉箭头 */
+  &.git-browse-branch-select--side {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+
+    :deep(.el-select__wrapper) {
+      min-width: 0;
+      width: 100%;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    :deep(.el-select__prefix),
+    :deep(.el-select__suffix) {
+      display: inline-flex !important;
+      flex-shrink: 0;
+      align-items: center;
+    }
+
+    :deep(.el-select__prefix) {
+      min-width: 16px;
+      margin-right: 4px;
+      color: var(--text-color-secondary);
+    }
+
+    :deep(.el-select__prefix .el-icon),
+    :deep(.el-select__prefix .git-browse-branch-icon) {
+      display: inline-flex !important;
+      width: 14px;
+      height: 14px;
+      font-size: 14px;
+    }
+
+    :deep(.el-select__caret),
+    :deep(.el-select__icon) {
+      display: inline-flex !important;
+      color: var(--text-color-secondary);
+    }
+
+    :deep(.el-select__selection) {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    :deep(.el-select__selected-item) {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+.git-browse-branch-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.git-browse-branch-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  font-size: 14px;
+  color: var(--text-color-secondary);
+
+  svg {
+    width: 1em;
+    height: 1em;
+  }
 }
 
 .git-browse-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 13px;
   color: var(--text-color-secondary);
+}
+
+.git-browse-meta-chip-icon {
+  font-size: 14px;
 }
 
 .git-browse-clone-btn {
   font-weight: 500;
 }
 
+.git-browse-toolbar-add {
+  padding: 5px 8px;
+  color: var(--text-color-regular);
+
+  &:hover {
+    color: var(--el-color-primary);
+    border-color: var(--el-color-primary);
+  }
+}
+
 .git-browse-clone-panel {
-  padding: 12px;
-  width: 420px;
-  max-width: 80vw;
+  padding: 14px 16px 16px;
+  width: 520px;
+  max-width: 90vw;
+  max-height: min(70vh, 640px);
+  overflow: auto;
   background: var(--dropdown-bg);
   border: 1px solid var(--border-color-light);
-  border-radius: 4px;
+  border-radius: 6px;
   box-shadow: var(--el-box-shadow-light);
   color: var(--text-color-regular);
 }
 
-.git-browse-clone-label {
-  font-size: 12px;
-  color: var(--text-color-secondary);
-  margin-bottom: 6px;
+.git-browse-clone-proto {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--el-color-primary);
+  border-bottom: 2px solid var(--el-color-primary);
 }
 
 .git-browse-clone-row {
   display: flex;
-  gap: var(--cat2bug-toolbar-item-gap, 10px);
+  gap: 8px;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
 
   .el-input {
     flex: 1 1 auto;
     min-width: 0;
   }
+}
+
+.git-browse-clone-tips-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color-primary);
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color-light);
+  }
+}
+
+.git-browse-clone-tips-desc {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-color-secondary);
+}
+
+.git-browse-clone-code {
+  position: relative;
+  margin: 0 0 14px;
+  padding: 10px 36px 10px 12px;
+  border-radius: 4px;
+  background: var(--bg-color-block, rgba(127, 127, 127, 0.12));
+  border: 1px solid var(--border-color-light);
+
+  pre {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--text-color-regular);
+  }
+
+  .el-button {
+    position: absolute;
+    top: 6px;
+    right: 4px;
+  }
+}
+
+.git-browse-clone-code--example {
+  margin-bottom: 0;
+  padding-right: 12px;
 }
 
 .git-browse-commit-bar {
@@ -600,7 +1630,7 @@ export default {
 
 .git-browse-commit-time {
   font-size: 12px;
-  color: var(--text-color-placeholder);
+  color: var(--text-color-secondary);
 }
 
 .git-browse-commit-total {
@@ -630,6 +1660,33 @@ export default {
       text-decoration: underline;
     }
   }
+
+  &.git-browse-breadcrumb--toolbar {
+    margin-bottom: 0;
+    min-width: 0;
+    flex: 1 1 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    :deep(.el-breadcrumb) {
+      font-size: 13px;
+      line-height: 1.4;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+  }
+}
+
+.git-browse-path-copy {
+  flex: 0 0 auto;
+  padding: 2px;
+  margin-left: 2px;
+  color: var(--text-color-secondary);
+
+  &:hover {
+    color: var(--el-color-primary);
+  }
 }
 
 .git-browse-tree-card,
@@ -640,6 +1697,253 @@ export default {
   background: var(--card-bg);
   min-height: 120px;
   color: var(--text-color-regular);
+}
+
+.git-browse-root-docs {
+  margin-top: 16px;
+  border: 1px solid var(--border-color-light);
+  border-radius: 6px;
+  background: var(--card-bg);
+  overflow: visible;
+  min-height: 80px;
+}
+
+.git-browse-root-docs-tabs {
+  :deep(.el-tabs__header) {
+    margin: 0;
+    padding: 0 12px;
+    background: var(--bg-color-block, rgba(127, 127, 127, 0.06));
+    border-bottom: 1px solid var(--border-color-light);
+  }
+
+  :deep(.el-tabs__nav-wrap::after) {
+    display: none;
+  }
+
+  :deep(.el-tabs__item) {
+    height: 40px;
+    line-height: 40px;
+    font-weight: 600;
+  }
+
+  :deep(.el-tabs__content) {
+    display: none;
+  }
+}
+
+.git-browse-root-doc-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.git-browse-root-doc-tab-icon {
+  font-size: 14px;
+}
+
+.git-browse-root-docs-panel {
+  min-height: 80px;
+}
+
+.git-browse-root-docs-content {
+  display: flex;
+  align-items: stretch;
+  min-height: 120px;
+}
+
+.git-browse-doc-toc {
+  flex: 0 0 auto;
+  max-height: min(70vh, 720px);
+  overflow: auto;
+  border-right: none;
+  background: var(--bg-color-block, rgba(127, 127, 127, 0.04));
+}
+
+.git-browse-doc-toc__title {
+  padding: 12px 6px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color-primary);
+  position: sticky;
+  top: 0;
+  background: inherit;
+  z-index: 1;
+}
+
+.git-browse-doc-toc__list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 12px;
+}
+
+.git-browse-doc-toc__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 3px 4px;
+  margin: 0 2px;
+  line-height: 1.4;
+  color: var(--text-color-regular);
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--el-color-primary);
+    background: rgba(255, 193, 7, 0.08);
+
+    .git-browse-doc-toc__dot {
+      background: var(--el-color-primary);
+    }
+  }
+
+  &.is-level-1 {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  &.is-level-2 {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  &.is-level-3 {
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  &.is-level-4 {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-color-secondary);
+  }
+
+  &.is-level-5,
+  &.is-level-6 {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-color-secondary);
+  }
+}
+
+.git-browse-doc-toc__dot {
+  flex: 0 0 auto;
+  width: 5px;
+  height: 5px;
+  margin-top: 0.45em;
+  border-radius: 50%;
+  background: var(--text-color-secondary);
+}
+
+.git-browse-doc-toc__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.git-browse-doc-toc-resizer {
+  flex: 0 0 2px;
+  width: 2px;
+  cursor: col-resize;
+  background: transparent;
+  position: relative;
+  z-index: 2;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 1px;
+    background: var(--border-color-light);
+  }
+
+  &:hover::after,
+  &:active::after {
+    background: var(--el-color-primary);
+    width: 2px;
+    left: 0;
+  }
+}
+
+.git-browse-root-docs-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 16px 20px 20px;
+  color: var(--text-color-regular);
+  font-size: 14px;
+  line-height: 1.6;
+
+  :deep(.markdown-body),
+  :deep(.markdown-it-vue) {
+    background: transparent;
+    color: inherit;
+  }
+
+  :deep(a) {
+    color: var(--el-color-primary);
+  }
+
+  :deep(pre),
+  :deep(code) {
+    background: var(--bg-color-block, rgba(127, 127, 127, 0.12));
+    border-radius: 4px;
+  }
+
+  :deep(pre) {
+    padding: 12px;
+    overflow-x: auto;
+  }
+
+  :deep(code) {
+    padding: 0.1em 0.35em;
+    font-size: 0.9em;
+  }
+
+  :deep(pre code) {
+    padding: 0;
+    background: transparent;
+  }
+
+  :deep(table) {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0;
+  }
+
+  :deep(th),
+  :deep(td) {
+    border: 1px solid var(--border-color-light);
+    padding: 6px 10px;
+  }
+
+  :deep(blockquote) {
+    margin: 12px 0;
+    padding: 4px 12px;
+    border-left: 3px solid var(--el-color-primary);
+    color: var(--text-color-secondary);
+  }
+
+  :deep(h1),
+  :deep(h2),
+  :deep(h3),
+  :deep(h4),
+  :deep(h5),
+  :deep(h6) {
+    scroll-margin-top: 12px;
+  }
+}
+
+.git-browse-root-docs-content.has-toc .git-browse-root-docs-body {
+  padding-left: 5px;
+}
+
+.git-browse-root-docs-content:not(.has-toc) .git-browse-root-docs-body {
+  width: 100%;
 }
 
 .git-browse-tree-row {
@@ -691,7 +1995,7 @@ export default {
 
 .git-browse-tree-time {
   text-align: right;
-  color: var(--text-color-placeholder);
+  color: var(--text-color-secondary);
   font-size: 12px;
 }
 
@@ -792,6 +2096,10 @@ export default {
 }
 
 .git-aside-activity-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 6px;
   font-size: 12px;
   color: var(--text-color-regular);
   line-height: 1.4;
@@ -812,9 +2120,10 @@ export default {
 }
 
 .git-aside-activity-time {
-  margin-top: 2px;
+  flex: 0 0 auto;
   font-size: 12px;
-  color: var(--text-color-placeholder);
+  color: var(--text-color-secondary);
+  white-space: nowrap;
 }
 
 .git-aside-empty {

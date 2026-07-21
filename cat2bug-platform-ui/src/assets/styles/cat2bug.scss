@@ -434,6 +434,56 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
   outline: none !important;
 }
 
+/* 恢复 Element Plus 复合型输入框（prepend/append）：全局 wrapper 圆角/描边会拆成两个框 */
+.el-input.el-input-group {
+  display: inline-flex !important;
+  align-items: stretch !important;
+  width: 100%;
+}
+
+.el-input.el-input-group--prepend > .el-input__wrapper {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.el-input.el-input-group--append > .el-input__wrapper {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.el-input-group__prepend,
+.el-input-group__append {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  padding: 0 20px !important;
+  background-color: var(--el-fill-color-light, #f5f7fa) !important;
+  color: var(--el-color-info, #909399) !important;
+  border: none !important;
+}
+
+.el-input-group__prepend {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right: 0 !important;
+  /* 与官网一致：仅上/下/左三边内描边，右侧与输入区衔接 */
+  box-shadow:
+    1px 0 0 0 var(--el-input-border-color, var(--input-border, #dcdfe6)) inset,
+    0 1px 0 0 var(--el-input-border-color, var(--input-border, #dcdfe6)) inset,
+    0 -1px 0 0 var(--el-input-border-color, var(--input-border, #dcdfe6)) inset !important;
+}
+
+.el-input-group__append {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-left: 0 !important;
+  box-shadow:
+    0 1px 0 0 var(--el-input-border-color, var(--input-border, #dcdfe6)) inset,
+    0 -1px 0 0 var(--el-input-border-color, var(--input-border, #dcdfe6)) inset,
+    -1px 0 0 0 var(--el-input-border-color, var(--input-border, #dcdfe6)) inset !important;
+}
+
 /* ========== 全站统一聚焦环：1px 外描边，border 色不变，避免快捷键环与 :focus 环重叠 ========== */
 @mixin cat2bug-unified-focus-ring {
   outline: none !important;

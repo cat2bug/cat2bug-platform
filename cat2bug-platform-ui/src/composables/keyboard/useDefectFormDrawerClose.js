@@ -54,6 +54,8 @@ const legacyMixin = {
   }
 }
 
+export { legacyMixin as defectFormDrawerCloseMixin }
+
 export function useDefectFormDrawerClose() {
   return useLegacyKeyboardMixin(legacyMixin)
 }

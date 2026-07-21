@@ -12,6 +12,10 @@
             <el-form-item :label="$t('project.name')" prop="projectName">
               <el-input v-model="form.projectName" maxlength="64" :placeholder="$t('project.enter-project-name')"></el-input>
             </el-form-item>
+            <el-form-item :label="$t('project.path-key')" prop="projectKey">
+              <el-input v-model="form.projectKey" maxlength="100" :placeholder="$t('project.path-key-placeholder')"></el-input>
+              <div class="form-tip">{{ $t('project.path-key-hint') }}</div>
+            </el-form-item>
             <el-form-item :label="$t('project.introduction')">
               <el-input
                 type="textarea"
@@ -180,6 +184,7 @@ import {
 } from '@/utils/project-icon-popover-kbd'
 import { isEscapeCloseKey } from '@/utils/defect-drawer-shortcuts'
 import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
+import { createPathKeyValidator } from '@/utils/path-key'
 
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user'
@@ -210,6 +215,7 @@ export default {
       form:{
         teamId: this.currentTeamId,
         projectName: null,
+        projectKey: null,
         projectIntroduce: null,
         projectIcon: null,
         members: []
@@ -219,6 +225,14 @@ export default {
       rules: {
         projectName: [
           { required: true, message: this.$i18n.t('project.project-name-cannot-empty'), trigger: "blur" }
+        ],
+        projectKey: [
+          { required: true, message: this.$i18n.t('project.path-key-required'), trigger: 'blur' },
+          { validator: createPathKeyValidator({
+            required: this.$i18n.t('project.path-key-required'),
+            reserved: this.$i18n.t('path-key.reserved'),
+            format: this.$i18n.t('path-key.format-invalid')
+          }), trigger: 'blur' }
         ],
         roleIds: [
           { type: 'array', required: true, message: this.$i18n.t('member.please-select-role'), trigger: 'change'}

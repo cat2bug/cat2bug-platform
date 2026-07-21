@@ -25,7 +25,7 @@ public class JGitBareRepositoryHelper
      * 在指定磁盘路径初始化一个 bare 仓库。
      *
      * @param diskPath 目标磁盘绝对路径（父目录须已确保可写，见 {@link GitPathValidator#ensureParentWritable}）
-     * @param defaultBranch 初始默认分支名（如 main）；为空则使用 JGit 默认值
+     * @param defaultBranch 初始默认分支名（如 master）；为空则使用 JGit 默认值
      */
     public void initBareRepository(String diskPath, String defaultBranch)
     {

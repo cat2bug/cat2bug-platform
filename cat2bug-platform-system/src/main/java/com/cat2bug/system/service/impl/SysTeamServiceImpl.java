@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.common.utils.PathKeyValidator;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.*;
@@ -146,6 +147,12 @@ public class SysTeamServiceImpl implements ISysTeamService
         SysTeam selectSysTeam = sysTeamMapper.selectSysTeamByTeamName(sysTeam.getTeamName());
         Preconditions.checkState(selectSysTeam==null,MessageUtils.message("team.insert_team_name_duplicate"));
 
+        String teamKey = PathKeyValidator.normalizeOrNull(sysTeam.getTeamKey());
+        Preconditions.checkNotNull(teamKey, MessageUtils.message("team.path-key-invalid"));
+        Preconditions.checkState(sysTeamMapper.selectSysTeamByTeamKey(teamKey) == null,
+                MessageUtils.message("team.path-key-duplicate"));
+        sysTeam.setTeamKey(teamKey);
+
         // 新建团队数据
         sysTeam.setCreateTime(DateUtils.getNowDate());
         sysTeam.setCreateBy(SecurityUtils.getUsername());
@@ -238,6 +245,15 @@ public class SysTeamServiceImpl implements ISysTeamService
     public int updateSysTeam(SysTeam sysTeam)
     {
         sysTeam.setUpdateTime(DateUtils.getNowDate());
+        if (StringUtils.isNotEmpty(sysTeam.getTeamKey()))
+        {
+            String teamKey = PathKeyValidator.normalizeOrNull(sysTeam.getTeamKey());
+            Preconditions.checkNotNull(teamKey, MessageUtils.message("team.path-key-invalid"));
+            SysTeam existing = sysTeamMapper.selectSysTeamByTeamKey(teamKey);
+            Preconditions.checkState(existing == null || existing.getTeamId().equals(sysTeam.getTeamId()),
+                    MessageUtils.message("team.path-key-duplicate"));
+            sysTeam.setTeamKey(teamKey);
+        }
         return sysTeamMapper.updateSysTeam(sysTeam);
     }
 

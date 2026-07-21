@@ -59,7 +59,8 @@ final class SetupTestSupport
         try (MockedStatic<SpringUtils> springUtils = mockStatic(SpringUtils.class))
         {
             MessageSource messageSource = mock(MessageSource.class);
-            when(messageSource.getMessage(anyString(), any(), any())).thenReturn("msg");
+            // MessageUtils 使用 4 参数 getMessage(code, args, defaultMessage, locale)
+            when(messageSource.getMessage(anyString(), any(), any(), any())).thenReturn("msg");
             springUtils.when(() -> SpringUtils.getBean(MessageSource.class)).thenReturn(messageSource);
             return action.get();
         }

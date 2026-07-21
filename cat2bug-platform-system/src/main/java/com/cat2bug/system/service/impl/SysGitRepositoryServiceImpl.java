@@ -17,9 +17,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.cat2bug.system.domain.SysGitRepository;
+import com.cat2bug.system.domain.SysProject;
+import com.cat2bug.system.domain.SysUserGitRepository;
 import com.cat2bug.system.mapper.SysGitRepositoryMapper;
 import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysRoleMapper;
+import com.cat2bug.system.mapper.SysUserGitRepositoryMapper;
 import com.cat2bug.system.service.ISysGitRepositoryService;
 import com.cat2bug.system.service.git.GitPathValidator;
 import com.cat2bug.system.service.git.JGitBareRepositoryHelper;
@@ -47,10 +50,19 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
     /** pull/push 额外角色（与 manage 取并集）：project.develop / project.tester */
     private static final Set<Long> READ_WRITE_ROLE_IDS = Collections.unmodifiableSet(Set.of(7L, 8L));
 
-    private static final String DEFAULT_BRANCH = "main";
+    private static final String DEFAULT_BRANCH = "master";
+
+    /** 开源：所有人可见 */
+    private static final String VISIBILITY_PUBLIC = "public";
+
+    /** 项目内部开源 */
+    private static final String VISIBILITY_PROJECT = "project";
 
     @Autowired
     private SysGitRepositoryMapper sysGitRepositoryMapper;
+
+    @Autowired
+    private SysUserGitRepositoryMapper sysUserGitRepositoryMapper;
 
     @Autowired
     private SysProjectMapper sysProjectMapper;
@@ -90,7 +102,40 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
             throw new ServiceException(MessageUtils.message("git.repo.project-id-required"));
         }
         assertPull(sysGitRepository.getProjectId());
+        sysGitRepository.getParams().put("userId", currentUserId());
         return sysGitRepositoryMapper.selectSysGitRepositoryList(sysGitRepository);
+    }
+
+    /**
+     * 关注 / 取消关注仓库
+     */
+    @Override
+    @Transactional
+    public int collectSysGitRepository(Long repositoryId, boolean collect)
+    {
+        SysGitRepository repository = sysGitRepositoryMapper.selectSysGitRepositoryByRepositoryId(repositoryId);
+        if (repository == null)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.not-found"));
+        }
+        assertPull(repository.getProjectId());
+
+        Long userId = currentUserId();
+        String operator = SecurityUtils.getUsername();
+        SysUserGitRepository existing = sysUserGitRepositoryMapper.selectByUserIdAndRepositoryId(userId, repositoryId);
+        if (existing == null)
+        {
+            SysUserGitRepository row = new SysUserGitRepository();
+            row.setUserId(userId);
+            row.setRepositoryId(repositoryId);
+            row.setCollect(collect);
+            row.setCreateBy(operator);
+            row.setUpdateBy(operator);
+            return sysUserGitRepositoryMapper.insertSysUserGitRepository(row);
+        }
+        existing.setCollect(collect);
+        existing.setUpdateBy(operator);
+        return sysUserGitRepositoryMapper.updateCollectByUserIdAndRepositoryId(existing);
     }
 
     /**
@@ -107,23 +152,27 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         }
         Long projectId = sysGitRepository.getProjectId();
         assertManage(projectId);
-        assertProjectExists(projectId);
 
-        String slug = gitPathValidator.validateSlug(sysGitRepository.getSlug());
+        String rawSlug = sysGitRepository.getSlug();
+        if (StringUtils.isEmpty(rawSlug))
+        {
+            rawSlug = gitPathValidator.suggestSlugFromName(sysGitRepository.getName());
+        }
+        String slug = gitPathValidator.validateSlug(rawSlug);
         if (sysGitRepositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(projectId, slug) != null)
         {
             throw new ServiceException(MessageUtils.message("git.repo.slug-duplicate"));
         }
 
-        String diskPath = StringUtils.isNotEmpty(sysGitRepository.getDiskPath())
-            ? gitPathValidator.normalizeAndValidateAbsolutePath(sysGitRepository.getDiskPath())
-            : gitPathValidator.buildDefaultDiskPath(projectId, slug);
-        // 再绝对化一次：默认路径与历史相对路径输入均落到稳定绝对路径再落库
+        SysProject project = requireProjectWithPathKeys(projectId);
+        // 磁盘路径由系统按 teamKey/projectKey/slug 生成，与 Clone URL 对齐；忽略客户端传入的 diskPath
+        String diskPath = gitPathValidator.buildDefaultDiskPath(project.getTeamKey(), project.getProjectKey(), slug);
         diskPath = gitPathValidator.resolveStoredDiskPath(diskPath);
         gitPathValidator.ensureParentWritable(diskPath);
 
         String defaultBranch = StringUtils.isNotEmpty(sysGitRepository.getDefaultBranch())
             ? sysGitRepository.getDefaultBranch() : DEFAULT_BRANCH;
+        String visibility = normalizeVisibility(sysGitRepository.getVisibility());
 
         SysGitRepository toInsert = new SysGitRepository();
         toInsert.setProjectId(projectId);
@@ -131,6 +180,7 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         toInsert.setSlug(slug);
         toInsert.setDiskPath(diskPath);
         toInsert.setDefaultBranch(defaultBranch);
+        toInsert.setVisibility(visibility);
         toInsert.setRemark(sysGitRepository.getRemark());
         toInsert.setCreateBy(SecurityUtils.getUsername());
         toInsert.setCreateTime(DateUtils.getNowDate());
@@ -189,20 +239,18 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         String existingDiskPath = gitPathValidator.resolveStoredDiskPath(existing.getDiskPath());
         String targetDiskPath = existingDiskPath;
         boolean diskMoveNeeded = false;
-        if (StringUtils.isNotEmpty(sysGitRepository.getDiskPath())
-            && !gitPathValidator.resolveStoredDiskPath(sysGitRepository.getDiskPath()).equals(existingDiskPath))
+        if (slugChanged)
         {
-            // manage 显式改路径：优先于「slug 联动改默认路径」
-            targetDiskPath = gitPathValidator.normalizeAndValidateAbsolutePath(sysGitRepository.getDiskPath());
-            diskMoveNeeded = true;
-        }
-        else if (slugChanged)
-        {
-            String defaultForOldSlug = gitPathValidator.buildDefaultDiskPath(existing.getProjectId(), existing.getSlug());
-            if (defaultForOldSlug.equals(existingDiskPath))
+            SysProject project = requireProjectWithPathKeys(existing.getProjectId());
+            String defaultForOldSlug = gitPathValidator.buildDefaultDiskPath(
+                project.getTeamKey(), project.getProjectKey(), existing.getSlug());
+            String legacyDefaultForOldSlug = gitPathValidator.buildLegacyDefaultDiskPath(
+                existing.getProjectId(), existing.getSlug());
+            if (defaultForOldSlug.equals(existingDiskPath) || legacyDefaultForOldSlug.equals(existingDiskPath))
             {
-                // 原本走默认路径规则，slug 改名时同步迁移目录，保持磁盘路径与 slug 一致
-                targetDiskPath = gitPathValidator.buildDefaultDiskPath(existing.getProjectId(), newSlug);
+                // 原本走默认路径规则（含旧版 projectId 布局），slug 改名时同步迁移到新规则目录
+                targetDiskPath = gitPathValidator.buildDefaultDiskPath(
+                    project.getTeamKey(), project.getProjectKey(), newSlug);
                 diskMoveNeeded = true;
             }
             // 否则说明磁盘路径是此前手工指定的绝对路径，与 slug 解耦，不随 slug 改名移动
@@ -232,6 +280,10 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         {
             toPersist.setDefaultBranch(sysGitRepository.getDefaultBranch());
         }
+        if (StringUtils.isNotEmpty(sysGitRepository.getVisibility()))
+        {
+            toPersist.setVisibility(normalizeVisibility(sysGitRepository.getVisibility()));
+        }
         if (sysGitRepository.getRemark() != null)
         {
             toPersist.setRemark(sysGitRepository.getRemark());
@@ -254,6 +306,8 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         merged.setSlug(slugChanged ? newSlug : existing.getSlug());
         merged.setDiskPath(diskMoveNeeded ? targetDiskPath : existingDiskPath);
         merged.setDefaultBranch(StringUtils.isNotEmpty(sysGitRepository.getDefaultBranch()) ? sysGitRepository.getDefaultBranch() : existing.getDefaultBranch());
+        merged.setVisibility(StringUtils.isNotEmpty(sysGitRepository.getVisibility())
+            ? normalizeVisibility(sysGitRepository.getVisibility()) : existing.getVisibility());
         merged.setRemark(sysGitRepository.getRemark() != null ? sysGitRepository.getRemark() : existing.getRemark());
         merged.setCreateBy(existing.getCreateBy());
         merged.setCreateTime(existing.getCreateTime());
@@ -277,9 +331,13 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         }
         assertManage(existing.getProjectId());
         int rows = sysGitRepositoryMapper.deleteSysGitRepositoryByRepositoryId(repositoryId);
-        if (rows > 0 && wipeDisk)
+        if (rows > 0)
         {
-            jGitBareRepositoryHelper.wipeBareRepository(gitPathValidator.resolveStoredDiskPath(existing.getDiskPath()));
+            sysUserGitRepositoryMapper.deleteByRepositoryId(repositoryId);
+            if (wipeDisk)
+            {
+                jGitBareRepositoryHelper.wipeBareRepository(gitPathValidator.resolveStoredDiskPath(existing.getDiskPath()));
+            }
         }
         return rows;
     }
@@ -361,12 +419,27 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
             .anyMatch(roleIds::contains);
     }
 
-    private void assertProjectExists(Long projectId)
+    private String normalizeVisibility(String visibility)
     {
-        if (sysProjectMapper.selectSysProjectByProjectId(projectId, null) == null)
+        if (VISIBILITY_PUBLIC.equals(visibility))
+        {
+            return VISIBILITY_PUBLIC;
+        }
+        return VISIBILITY_PROJECT;
+    }
+
+    private SysProject requireProjectWithPathKeys(Long projectId)
+    {
+        SysProject project = sysProjectMapper.selectSysProjectByProjectId(projectId, null);
+        if (project == null)
         {
             throw new ServiceException(MessageUtils.message("git.repo.project-not-found"));
         }
+        if (StringUtils.isEmpty(project.getTeamKey()) || StringUtils.isEmpty(project.getProjectKey()))
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.path-keys-required"));
+        }
+        return project;
     }
 
     private Long currentUserId()

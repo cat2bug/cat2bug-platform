@@ -1,6 +1,7 @@
 package com.cat2bug.framework.config;
 
 import com.cat2bug.framework.security.filter.GitPackAuthorizationFilter;
+import com.cat2bug.framework.security.git.GitSmartHttpPathSupport;
 import com.cat2bug.framework.security.filter.GitUserDetailsService;
 import com.cat2bug.framework.web.service.UserDetailsServiceImpl;
 import com.cat2bug.system.service.git.GitRepositoryAccessService;
@@ -20,6 +21,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Git Smart HTTP 安全链（{@code /git/**}，design.md D4/D8，specs/git-smart-http/spec.md）。
@@ -99,7 +102,7 @@ public class GitSecurityConfig
         entryPoint.setRealmName("Cat2Bug Git");
 
         httpSecurity
-                .securityMatcher("/git/**")
+                .securityMatcher(this::matchesGitSecurityChain)
                 .authenticationManager(gitAuthenticationManager)
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -107,5 +110,16 @@ public class GitSecurityConfig
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .addFilterAfter(gitPackAuthorizationFilter, BasicAuthenticationFilter.class);
         return httpSecurity.build();
+    }
+
+    private boolean matchesGitSecurityChain(HttpServletRequest request)
+    {
+        String uri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        if (contextPath != null && !contextPath.isEmpty() && uri.startsWith(contextPath))
+        {
+            uri = uri.substring(contextPath.length());
+        }
+        return GitSmartHttpPathSupport.matchesGitSecurityChain(uri);
     }
 }

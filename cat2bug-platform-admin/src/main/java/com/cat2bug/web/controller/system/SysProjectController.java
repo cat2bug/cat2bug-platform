@@ -99,6 +99,16 @@ public class SysProjectController extends BaseController
     }
 
     /**
+     * 按路径键解析项目（分享链接后端解析）
+     */
+    @PreAuthorize("@ss.hasPermi('system:project:query')")
+    @GetMapping("/path/{teamKey}/{projectKey}")
+    public AjaxResult resolveByPath(@PathVariable String teamKey, @PathVariable String projectKey)
+    {
+        return success(sysProjectService.selectSysProjectByTeamAndProjectKey(teamKey, projectKey));
+    }
+
+    /**
      * 获取项目详细信息
      */
     @PreAuthorize("@ss.hasPermi('system:project:query')")

@@ -59,6 +59,8 @@ const legacyMixin = {
   }
 }
 
+export { legacyMixin as defectToolDialogCloseMixin }
+
 export function useDefectToolDialogClose() {
   return useLegacyKeyboardMixin(legacyMixin)
 }

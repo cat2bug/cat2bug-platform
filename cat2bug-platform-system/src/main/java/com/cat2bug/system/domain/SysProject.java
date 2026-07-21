@@ -38,6 +38,13 @@ public class SysProject extends BaseEntity
     @Excel(name = "项目名称")
     private String projectName;
 
+    /** 英文路径键（团队内唯一） */
+    @Excel(name = "项目路径键")
+    private String projectKey;
+
+    /** 所属团队英文路径键（联查，不落库） */
+    private String teamKey;
+
     /** 项目图标地址 */
     @Excel(name = "项目图标地址")
     private String projectIcon;
@@ -85,6 +92,27 @@ public class SysProject extends BaseEntity
     {
         return projectName;
     }
+
+    public String getProjectKey()
+    {
+        return projectKey;
+    }
+
+    public void setProjectKey(String projectKey)
+    {
+        this.projectKey = projectKey;
+    }
+
+    public String getTeamKey()
+    {
+        return teamKey;
+    }
+
+    public void setTeamKey(String teamKey)
+    {
+        this.teamKey = teamKey;
+    }
+
     public void setProjectIcon(String projectIcon) 
     {
         this.projectIcon = projectIcon;
@@ -166,6 +194,8 @@ public class SysProject extends BaseEntity
             .append("projectId", getProjectId())
             .append("teamId", getTeamId())
             .append("projectName", getProjectName())
+            .append("projectKey", getProjectKey())
+            .append("teamKey", getTeamKey())
             .append("projectIcon", getProjectIcon())
             .append("projectIntroduce", getProjectIntroduce())
             .append("createBy", getCreateBy())

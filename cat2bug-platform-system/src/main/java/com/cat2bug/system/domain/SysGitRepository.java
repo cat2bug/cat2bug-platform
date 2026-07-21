@@ -42,6 +42,20 @@ public class SysGitRepository extends BaseEntity
     private String defaultBranch;
 
     /**
+     * 可见性：{@code public}=开源（所有人可见），{@code project}=项目内部开源。
+     */
+    private String visibility;
+
+    /** 所属团队 path key（查询时 join，非持久化） */
+    private String teamKey;
+
+    /** 所属项目 path key（查询时 join，非持久化） */
+    private String projectKey;
+
+    /** 当前用户是否关注该仓库（查询时 join，非持久化） */
+    private Boolean collect;
+
+    /**
      * 本次更新是否发生了 slug 重命名（服务端计算后回填，非持久化字段）。
      * 供 Controller 组装「旧 clone 地址已失效」提示，不参与数据库读写。
      */
@@ -107,6 +121,46 @@ public class SysGitRepository extends BaseEntity
         this.defaultBranch = defaultBranch;
     }
 
+    public String getVisibility()
+    {
+        return visibility;
+    }
+
+    public void setVisibility(String visibility)
+    {
+        this.visibility = visibility;
+    }
+
+    public String getTeamKey()
+    {
+        return teamKey;
+    }
+
+    public void setTeamKey(String teamKey)
+    {
+        this.teamKey = teamKey;
+    }
+
+    public String getProjectKey()
+    {
+        return projectKey;
+    }
+
+    public void setProjectKey(String projectKey)
+    {
+        this.projectKey = projectKey;
+    }
+
+    public Boolean getCollect()
+    {
+        return collect;
+    }
+
+    public void setCollect(Boolean collect)
+    {
+        this.collect = collect;
+    }
+
     public boolean isSlugChanged()
     {
         return slugChanged;
@@ -118,16 +172,18 @@ public class SysGitRepository extends BaseEntity
     }
 
     /**
-     * clone 地址（Smart HTTP，任务 3 落地）：{@code /git/p/{projectId}/{slug}.git}。
-     * 由 projectId + slug 计算得出，不落库；slug 变更后该值随之变化。
+     * clone 地址（Smart HTTP）：{@code /{teamKey}/{projectKey}/code/{slug}.git}。
+     * 由 teamKey、projectKey、slug 计算得出，不落库；任一键或 slug 缺失时返回 null。
      */
     public String getCloneUrl()
     {
-        if (projectId == null || slug == null)
+        if (teamKey == null || teamKey.isEmpty()
+                || projectKey == null || projectKey.isEmpty()
+                || slug == null || slug.isEmpty())
         {
             return null;
         }
-        return "/git/p/" + projectId + "/" + slug + ".git";
+        return "/" + teamKey + "/" + projectKey + "/code/" + slug + ".git";
     }
 
     @Override
@@ -140,6 +196,7 @@ public class SysGitRepository extends BaseEntity
             .append("slug", getSlug())
             .append("diskPath", getDiskPath())
             .append("defaultBranch", getDefaultBranch())
+            .append("visibility", getVisibility())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

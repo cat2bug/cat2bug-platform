@@ -168,6 +168,40 @@ class GitPackAuthorizationFilterTest
         assertEquals(true, context.isForcePushAllowed());
     }
 
+    @Test
+    void namespacedPull_withPullRole_grantsAccess() throws Exception
+    {
+        authenticateAs(USER_ID);
+        MockHttpServletRequest request = new MockHttpServletRequest("GET",
+                "/acme/demo/code/" + SLUG + ".git/info/refs");
+        request.setParameter("service", "git-upload-pack");
+        GitRepositoryRef ref = new GitRepositoryRef(1L, PROJECT_ID, SLUG, "/tmp/repo.git", "main");
+        when(gitRepositoryLookup.findByTeamKeyAndProjectKeyAndSlug("acme", "demo", SLUG))
+                .thenReturn(Optional.of(ref));
+        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(true);
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        verify(gitRepositoryLookup, never()).findByProjectIdAndSlug(anyLong(), org.mockito.ArgumentMatchers.anyString());
+    }
+
+    @Test
+    void namespacedPath_unknownRepo_returns404() throws Exception
+    {
+        authenticateAs(USER_ID);
+        MockHttpServletRequest request = new MockHttpServletRequest("GET",
+                "/acme/demo/code/" + SLUG + ".git/info/refs");
+        request.setParameter("service", "git-upload-pack");
+        when(gitRepositoryLookup.findByTeamKeyAndProjectKeyAndSlug("acme", "demo", SLUG))
+                .thenReturn(Optional.empty());
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertEquals(404, response.getStatus());
+        verify(filterChain, never()).doFilter(request, response);
+    }
+
     private MockHttpServletRequest infoRefsRequest(String service)
     {
         MockHttpServletRequest request = new MockHttpServletRequest("GET",
