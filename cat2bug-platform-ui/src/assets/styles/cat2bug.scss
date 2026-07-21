@@ -505,7 +505,6 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 }
 
 .el-input:not(.is-disabled) .el-input__inner:focus,
-.el-textarea:not(.is-disabled) .el-textarea__inner:focus,
 .el-input-number:not(.is-disabled) .el-input__inner:focus,
 .el-select:not(.is-disabled) .el-input.is-focus .el-input__inner,
 .el-cascader:not(.is-disabled) .el-input.is-focus .el-input__inner,
@@ -517,6 +516,14 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 .el-range-editor.is-active {
   @include cat2bug-unified-focus-border;
   @include cat2bug-unified-focus-ring;
+}
+
+/* textarea 无 wrapper：用向内 outline，避免外描边被 overflow 裁切，四边焦点框都清晰可见 */
+.el-textarea:not(.is-disabled) .el-textarea__inner:focus {
+  outline: 2px solid var(--cat2bug-field-focus-color, var(--el-color-primary, #409eff)) !important;
+  outline-offset: -2px !important;
+  border-color: var(--cat2bug-field-focus-color, var(--el-color-primary, #409eff)) !important;
+  box-shadow: none !important;
 }
 
 .select-project-member-input:focus,
@@ -1472,6 +1479,8 @@ img.cat2bug-image-error__img {
 .git-browse-toolbar-left,
 .git-browse-toolbar-right,
 .git-browse-releases__toolbar,
+.git-branches-toolbar,
+.git-pr-page__toolbar,
 .app-container > .el-form.el-form--inline,
 .app-container > .el-form.el-form--inline + .el-row.mb8 {
   .el-form--inline .el-form-item {
@@ -1488,6 +1497,7 @@ img.cat2bug-image-error__img {
     line-height: var(--cat2bug-toolbar-control-height);
   }
 
+  .el-input:not(.el-textarea) .el-input__wrapper,
   .el-input:not(.el-textarea) .el-input__inner,
   .el-select .el-input__inner,
   .el-select .el-select__wrapper,

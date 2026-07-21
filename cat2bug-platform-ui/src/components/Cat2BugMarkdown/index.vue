@@ -178,10 +178,14 @@ export default {
     _registerComponentTools(tools) {
       let arr = [];
       if(tools) {
+        const app = this.$.appContext.app;
         tools.forEach(t=>{
           if(t.type=='component') {
             arr.push(t.content);
-            this.$.appContext.app.component(t.content.name, t.content);
+            // 多实例 / 反复挂载时跳过已注册工具，避免 Vue warn
+            if (t.content && t.content.name && !app.component(t.content.name)) {
+              app.component(t.content.name, t.content);
+            }
           }
           if(t.children) {
             let childrenArr = this._registerComponentTools(t.children);

@@ -26,6 +26,15 @@
           </span>
         </template>
       </el-tab-pane>
+      <el-tab-pane name="pulls">
+        <template #label>
+          <span class="git-browse-tab-label">
+            <el-icon><Connection /></el-icon>
+            {{ $t('git.repo.pr.title') }}
+            <span v-if="openPullCount > 0" class="git-browse-tab-count">{{ openPullCountLabel }}</span>
+          </span>
+        </template>
+      </el-tab-pane>
       <el-tab-pane name="commits">
         <template #label>
           <span class="git-browse-tab-label">
@@ -196,12 +205,12 @@
                   </span>
                 </el-option>
               </el-select>
-              <span class="git-browse-meta-chip">
+              <el-button link class="git-browse-meta-chip" @click="openBranchesPage">
                 <el-icon class="git-browse-meta-chip-icon">
                   <git-branch-icon />
                 </el-icon>
                 {{ $t('git.repo.branch-count', { n: branches.length }) }}
-              </span>
+              </el-button>
             </template>
           </div>
           <div class="git-browse-toolbar-right">
@@ -467,7 +476,7 @@
           <div class="git-aside-title-row">
             <h4 class="git-aside-title">{{ $t('git.repo.aside.releases') }}</h4>
             <el-button
-              v-if="canManageGitRepo && releases.length"
+              v-if="canManageGitRepo"
               link
               size="small"
               class="git-aside-action"
@@ -492,15 +501,8 @@
               </div>
             </li>
           </ul>
-          <div v-else-if="!releasesLoading" class="git-aside-empty git-aside-empty--releases">
-            <span>{{ $t('git.repo.release.empty') }}</span>
-            <el-button
-              v-if="canManageGitRepo"
-              link
-              size="small"
-              class="git-aside-action"
-              @click="openCreateRelease"
-            >{{ $t('git.repo.release.create') }}</el-button>
+          <div v-else-if="!releasesLoading" class="git-aside-empty">
+            {{ $t('git.repo.release.empty') }}
           </div>
           </div>
         </section>
@@ -526,7 +528,7 @@
           <h4 class="git-aside-title">{{ $t('git.repo.aside.activity') }}</h4>
           <div v-if="recentActivity.length" class="git-aside-activity">
             <div v-for="c in recentActivity" :key="c.id" class="git-aside-activity-item">
-              <cat2-bug-avatar :member="memberForAuthor(c)" :size="24" />
+              <cat2-bug-avatar :member="memberForAuthor(c)" :size="32" />
               <div class="git-aside-activity-body">
                 <div class="git-aside-activity-text">
                   <span class="git-aside-activity-time">{{ relativeTime(c.commitTime) }}</span>
@@ -615,16 +617,16 @@
           @deleted="onReleaseDeleted"
           @edit="openEditRelease"
         />
-        <div v-if="!releasesLoading && !releasesTimeline.length" class="git-browse-empty">
-          {{ $t('git.repo.release.empty') }}
-          <el-button
-            v-if="canManageGitRepo"
-            link
-            size="small"
-            class="git-aside-action"
-            @click="openCreateRelease"
-          >{{ $t('git.repo.release.create') }}</el-button>
-        </div>
+        <el-empty
+          v-if="!releasesLoading && !releasesTimeline.length"
+          class="git-releases-empty"
+          :image-size="96"
+        >
+          <template #description>
+            <p class="git-releases-empty__title">{{ $t('git.repo.release.empty') }}</p>
+            <p class="git-releases-empty__hint">{{ $t('git.repo.release.empty-hint') }}</p>
+          </template>
+        </el-empty>
       </div>
     </div>
 
@@ -739,7 +741,7 @@
 
 <script>
 import { h, markRaw } from 'vue'
-import { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link, List, CopyDocument, Plus, Upload } from '@element-plus/icons-vue'
+import { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link, List, CopyDocument, Plus, Upload, Connection } from '@element-plus/icons-vue'
 import {
   getGitRepo,
   listGitRepoBranches,
@@ -754,6 +756,7 @@ import {
   uploadGitRepoReleaseAsset
 } from '@/api/system/gitRepo'
 import { listMemberOfProject } from '@/api/system/project'
+import { listGitPullRequests } from '@/api/system/gitPullRequest'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import Cat2BugMarkdown from '@/components/Cat2BugMarkdown'
 import { MarkdownRenderer } from '@/components/Markdown'
@@ -823,6 +826,7 @@ export default {
     CopyDocument,
     Plus,
     Upload,
+    Connection,
     Cat2BugAvatar,
     Cat2BugMarkdown,
     MarkdownRenderer,
@@ -863,6 +867,7 @@ export default {
       commitsLoading: false,
       pageLoading: false,
       projectMembers: [],
+      openPullCount: 0,
       /** 根目录文档 tab：[{ key, name, path }] */
       rootDocTabs: [],
       activeRootDocTab: '',
@@ -914,6 +919,9 @@ export default {
     /** 仅进入子目录（或子目录内文件）时显示左侧文件夹树；根目录隐藏 */
     showSideFileTree() {
       return !!(this.currentPath && String(this.currentPath).trim())
+    },
+    openPullCountLabel() {
+      return this.openPullCount > 99 ? '99+' : String(this.openPullCount)
     },
     showRootDocs() {
       if (this.viewMode !== 'tree' || this.currentPath) return false
@@ -1049,6 +1057,13 @@ export default {
     },
     '$route.query.tab'() {
       this.syncBrowseQueryFromRoute()
+    },
+    '$route.query.ref'(ref) {
+      if (this.$route.name !== 'GitRepoBrowse') return
+      const next = ref ? String(ref) : null
+      if (!next || next === this.currentRef) return
+      this.currentRef = next
+      this.onRefChange()
     }
   },
   beforeUnmount() {
@@ -1065,6 +1080,14 @@ export default {
   methods: {
     goBack() {
       this.$router.push({ path: '/project/git-repo' })
+    },
+    openBranchesPage() {
+      if (!this.repositoryId) return
+      this.$router.push({
+        name: 'GitRepoBranches',
+        params: { repositoryId: String(this.repositoryId) },
+        query: this.repoName ? { name: this.repoName } : {}
+      }).catch(() => {})
     },
     /** 提交详情（4.x 入口点击复用；勿删） */
     openCommitDetail(commitId) {
@@ -1117,6 +1140,17 @@ export default {
       }
     },
     onBrowseTabChange(tab) {
+      if (tab === 'pulls') {
+        this.$router.push({
+          name: 'GitRepoPullRequests',
+          params: { repositoryId: String(this.repositoryId) },
+          query: this.repoName ? { name: this.repoName } : {}
+        }).catch(() => {})
+        this.$nextTick(() => {
+          this.activeTab = 'code'
+        })
+        return
+      }
       if (tab === 'releases') {
         this.clearCommitFocus()
         return
@@ -1482,10 +1516,23 @@ export default {
         this.cloneUrlPath = repo.cloneUrl || ''
         this.loadProjectMembers(repo.projectId)
         this.loadReleases()
+        this.loadOpenPullCount()
       }).catch(() => {}).finally(() => {
         this.pageLoading = false
       })
       this.loadBranches()
+    },
+    loadOpenPullCount() {
+      if (!this.repositoryId) {
+        this.openPullCount = 0
+        return
+      }
+      listGitPullRequests(this.repositoryId, 'open').then(res => {
+        const list = res.data || []
+        this.openPullCount = Array.isArray(list) ? list.length : 0
+      }).catch(() => {
+        this.openPullCount = 0
+      })
     },
     loadBranches() {
       this.branchesLoading = true
@@ -1853,6 +1900,26 @@ export default {
   }
 }
 
+.git-browse-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-color-primary);
+  background: rgba(144, 147, 153, 0.45);
+}
+
+.git-browse-tabs :deep(.el-tabs__item.is-active) .git-browse-tab-count {
+  color: #141414;
+  background: var(--el-color-primary);
+}
+
 .git-browse-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
@@ -2107,8 +2174,13 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  padding: 0;
   font-size: 13px;
   color: var(--text-color-secondary);
+
+  &:hover {
+    color: var(--el-color-primary);
+  }
 }
 
 .git-browse-meta-chip-icon {
@@ -2581,12 +2653,41 @@ export default {
     border-collapse: collapse;
     width: 100%;
     margin: 12px 0;
+    background: transparent;
   }
 
   :deep(th),
   :deep(td) {
-    border: 1px solid var(--border-color-light);
+    border: 1px solid var(--table-border-color, var(--border-color-light));
     padding: 6px 10px;
+    color: var(--text-color-regular);
+  }
+
+  :deep(th) {
+    background-color: var(--table-header-bg, var(--bg-color-block));
+    color: var(--table-header-color, var(--text-color-primary));
+    font-weight: 600;
+  }
+
+  :deep(tr) {
+    background-color: var(--table-bg, var(--bg-color-base));
+  }
+
+  :deep(tr:nth-child(2n)) {
+    background-color: var(--bg-color-block, var(--table-header-bg));
+  }
+
+  :deep(hr) {
+    height: 0;
+    margin: 24px 0;
+    background: none;
+    border: 0;
+    border-top: 1px solid var(--divider-color, var(--border-color-light));
+  }
+
+  :deep(h1),
+  :deep(h2) {
+    border-bottom-color: var(--divider-color, var(--border-color-light));
   }
 
   :deep(blockquote) {
@@ -2803,13 +2904,6 @@ export default {
   flex-shrink: 0;
 }
 
-.git-aside-empty--releases {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
-}
-
 .git-contributors-list-item {
   display: flex;
   align-items: center;
@@ -2947,6 +3041,26 @@ export default {
 
 .git-browse-releases {
   min-height: 200px;
+}
+
+.git-releases-empty {
+  padding: 48px 16px 64px;
+}
+
+.git-releases-empty__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color-regular);
+  line-height: 1.5;
+}
+
+.git-releases-empty__hint {
+  margin: 6px 0 0;
+  max-width: 420px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-color-placeholder);
 }
 
 .git-browse-releases__toolbar {

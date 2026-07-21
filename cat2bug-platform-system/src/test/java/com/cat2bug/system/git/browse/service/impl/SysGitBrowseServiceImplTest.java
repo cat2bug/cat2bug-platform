@@ -24,6 +24,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -81,6 +82,7 @@ public class SysGitBrowseServiceImplTest
 
     private Runnable messageCleanup;
     private File bareRepoDir;
+    private SysGitRepository repositoryMetadata;
 
     @Before
     public void setUp() throws Exception
@@ -110,6 +112,109 @@ public class SysGitBrowseServiceImplTest
         assertEquals(1, branches.size());
         assertEquals("main", branches.get(0).getName());
         assertTrue(branches.get(0).isDefault());
+        assertNotNull(branches.get(0).getShortId());
+        assertEquals("tester", branches.get(0).getAuthorName());
+        assertNotNull(branches.get(0).getCommitTime());
+    }
+
+    @Test
+    public void listBranches_emptyRepository_returnsEmptyList() throws Exception
+    {
+        initEmptyRepo();
+        allowPull();
+
+        assertTrue(service.listBranches(REPOSITORY_ID).isEmpty());
+    }
+
+    @Test
+    public void listBranches_divergentBranches_reportsAheadAndBehind() throws Exception
+    {
+        initRepoWithDivergentBranches();
+        allowPull();
+
+        List<GitBranchInfo> branches = service.listBranches(REPOSITORY_ID);
+
+        GitBranchInfo feature = findBranch(branches, "feature/demo");
+        assertNotNull(feature);
+        assertEquals(1, feature.getAhead());
+        assertEquals(1, feature.getBehind());
+        assertEquals(0, findBranch(branches, "main").getAhead());
+        assertEquals(0, findBranch(branches, "main").getBehind());
+    }
+
+    @Test
+    public void createBranch_manageUser_createsFromDefaultTip() throws Exception
+    {
+        initRepoWithOneCommit();
+        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+
+        GitBranchInfo branch = service.createBranch(REPOSITORY_ID, "feature/new", null);
+
+        assertEquals("feature/new", branch.getName());
+        assertNotNull(branch.getShortId());
+        assertTrue(branchExists("feature/new"));
+    }
+
+    @Test
+    public void createBranch_developUserDenied() throws Exception
+    {
+        initRepoWithOneCommit();
+        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(false);
+
+        try
+        {
+            service.createBranch(REPOSITORY_ID, "feature/new", null);
+            fail("expected ServiceException: manage required");
+        }
+        catch (ServiceException expected)
+        {
+            // develop 用户不得通过 API 创建分支
+        }
+        assertFalse(branchExists("feature/new"));
+    }
+
+    @Test
+    public void deleteBranch_manageUser_deletesNonDefaultBranch() throws Exception
+    {
+        initRepoWithOneCommit();
+        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+        service.createBranch(REPOSITORY_ID, "feature/delete", null);
+
+        service.deleteBranch(REPOSITORY_ID, "feature/delete");
+
+        assertFalse(branchExists("feature/delete"));
+    }
+
+    @Test
+    public void deleteBranch_defaultBranchRejected() throws Exception
+    {
+        initRepoWithOneCommit();
+        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+
+        try
+        {
+            service.deleteBranch(REPOSITORY_ID, "main");
+            fail("expected ServiceException for default branch");
+        }
+        catch (ServiceException expected)
+        {
+            // 默认分支不可删除
+        }
+        assertTrue(branchExists("main"));
+    }
+
+    @Test
+    public void setDefaultBranch_manageUser_persistsExistingBranch() throws Exception
+    {
+        initRepoWithOneCommit();
+        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+        service.createBranch(REPOSITORY_ID, "core", null);
+        ArgumentCaptor<SysGitRepository> captor = ArgumentCaptor.forClass(SysGitRepository.class);
+
+        service.setDefaultBranch(REPOSITORY_ID, "core");
+
+        verify(sysGitRepositoryMapper).updateSysGitRepository(captor.capture());
+        assertEquals("core", captor.getValue().getDefaultBranch());
     }
 
     @Test
@@ -411,12 +516,12 @@ public class SysGitBrowseServiceImplTest
 
     private void mockRepository()
     {
-        SysGitRepository repo = new SysGitRepository();
-        repo.setRepositoryId(REPOSITORY_ID);
-        repo.setProjectId(PROJECT_ID);
-        repo.setDiskPath(bareRepoDir.getAbsolutePath());
-        repo.setDefaultBranch("main");
-        when(sysGitRepositoryMapper.selectSysGitRepositoryByRepositoryId(REPOSITORY_ID)).thenReturn(repo);
+        repositoryMetadata = new SysGitRepository();
+        repositoryMetadata.setRepositoryId(REPOSITORY_ID);
+        repositoryMetadata.setProjectId(PROJECT_ID);
+        repositoryMetadata.setDiskPath(bareRepoDir.getAbsolutePath());
+        repositoryMetadata.setDefaultBranch("main");
+        when(sysGitRepositoryMapper.selectSysGitRepositoryByRepositoryId(REPOSITORY_ID)).thenReturn(repositoryMetadata);
     }
 
     private void initEmptyRepo() throws IOException, org.eclipse.jgit.api.errors.GitAPIException
@@ -550,6 +655,54 @@ public class SysGitBrowseServiceImplTest
         }
 
         mockRepository();
+    }
+
+    private void initRepoWithDivergentBranches() throws Exception
+    {
+        initRepoWithOneCommit();
+        File workDir = temporaryFolder.newFolder("work-divergent");
+        try (Git git = Git.cloneRepository()
+                .setURI(bareRepoDir.getAbsolutePath())
+                .setDirectory(workDir)
+                .setBranch("main")
+                .call())
+        {
+            git.checkout().setCreateBranch(true).setName("feature/demo").call();
+            Files.write(new File(workDir, "feature.txt").toPath(), "feature".getBytes(StandardCharsets.UTF_8));
+            git.add().addFilepattern("feature.txt").call();
+            git.commit().setMessage("feature commit")
+                    .setAuthor(new PersonIdent("tester", "tester@example.com")).call();
+            git.push().setRemote("origin").setRefSpecs(
+                    new org.eclipse.jgit.transport.RefSpec("refs/heads/feature/demo:refs/heads/feature/demo")).call();
+
+            git.checkout().setName("main").call();
+            Files.write(new File(workDir, "main.txt").toPath(), "main".getBytes(StandardCharsets.UTF_8));
+            git.add().addFilepattern("main.txt").call();
+            git.commit().setMessage("main commit")
+                    .setAuthor(new PersonIdent("tester", "tester@example.com")).call();
+            git.push().call();
+        }
+    }
+
+    private boolean branchExists(String name) throws IOException
+    {
+        try (org.eclipse.jgit.lib.Repository repository = new org.eclipse.jgit.storage.file.FileRepositoryBuilder()
+                .setGitDir(bareRepoDir).setBare().build())
+        {
+            return repository.exactRef("refs/heads/" + name) != null;
+        }
+    }
+
+    private static GitBranchInfo findBranch(List<GitBranchInfo> branches, String name)
+    {
+        for (GitBranchInfo branch : branches)
+        {
+            if (name.equals(branch.getName()))
+            {
+                return branch;
+            }
+        }
+        return null;
     }
 
     private static GitContributorInfo findContributor(List<GitContributorInfo> list, String email)

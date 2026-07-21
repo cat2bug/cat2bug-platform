@@ -22,6 +22,17 @@ public interface ISysGitBrowseService
     List<GitBranchInfo> listBranches(Long repositoryId);
 
     /**
+     * @param nameFilter 按分支名称包含匹配（不区分大小写），为空时返回全部
+     */
+    List<GitBranchInfo> listBranches(Long repositoryId, String nameFilter);
+
+    GitBranchInfo createBranch(Long repositoryId, String name, String fromRef);
+
+    void deleteBranch(Long repositoryId, String name);
+
+    void setDefaultBranch(Long repositoryId, String name);
+
+    /**
      * @param ref  分支/tag/commit-ish，为空时使用仓库默认分支
      * @param path 目录路径，为空或 "/" 表示根目录
      */

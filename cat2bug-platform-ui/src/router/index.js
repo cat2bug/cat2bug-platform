@@ -365,6 +365,96 @@ export const dynamicRoutes = [
     ]
   },
   {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)/branches',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/git/repo/branches'),
+        name: 'GitRepoBranches',
+        meta: {
+          title: i18n.global.t('git.repo.branches.title'),
+          titleI18nKey: 'git.repo.branches.title',
+          activeMenu: '/project/git-repo',
+          projectListPage: true,
+          breadcrumbParents: [
+            { path: '/project', redirect: 'noRedirect', meta: { titleI18nKey: 'project.manage' } },
+            { path: '/project/git-repo', meta: { titleI18nKey: 'git.repo.menu' } },
+            {
+              path: '/project/git-repo/browse/:repositoryId',
+              name: 'GitRepoBrowse',
+              meta: { titleI18nKey: 'git.repo.library' }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)/pulls',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/git/repo/pulls'),
+        name: 'GitRepoPullRequests',
+        meta: {
+          title: i18n.global.t('git.repo.pr.title'),
+          titleI18nKey: 'git.repo.pr.title',
+          activeMenu: '/project/git-repo',
+          projectListPage: true,
+          breadcrumbParents: [
+            { path: '/project', redirect: 'noRedirect', meta: { titleI18nKey: 'project.manage' } },
+            { path: '/project/git-repo', meta: { titleI18nKey: 'git.repo.menu' } },
+            { path: '/project/git-repo/browse/:repositoryId', name: 'GitRepoBrowse', meta: { titleI18nKey: 'git.repo.library' } }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)/pulls/new',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/git/repo/pull-new'),
+        name: 'GitRepoPullRequestNew',
+        meta: {
+          title: i18n.global.t('git.repo.pr.new'),
+          titleI18nKey: 'git.repo.pr.new',
+          activeMenu: '/project/git-repo',
+          projectListPage: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)/pulls/:number(\\d+)',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/git/repo/pull-detail'),
+        name: 'GitRepoPullRequestDetail',
+        meta: {
+          title: i18n.global.t('git.repo.pr.detail-title'),
+          titleI18nKey: 'git.repo.pr.detail-title',
+          activeMenu: '/project/git-repo',
+          projectListPage: true
+        }
+      }
+    ]
+  },
+  {
     path: '/project/git-repo/browse/:repositoryId(\\d+)/releases/:releaseId(\\d+)',
     component: Layout,
     hidden: true,

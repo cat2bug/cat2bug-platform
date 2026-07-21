@@ -37,6 +37,7 @@ import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -127,6 +128,12 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     @Override
     public List<GitBranchInfo> listBranches(Long repositoryId)
     {
+        return listBranches(repositoryId, null);
+    }
+
+    @Override
+    public List<GitBranchInfo> listBranches(Long repositoryId, String nameFilter)
+    {
         SysGitRepository repo = requireRepo(repositoryId);
         assertPull(repo.getProjectId());
         List<GitBranchInfo> result = new ArrayList<>();
@@ -137,11 +144,20 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
             // 裸仓库的物理 HEAD 符号引用未必随 push 同步更新，不作为判定依据。
             String currentBranch = StringUtils.isNotBlank(repo.getDefaultBranch())
                     ? repo.getDefaultBranch() : resolveHeadBranch(repository);
+            ObjectId defaultTip = StringUtils.isNotBlank(currentBranch)
+                    ? repository.resolve(Constants.R_HEADS + currentBranch) : null;
             List<Ref> refs = repository.getRefDatabase().getRefsByPrefix(Constants.R_HEADS);
             for (Ref ref : refs)
             {
                 String shortName = Repository.shortenRefName(ref.getName());
-                result.add(new GitBranchInfo(shortName, shortName.equals(currentBranch)));
+                if (StringUtils.isNotBlank(nameFilter)
+                        && !shortName.toLowerCase(Locale.ROOT).contains(nameFilter.trim().toLowerCase(Locale.ROOT)))
+                {
+                    continue;
+                }
+                GitBranchInfo branch = new GitBranchInfo(shortName, shortName.equals(currentBranch));
+                enrichBranchTip(repository, branch, ref.getObjectId(), defaultTip);
+                result.add(branch);
             }
             result.sort(Comparator.comparing(GitBranchInfo::getName));
         }
@@ -150,6 +166,114 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
             throw new ServiceException(MessageUtils.message("git.repo.browse.read-failed"), HttpStatus.ERROR);
         }
         return result;
+    }
+
+    @Override
+    public GitBranchInfo createBranch(Long repositoryId, String name, String fromRef)
+    {
+        SysGitRepository repo = requireRepo(repositoryId);
+        assertManage(repo.getProjectId());
+        String branchName = normalizeBranchName(name);
+        try (Repository repository = openRepository(repo.getDiskPath()))
+        {
+            String source = StringUtils.isNotBlank(fromRef) ? fromRef.trim() : repo.getDefaultBranch();
+            if (StringUtils.isBlank(source))
+            {
+                throw new ServiceException(MessageUtils.message("git.repo.branch.source-required"), HttpStatus.BAD_REQUEST);
+            }
+            ObjectId sourceId = repository.resolve(source);
+            if (sourceId == null)
+            {
+                throw new ServiceException(MessageUtils.message("git.repo.branch.source-not-found"), HttpStatus.NOT_FOUND);
+            }
+            String refName = Constants.R_HEADS + branchName;
+            if (repository.exactRef(refName) != null)
+            {
+                throw new ServiceException(MessageUtils.message("git.repo.branch.already-exists"), HttpStatus.CONFLICT);
+            }
+            RefUpdate update = repository.updateRef(refName);
+            update.setNewObjectId(sourceId);
+            update.disableRefLog();
+            RefUpdate.Result updateResult = update.update();
+            if (updateResult != RefUpdate.Result.NEW)
+            {
+                throw new ServiceException(MessageUtils.message("git.repo.branch.create-failed"), HttpStatus.ERROR);
+            }
+            GitBranchInfo branch = new GitBranchInfo(branchName, branchName.equals(repo.getDefaultBranch()));
+            enrichBranchTip(repository, branch, sourceId,
+                    StringUtils.isNotBlank(repo.getDefaultBranch())
+                            ? repository.resolve(Constants.R_HEADS + repo.getDefaultBranch()) : null);
+            return branch;
+        }
+        catch (ServiceException e)
+        {
+            throw e;
+        }
+        catch (IOException e)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.branch.create-failed"), HttpStatus.ERROR);
+        }
+    }
+
+    @Override
+    public void deleteBranch(Long repositoryId, String name)
+    {
+        SysGitRepository repo = requireRepo(repositoryId);
+        assertManage(repo.getProjectId());
+        String branchName = normalizeBranchName(name);
+        if (branchName.equals(repo.getDefaultBranch()))
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.branch.delete-default"), HttpStatus.BAD_REQUEST);
+        }
+        try (Repository repository = openRepository(repo.getDiskPath()))
+        {
+            String refName = Constants.R_HEADS + branchName;
+            if (repository.exactRef(refName) == null)
+            {
+                throw new ServiceException(MessageUtils.message("git.repo.branch.not-found"), HttpStatus.NOT_FOUND);
+            }
+            RefUpdate update = repository.updateRef(refName);
+            update.setForceUpdate(true);
+            update.disableRefLog();
+            RefUpdate.Result updateResult = update.delete();
+            if (updateResult != RefUpdate.Result.FORCED)
+            {
+                throw new ServiceException(MessageUtils.message("git.repo.branch.delete-failed"), HttpStatus.ERROR);
+            }
+        }
+        catch (ServiceException e)
+        {
+            throw e;
+        }
+        catch (IOException e)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.branch.delete-failed"), HttpStatus.ERROR);
+        }
+    }
+
+    @Override
+    public void setDefaultBranch(Long repositoryId, String name)
+    {
+        SysGitRepository repo = requireRepo(repositoryId);
+        assertManage(repo.getProjectId());
+        String branchName = normalizeBranchName(name);
+        try (Repository repository = openRepository(repo.getDiskPath()))
+        {
+            if (repository.exactRef(Constants.R_HEADS + branchName) == null)
+            {
+                throw new ServiceException(MessageUtils.message("git.repo.branch.not-found"), HttpStatus.NOT_FOUND);
+            }
+        }
+        catch (ServiceException e)
+        {
+            throw e;
+        }
+        catch (IOException e)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.browse.read-failed"), HttpStatus.ERROR);
+        }
+        repo.setDefaultBranch(branchName);
+        sysGitRepositoryMapper.updateSysGitRepository(repo);
     }
 
     @Override
@@ -513,6 +637,14 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
         }
     }
 
+    private void assertManage(Long projectId)
+    {
+        if (!gitRepositoryAccessService.canManage(SecurityUtils.getUserId(), projectId))
+        {
+            throw new ServiceException(MessageUtils.message("no-permission"), HttpStatus.FORBIDDEN);
+        }
+    }
+
     private SysGitRepository requireRepo(Long repositoryId)
     {
         SysGitRepository repo = repositoryId == null
@@ -527,6 +659,66 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     // ---------------------------------------------------------------------
     // JGit
     // ---------------------------------------------------------------------
+
+    private static String normalizeBranchName(String name)
+    {
+        if (StringUtils.isBlank(name))
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.branch.name-required"), HttpStatus.BAD_REQUEST);
+        }
+        String branchName = name.trim();
+        if (branchName.length() > 100)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.branch.name-too-long"), HttpStatus.BAD_REQUEST);
+        }
+        if (branchName.startsWith(Constants.R_REFS) || !Repository.isValidRefName(Constants.R_HEADS + branchName))
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.branch.name-invalid"), HttpStatus.BAD_REQUEST);
+        }
+        return branchName;
+    }
+
+    private static void enrichBranchTip(
+            Repository repository, GitBranchInfo branch, ObjectId tipId, ObjectId defaultTip) throws IOException
+    {
+        if (tipId == null)
+        {
+            return;
+        }
+        try (RevWalk walk = new RevWalk(repository))
+        {
+            RevCommit tip = walk.parseCommit(tipId);
+            branch.setShortId(tip.getId().abbreviate(7).name());
+            PersonIdent author = tip.getAuthorIdent();
+            if (author != null)
+            {
+                branch.setAuthorName(author.getName());
+                branch.setAuthorEmail(author.getEmailAddress());
+                branch.setCommitTime(author.getWhen());
+            }
+        }
+        if (defaultTip != null)
+        {
+            branch.setAhead(countCommitsReachableFromFirstButNotSecond(repository, tipId, defaultTip));
+            branch.setBehind(countCommitsReachableFromFirstButNotSecond(repository, defaultTip, tipId));
+        }
+    }
+
+    private static int countCommitsReachableFromFirstButNotSecond(
+            Repository repository, ObjectId first, ObjectId second) throws IOException
+    {
+        try (RevWalk walk = new RevWalk(repository))
+        {
+            walk.markStart(walk.parseCommit(first));
+            walk.markUninteresting(walk.parseCommit(second));
+            int count = 0;
+            for (RevCommit ignored : walk)
+            {
+                count++;
+            }
+            return count;
+        }
+    }
 
     private static String resolveHeadBranch(Repository repository)
     {

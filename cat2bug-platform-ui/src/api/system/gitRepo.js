@@ -58,10 +58,37 @@ export function collectGitRepo(repositoryId, collect) {
 }
 
 // 查询仓库分支列表（pull 权限）
-export function listGitRepoBranches(repositoryId) {
+export function listGitRepoBranches(repositoryId, name) {
   return request({
     url: '/system/git/repo/' + repositoryId + '/branches',
-    method: 'get'
+    method: 'get',
+    params: { name }
+  })
+}
+
+// 创建仓库分支（manage 权限）
+export function createGitRepoBranch(repositoryId, data) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/branches',
+    method: 'post',
+    data
+  })
+}
+
+// 删除仓库分支（manage 权限）
+export function delGitRepoBranch(repositoryId, name) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/branches/' + encodeURIComponent(name),
+    method: 'delete'
+  })
+}
+
+// 设置默认分支（manage 权限）
+export function setGitRepoDefaultBranch(repositoryId, name) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/default-branch',
+    method: 'put',
+    data: { name }
   })
 }
 

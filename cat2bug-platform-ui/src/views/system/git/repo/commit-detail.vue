@@ -23,7 +23,7 @@
         :title="$t('git.repo.commit.back-to-commits')"
         @click="goBackToCommits"
       >
-        <el-icon :size="18"><RefreshLeft /></el-icon>
+        <el-icon :size="18"><ArrowLeft /></el-icon>
       </el-button>
       <code v-if="commit" class="git-commit-detail__short-id">{{ commit.shortId || shortId(commit.id) }}</code>
       <span class="git-commit-detail__embed-hint">{{ $t('git.repo.commit.detail-title') }}</span>
@@ -151,7 +151,7 @@
 </template>
 
 <script>
-import { Share, ArrowDown, ArrowRight, RefreshLeft } from '@element-plus/icons-vue'
+import { Share, ArrowDown, ArrowRight, ArrowLeft } from '@element-plus/icons-vue'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import { getGitRepo, getGitRepoCommit, gitRepoCommitDetailRoute } from '@/api/system/gitRepo'
 import { listMemberOfProject } from '@/api/system/project'
@@ -166,7 +166,7 @@ export default {
     Share,
     ArrowDown,
     ArrowRight,
-    RefreshLeft
+    ArrowLeft
   },
   emits: ['back'],
   props: {

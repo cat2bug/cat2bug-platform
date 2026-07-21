@@ -1,12 +1,20 @@
 package com.cat2bug.web.controller.system;
 
+import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.enums.BusinessType;
+import com.cat2bug.system.git.browse.domain.GitBranchCreateRequest;
+import com.cat2bug.system.git.browse.domain.GitBranchNameRequest;
 import com.cat2bug.system.git.browse.service.ISysGitBrowseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,9 +34,43 @@ public class SysGitBrowseController extends BaseController
 
     @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")
     @GetMapping("/system/git/repo/{repositoryId}/branches")
-    public AjaxResult branches(@PathVariable Long repositoryId)
+    public AjaxResult branches(
+            @PathVariable Long repositoryId,
+            @RequestParam(required = false) String name)
     {
-        return success(gitBrowseService.listBranches(repositoryId));
+        return success(gitBrowseService.listBranches(repositoryId, name));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage')")
+    @Log(title = "Git分支", businessType = BusinessType.INSERT)
+    @PostMapping("/system/git/repo/{repositoryId}/branches")
+    public AjaxResult createBranch(
+            @PathVariable Long repositoryId,
+            @RequestBody GitBranchCreateRequest body)
+    {
+        return success(gitBrowseService.createBranch(repositoryId, body.getName(), body.getFromRef()));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage')")
+    @Log(title = "Git分支", businessType = BusinessType.DELETE)
+    @DeleteMapping("/system/git/repo/{repositoryId}/branches/{name:.+}")
+    public AjaxResult deleteBranch(
+            @PathVariable Long repositoryId,
+            @PathVariable String name)
+    {
+        gitBrowseService.deleteBranch(repositoryId, name);
+        return success();
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage')")
+    @Log(title = "Git默认分支", businessType = BusinessType.UPDATE)
+    @PutMapping("/system/git/repo/{repositoryId}/default-branch")
+    public AjaxResult setDefaultBranch(
+            @PathVariable Long repositoryId,
+            @RequestBody GitBranchNameRequest body)
+    {
+        gitBrowseService.setDefaultBranch(repositoryId, body.getName());
+        return success();
     }
 
     @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")

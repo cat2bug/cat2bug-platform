@@ -68,6 +68,7 @@ export function exposeBridgeBindings(instance, bindings, ownKeys) {
     if (setupState && Object.prototype.hasOwnProperty.call(setupState, key)) return
     if (Object.prototype.hasOwnProperty.call(ctx, key)) return
     const value = bindings[key]
+    // 只挂到 ctx（setupState 结束后不可扩展；$_ 私有方法也不能经 setup() return）
     if (isRef(value)) {
       Object.defineProperty(ctx, key, {
         configurable: true,
@@ -87,10 +88,24 @@ export function exposeBridgeBindings(instance, bindings, ownKeys) {
 }
 
 /**
- * 生成一个全局 mixin：在组件 created() 时执行其声明的桥接 mixin 并暴露绑定。
- * @param {Set<object>} bridgeSet 已知桥接 mixin 集合（用于识别，避免影响无关组件）
+ * 若需在组件 setup() 中合并桥接结果，过滤 Vue 保留前缀（$/_），避免 setup return 告警。
+ * 私有 $_ 方法仍应由 created 阶段的 exposeBridgeBindings 挂到 ctx。
  */
-export function createKeyboardBridgeMixin(bridgeSet) {
+export function publicSetupBindings(bindings) {
+  const out = {}
+  if (!bindings || typeof bindings !== 'object') return out
+  Object.keys(bindings).forEach((key) => {
+    if (key.charAt(0) === '_' || key.charAt(0) === '$') return
+    out[key] = bindings[key]
+  })
+  return out
+}
+
+/**
+ * 生成一个全局 mixin：在组件 created() 时执行其声明的桥接 mixin 并暴露绑定。
+ * @param {Set<object>} _bridgeSet 历史参数（曾用于引用匹配）；现按 mixin.setup 识别，保留签名兼容
+ */
+export function createKeyboardBridgeMixin(_bridgeSet) {
   return {
     created() {
       const instance = getCurrentInstance()
@@ -98,7 +113,9 @@ export function createKeyboardBridgeMixin(bridgeSet) {
       const type = instance.type
       if (!type || !Array.isArray(type.mixins)) return
       const declared = flattenComponentMixins(type)
-      const bridges = declared.filter((mixin) => bridgeSet.has(mixin))
+      // Vue3 不执行 mixin.setup。对组件声明的、带 setup 的 mixin 一律桥接。
+      // 不再依赖 Set 引用相等（Vite HMR 后模块身份会变，导致漏挂告警）。
+      const bridges = declared.filter((mixin) => mixin && typeof mixin.setup === 'function')
       if (!bridges.length) return
       const ownKeys = new Set([
         ...Object.keys(type.methods || {}),

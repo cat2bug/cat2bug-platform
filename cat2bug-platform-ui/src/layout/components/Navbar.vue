@@ -36,7 +36,7 @@
       <lang-select />
       <el-dropdown class="avatar-container right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="user" trigger="click" popper-class="navbar-user-dropdown">
         <span class="dropdown-title">
-          <cat2-bug-avatar :member="member" />
+          <cat2-bug-avatar :member="member" :size="34" />
           <el-icon class="dropdown-caret"><ArrowDown /></el-icon>
         </span>
         <template #dropdown>

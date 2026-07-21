@@ -27,15 +27,16 @@ const legacyMixin = {
   computed: {
     dialogVisible: {
       get() {
-        return this.upload.open
+        return !!(this.upload && this.upload.open)
       },
       set(val) {
-        this.upload.open = val
+        if (this.upload) this.upload.open = !!val
       }
     }
   },
   watch: {
     'upload.open'(val) {
+      if (!this.upload) return
       if (val) {
         this.$nextTick(() => {
           this.$_patchCaseImportUploadFocus()

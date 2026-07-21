@@ -1117,7 +1117,10 @@ html.dark {
     }
 
     &:focus {
-      border-color: #FFC107 !important;
+      border-color: var(--cat2bug-field-focus-color, #FFC107) !important;
+      outline: 2px solid var(--cat2bug-field-focus-color, #FFC107) !important;
+      outline-offset: -2px !important;
+      box-shadow: none !important;
     }
   }
 

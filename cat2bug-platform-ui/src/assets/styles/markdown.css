@@ -21,13 +21,13 @@
 
 .markdown-body h1 {
   font-size: 32px;
-  border-bottom: 1px solid #eaecef;
+  border-bottom: 1px solid var(--divider-color, var(--border-color-light, #eaecef));
   padding-bottom: 8px;
 }
 
 .markdown-body h2 {
   font-size: 24px;
-  border-bottom: 1px solid #eaecef;
+  border-bottom: 1px solid var(--divider-color, var(--border-color-light, #eaecef));
   padding-bottom: 8px;
 }
 
@@ -139,21 +139,23 @@
 .markdown-body table th,
 .markdown-body table td {
   padding: 8px 12px;
-  border: 1px solid #dfe2e5;
+  border: 1px solid var(--table-border-color, #dfe2e5);
+  color: var(--text-color-regular, inherit);
 }
 
 .markdown-body table th {
-  background-color: #f6f8fa;
+  background-color: var(--table-header-bg, #f6f8fa);
+  color: var(--table-header-color, inherit);
   font-weight: 600;
 }
 
 .markdown-body table tr {
-  background-color: #fff;
-  border-top: 1px solid #c6cbd1;
+  background-color: var(--table-bg, #fff);
+  border-top: 1px solid var(--table-border-color, #c6cbd1);
 }
 
 .markdown-body table tr:nth-child(2n) {
-  background-color: #f6f8fa;
+  background-color: var(--bg-color-block, #f6f8fa);
 }
 
 .markdown-body a {
@@ -179,11 +181,12 @@
 }
 
 .markdown-body hr {
-  height: 1px;
+  height: 0;
   padding: 0;
   margin: 24px 0;
-  background-color: #e1e4e8;
+  background: none;
   border: 0;
+  border-top: 1px solid var(--divider-color, var(--border-color-light, #e1e4e8));
 }
 
 .markdown-body strong {

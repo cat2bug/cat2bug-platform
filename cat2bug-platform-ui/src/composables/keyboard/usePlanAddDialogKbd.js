@@ -1,5 +1,8 @@
 import { computed, getCurrentInstance, onBeforeUnmount, watch } from 'vue'
 import { getLogicalTabStopsInScope } from '@/utils/focus-tab-common'
+import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts'
+import defectToolDialogClose from '@/mixins/defect-tool-dialog-close'
+import formFieldHints from '@/mixins/form-field-hints'
 
 function serializePlanAddCloseState(vm) {
   const form = vm.form || {}
@@ -165,5 +168,31 @@ export function usePlanAddDialogKbd() {
     getFieldHintContainer,
     getFieldHintScrollContainer,
     onPlanAddDialogOpenedKbd
+  }
+}
+
+/**
+ * 新建计划弹框快捷键/关闭：须用 Options methods 覆盖 defectToolDialogClose
+ *（关闭字段是 open 而非 dialogVisible；否则 setup 返回值会被 mixin 盖掉，取消按钮无反应）。
+ */
+export default {
+  mixins: [dialogFormShortcuts, defectToolDialogClose, formFieldHints],
+  setup() {
+    return usePlanAddDialogKbd()
+  },
+  methods: {
+    captureToolDialogCloseBaseline() {
+      this.toolDialogCloseBaseline = serializePlanAddCloseState(this)
+    },
+    isToolDialogCloseDirty() {
+      if (!this.toolDialogCloseBaseline) return false
+      return serializePlanAddCloseState(this) !== this.toolDialogCloseBaseline
+    },
+    doCloseToolDialog() {
+      this.open = false
+      this.toolDialogCloseBaseline = null
+      if (typeof this.reset === 'function') this.reset()
+      this.$emit('close')
+    }
   }
 }
