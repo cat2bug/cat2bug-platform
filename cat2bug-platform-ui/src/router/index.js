@@ -391,6 +391,34 @@ export const dynamicRoutes = [
         }
       }
     ]
+  },
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)/commits/:commitId',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/git/repo/browse'),
+        name: 'GitRepoCommitDetail',
+        meta: {
+          title: i18n.global.t('git.repo.commit.detail-title'),
+          titleI18nKey: 'git.repo.commit.detail-title',
+          activeMenu: '/project/git-repo',
+          projectListPage: true,
+          breadcrumbParents: [
+            { path: '/project', redirect: 'noRedirect', meta: { titleI18nKey: 'project.manage' } },
+            { path: '/project/git-repo', meta: { titleI18nKey: 'git.repo.menu' } },
+            {
+              path: '/project/git-repo/browse/:repositoryId',
+              name: 'GitRepoBrowse',
+              meta: { titleI18nKey: 'git.repo.library' }
+            }
+          ]
+        }
+      }
+    ]
   }
 ]
 

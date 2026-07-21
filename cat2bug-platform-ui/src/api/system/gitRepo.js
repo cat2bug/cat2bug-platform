@@ -1,4 +1,5 @@
 import request, { setHeader } from '@/utils/request'
+import { getToken } from '@/utils/auth'
 import { saveAs } from 'file-saver'
 import { blobValidate } from '@/utils/ruoyi'
 
@@ -89,6 +90,25 @@ export function listGitRepoCommits(repositoryId, ref, limit) {
     method: 'get',
     params: { ref, limit }
   })
+}
+
+// 提交详情（meta + 变更文件与 patch，pull 权限）
+export function getGitRepoCommit(repositoryId, commitId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/commits/' + encodeURIComponent(commitId),
+    method: 'get'
+  })
+}
+
+/** 跳转到独立提交详情页（供 browse 等入口复用） */
+export function gitRepoCommitDetailRoute(repositoryId, commitId) {
+  return {
+    name: 'GitRepoCommitDetail',
+    params: {
+      repositoryId: String(repositoryId),
+      commitId: String(commitId)
+    }
+  }
 }
 
 // 查询贡献者（pull 权限）
@@ -197,7 +217,8 @@ export function downloadGitRepoReleaseAsset(repositoryId, releaseId, assetId, fi
 }
 
 /** 下载仓库指定 ref 的源码包（zip / tar.gz）
- * 大仓归档可达百兆级，走原生 fetch 且不设短超时，避免 axios 60s 在浏览器侧掐成 net::ERR_FAILED 200。
+ * 大仓可达百兆：优先 File System Access 流式落盘；否则用 ?token= 触发浏览器原生下载，
+ * 避免 fetch→blob 把整包读进内存导致 net::ERR_FAILED 200。
  */
 export function downloadGitRepoArchive(repositoryId, ref, format, fileName) {
   const path = '/system/git/repo/' + repositoryId + '/archive'
@@ -208,20 +229,56 @@ export function downloadGitRepoArchive(repositoryId, ref, format, fileName) {
   if (format != null && format !== '') {
     qs.set('format', String(format))
   }
-  const url = (process.env.VUE_APP_BASE_API || '') + path + (qs.toString() ? ('?' + qs.toString()) : '')
-  const headers = {}
-  setHeader(path, headers)
-  return fetch(url, { method: 'GET', headers }).then(async (res) => {
-    const blob = await res.blob()
-    if (!res.ok || !blobValidate(blob)) {
-      let msg = 'Download failed'
+  const ext = format === 'tar.gz' || format === 'tgz' ? 'tar.gz' : 'zip'
+  const name = fileName || ('source.' + ext)
+  const base = process.env.VUE_APP_BASE_API || ''
+  const url = base + path + (qs.toString() ? ('?' + qs.toString()) : '')
+
+  if (typeof window !== 'undefined' && typeof window.showSaveFilePicker === 'function') {
+    const headers = {}
+    setHeader(path, headers)
+    return fetch(url, { method: 'GET', headers }).then(async (res) => {
+      const ct = (res.headers.get('content-type') || '').toLowerCase()
+      if (!res.ok || ct.includes('application/json')) {
+        let msg = 'Download failed'
+        try {
+          const obj = await res.json()
+          msg = obj.msg || msg
+        } catch (e) { /* ignore */ }
+        return Promise.reject(new Error(msg))
+      }
+      if (!res.body) {
+        return Promise.reject(new Error('Download failed'))
+      }
       try {
-        const obj = JSON.parse(await blob.text())
-        msg = obj.msg || msg
-      } catch (e) { /* ignore */ }
-      return Promise.reject(new Error(msg))
-    }
-    const ext = format === 'tar.gz' || format === 'tgz' ? 'tar.gz' : 'zip'
-    saveAs(blob, fileName || ('source.' + ext))
-  })
+        const handle = await window.showSaveFilePicker({
+          suggestedName: name,
+          types: ext === 'tar.gz'
+            ? [{ description: 'tar.gz', accept: { 'application/gzip': ['.tar.gz', '.tgz', '.gz'] } }]
+            : [{ description: 'ZIP', accept: { 'application/zip': ['.zip'] } }]
+        })
+        const writable = await handle.createWritable()
+        await res.body.pipeTo(writable)
+      } catch (err) {
+        if (err && err.name === 'AbortError') {
+          return
+        }
+        throw err
+      }
+    })
+  }
+
+  // 无 showSaveFilePicker：带 token 走原生下载（不经 JS 堆）
+  const token = getToken()
+  if (token) {
+    qs.set('token', token)
+  }
+  const navUrl = base + path + '?' + qs.toString()
+  const a = document.createElement('a')
+  a.href = navUrl
+  a.rel = 'noopener'
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  return Promise.resolve()
 }

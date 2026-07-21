@@ -242,6 +242,11 @@ public class TokenService
     private String getToken(HttpServletRequest request)
     {
         String token = request.getHeader(header);
+        if (StringUtils.isEmpty(token))
+        {
+            // 大文件下载等无法带 Authorization 头时，允许 ?token=（与若依常见下载约定一致）
+            token = request.getParameter("token");
+        }
         if (StringUtils.isNotEmpty(token) && token.startsWith(Constants.TOKEN_PREFIX))
         {
             token = token.replace(Constants.TOKEN_PREFIX, "");

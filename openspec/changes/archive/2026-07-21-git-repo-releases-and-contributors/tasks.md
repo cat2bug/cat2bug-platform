@@ -40,7 +40,8 @@
 
 ## 7. Verification
 
-- [ ] 7.1 Manual check: empty releases aside + create as admin; pull-only cannot create
-- [ ] 7.2 Manual check: publish with asset; pull user downloads; draft hidden from pull-only
-- [ ] 7.3 Manual check: contributors aside/list for multi-author repo; empty repo hides contributors
-- [ ] 7.4 Run relevant backend tests and frontend lint/unit if added
+- [x] 7.1 Manual check: empty releases aside + create as admin; pull-only cannot create
+- [x] 7.2 Manual check: publish with asset; pull user downloads; draft hidden from pull-only
+- [x] 7.3 Manual check: contributors aside/list for multi-author repo; empty repo hides contributors
+- [x] 7.4 Run relevant backend tests and frontend lint/unit if added
+

@@ -51,7 +51,7 @@
           <div class="git-release-detail__header-text">
             <h1 class="git-release-detail__title">{{ release.title || release.tagName }}</h1>
             <div class="git-release-detail__publisher">
-              <cat2-bug-avatar :member="publisherMember" :size="24" />
+              <cat2-bug-avatar :member="publisherMember" :size="32" />
               <span>{{ publisherDisplayName }}</span>
               <span class="git-release-detail__rel">{{ relativeTime(releaseTime) }}</span>
             </div>
@@ -331,11 +331,6 @@ export default {
   width: 100%;
   max-width: none;
   padding: 20px 0;
-  border-bottom: 1px solid var(--border-color-light);
-
-  &:last-child {
-    border-bottom: none;
-  }
 
   &.is-highlighted {
     background: var(--bg-color-block, rgba(127, 127, 127, 0.06));
@@ -369,7 +364,7 @@ export default {
   margin: 0;
   padding: 0 20px 0 0;
   border-radius: 0;
-  border-right: 1px solid var(--border-color-light);
+  border-right: none;
   background: transparent;
   line-height: 1.4;
   font-size: inherit;

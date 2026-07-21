@@ -81,3 +81,12 @@ The system SHALL identify the push actor solely via Smart HTTP authentication (H
 
 - **WHEN** a client pushes without valid Basic credentials or without project push permission
 - **THEN** the system rejects the request before applying the pack
+
+### Requirement: Public Smart HTTP path is namespaced
+
+In addition to existing Smart HTTP behavior (JGit, Basic auth, role matrix), the system SHALL serve Git Smart HTTP primarily at `/{teamKey}/{projectKey}/code/{slug}.git/**` resolved via team and project path keys.
+
+#### Scenario: info/refs on namespaced URL
+
+- **WHEN** a Git client requests `info/refs` on `/{teamKey}/{projectKey}/code/{slug}.git` with valid credentials and pull permission
+- **THEN** the server responds with refs advertisement for that repository

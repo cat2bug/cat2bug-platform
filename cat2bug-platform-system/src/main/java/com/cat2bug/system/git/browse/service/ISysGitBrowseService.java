@@ -2,6 +2,7 @@ package com.cat2bug.system.git.browse.service;
 
 import com.cat2bug.system.git.browse.domain.GitBlobContent;
 import com.cat2bug.system.git.browse.domain.GitBranchInfo;
+import com.cat2bug.system.git.browse.domain.GitCommitDetail;
 import com.cat2bug.system.git.browse.domain.GitCommitInfo;
 import com.cat2bug.system.git.browse.domain.GitContributorInfo;
 import com.cat2bug.system.git.browse.domain.GitTreeEntryInfo;
@@ -32,6 +33,13 @@ public interface ISysGitBrowseService
      * @param limit 最大返回条数，未传时使用默认值
      */
     List<GitCommitInfo> listCommits(Long repositoryId, String ref, Integer limit);
+
+    /**
+     * 单条提交详情（全文消息 + 相对 first parent 的文件 diff，含 patch 大小限制）。
+     *
+     * @param commitId 完整或仓库内可解析的缩写 commit id
+     */
+    GitCommitDetail getCommitDetail(Long repositoryId, String commitId);
 
     /**
      * 按提交作者聚合贡献者（扫描最近若干提交，返回前若干作者）。

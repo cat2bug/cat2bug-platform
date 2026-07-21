@@ -12,7 +12,12 @@
       </el-page-header>
     </div>
 
-    <el-tabs v-model="activeTab" class="git-browse-tabs" @tab-change="onBrowseTabChange">
+    <el-tabs
+      v-model="activeTab"
+      class="git-browse-tabs"
+      @tab-change="onBrowseTabChange"
+      @tab-click="onBrowseTabClick"
+    >
       <el-tab-pane name="code">
         <template #label>
           <span class="git-browse-tab-label">
@@ -32,7 +37,7 @@
       <el-tab-pane name="releases">
         <template #label>
           <span class="git-browse-tab-label">
-            <el-icon><PriceTag /></el-icon>
+            <git-tag-icon class="git-browse-tab-tag-icon" />
             {{ $t('git.repo.aside.releases') }}
           </span>
         </template>
@@ -290,8 +295,17 @@
           <div class="git-browse-commit-bar-left">
             <cat2-bug-avatar :member="memberForAuthor(latestCommit)" :size="28" />
             <span class="git-browse-author">{{ latestCommit.authorName || '-' }}</span>
-            <span class="git-browse-commit-msg" :title="latestCommit.message">{{ latestCommit.message }}</span>
-            <span class="git-browse-commit-hash">{{ latestCommit.shortId }}</span>
+            <a
+              href="javascript:;"
+              class="git-browse-commit-msg is-link"
+              :title="latestCommit.message"
+              @click.prevent="openCommitDetail(latestCommit.id || latestCommit.shortId)"
+            >{{ latestCommit.message }}</a>
+            <a
+              href="javascript:;"
+              class="git-browse-commit-hash is-link"
+              @click.prevent="openCommitDetail(latestCommit.id || latestCommit.shortId)"
+            >{{ latestCommit.shortId }}</a>
             <span class="git-browse-commit-time">{{ relativeTime(latestCommit.commitTime) }}</span>
           </div>
           <a class="git-browse-commit-total" href="javascript:;" @click="activeTab = 'commits'">
@@ -300,8 +314,8 @@
           </a>
         </div>
 
-        <!-- 根目录时面包屑仍放在提交条下方 -->
-        <div v-if="!showSideFileTree" class="git-browse-breadcrumb">
+        <!-- 根目录不展示仅仓库名的面包屑；进入子路径后由工具栏/侧栏承担 -->
+        <div v-if="!showSideFileTree && breadcrumbSegments.length" class="git-browse-breadcrumb">
           <el-breadcrumb separator="/">
             <el-breadcrumb-item>
               <a href="javascript:;" @click="navigateToPath('')">{{ repoName || $t('git.repo.path-root') }}</a>
@@ -518,9 +532,18 @@
                   <span class="git-aside-activity-time">{{ relativeTime(c.commitTime) }}</span>
                   <strong>{{ c.authorName || '-' }}</strong>
                   {{ $t('git.repo.aside.pushed') }}
-                  <span class="git-aside-hash">{{ c.shortId }}</span>
+                  <a
+                    href="javascript:;"
+                    class="git-aside-hash is-link"
+                    @click.prevent="openCommitDetail(c.id || c.shortId)"
+                  >{{ c.shortId }}</a>
                 </div>
-                <div class="git-aside-activity-msg" :title="c.message">{{ c.message }}</div>
+                <a
+                  href="javascript:;"
+                  class="git-aside-activity-msg is-link"
+                  :title="c.message"
+                  @click.prevent="openCommitDetail(c.id || c.shortId)"
+                >{{ c.message }}</a>
               </div>
             </div>
           </div>
@@ -529,19 +552,41 @@
       </aside>
     </div>
 
-    <div v-show="activeTab === 'commits'" v-loading="commitsLoading" class="git-browse-commits">
+    <div v-show="activeTab === 'commits'" class="git-browse-commits-pane">
+      <git-repo-commit-detail-panel
+        v-if="selectedCommitId"
+        :key="'commit-' + selectedCommitId"
+        embedded
+        :repository-id="repositoryId"
+        :commit-id="String(selectedCommitId)"
+        :repo-name="repoName"
+        :project-members="projectMembers"
+        @back="clearCommitFocus"
+      />
+      <div v-else v-loading="commitsLoading" class="git-browse-commits">
       <div v-for="c in commits" :key="c.id" class="git-browse-commit-item">
         <cat2-bug-avatar :member="memberForAuthor(c)" :size="32" />
         <div class="git-browse-commit-item-body">
-          <div class="git-browse-commit-item-msg">{{ c.message }}</div>
+          <div class="git-browse-commit-item-msg">
+            <a
+              href="javascript:;"
+              class="is-link"
+              @click.prevent="openCommitDetail(c.id || c.shortId)"
+            >{{ c.message }}</a>
+          </div>
           <div class="git-browse-commit-item-meta">
             <span>{{ c.authorName }}</span>
             <span>{{ relativeTime(c.commitTime) }}</span>
-            <span class="git-browse-commit-hash">{{ c.shortId }}</span>
+            <a
+              href="javascript:;"
+              class="git-browse-commit-hash is-link"
+              @click.prevent="openCommitDetail(c.id || c.shortId)"
+            >{{ c.shortId }}</a>
           </div>
         </div>
       </div>
       <div v-if="!commitsLoading && !commits.length" class="git-browse-empty">{{ $t('git.repo.empty-repository') }}</div>
+      </div>
     </div>
 
     <div v-show="activeTab === 'releases'" class="git-browse-releases">
@@ -559,18 +604,18 @@
 
       <div v-loading="releasesLoading" class="git-browse-releases__timeline">
         <git-repo-release-detail-panel
-          v-for="r in releases"
+          v-for="r in releasesTimeline"
           :id="'git-release-item-' + r.releaseId"
           :key="r.releaseId + '-' + releasesRefreshToken"
           :repository-id="repositoryId"
           :release-id="r.releaseId"
           :is-latest="isLatestRelease(r)"
-          :highlighted="isReleaseHighlighted(r)"
+          :highlighted="false"
           :project-members="projectMembers"
           @deleted="onReleaseDeleted"
           @edit="openEditRelease"
         />
-        <div v-if="!releasesLoading && !releases.length" class="git-browse-empty">
+        <div v-if="!releasesLoading && !releasesTimeline.length" class="git-browse-empty">
           {{ $t('git.repo.release.empty') }}
           <el-button
             v-if="canManageGitRepo"
@@ -694,13 +739,14 @@
 
 <script>
 import { h, markRaw } from 'vue'
-import { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link, List, CopyDocument, Plus, Upload, PriceTag } from '@element-plus/icons-vue'
+import { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link, List, CopyDocument, Plus, Upload } from '@element-plus/icons-vue'
 import {
   getGitRepo,
   listGitRepoBranches,
   listGitRepoTree,
   getGitRepoBlob,
   listGitRepoCommits,
+  gitRepoCommitDetailRoute,
   listGitRepoContributors,
   listGitRepoReleases,
   createGitRepoRelease,
@@ -712,6 +758,8 @@ import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import Cat2BugMarkdown from '@/components/Cat2BugMarkdown'
 import { MarkdownRenderer } from '@/components/Markdown'
 import GitRepoReleaseDetailPanel from './release-detail.vue'
+import GitRepoCommitDetailPanel from './commit-detail.vue'
+import GitTagIcon from './GitTagIcon.vue'
 import { extractHeadings } from '@/components/Report/annotation/report-toc'
 import { useUserStore } from '@/stores/user'
 import { checkPermi } from '@/utils/permission'
@@ -775,11 +823,12 @@ export default {
     CopyDocument,
     Plus,
     Upload,
-    PriceTag,
     Cat2BugAvatar,
     Cat2BugMarkdown,
     MarkdownRenderer,
     GitRepoReleaseDetailPanel,
+    GitRepoCommitDetailPanel,
+    GitTagIcon,
     GitBranchIcon
   },
   data() {
@@ -799,8 +848,11 @@ export default {
       branches: [],
       branchesLoading: false,
       currentRef: null,
-      activeTab: this.$route && this.$route.params.releaseId ? 'releases' : 'code',
+      activeTab: this.$route && this.$route.params.commitId
+        ? 'commits'
+        : (this.$route && this.$route.params.releaseId ? 'releases' : 'code'),
       selectedReleaseId: (this.$route && this.$route.params.releaseId) || null,
+      selectedCommitId: (this.$route && this.$route.params.commitId) || null,
       currentPath: '',
       viewMode: 'tree',
       treeEntries: [],
@@ -920,6 +972,14 @@ export default {
     releasesAsidePreview() {
       return this.releases.slice(0, 5)
     },
+    /** 侧栏点进单条时只渲染该发行版；点顶部 Tab 清空 selectedReleaseId 后显示全部 */
+    releasesTimeline() {
+      if (this.selectedReleaseId == null || this.selectedReleaseId === '') {
+        return this.releases
+      }
+      const id = Number(this.selectedReleaseId)
+      return this.releases.filter(r => r && Number(r.releaseId) === id)
+    },
     latestReleaseId() {
       const latest = this.releases.find(r => r && r.draft !== 1)
       return latest ? latest.releaseId : null
@@ -979,8 +1039,16 @@ export default {
     '$route.params.releaseId'() {
       this.syncReleaseRouteFromParams()
     },
+    '$route.params.commitId'() {
+      this.syncCommitRouteFromParams()
+    },
     '$route.name'() {
       this.syncReleaseRouteFromParams()
+      this.syncCommitRouteFromParams()
+      this.syncBrowseQueryFromRoute()
+    },
+    '$route.query.tab'() {
+      this.syncBrowseQueryFromRoute()
     }
   },
   beforeUnmount() {
@@ -990,43 +1058,83 @@ export default {
     this.repositoryId = Number(this.$route.params.repositoryId)
     if (this.$route.query.name) this.repoName = String(this.$route.query.name)
     this.syncReleaseRouteFromParams()
+    this.syncCommitRouteFromParams()
+    this.syncBrowseQueryFromRoute()
     this.init()
   },
   methods: {
     goBack() {
       this.$router.push({ path: '/project/git-repo' })
     },
+    /** 提交详情（4.x 入口点击复用；勿删） */
+    openCommitDetail(commitId) {
+      if (!commitId || !this.repositoryId) return
+      this.selectedCommitId = commitId
+      this.activeTab = 'commits'
+      const query = this.repoName ? { name: this.repoName } : {}
+      this.$router.push({
+        ...gitRepoCommitDetailRoute(this.repositoryId, commitId),
+        query
+      }).catch(() => {})
+    },
+    syncBrowseQueryFromRoute() {
+      if (this.$route.name !== 'GitRepoBrowse') return
+      const tab = this.$route.query.tab
+      if (tab === 'commits' || tab === 'code' || tab === 'releases') {
+        this.activeTab = tab
+      }
+    },
     syncReleaseRouteFromParams() {
       const releaseId = this.$route.params.releaseId
       if (releaseId) {
         this.selectedReleaseId = releaseId
         this.activeTab = 'releases'
-        this.$nextTick(() => this.scrollToRelease(releaseId))
         return
       }
       if (this.$route.name === 'GitRepoBrowse' && this.activeTab !== 'releases') {
         this.selectedReleaseId = null
       }
     },
-    onBrowseTabChange(tab) {
-      if (tab === 'releases') {
-        if (this.selectedReleaseId) {
-          this.$router.replace({
-            name: 'GitRepoReleaseDetail',
-            params: {
-              repositoryId: String(this.repositoryId),
-              releaseId: String(this.selectedReleaseId)
-            }
-          }).catch(() => {})
-          this.$nextTick(() => this.scrollToRelease(this.selectedReleaseId))
-        } else if (this.$route.name === 'GitRepoReleaseDetail') {
-          this.$router.replace({
-            name: 'GitRepoBrowse',
-            params: { repositoryId: String(this.repositoryId) }
-          }).catch(() => {})
-        }
+    syncCommitRouteFromParams() {
+      const commitId = this.$route.params.commitId
+      if (commitId) {
+        this.selectedCommitId = commitId
+        this.activeTab = 'commits'
         return
       }
+      if (this.$route.name === 'GitRepoBrowse' && this.activeTab !== 'commits') {
+        this.selectedCommitId = null
+      }
+    },
+    /** 点击顶部「发行版」/「提交记录」Tab：显示全部列表（含再次点击已激活 Tab） */
+    onBrowseTabClick(pane) {
+      const name = pane && (pane.paneName != null ? pane.paneName : (pane.props && pane.props.name))
+      if (name === 'releases') {
+        this.clearReleaseFocus()
+      }
+      if (name === 'commits') {
+        this.clearCommitFocus()
+      }
+    },
+    onBrowseTabChange(tab) {
+      if (tab === 'releases') {
+        this.clearCommitFocus()
+        return
+      }
+      if (tab === 'commits') {
+        this.clearReleaseFocus()
+        return
+      }
+      this.selectedReleaseId = null
+      this.selectedCommitId = null
+      if (this.$route.name === 'GitRepoReleaseDetail' || this.$route.name === 'GitRepoCommitDetail') {
+        this.$router.replace({
+          name: 'GitRepoBrowse',
+          params: { repositoryId: String(this.repositoryId) }
+        }).catch(() => {})
+      }
+    },
+    clearReleaseFocus() {
       this.selectedReleaseId = null
       if (this.$route.name === 'GitRepoReleaseDetail') {
         this.$router.replace({
@@ -1035,20 +1143,19 @@ export default {
         }).catch(() => {})
       }
     },
+    clearCommitFocus() {
+      this.selectedCommitId = null
+      if (this.$route.name === 'GitRepoCommitDetail') {
+        this.$router.replace({
+          name: 'GitRepoBrowse',
+          params: { repositoryId: String(this.repositoryId) },
+          query: { tab: 'commits', ...(this.repoName ? { name: this.repoName } : {}) }
+        }).catch(() => {})
+      }
+    },
     isLatestRelease(release) {
       if (!release || release.draft === 1 || this.latestReleaseId == null) return false
       return Number(release.releaseId) === Number(this.latestReleaseId)
-    },
-    isReleaseHighlighted(release) {
-      if (!release || this.selectedReleaseId == null) return false
-      return Number(release.releaseId) === Number(this.selectedReleaseId)
-    },
-    scrollToRelease(releaseId) {
-      if (!releaseId) return
-      const el = document.getElementById('git-release-item-' + releaseId)
-      if (el && typeof el.scrollIntoView === 'function') {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
     },
     timeValue(t) {
       if (!t) return 0
@@ -1076,7 +1183,6 @@ export default {
           releaseId: String(release.releaseId)
         }
       }).catch(() => {})
-      this.$nextTick(() => this.scrollToRelease(release.releaseId))
     },
     onReleaseDeleted() {
       this.selectedReleaseId = null
@@ -1156,9 +1262,6 @@ export default {
         this.releases = []
       }).finally(() => {
         this.releasesLoading = false
-        if (this.selectedReleaseId && this.activeTab === 'releases') {
-          this.$nextTick(() => this.scrollToRelease(this.selectedReleaseId))
-        }
       })
     },
     loadContributors() {
@@ -1389,8 +1492,13 @@ export default {
       listGitRepoBranches(this.repositoryId).then(response => {
         this.branches = response.data || []
         this.branchesLoading = false
-        const current = this.branches.find(b => b.default) || this.branches[0]
-        this.currentRef = current ? current.name : null
+        const qRef = this.$route.query.ref
+        if (qRef) {
+          this.currentRef = String(qRef)
+        } else {
+          const current = this.branches.find(b => b.default) || this.branches[0]
+          this.currentRef = current ? current.name : null
+        }
         this.loadTree('')
         this.loadCommits()
         this.loadContributors()
@@ -1737,6 +1845,10 @@ export default {
   gap: 6px;
 
   .el-icon {
+    font-size: 14px;
+  }
+
+  .git-browse-tab-tag-icon {
     font-size: 14px;
   }
 }
@@ -2148,12 +2260,32 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  &.is-link {
+    color: var(--text-color-regular);
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--el-color-primary);
+      text-decoration: underline;
+    }
+  }
 }
 
 .git-browse-commit-hash {
   font-family: Menlo, Consolas, monospace;
   font-size: 12px;
   color: var(--el-color-primary);
+
+  &.is-link {
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
 .git-browse-commit-time {
@@ -2284,7 +2416,15 @@ export default {
   max-height: min(70vh, 720px);
   overflow: auto;
   border-right: none;
-  background: var(--bg-color-block, rgba(127, 127, 127, 0.04));
+  /* 覆盖全局 aside { background:#eef1f6; padding… }，与右侧正文同底 */
+  margin: 0;
+  padding: 0 8px 0 12px;
+  border-radius: 0;
+  line-height: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  color: var(--text-color-regular);
+  background: var(--card-bg);
 }
 
 .git-browse-doc-toc__title {
@@ -2467,7 +2607,7 @@ export default {
 }
 
 .git-browse-root-docs-content.has-toc .git-browse-root-docs-body {
-  padding-left: 5px;
+  padding-left: 20px;
 }
 
 .git-browse-root-docs-content:not(.has-toc) .git-browse-root-docs-body {
@@ -2762,15 +2902,35 @@ export default {
 .git-aside-hash {
   font-family: Menlo, Consolas, monospace;
   color: var(--el-color-primary);
+
+  &.is-link {
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
 .git-aside-activity-msg {
+  display: block;
   margin-top: 2px;
   font-size: 12px;
   color: var(--text-color-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  &.is-link {
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--el-color-primary);
+      text-decoration: underline;
+    }
+  }
 }
 
 .git-aside-activity-time {
@@ -2794,6 +2954,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  margin-top: 20px;
   margin-bottom: 12px;
 }
 
@@ -2806,6 +2967,26 @@ export default {
 
 .git-browse-releases__timeline {
   width: 100%;
+  position: relative;
+
+  /* 左右栏共用一条连续竖线（避免每条发行版各自 border 断开） */
+  &:has(.git-release-detail)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 280px;
+    width: 1px;
+    background: var(--border-color-light);
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+@media (max-width: 800px) {
+  .git-browse-releases__timeline:has(.git-release-detail)::before {
+    display: none;
+  }
 }
 
 .git-browse-commits {
@@ -2831,6 +3012,17 @@ export default {
   font-weight: 500;
   color: var(--text-color-primary);
   margin-bottom: 4px;
+
+  .is-link {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--el-color-primary);
+      text-decoration: underline;
+    }
+  }
 }
 
 .git-browse-commit-item-meta {

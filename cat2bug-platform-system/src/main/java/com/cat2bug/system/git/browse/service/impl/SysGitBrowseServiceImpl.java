@@ -11,7 +11,11 @@ import com.cat2bug.common.utils.file.FileUtils;
 import com.cat2bug.system.domain.SysGitRepository;
 import com.cat2bug.system.git.browse.domain.GitBlobContent;
 import com.cat2bug.system.git.browse.domain.GitBranchInfo;
+import com.cat2bug.system.git.browse.domain.GitCommitChangeStats;
+import com.cat2bug.system.git.browse.domain.GitCommitDetail;
+import com.cat2bug.system.git.browse.domain.GitCommitFileChange;
 import com.cat2bug.system.git.browse.domain.GitCommitInfo;
+import com.cat2bug.system.git.browse.domain.GitCommitParentRef;
 import com.cat2bug.system.git.browse.domain.GitContributorInfo;
 import com.cat2bug.system.git.browse.domain.GitTreeEntryInfo;
 import com.cat2bug.system.git.browse.service.ISysGitBrowseService;
@@ -22,21 +26,29 @@ import com.cat2bug.system.service.git.GitPathValidator;
 import com.cat2bug.system.service.git.GitRepositoryAccessService;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.archive.ArchiveFormats;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.Edit;
+import org.eclipse.jgit.diff.EditList;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
+import org.eclipse.jgit.util.io.DisabledOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +58,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -86,6 +100,15 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
 
     /** 贡献者 API 最大返回条数 */
     static final int MAX_CONTRIBUTOR_RETURN_LIMIT = 100;
+
+    /** 单文件 unified patch 上限（字节） */
+    static final int MAX_COMMIT_PATCH_PER_FILE_BYTES = 256 * 1024;
+
+    /** 单次 commit detail 响应累计 patch 上限（字节） */
+    static final int MAX_COMMIT_PATCH_CUMULATIVE_BYTES = (3 * 512 * 1024);
+
+    /** 附带完整 patch 的文件数量软上限 */
+    static final int MAX_COMMIT_PATCH_FILE_COUNT = 500;
 
     private static final AtomicBoolean ARCHIVE_FORMATS_REGISTERED = new AtomicBoolean(false);
 
@@ -231,6 +254,39 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     }
 
     @Override
+    public GitCommitDetail getCommitDetail(Long repositoryId, String commitId)
+    {
+        SysGitRepository repo = requireRepo(repositoryId);
+        assertPull(repo.getProjectId());
+        if (StringUtils.isBlank(commitId))
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.browse.commit-not-found"), HttpStatus.NOT_FOUND);
+        }
+        try (Repository repository = openRepository(repo.getDiskPath()))
+        {
+            ObjectId objectId = repository.resolve(commitId.trim());
+            if (objectId == null)
+            {
+                throw new ServiceException(MessageUtils.message("git.repo.browse.commit-not-found"),
+                        HttpStatus.NOT_FOUND);
+            }
+            try (RevWalk revWalk = new RevWalk(repository))
+            {
+                RevCommit commit = revWalk.parseCommit(objectId);
+                return toCommitDetail(repository, revWalk, commit);
+            }
+        }
+        catch (ServiceException e)
+        {
+            throw e;
+        }
+        catch (IOException e)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.browse.read-failed"), HttpStatus.ERROR);
+        }
+    }
+
+    @Override
     public List<GitContributorInfo> listContributors(Long repositoryId, String ref, Integer limit)
     {
         SysGitRepository repo = requireRepo(repositoryId);
@@ -298,9 +354,10 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
         SysGitRepository repo = requireRepo(repositoryId);
         assertPull(repo.getProjectId());
 
-        String normalizedFormat = normalizeArchiveFormat(format);
-        String extension = "tar.gz".equals(normalizedFormat) ? "tar.gz" : "zip";
-        String contentType = "tar.gz".equals(normalizedFormat)
+        // JGit ArchiveFormats 注册名为 tgz / zip；对外 API 仍接受 tar.gz
+        String jgitFormat = normalizeArchiveFormat(format);
+        String extension = "tgz".equals(jgitFormat) ? "tar.gz" : "zip";
+        String contentType = "tgz".equals(jgitFormat)
                 ? "application/gzip"
                 : "application/zip";
 
@@ -324,7 +381,7 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
             {
                 git.archive()
                         .setTree(commitId)
-                        .setFormat(normalizedFormat)
+                        .setFormat(jgitFormat)
                         .setPrefix(prefix)
                         .setOutputStream(out)
                         .call();
@@ -349,6 +406,9 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
         }
     }
 
+    /**
+     * 将 API 的 format 参数映射为 JGit {@link ArchiveFormats} 注册名（zip / tgz）。
+     */
     private static String normalizeArchiveFormat(String format)
     {
         String f = format == null ? "" : format.trim().toLowerCase(Locale.ROOT);
@@ -358,7 +418,7 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
         }
         if ("tar.gz".equals(f) || "tgz".equals(f) || "targz".equals(f))
         {
-            return "tar.gz";
+            return "tgz";
         }
         throw new ServiceException(MessageUtils.message("git.repo.browse.archive-format-invalid"),
                 HttpStatus.BAD_REQUEST);
@@ -710,6 +770,226 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
             info.setCommitTime(author.getWhen());
         }
         return info;
+    }
+
+    private GitCommitDetail toCommitDetail(Repository repository, RevWalk revWalk, RevCommit commit)
+            throws IOException
+    {
+        GitCommitDetail detail = new GitCommitDetail();
+        detail.setId(commit.getId().getName());
+        detail.setShortId(commit.getId().abbreviate(7).name());
+        detail.setFullMessage(commit.getFullMessage());
+
+        PersonIdent author = commit.getAuthorIdent();
+        if (author != null)
+        {
+            detail.setAuthorName(author.getName());
+            detail.setAuthorEmail(author.getEmailAddress());
+            detail.setCommitTime(author.getWhen());
+        }
+        PersonIdent committer = commit.getCommitterIdent();
+        if (committer != null)
+        {
+            detail.setCommitterName(committer.getName());
+            detail.setCommitterEmail(committer.getEmailAddress());
+        }
+
+        for (int i = 0; i < commit.getParentCount(); i++)
+        {
+            RevCommit parent = revWalk.parseCommit(commit.getParent(i).getId());
+            GitCommitParentRef parentRef = new GitCommitParentRef();
+            parentRef.setId(parent.getId().getName());
+            parentRef.setShortId(parent.getId().abbreviate(7).name());
+            detail.getParents().add(parentRef);
+        }
+
+        List<GitCommitFileChange> fileChanges = buildCommitFileChanges(repository, revWalk, commit);
+        detail.setFiles(fileChanges);
+
+        GitCommitChangeStats stats = new GitCommitChangeStats();
+        stats.setFiles(fileChanges.size());
+        int additions = 0;
+        int deletions = 0;
+        for (GitCommitFileChange fileChange : fileChanges)
+        {
+            additions += fileChange.getAdditions();
+            deletions += fileChange.getDeletions();
+        }
+        stats.setAdditions(additions);
+        stats.setDeletions(deletions);
+        detail.setStats(stats);
+        return detail;
+    }
+
+    private List<GitCommitFileChange> buildCommitFileChanges(Repository repository, RevWalk revWalk, RevCommit commit)
+            throws IOException
+    {
+        List<DiffEntry> diffEntries = scanCommitDiff(repository, revWalk, commit);
+        List<GitCommitFileChange> result = new ArrayList<>();
+        int cumulativePatchBytes = 0;
+        int patchesAttached = 0;
+
+        try (DiffFormatter headerFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE))
+        {
+            headerFormatter.setRepository(repository);
+            headerFormatter.setDetectRenames(true);
+
+            for (DiffEntry entry : diffEntries)
+            {
+                GitCommitFileChange fileChange = new GitCommitFileChange();
+                fileChange.setChangeType(mapDiffChangeType(entry.getChangeType()));
+                applyDiffPaths(entry, fileChange);
+
+                FileHeader header = headerFormatter.toFileHeader(entry);
+                applyLineStats(header, fileChange);
+
+                if (isBinaryFileHeader(header))
+                {
+                    fileChange.setBinary(true);
+                    result.add(fileChange);
+                    continue;
+                }
+
+                if (patchesAttached >= MAX_COMMIT_PATCH_FILE_COUNT)
+                {
+                    fileChange.setTruncated(true);
+                    result.add(fileChange);
+                    continue;
+                }
+
+                ByteArrayOutputStream patchOut = new ByteArrayOutputStream();
+                try (DiffFormatter patchFormatter = new DiffFormatter(patchOut))
+                {
+                    patchFormatter.setRepository(repository);
+                    patchFormatter.setDetectRenames(true);
+                    patchFormatter.format(entry);
+                }
+                byte[] patchBytes = patchOut.toByteArray();
+                if (!isValidUtf8(patchBytes))
+                {
+                    fileChange.setBinary(true);
+                }
+                else if (patchBytes.length > MAX_COMMIT_PATCH_PER_FILE_BYTES
+                        || cumulativePatchBytes + patchBytes.length > MAX_COMMIT_PATCH_CUMULATIVE_BYTES)
+                {
+                    fileChange.setTruncated(true);
+                }
+                else
+                {
+                    fileChange.setPatch(new String(patchBytes, StandardCharsets.UTF_8));
+                    cumulativePatchBytes += patchBytes.length;
+                    patchesAttached++;
+                }
+                result.add(fileChange);
+            }
+        }
+        return result;
+    }
+
+    private static List<DiffEntry> scanCommitDiff(Repository repository, RevWalk revWalk, RevCommit commit)
+            throws IOException
+    {
+        try (ObjectReader reader = repository.newObjectReader())
+        {
+            CanonicalTreeParser oldTree = new CanonicalTreeParser();
+            CanonicalTreeParser newTree = new CanonicalTreeParser();
+            if (commit.getParentCount() > 0)
+            {
+                RevCommit parent = revWalk.parseCommit(commit.getParent(0).getId());
+                oldTree.reset(reader, parent.getTree());
+            }
+            else
+            {
+                oldTree.reset();
+            }
+            newTree.reset(reader, commit.getTree());
+            try (DiffFormatter formatter = new DiffFormatter(DisabledOutputStream.INSTANCE))
+            {
+                formatter.setRepository(repository);
+                formatter.setDetectRenames(true);
+                return formatter.scan(oldTree, newTree);
+            }
+        }
+    }
+
+    private static void applyLineStats(FileHeader header, GitCommitFileChange fileChange)
+    {
+        EditList edits = header.toEditList();
+        if (edits == null)
+        {
+            return;
+        }
+        int additions = 0;
+        int deletions = 0;
+        for (Edit edit : edits)
+        {
+            deletions += edit.getLengthA();
+            additions += edit.getLengthB();
+        }
+        fileChange.setAdditions(additions);
+        fileChange.setDeletions(deletions);
+    }
+
+    private static boolean isBinaryFileHeader(FileHeader header)
+    {
+        FileHeader.PatchType patchType = header.getPatchType();
+        return patchType == FileHeader.PatchType.BINARY
+                || patchType == FileHeader.PatchType.GIT_BINARY;
+    }
+
+    private static String mapDiffChangeType(DiffEntry.ChangeType changeType)
+    {
+        return switch (changeType)
+        {
+            case ADD -> "ADD";
+            case MODIFY -> "MODIFY";
+            case DELETE -> "DELETE";
+            case RENAME -> "RENAME";
+            case COPY -> "COPY";
+        };
+    }
+
+    private static void applyDiffPaths(DiffEntry entry, GitCommitFileChange fileChange)
+    {
+        DiffEntry.ChangeType type = entry.getChangeType();
+        if (type == DiffEntry.ChangeType.DELETE)
+        {
+            fileChange.setPath(normalizeDiffPath(entry.getOldPath()));
+        }
+        else
+        {
+            fileChange.setPath(normalizeDiffPath(entry.getNewPath()));
+        }
+        if (type == DiffEntry.ChangeType.RENAME || type == DiffEntry.ChangeType.COPY)
+        {
+            fileChange.setOldPath(normalizeDiffPath(entry.getOldPath()));
+        }
+    }
+
+    private static String normalizeDiffPath(String path)
+    {
+        if (path == null || DiffEntry.DEV_NULL.equals(path))
+        {
+            return null;
+        }
+        if (path.startsWith("/"))
+        {
+            return path.substring(1);
+        }
+        return path;
+    }
+
+    private static boolean isValidUtf8(byte[] bytes)
+    {
+        try
+        {
+            StandardCharsets.UTF_8.newDecoder().decode(ByteBuffer.wrap(bytes));
+            return true;
+        }
+        catch (CharacterCodingException e)
+        {
+            return false;
+        }
     }
 
     private static String normalizePath(String path)

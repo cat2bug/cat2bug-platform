@@ -6,6 +6,8 @@ import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.system.domain.SysGitRepository;
 import com.cat2bug.system.git.browse.domain.GitBlobContent;
 import com.cat2bug.system.git.browse.domain.GitBranchInfo;
+import com.cat2bug.system.git.browse.domain.GitCommitDetail;
+import com.cat2bug.system.git.browse.domain.GitCommitFileChange;
 import com.cat2bug.system.git.browse.domain.GitCommitInfo;
 import com.cat2bug.system.git.browse.domain.GitContributorInfo;
 import com.cat2bug.system.git.browse.domain.GitTreeEntryInfo;
@@ -292,6 +294,104 @@ public class SysGitBrowseServiceImplTest
         assertTrue(service.listContributors(REPOSITORY_ID, null, null).isEmpty());
     }
 
+    @Test
+    public void getCommitDetail_textChange_includesUnifiedPatch() throws Exception
+    {
+        String commitId = initRepoWithTextModifyCommit();
+        allowPull();
+
+        GitCommitDetail detail = service.getCommitDetail(REPOSITORY_ID, commitId);
+
+        assertEquals("update readme\n\nbody line", detail.getFullMessage());
+        assertEquals(1, detail.getParents().size());
+        assertEquals(1, detail.getStats().getFiles());
+        assertEquals(1, detail.getFiles().size());
+        GitCommitFileChange readme = detail.getFiles().get(0);
+        assertEquals("README.md", readme.getPath());
+        assertEquals("MODIFY", readme.getChangeType());
+        assertFalse(readme.isBinary());
+        assertFalse(readme.isTruncated());
+        assertNotNull(readme.getPatch());
+        assertTrue(readme.getPatch().contains("hello world"));
+    }
+
+    @Test
+    public void getCommitDetail_abbreviatedCommitId_resolves() throws Exception
+    {
+        String fullId = initRepoWithTextModifyCommit();
+        allowPull();
+
+        GitCommitDetail detail = service.getCommitDetail(REPOSITORY_ID, fullId.substring(0, 7));
+
+        assertEquals(fullId, detail.getId());
+    }
+
+    @Test
+    public void getCommitDetail_binaryFile_omitsPatch() throws Exception
+    {
+        String commitId = initRepoWithBinaryFileCommit();
+        allowPull();
+
+        GitCommitDetail detail = service.getCommitDetail(REPOSITORY_ID, commitId);
+
+        assertEquals(1, detail.getFiles().size());
+        GitCommitFileChange bin = detail.getFiles().get(0);
+        assertEquals("data.bin", bin.getPath());
+        assertTrue(bin.isBinary());
+        assertFalse(bin.isTruncated());
+        assertTrue(bin.getPatch() == null || bin.getPatch().isEmpty());
+    }
+
+    @Test
+    public void getCommitDetail_oversizedPatch_truncatedWithoutFullPatch() throws Exception
+    {
+        String commitId = initRepoWithHugeTextPatchCommit();
+        allowPull();
+
+        GitCommitDetail detail = service.getCommitDetail(REPOSITORY_ID, commitId);
+
+        assertEquals(1, detail.getFiles().size());
+        GitCommitFileChange large = detail.getFiles().get(0);
+        assertEquals("large.txt", large.getPath());
+        assertTrue(large.isTruncated());
+        assertFalse(large.isBinary());
+        assertTrue(large.getPatch() == null || large.getPatch().isEmpty());
+    }
+
+    @Test
+    public void getCommitDetail_noPullPermission_denied() throws Exception
+    {
+        String commitId = initRepoWithTextModifyCommit();
+        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(false);
+
+        try
+        {
+            service.getCommitDetail(REPOSITORY_ID, commitId);
+            fail("expected ServiceException: 无 pull 权限");
+        }
+        catch (ServiceException expected)
+        {
+            // 拒绝
+        }
+    }
+
+    @Test
+    public void getCommitDetail_unknownCommit_notFound() throws Exception
+    {
+        initRepoWithOneCommit();
+        allowPull();
+
+        try
+        {
+            service.getCommitDetail(REPOSITORY_ID, "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef");
+            fail("expected ServiceException for unknown commit");
+        }
+        catch (ServiceException expected)
+        {
+            // 提交不存在
+        }
+    }
+
     // ---------- 测试夹具 ----------
 
     private void loginAs(Long userId)
@@ -349,6 +449,73 @@ public class SysGitBrowseServiceImplTest
         }
 
         mockRepository();
+    }
+
+    /** 第二次提交修改 README，用于 commit detail 文本 diff */
+    private String initRepoWithTextModifyCommit() throws Exception
+    {
+        initRepoWithOneCommit();
+        File workDir = temporaryFolder.newFolder("work-mod");
+        try (Git git = Git.cloneRepository()
+            .setURI(bareRepoDir.getAbsolutePath())
+            .setDirectory(workDir)
+            .setBranch("main")
+            .call())
+        {
+            Files.write(new File(workDir, "README.md").toPath(), "hello world".getBytes(StandardCharsets.UTF_8));
+            git.add().addFilepattern("README.md").call();
+            org.eclipse.jgit.revwalk.RevCommit commit = git.commit()
+                .setMessage("update readme\n\nbody line")
+                .setAuthor(new PersonIdent("tester", "tester@example.com"))
+                .call();
+            git.push().call();
+            return commit.getId().getName();
+        }
+    }
+
+    private String initRepoWithBinaryFileCommit() throws Exception
+    {
+        initRepoWithOneCommit();
+        File workDir = temporaryFolder.newFolder("work-bin");
+        try (Git git = Git.cloneRepository()
+            .setURI(bareRepoDir.getAbsolutePath())
+            .setDirectory(workDir)
+            .setBranch("main")
+            .call())
+        {
+            byte[] payload = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+            Files.write(new File(workDir, "data.bin").toPath(), payload);
+            git.add().addFilepattern("data.bin").call();
+            org.eclipse.jgit.revwalk.RevCommit commit = git.commit()
+                .setMessage("add binary")
+                .setAuthor(new PersonIdent("tester", "tester@example.com"))
+                .call();
+            git.push().call();
+            return commit.getId().getName();
+        }
+    }
+
+    private String initRepoWithHugeTextPatchCommit() throws Exception
+    {
+        initRepoWithOneCommit();
+        File workDir = temporaryFolder.newFolder("work-huge");
+        try (Git git = Git.cloneRepository()
+            .setURI(bareRepoDir.getAbsolutePath())
+            .setDirectory(workDir)
+            .setBranch("main")
+            .call())
+        {
+            char[] chars = new char[SysGitBrowseServiceImpl.MAX_COMMIT_PATCH_PER_FILE_BYTES + 4096];
+            java.util.Arrays.fill(chars, 'x');
+            Files.write(new File(workDir, "large.txt").toPath(), new String(chars).getBytes(StandardCharsets.UTF_8));
+            git.add().addFilepattern("large.txt").call();
+            org.eclipse.jgit.revwalk.RevCommit commit = git.commit()
+                .setMessage("add huge file")
+                .setAuthor(new PersonIdent("tester", "tester@example.com"))
+                .call();
+            git.push().call();
+            return commit.getId().getName();
+        }
     }
 
     /** bare 仓：Alice 2 次提交、Bob 1 次；用于贡献者聚合 */
