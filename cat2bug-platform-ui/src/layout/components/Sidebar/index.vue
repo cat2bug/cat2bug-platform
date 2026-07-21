@@ -208,7 +208,7 @@ export default {
         return function (name){
           for(let i in this.sidebarRouters) {
             if(this.sidebarRouters[i].name && this.sidebarRouters[i].name.toLowerCase()==name.toLowerCase()){
-              return this.sidebarRouters[i].children;
+              return this.sidebarRouters[i].children || []
             }
           }
           return [];

@@ -190,6 +190,11 @@
                 <artifactId>org.eclipse.jgit.http.server</artifactId>
                 <version>${jgit.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit.archive</artifactId>
+                <version>${jgit.version}</version>
+            </dependency>
 
             <!-- collections工具类 -->
             <dependency>

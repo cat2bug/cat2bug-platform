@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysGitReleaseAssetMapper">
+
+    <resultMap type="SysGitReleaseAsset" id="SysGitReleaseAssetResult">
+        <result property="assetId"       column="asset_id"       />
+        <result property="releaseId"     column="release_id"     />
+        <result property="repositoryId"  column="repository_id"  />
+        <result property="fileName"      column="file_name"      />
+        <result property="contentType"   column="content_type"   />
+        <result property="fileSize"      column="file_size"      />
+        <result property="storagePath"   column="storage_path"   />
+        <result property="createBy"      column="create_by"      />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"      column="update_by"      />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectSysGitReleaseAssetVo">
+        select asset_id, release_id, repository_id, file_name, content_type, file_size, storage_path,
+               create_by, create_time, update_by, update_time
+        from sys_git_release_asset
+    </sql>
+
+    <select id="selectSysGitReleaseAssetByAssetId" parameterType="Long" resultMap="SysGitReleaseAssetResult">
+        <include refid="selectSysGitReleaseAssetVo"/>
+        where asset_id = #{assetId}
+    </select>
+
+    <select id="selectSysGitReleaseAssetListByReleaseId" parameterType="Long" resultMap="SysGitReleaseAssetResult">
+        <include refid="selectSysGitReleaseAssetVo"/>
+        where release_id = #{releaseId}
+        order by asset_id asc
+    </select>
+
+    <select id="countSysGitReleaseAssetByReleaseId" parameterType="Long" resultType="int">
+        select count(*) from sys_git_release_asset where release_id = #{releaseId}
+    </select>
+
+    <insert id="insertSysGitReleaseAsset" parameterType="SysGitReleaseAsset" useGeneratedKeys="true" keyProperty="assetId">
+        insert into sys_git_release_asset
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="releaseId != null">release_id,</if>
+            <if test="repositoryId != null">repository_id,</if>
+            <if test="fileName != null">file_name,</if>
+            <if test="contentType != null">content_type,</if>
+            <if test="fileSize != null">file_size,</if>
+            <if test="storagePath != null">storage_path,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="releaseId != null">#{releaseId},</if>
+            <if test="repositoryId != null">#{repositoryId},</if>
+            <if test="fileName != null">#{fileName},</if>
+            <if test="contentType != null">#{contentType},</if>
+            <if test="fileSize != null">#{fileSize},</if>
+            <if test="storagePath != null">#{storagePath},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <delete id="deleteSysGitReleaseAssetByAssetId" parameterType="Long">
+        delete from sys_git_release_asset where asset_id = #{assetId}
+    </delete>
+
+    <delete id="deleteSysGitReleaseAssetByReleaseId" parameterType="Long">
+        delete from sys_git_release_asset where release_id = #{releaseId}
+    </delete>
+
+</mapper>

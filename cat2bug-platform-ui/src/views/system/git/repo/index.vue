@@ -549,6 +549,12 @@ export default {
   padding-bottom: 12px;
 }
 
+/* 与用例页一致：项目条下边距清零，与下方区块间距仅由 --project-list-section-v-gap（父级 gap）承担 */
+.git-repo-page :deep(h3.git-repo-project-label) {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .git-repo-project-label {
   flex-shrink: 0;
 }

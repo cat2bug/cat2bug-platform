@@ -80,7 +80,7 @@ export default {
   },
   methods: {
     handleTitleClick() {
-      const targetRoute = this.$router.resolve({ name:'Defect', params: {}});
+      const targetRoute = this.$router.resolve({ name:'ProjectDefect', params: {}});
       window.open(targetRoute.href, '_blank');
     },
     handleStateClick(state) {

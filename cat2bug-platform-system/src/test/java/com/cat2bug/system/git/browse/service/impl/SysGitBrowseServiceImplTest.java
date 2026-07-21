@@ -7,8 +7,10 @@ import com.cat2bug.system.domain.SysGitRepository;
 import com.cat2bug.system.git.browse.domain.GitBlobContent;
 import com.cat2bug.system.git.browse.domain.GitBranchInfo;
 import com.cat2bug.system.git.browse.domain.GitCommitInfo;
+import com.cat2bug.system.git.browse.domain.GitContributorInfo;
 import com.cat2bug.system.git.browse.domain.GitTreeEntryInfo;
 import com.cat2bug.system.mapper.SysGitRepositoryMapper;
+import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.service.git.GitPathValidator;
 import com.cat2bug.system.service.git.GitRepositoryAccessService;
 import com.cat2bug.system.support.MessageSourceTestSupport;
@@ -31,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -61,6 +64,9 @@ public class SysGitBrowseServiceImplTest
 
     @Mock
     private SysGitRepositoryMapper sysGitRepositoryMapper;
+
+    @Mock
+    private SysUserProjectMapper sysUserProjectMapper;
 
     @Mock
     private GitRepositoryAccessService gitRepositoryAccessService;
@@ -224,6 +230,68 @@ public class SysGitBrowseServiceImplTest
         verify(gitRepositoryAccessService, never()).canPull(eq(USER_ID), eq(PROJECT_ID));
     }
 
+    @Test
+    public void listContributors_twoDistinctEmails_returnsTwoWithCounts() throws Exception
+    {
+        initRepoWithMultiAuthorCommits();
+        allowPull();
+        when(sysUserProjectMapper.selectSysUserListByProjectId(eq(PROJECT_ID), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(Collections.emptyList());
+
+        List<GitContributorInfo> contributors = service.listContributors(REPOSITORY_ID, null, null);
+
+        assertEquals(2, contributors.size());
+        GitContributorInfo alice = findContributor(contributors, "alice@example.com");
+        GitContributorInfo bob = findContributor(contributors, "bob@example.com");
+        assertNotNull(alice);
+        assertNotNull(bob);
+        assertEquals(2, alice.getCommitCount());
+        assertEquals(1, bob.getCommitCount());
+    }
+
+    @Test
+    public void listContributors_emailKeyMergesCaseAndDisplayNameVariants() throws Exception
+    {
+        initRepoWithMultiAuthorCommits();
+        allowPull();
+        when(sysUserProjectMapper.selectSysUserListByProjectId(eq(PROJECT_ID), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(Collections.emptyList());
+
+        List<GitContributorInfo> contributors = service.listContributors(REPOSITORY_ID, null, null);
+
+        assertEquals(2, contributors.size());
+        GitContributorInfo alice = findContributor(contributors, "alice@example.com");
+        assertEquals("Alice Latest", alice.getDisplayName());
+    }
+
+    @Test
+    public void listContributors_noPullPermission_denied() throws Exception
+    {
+        initRepoWithOneCommit();
+        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(false);
+
+        try
+        {
+            service.listContributors(REPOSITORY_ID, null, null);
+            fail("expected ServiceException: 无 pull 权限");
+        }
+        catch (ServiceException expected)
+        {
+            // 拒绝
+        }
+    }
+
+    @Test
+    public void listContributors_emptyRepository_returnsEmptyList() throws Exception
+    {
+        initEmptyRepo();
+        allowPull();
+        when(sysUserProjectMapper.selectSysUserListByProjectId(eq(PROJECT_ID), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(Collections.emptyList());
+
+        assertTrue(service.listContributors(REPOSITORY_ID, null, null).isEmpty());
+    }
+
     // ---------- 测试夹具 ----------
 
     private void loginAs(Long userId)
@@ -281,5 +349,51 @@ public class SysGitBrowseServiceImplTest
         }
 
         mockRepository();
+    }
+
+    /** bare 仓：Alice 2 次提交、Bob 1 次；用于贡献者聚合 */
+    private void initRepoWithMultiAuthorCommits() throws Exception
+    {
+        bareRepoDir = temporaryFolder.newFolder("multi.git");
+        Git.init().setDirectory(bareRepoDir).setBare(true).call().close();
+
+        File workDir = temporaryFolder.newFolder("multi-work");
+        try (Git git = Git.init().setDirectory(workDir).setInitialBranch("main").call())
+        {
+            Files.write(new File(workDir, "README.md").toPath(), "v1".getBytes(StandardCharsets.UTF_8));
+            git.add().addFilepattern(".").call();
+            git.commit()
+                .setMessage("alice-1")
+                .setAuthor(new PersonIdent("Alice", "alice@example.com"))
+                .call();
+            Files.write(new File(workDir, "README.md").toPath(), "v2".getBytes(StandardCharsets.UTF_8));
+            git.add().addFilepattern(".").call();
+            git.commit()
+                .setMessage("bob-1")
+                .setAuthor(new PersonIdent("Bob", "bob@example.com"))
+                .call();
+            Files.write(new File(workDir, "README.md").toPath(), "v3".getBytes(StandardCharsets.UTF_8));
+            git.add().addFilepattern(".").call();
+            git.commit()
+                .setMessage("alice-2")
+                .setAuthor(new PersonIdent("Alice Latest", "Alice@Example.com"))
+                .call();
+            git.push().setRemote(bareRepoDir.getAbsolutePath()).setRefSpecs(
+                new org.eclipse.jgit.transport.RefSpec("refs/heads/main:refs/heads/main")).call();
+        }
+
+        mockRepository();
+    }
+
+    private static GitContributorInfo findContributor(List<GitContributorInfo> list, String email)
+    {
+        for (GitContributorInfo c : list)
+        {
+            if (email.equalsIgnoreCase(c.getEmail()))
+            {
+                return c;
+            }
+        }
+        return null;
     }
 }

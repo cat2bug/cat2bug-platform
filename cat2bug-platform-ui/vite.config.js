@@ -276,6 +276,9 @@ export default defineConfig(({ mode }) => {
         [baseApi]: {
           target: 'http://localhost:2020',
           changeOrigin: true,
+          // 源码归档等大响应：避免开发代理默认超时把已 200 的流掐成 ERR_FAILED
+          timeout: 0,
+          proxyTimeout: 0,
           rewrite: (p) => p.replace(new RegExp(`^${baseApi}`), '')
         },
         // Git Smart HTTP：clone/push 走与页面同源的 /git/**，转发到后端（勿返回 SPA HTML）

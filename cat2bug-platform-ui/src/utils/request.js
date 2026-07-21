@@ -23,6 +23,15 @@ const service = axios.create({
   timeout: 60000
 })
 
+/** 登录/安装等页：会话失效时不再弹「重新登录」 */
+function isAuthWhitePath() {
+  const hash = window.location.hash || ''
+  const path = (hash.replace(/^#/, '').split('?')[0] || '/').trim() || '/'
+  return ['/login', '/register', '/setup', '/upgrade'].some(
+    (p) => path === p || path.startsWith(p + '/')
+  )
+}
+
 // request拦截器
 service.interceptors.request.use(config => {
   // 是否需要防止数据重复提交
@@ -89,6 +98,8 @@ service.interceptors.response.use(res => {
         res.config.silentError === true
         || isTokenDisabled
         || requestUrl.includes('/setup/')
+        || requestUrl.includes('/logout')
+        || isAuthWhitePath()
       )
       if (!skipReloginPrompt && !isRelogin.show) {
         isRelogin.show = true;

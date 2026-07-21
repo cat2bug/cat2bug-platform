@@ -53,6 +53,10 @@
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit.http.server</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit.archive</artifactId>
+        </dependency>
         <!-- @Excel 注解与 JVM 导出路径；Native profile 下 scope=provided，不进入镜像 -->
         <dependency>
             <groupId>org.apache.poi</groupId>

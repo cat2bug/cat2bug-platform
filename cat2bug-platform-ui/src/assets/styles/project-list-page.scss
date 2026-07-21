@@ -155,6 +155,8 @@
 .project-list-page-host .module-page ::v-deep h3.module-project-label,
 .project-list-page-host .defect-page ::v-deep h3.defect-project-label,
 .project-list-page-host .git-repo-page ::v-deep h3.git-repo-project-label,
-.project-list-page-host ::v-deep .git-repo-project-label {
+.project-list-page-host.git-repo-page h3.git-repo-project-label,
+.project-list-page-host .git-repo-project-label {
+  margin-top: 0;
   margin-bottom: 0;
 }

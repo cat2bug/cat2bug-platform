@@ -1,14 +1,14 @@
 <template>
   <div class="tools-row">
-    <template v-for="(tool,index) in tools">
+    <template v-for="(tool, index) in tools" :key="tool.name || tool.icon || `child-${index}`">
       <li v-if="tool.type=='siding'" class="line"></li>
-      <el-menu-item v-else-if="!tool.children" :index="tool.name">
+      <el-menu-item v-else-if="!tool.children" :index="tool.name || `child-${index}`">
         <div class="row">
           <svg-icon v-if="tool.icon" :icon-class="tool.icon" />
           <span>{{menuName(tool.name)}}</span>
         </div>
       </el-menu-item>
-      <el-sub-menu v-else :index="tool.name">
+      <el-sub-menu v-else :index="tool.name || `child-${index}`">
         <template #title>
           <div class="row">
             <svg-icon v-if="tool.icon" :icon-class="tool.icon" />

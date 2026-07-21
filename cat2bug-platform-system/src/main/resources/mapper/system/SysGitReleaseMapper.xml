@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysGitReleaseMapper">
+
+    <resultMap type="SysGitRelease" id="SysGitReleaseResult">
+        <result property="releaseId"        column="release_id"        />
+        <result property="repositoryId"     column="repository_id"     />
+        <result property="tagName"          column="tag_name"          />
+        <result property="targetCommitId"   column="target_commit_id"  />
+        <result property="title"            column="title"             />
+        <result property="body"             column="body"              />
+        <result property="draft"            column="draft"             />
+        <result property="prerelease"       column="prerelease"        />
+        <result property="publisherId"      column="publisher_id"      />
+        <result property="publisherName"    column="publisher_name"    />
+        <result property="publishedAt"      column="published_at"      />
+        <result property="createBy"         column="create_by"         />
+        <result property="createTime"       column="create_time"       />
+        <result property="updateBy"         column="update_by"         />
+        <result property="updateTime"       column="update_time"       />
+    </resultMap>
+
+    <sql id="selectSysGitReleaseVo">
+        select release_id, repository_id, tag_name, target_commit_id, title, body, draft, prerelease,
+               publisher_id, publisher_name, published_at,
+               create_by, create_time, update_by, update_time
+        from sys_git_release
+    </sql>
+
+    <select id="selectSysGitReleaseByReleaseId" parameterType="Long" resultMap="SysGitReleaseResult">
+        <include refid="selectSysGitReleaseVo"/>
+        where release_id = #{releaseId}
+    </select>
+
+    <select id="selectSysGitReleaseByRepositoryIdAndTagName" resultMap="SysGitReleaseResult">
+        <include refid="selectSysGitReleaseVo"/>
+        where repository_id = #{repositoryId} and tag_name = #{tagName}
+    </select>
+
+    <select id="selectSysGitReleaseListByRepositoryId" resultMap="SysGitReleaseResult">
+        <include refid="selectSysGitReleaseVo"/>
+        where repository_id = #{repositoryId}
+        <if test="excludeDraft">
+            and draft = 0
+        </if>
+        order by coalesce(published_at, create_time) desc, release_id desc
+    </select>
+
+    <insert id="insertSysGitRelease" parameterType="SysGitRelease" useGeneratedKeys="true" keyProperty="releaseId">
+        insert into sys_git_release
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="repositoryId != null">repository_id,</if>
+            <if test="tagName != null">tag_name,</if>
+            <if test="targetCommitId != null">target_commit_id,</if>
+            <if test="title != null">title,</if>
+            <if test="body != null">body,</if>
+            <if test="draft != null">draft,</if>
+            <if test="prerelease != null">prerelease,</if>
+            <if test="publisherId != null">publisher_id,</if>
+            <if test="publisherName != null">publisher_name,</if>
+            <if test="publishedAt != null">published_at,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="repositoryId != null">#{repositoryId},</if>
+            <if test="tagName != null">#{tagName},</if>
+            <if test="targetCommitId != null">#{targetCommitId},</if>
+            <if test="title != null">#{title},</if>
+            <if test="body != null">#{body},</if>
+            <if test="draft != null">#{draft},</if>
+            <if test="prerelease != null">#{prerelease},</if>
+            <if test="publisherId != null">#{publisherId},</if>
+            <if test="publisherName != null">#{publisherName},</if>
+            <if test="publishedAt != null">#{publishedAt},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysGitRelease" parameterType="SysGitRelease">
+        update sys_git_release
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="title != null">title = #{title},</if>
+            <if test="body != null">body = #{body},</if>
+            <if test="draft != null">draft = #{draft},</if>
+            <if test="prerelease != null">prerelease = #{prerelease},</if>
+            <if test="publishedAt != null">published_at = #{publishedAt},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where release_id = #{releaseId}
+    </update>
+
+    <delete id="deleteSysGitReleaseByReleaseId" parameterType="Long">
+        delete from sys_git_release where release_id = #{releaseId}
+    </delete>
+
+</mapper>

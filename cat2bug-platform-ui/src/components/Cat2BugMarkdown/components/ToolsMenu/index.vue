@@ -6,9 +6,9 @@
     :ellipsis="ellipsis"
     @select="toolsHandle"
   >
-    <template v-for="(tool,index) in tools">
+    <template v-for="(tool, index) in tools" :key="toolMenuKey(tool, index)">
       <li v-if="tool.type=='siding'" class="siding" />
-      <el-menu-item v-else-if="!tool.children && tool.icon" :index="tool.name">
+      <el-menu-item v-else-if="!tool.children && tool.icon" :index="toolMenuIndex(tool, index)">
         <template #title>
           <div class="row">
             <el-tooltip class="item" effect="dark" :content="menuName(tool.name)" placement="bottom">
@@ -21,7 +21,7 @@
           </div>
         </template>
       </el-menu-item>
-      <el-sub-menu v-else :index="tool.name">
+      <el-sub-menu v-else :index="toolMenuIndex(tool, index)">
         <template #title>
           <svg-icon v-if="tool.icon" class="icon" :icon-class="tool.icon" />
         </template>
@@ -54,13 +54,20 @@ export default {
       type: Array,
       default: () => []
     },
-    /** false = show all toolbar icons (no "..." overflow menu) */
+    /** false = show all toolbar icons (no "..." overflow menu; avoids EP resize duplicate-key warnings) */
     ellipsis: {
       type: Boolean,
-      default: true
+      default: false
     }
   },
   methods: {
+    toolMenuKey(tool, index) {
+      return tool.name || tool.icon || `tool-${index}`
+    },
+    toolMenuIndex(tool, index) {
+      // el-menu 用 index 做内部 key；无 name 的分隔项/异常项补唯一后缀
+      return tool.name || `tool-${index}`
+    },
     toolsHandle(key, keyPath) {
       let tool = this.getNode(this.tools, keyPath);
       if(tool) {
@@ -75,6 +82,7 @@ export default {
       }
     },
     getNode(tools, path) {
+      if (!path || !path.length) return null
       let findTools = tools;
       let endToolName = path[path.length-1];
       for(let k in path) {

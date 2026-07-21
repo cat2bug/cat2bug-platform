@@ -1,19 +1,27 @@
 package com.cat2bug.system.git.browse.service.impl;
 
+import com.cat2bug.common.core.domain.entity.SysUser;
+import com.cat2bug.common.core.domain.model.LoginUser;
 import com.cat2bug.common.constant.HttpStatus;
 import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.common.utils.file.FileUtils;
 import com.cat2bug.system.domain.SysGitRepository;
 import com.cat2bug.system.git.browse.domain.GitBlobContent;
 import com.cat2bug.system.git.browse.domain.GitBranchInfo;
 import com.cat2bug.system.git.browse.domain.GitCommitInfo;
+import com.cat2bug.system.git.browse.domain.GitContributorInfo;
 import com.cat2bug.system.git.browse.domain.GitTreeEntryInfo;
 import com.cat2bug.system.git.browse.service.ISysGitBrowseService;
+import com.cat2bug.system.git.browse.support.GitContributorSupport;
 import com.cat2bug.system.mapper.SysGitRepositoryMapper;
+import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.service.git.GitPathValidator;
 import com.cat2bug.system.service.git.GitRepositoryAccessService;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.archive.ArchiveFormats;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
@@ -32,14 +40,20 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 项目 Git 代码仓库浏览服务实现：基于 JGit 直接读取 bare 仓磁盘对象，不 fork 系统 {@code git} 进程。
@@ -62,8 +76,24 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
 
     private static final int MAX_COMMIT_LIMIT = 200;
 
+    /**
+     * 贡献者聚合：自 ref tip 起最多扫描的提交数（OpenSpec design §4，可后续提高到 2000）。
+     */
+    static final int CONTRIBUTOR_SCAN_COMMIT_LIMIT = 1000;
+
+    /** 贡献者 API 默认返回条数 */
+    static final int DEFAULT_CONTRIBUTOR_RETURN_LIMIT = 100;
+
+    /** 贡献者 API 最大返回条数 */
+    static final int MAX_CONTRIBUTOR_RETURN_LIMIT = 100;
+
+    private static final AtomicBoolean ARCHIVE_FORMATS_REGISTERED = new AtomicBoolean(false);
+
     @Autowired
     private SysGitRepositoryMapper sysGitRepositoryMapper;
+
+    @Autowired
+    private SysUserProjectMapper sysUserProjectMapper;
 
     @Autowired
     private GitRepositoryAccessService gitRepositoryAccessService;
@@ -198,6 +228,216 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
             throw new ServiceException(MessageUtils.message("git.repo.browse.read-failed"), HttpStatus.ERROR);
         }
         return result;
+    }
+
+    @Override
+    public List<GitContributorInfo> listContributors(Long repositoryId, String ref, Integer limit)
+    {
+        SysGitRepository repo = requireRepo(repositoryId);
+        assertPull(repo.getProjectId());
+        int returnMax = (limit != null && limit > 0)
+                ? Math.min(limit, MAX_CONTRIBUTOR_RETURN_LIMIT) : DEFAULT_CONTRIBUTOR_RETURN_LIMIT;
+        List<SysUser> projectMembers = sysUserProjectMapper.selectSysUserListByProjectId(
+                repo.getProjectId(), new SysUser());
+        LoginUser loginUser = safeLoginUser();
+
+        Map<String, MutableContributor> buckets = new LinkedHashMap<>();
+        try (Repository repository = openRepository(repo.getDiskPath()))
+        {
+            ObjectId startId = resolveCommitish(repository, ref, repo.getDefaultBranch());
+            if (startId == null)
+            {
+                return new ArrayList<>();
+            }
+            try (RevWalk revWalk = new RevWalk(repository))
+            {
+                revWalk.markStart(revWalk.parseCommit(startId));
+                int scanned = 0;
+                for (RevCommit commit : revWalk)
+                {
+                    if (scanned >= CONTRIBUTOR_SCAN_COMMIT_LIMIT)
+                    {
+                        break;
+                    }
+                    PersonIdent author = commit.getAuthorIdent();
+                    String authorName = author != null ? author.getName() : null;
+                    String authorEmail = author != null ? author.getEmailAddress() : null;
+                    String key = GitContributorSupport.aggregationKey(authorName, authorEmail);
+                    MutableContributor bucket = buckets.computeIfAbsent(key, k -> new MutableContributor());
+                    bucket.record(authorName, authorEmail);
+                    scanned++;
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.browse.read-failed"), HttpStatus.ERROR);
+        }
+
+        List<GitContributorInfo> aggregated = new ArrayList<>();
+        for (MutableContributor bucket : buckets.values())
+        {
+            GitContributorInfo info = bucket.toInfo(projectMembers, loginUser);
+            aggregated.add(info);
+        }
+        aggregated.sort(Comparator
+                .comparingInt(GitContributorInfo::getCommitCount).reversed()
+                .thenComparing(GitContributorInfo::getDisplayName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)));
+        if (aggregated.size() <= returnMax)
+        {
+            return aggregated;
+        }
+        return new ArrayList<>(aggregated.subList(0, returnMax));
+    }
+
+    @Override
+    public void writeArchive(Long repositoryId, String ref, String format, HttpServletResponse response)
+            throws IOException
+    {
+        ensureArchiveFormatsRegistered();
+        SysGitRepository repo = requireRepo(repositoryId);
+        assertPull(repo.getProjectId());
+
+        String normalizedFormat = normalizeArchiveFormat(format);
+        String extension = "tar.gz".equals(normalizedFormat) ? "tar.gz" : "zip";
+        String contentType = "tar.gz".equals(normalizedFormat)
+                ? "application/gzip"
+                : "application/zip";
+
+        try (Repository repository = openRepository(repo.getDiskPath()))
+        {
+            ObjectId commitId = resolveCommitish(repository, ref, repo.getDefaultBranch());
+            if (commitId == null)
+            {
+                throw new ServiceException(MessageUtils.message("git.repo.browse.empty-repository"),
+                        HttpStatus.NOT_FOUND);
+            }
+            String label = archiveLabel(ref, commitId);
+            String slug = StringUtils.isNotBlank(repo.getSlug()) ? repo.getSlug().trim() : "source";
+            String fileName = slug + "-" + label + "." + extension;
+            String prefix = slug + "-" + label + "/";
+
+            response.setContentType(contentType);
+            FileUtils.setAttachmentResponseHeader(response, fileName);
+            try (OutputStream out = response.getOutputStream();
+                 Git git = Git.wrap(repository))
+            {
+                git.archive()
+                        .setTree(commitId)
+                        .setFormat(normalizedFormat)
+                        .setPrefix(prefix)
+                        .setOutputStream(out)
+                        .call();
+                out.flush();
+            }
+        }
+        catch (ServiceException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.browse.archive-failed"), HttpStatus.ERROR);
+        }
+    }
+
+    private static void ensureArchiveFormatsRegistered()
+    {
+        if (ARCHIVE_FORMATS_REGISTERED.compareAndSet(false, true))
+        {
+            ArchiveFormats.registerAll();
+        }
+    }
+
+    private static String normalizeArchiveFormat(String format)
+    {
+        String f = format == null ? "" : format.trim().toLowerCase(Locale.ROOT);
+        if ("zip".equals(f))
+        {
+            return "zip";
+        }
+        if ("tar.gz".equals(f) || "tgz".equals(f) || "targz".equals(f))
+        {
+            return "tar.gz";
+        }
+        throw new ServiceException(MessageUtils.message("git.repo.browse.archive-format-invalid"),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    private static String archiveLabel(String ref, ObjectId commitId)
+    {
+        if (StringUtils.isNotBlank(ref))
+        {
+            String trimmed = ref.trim();
+            int slash = trimmed.lastIndexOf('/');
+            if (slash >= 0 && slash < trimmed.length() - 1)
+            {
+                trimmed = trimmed.substring(slash + 1);
+            }
+            if (trimmed.matches("[0-9a-fA-F]{7,40}"))
+            {
+                return trimmed.length() > 7 ? trimmed.substring(0, 7).toLowerCase(Locale.ROOT) : trimmed.toLowerCase(Locale.ROOT);
+            }
+            return trimmed.replaceAll("[\\\\/:*?\"<>|\\s]+", "-");
+        }
+        return commitId.getName().substring(0, 7);
+    }
+
+    private static LoginUser safeLoginUser()
+    {
+        try
+        {
+            return SecurityUtils.getLoginUser();
+        }
+        catch (Exception ignore)
+        {
+            return null;
+        }
+    }
+
+    private static final class MutableContributor
+    {
+        private int commitCount;
+
+        private String displayName;
+
+        private String email;
+
+        void record(String authorName, String authorEmail)
+        {
+            commitCount++;
+            if (commitCount == 1)
+            {
+                if (StringUtils.isNotBlank(authorName))
+                {
+                    displayName = authorName.trim();
+                }
+                if (StringUtils.isNotBlank(authorEmail))
+                {
+                    email = authorEmail.trim();
+                }
+            }
+        }
+
+        GitContributorInfo toInfo(List<SysUser> projectMembers, LoginUser loginUser)
+        {
+            GitContributorInfo info = new GitContributorInfo();
+            info.setCommitCount(commitCount);
+            info.setDisplayName(StringUtils.isNotBlank(displayName) ? displayName : "?");
+            info.setEmail(StringUtils.isNotBlank(email) ? email : null);
+
+            SysUser matched = GitContributorSupport.matchProjectMember(projectMembers, displayName, email);
+            if (matched == null && loginUser != null && loginUser.getUser() != null)
+            {
+                matched = GitContributorSupport.matchCurrentUser(loginUser.getUser(), displayName);
+            }
+            if (matched != null)
+            {
+                info.setUserId(matched.getUserId());
+                info.setAvatar(matched.getAvatar());
+            }
+            return info;
+        }
     }
 
     // ---------------------------------------------------------------------

@@ -60,4 +60,25 @@ public class SysGitBrowseController extends BaseController
     {
         return success(gitBrowseService.listCommits(repositoryId, ref, limit));
     }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/system/git/repo/{repositoryId}/contributors")
+    public AjaxResult contributors(
+            @PathVariable Long repositoryId,
+            @RequestParam(required = false) String ref,
+            @RequestParam(required = false) Integer limit)
+    {
+        return success(gitBrowseService.listContributors(repositoryId, ref, limit));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/system/git/repo/{repositoryId}/archive")
+    public void archive(
+            @PathVariable Long repositoryId,
+            @RequestParam(required = false) String ref,
+            @RequestParam(defaultValue = "zip") String format,
+            jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException
+    {
+        gitBrowseService.writeArchive(repositoryId, ref, format, response);
+    }
 }

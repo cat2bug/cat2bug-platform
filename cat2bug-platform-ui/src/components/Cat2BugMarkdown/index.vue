@@ -1,8 +1,13 @@
 <template>
   <div class="markdown">
     <div class="markdown-tools">
-      <tools-menu :tools="toolMenus" @select="toolsHandle" />
-      <tools-menu v-model:tools="viewTools" @select="viewToolsHandle" />
+      <tools-menu :tools="toolMenus" :ellipsis="false" @select="toolsHandle" />
+      <tools-menu
+        v-if="showPreview"
+        v-model:tools="viewTools"
+        :ellipsis="false"
+        @select="viewToolsHandle"
+      />
     </div>
     <multipane layout="vertical" ref="multiPane" class="markdown-body" @paneResizeStop="dragStopHandle">
       <md-editor-pane
@@ -71,7 +76,7 @@ export default {
       multipaneStyle: {'--marginTop':'0px'},
       tools: [],
       activeToolsIndex: null,
-      viewVisible: true,
+      viewVisible: false,
       markdownContent: '',
       currentToolView: null,
       viewTools: [{
@@ -83,14 +88,6 @@ export default {
         check: false,
         content: this.markdownView
       },
-      //   {
-      //   id: 'help',
-      //   name: 'markdown-explanation',
-      //   icon: 'mk-help',
-      //   content: function (view, tool) {
-      //     return '';
-      //   }
-      // }
       ],
       options: {
         markdownIt: {
@@ -116,6 +113,17 @@ export default {
     excludeTools: {
       type: Array,
       default: ()=>[]
+    },
+    /** 是否显示右侧预览与切换按钮；发行版描述等场景可关闭 */
+    showPreview: {
+      type: Boolean,
+      default: true
+    }
+  },
+  created() {
+    this.viewVisible = !!this.showPreview
+    if (this.showPreview && this.viewTools[0]) {
+      this.viewTools[0].check = false
     }
   },
   directives: {
@@ -432,7 +440,7 @@ export default {
               },{
                 icon: 'mk-total',
                 name: 'plan.defect-restart-count',
-                content: `${this.$i18n.t('plan.defect-re-open-count')}: \${api.plan.defectRestartCount[${p.planNumber}]}`
+                content: `${this.$i18n.t('plan.defect-restart-count')}: \${api.plan.defectRestartCount[${p.planNumber}]}`
               },{
                 icon: 'md-create-time',
                 name: 'plan.defect-use-hour-time',

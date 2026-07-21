@@ -3,6 +3,7 @@ package com.cat2bug.system.git.browse.service;
 import com.cat2bug.system.git.browse.domain.GitBlobContent;
 import com.cat2bug.system.git.browse.domain.GitBranchInfo;
 import com.cat2bug.system.git.browse.domain.GitCommitInfo;
+import com.cat2bug.system.git.browse.domain.GitContributorInfo;
 import com.cat2bug.system.git.browse.domain.GitTreeEntryInfo;
 
 import java.util.List;
@@ -31,4 +32,20 @@ public interface ISysGitBrowseService
      * @param limit 最大返回条数，未传时使用默认值
      */
     List<GitCommitInfo> listCommits(Long repositoryId, String ref, Integer limit);
+
+    /**
+     * 按提交作者聚合贡献者（扫描最近若干提交，返回前若干作者）。
+     *
+     * @param ref   分支/tag/commit-ish，为空时使用仓库默认分支
+     * @param limit 最大返回贡献者条数，未传时使用服务内默认值（见实现类常量）
+     */
+    List<GitContributorInfo> listContributors(Long repositoryId, String ref, Integer limit);
+
+    /**
+     * 将指定 ref（分支/tag/commit）打成源码包写入响应流。
+     *
+     * @param format {@code zip} 或 {@code tar.gz}
+     */
+    void writeArchive(Long repositoryId, String ref, String format, jakarta.servlet.http.HttpServletResponse response)
+            throws java.io.IOException;
 }

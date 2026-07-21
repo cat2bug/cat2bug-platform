@@ -30,7 +30,7 @@ export default {
           return
         }
         return useUserStore().SwitchCurrentProject(project.projectId).then(() => {
-          this.$router.replace({ name: 'Dashboard' })
+          this.$router.replace({ name: 'ProjectDashboard' })
         })
       }).catch(err => {
         const code = err && typeof err === 'object' ? err.code : undefined

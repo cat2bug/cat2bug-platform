@@ -2887,8 +2887,8 @@ html.dark {
       }
     }
 
-    // 强类型实色按钮
-    &--primary:not(.is-plain),
+    // 强类型实色按钮（排除 link/text，避免黄底+黄字对比度失效）
+    &--primary:not(.is-plain):not(.is-link):not(.is-text),
     &--primary.is-plain:not(.cat2bug-btn-outline) {
       background-color: #FFC107 !important;
       border-color: #FFC107 !important;
@@ -2923,7 +2923,7 @@ html.dark {
         background-color: rgba(255, 193, 7, 0.22) !important;
       }
     }
-    &--success:not(.is-plain) {
+    &--success:not(.is-plain):not(.is-link):not(.is-text) {
       background-color: #2e7d32 !important;
       border-color: #2e7d32 !important;
       color: #ffffff !important;
@@ -2941,7 +2941,7 @@ html.dark {
         color: #ffffff !important;
       }
     }
-    &--danger:not(.is-plain) {
+    &--danger:not(.is-plain):not(.is-link):not(.is-text) {
       background-color: #c62828 !important;
       border-color: #c62828 !important;
       color: #ffffff !important;
@@ -2965,10 +2965,14 @@ html.dark {
   .el-button--text,
   .el-button.is-link {
     color: #FFC107 !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
 
     &:hover,
     &:focus {
       color: #FFD54F !important;
+      background-color: transparent !important;
+      border-color: transparent !important;
     }
   }
 

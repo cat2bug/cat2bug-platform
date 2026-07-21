@@ -593,7 +593,7 @@ export default {
       let _this = this;
       if(this.isViewDefect(project)) {
         useUserStore().SwitchCurrentProject(project.projectId).then(() => {
-          _this.$router.push({name:'Dashboard', params: { projectId: project.projectId }})
+          _this.$router.push({ name: 'ProjectDashboard' })
         });
       } else {
         this.$message.warning(this.$i18n.t('project.no-permission-access-project').toString());
@@ -608,7 +608,7 @@ export default {
     goProjectOptionHandle(e,project) {
       let _this = this;
       useUserStore().SwitchCurrentProject(project.projectId).then(() => {
-        _this.$router.push({name:'Option', params: { projectId: project.projectId }})
+        _this.$router.push({ name: 'ProjectOption' })
       });
       e.stopPropagation();
     },
@@ -616,7 +616,7 @@ export default {
     goCaseHandle(e,project) {
       let _this = this;
       useUserStore().SwitchCurrentProject(project.projectId).then(() => {
-        _this.$router.push({name: 'Case', params: {projectId: project.projectId}})
+        _this.$router.push({ name: 'ProjectCase' })
       });
     }
   }

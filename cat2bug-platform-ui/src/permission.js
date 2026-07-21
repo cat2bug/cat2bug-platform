@@ -96,19 +96,17 @@ function proceedWithAuth(to, from, next) {
         isRelogin.show = false
         permissionStore.GenerateRoutes().then(() => {
           next({ ...to, replace: true })
-        }).catch(err => {
+        }).catch(() => {
+          // 路由生成失败：清本地会话后去登录，勿再弹「重新登录」/错误条
           isRelogin.show = false
-          userStore.LogOut().then(() => {
-            Message.error(err && err.message ? err.message : err)
-            next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
-          })
-        })
-      }).catch(err => {
-        isRelogin.show = false
-        userStore.LogOut().then(() => {
-          Message.error(err && err.message ? err.message : err)
+          userStore.FedLogOut()
           next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
         })
+      }).catch(() => {
+        // getInfo 401/会话失效：FedLogOut 避免再请求 /logout 触发二次弹框
+        isRelogin.show = false
+        userStore.FedLogOut()
+        next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
       })
     } else {
       next()

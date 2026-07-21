@@ -12,7 +12,7 @@
       </el-page-header>
     </div>
 
-    <el-tabs v-model="activeTab" class="git-browse-tabs">
+    <el-tabs v-model="activeTab" class="git-browse-tabs" @tab-change="onBrowseTabChange">
       <el-tab-pane name="code">
         <template #label>
           <span class="git-browse-tab-label">
@@ -26,6 +26,14 @@
           <span class="git-browse-tab-label">
             <el-icon><List /></el-icon>
             {{ $t('git.repo.tab.commits') }}
+          </span>
+        </template>
+      </el-tab-pane>
+      <el-tab-pane name="releases">
+        <template #label>
+          <span class="git-browse-tab-label">
+            <el-icon><PriceTag /></el-icon>
+            {{ $t('git.repo.aside.releases') }}
           </span>
         </template>
       </el-tab-pane>
@@ -442,6 +450,65 @@
         </section>
 
         <section class="git-aside-block">
+          <div class="git-aside-title-row">
+            <h4 class="git-aside-title">{{ $t('git.repo.aside.releases') }}</h4>
+            <el-button
+              v-if="canManageGitRepo && releases.length"
+              link
+              size="small"
+              class="git-aside-action"
+              @click="openCreateRelease"
+            >{{ $t('git.repo.release.create') }}</el-button>
+          </div>
+          <div v-loading="releasesLoading" class="git-aside-releases-wrap">
+          <ul v-if="!releasesLoading && releases.length" class="git-aside-releases">
+            <li v-for="r in releasesAsidePreview" :key="r.releaseId" class="git-aside-release-item">
+              <a
+                href="javascript:;"
+                class="git-aside-release-title"
+                :title="r.title"
+                @click.prevent="openReleaseDetail(r)"
+              >{{ r.title || r.tagName }}</a>
+              <div class="git-aside-release-meta">
+                <span class="git-aside-release-tag">{{ r.tagName }}</span>
+                <span class="git-aside-release-sep">·</span>
+                <span class="git-aside-release-time">{{ releaseRelativeTime(r) }}</span>
+                <el-tag v-if="r.draft === 1" size="small" type="info" effect="plain">Draft</el-tag>
+                <el-tag v-else-if="r.prerelease === 1" size="small" type="warning" effect="plain">Pre</el-tag>
+              </div>
+            </li>
+          </ul>
+          <div v-else-if="!releasesLoading" class="git-aside-empty git-aside-empty--releases">
+            <span>{{ $t('git.repo.release.empty') }}</span>
+            <el-button
+              v-if="canManageGitRepo"
+              link
+              size="small"
+              class="git-aside-action"
+              @click="openCreateRelease"
+            >{{ $t('git.repo.release.create') }}</el-button>
+          </div>
+          </div>
+        </section>
+
+        <section v-if="contributorCount > 0" class="git-aside-block">
+          <div class="git-aside-title-row">
+            <h4 class="git-aside-title">{{ $t('git.repo.aside.contributors', { n: contributorCount }) }}</h4>
+            <el-button link size="small" class="git-aside-action" @click="openContributorsDialog">
+              {{ $t('git.repo.contributors.all') }}
+            </el-button>
+          </div>
+          <div class="git-aside-contributors">
+            <cat2-bug-avatar
+              v-for="(c, idx) in contributorsAsidePreview"
+              :key="contributorKey(c, idx)"
+              :member="memberForContributor(c)"
+              :size="32"
+            />
+          </div>
+        </section>
+
+        <section class="git-aside-block">
           <h4 class="git-aside-title">{{ $t('git.repo.aside.activity') }}</h4>
           <div v-if="recentActivity.length" class="git-aside-activity">
             <div v-for="c in recentActivity" :key="c.id" class="git-aside-activity-item">
@@ -476,26 +543,183 @@
       </div>
       <div v-if="!commitsLoading && !commits.length" class="git-browse-empty">{{ $t('git.repo.empty-repository') }}</div>
     </div>
+
+    <div v-show="activeTab === 'releases'" class="git-browse-releases">
+      <div class="git-browse-releases__toolbar">
+        <h2 class="git-browse-releases__heading">{{ $t('git.repo.aside.releases') }}</h2>
+        <el-button
+          v-if="canManageGitRepo"
+          type="primary"
+          plain
+          size="small"
+          :icon="$legacyIcon('el-icon-plus')"
+          @click="openCreateRelease"
+        >{{ $t('git.repo.release.create-dialog-title') }}</el-button>
+      </div>
+
+      <div v-loading="releasesLoading" class="git-browse-releases__timeline">
+        <git-repo-release-detail-panel
+          v-for="r in releases"
+          :id="'git-release-item-' + r.releaseId"
+          :key="r.releaseId + '-' + releasesRefreshToken"
+          :repository-id="repositoryId"
+          :release-id="r.releaseId"
+          :is-latest="isLatestRelease(r)"
+          :highlighted="isReleaseHighlighted(r)"
+          :project-members="projectMembers"
+          @deleted="onReleaseDeleted"
+          @edit="openEditRelease"
+        />
+        <div v-if="!releasesLoading && !releases.length" class="git-browse-empty">
+          {{ $t('git.repo.release.empty') }}
+          <el-button
+            v-if="canManageGitRepo"
+            link
+            size="small"
+            class="git-aside-action"
+            @click="openCreateRelease"
+          >{{ $t('git.repo.release.create') }}</el-button>
+        </div>
+      </div>
+    </div>
+
+    <el-dialog
+      v-model="contributorsDialogVisible"
+      :title="$t('git.repo.contributors.title')"
+      width="480px"
+      append-to-body
+      class="git-contributors-dialog"
+    >
+      <div v-loading="contributorsLoading" class="git-contributors-list">
+        <div v-for="(c, idx) in contributors" :key="contributorKey(c, idx)" class="git-contributors-list-item">
+          <cat2-bug-avatar :member="memberForContributor(c)" :size="36" />
+          <div class="git-contributors-list-body">
+            <div class="git-contributors-list-name">{{ c.displayName || '-' }}</div>
+            <div v-if="c.email" class="git-contributors-list-email">{{ c.email }}</div>
+          </div>
+          <span class="git-contributors-list-count">{{ $t('git.repo.contributors.commits', { n: c.commitCount }) }}</span>
+        </div>
+      </div>
+    </el-dialog>
+
+    <el-dialog
+      v-model="createReleaseVisible"
+      :title="editingReleaseId
+        ? $t('git.repo.release.edit-dialog-title')
+        : $t('git.repo.release.create-dialog-title')"
+      width="960px"
+      append-to-body
+      class="git-create-release-dialog"
+      @closed="resetCreateReleaseForm"
+    >
+      <el-form ref="createReleaseFormRef" :model="createReleaseForm" label-width="100px" size="default">
+        <el-form-item :label="$t('git.repo.release.form.tag')" required>
+          <el-input
+            v-model="createReleaseForm.tagName"
+            placeholder="v1.0.0"
+            :disabled="!!editingReleaseId"
+          />
+        </el-form-item>
+        <el-form-item :label="$t('git.repo.release.form.title')" required>
+          <el-input v-model="createReleaseForm.title" />
+        </el-form-item>
+        <el-form-item v-if="!editingReleaseId" :label="$t('git.repo.release.form.target-ref')">
+          <el-select
+            v-model="createReleaseForm.targetRef"
+            filterable
+            style="width: 100%"
+            :loading="branchesLoading"
+            :placeholder="$t('git.repo.select-branch')"
+          >
+            <el-option
+              v-for="b in branches"
+              :key="b.name"
+              :label="b.name"
+              :value="b.name"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="$t('git.repo.release.form.body')" class="git-create-release-body-item">
+          <div class="git-create-release-markdown">
+            <cat2-bug-markdown
+              v-if="createReleaseVisible"
+              :key="'release-body-' + createReleaseVisible + '-' + (editingReleaseId || 'new')"
+              v-model:content="createReleaseForm.body"
+              :placeholder="$t('git.repo.release.form.body-placeholder')"
+              :exclude-tools="createReleaseMarkdownExcludeTools"
+              :show-preview="false"
+            />
+          </div>
+        </el-form-item>
+        <el-form-item v-if="!editingReleaseId" :label="$t('git.repo.release.form.assets')">
+          <el-upload
+            ref="createReleaseUpload"
+            class="git-create-release-upload"
+            action="#"
+            drag
+            :auto-upload="false"
+            :limit="CREATE_RELEASE_MAX_ASSETS"
+            :file-list="createReleaseAssetList"
+            :on-change="onCreateReleaseAssetChange"
+            :on-remove="onCreateReleaseAssetRemove"
+            :on-exceed="onCreateReleaseAssetExceed"
+            multiple
+          >
+            <el-icon class="git-create-release-upload__icon"><Upload /></el-icon>
+            <div class="el-upload__text">
+              {{ $t('git.repo.release.form.assets-drag') }}
+              <em>{{ $t('git.repo.release.form.assets-select') }}</em>
+            </div>
+            <template #tip>
+              <div class="el-upload__tip">{{ $t('git.repo.release.form.assets-tip') }}</div>
+            </template>
+          </el-upload>
+        </el-form-item>
+        <el-form-item :label="$t('git.repo.release.form.draft')">
+          <el-switch v-model="createReleaseForm.draft" :active-value="1" :inactive-value="0" />
+        </el-form-item>
+        <el-form-item :label="$t('git.repo.release.form.prerelease')">
+          <el-switch v-model="createReleaseForm.prerelease" :active-value="1" :inactive-value="0" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="createReleaseVisible = false">{{ $t('cancel') }}</el-button>
+        <el-button type="primary" :loading="createReleaseSubmitting" @click="submitCreateRelease">
+          {{ $t('ok') }}
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { h } from 'vue'
-import { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link, List, CopyDocument, Plus, Upload } from '@element-plus/icons-vue'
+import { h, markRaw } from 'vue'
+import { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link, List, CopyDocument, Plus, Upload, PriceTag } from '@element-plus/icons-vue'
 import {
   getGitRepo,
   listGitRepoBranches,
   listGitRepoTree,
   getGitRepoBlob,
-  listGitRepoCommits
+  listGitRepoCommits,
+  listGitRepoContributors,
+  listGitRepoReleases,
+  createGitRepoRelease,
+  updateGitRepoRelease,
+  uploadGitRepoReleaseAsset
 } from '@/api/system/gitRepo'
 import { listMemberOfProject } from '@/api/system/project'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
+import Cat2BugMarkdown from '@/components/Cat2BugMarkdown'
 import { MarkdownRenderer } from '@/components/Markdown'
+import GitRepoReleaseDetailPanel from './release-detail.vue'
 import { extractHeadings } from '@/components/Report/annotation/report-toc'
 import { useUserStore } from '@/stores/user'
+import { checkPermi } from '@/utils/permission'
 import { formatTime } from '@/utils/index'
 import { parseTime } from '@/utils/ruoyi'
+
+const CREATE_RELEASE_MAX_ASSETS = 20
+const CREATE_RELEASE_MAX_ASSET_BYTES = 100 * 1024 * 1024
 
 const README_NAMES = new Set(['readme.md'])
 const LICENSE_NAMES = new Set(['license', 'license.md', 'licence', 'licence.md'])
@@ -551,14 +775,18 @@ export default {
     CopyDocument,
     Plus,
     Upload,
+    PriceTag,
     Cat2BugAvatar,
+    Cat2BugMarkdown,
     MarkdownRenderer,
+    GitRepoReleaseDetailPanel,
     GitBranchIcon
   },
   data() {
     return {
-      CopyDocument,
-      Plus,
+      // :icon 需要实例属性；markRaw 避免图标组件被做成响应式
+      CopyDocument: markRaw(CopyDocument),
+      Plus: markRaw(Plus),
       repositoryId: null,
       repoName: '',
       repoRemark: '',
@@ -571,7 +799,8 @@ export default {
       branches: [],
       branchesLoading: false,
       currentRef: null,
-      activeTab: 'code',
+      activeTab: this.$route && this.$route.params.releaseId ? 'releases' : 'code',
+      selectedReleaseId: (this.$route && this.$route.params.releaseId) || null,
       currentPath: '',
       viewMode: 'tree',
       treeEntries: [],
@@ -595,7 +824,27 @@ export default {
         label: 'name',
         children: 'children',
         isLeaf: 'isLeaf'
-      }
+      },
+      releases: [],
+      releasesLoading: false,
+      contributors: [],
+      contributorsLoading: false,
+      contributorsDialogVisible: false,
+      createReleaseVisible: false,
+      createReleaseSubmitting: false,
+      createReleaseAssetList: [],
+      editingReleaseId: null,
+      releasesRefreshToken: 0,
+      createReleaseMarkdownExcludeTools: ['siding-9899', 'project', 'case', 'defect', 'member', 'save', 'plan'],
+      createReleaseForm: {
+        tagName: '',
+        title: '',
+        body: '',
+        targetRef: '',
+        draft: 0,
+        prerelease: 0
+      },
+      CREATE_RELEASE_MAX_ASSETS
     }
   },
   computed: {
@@ -659,6 +908,22 @@ export default {
     recentActivity() {
       return this.commits.slice(0, 5)
     },
+    canManageGitRepo() {
+      return checkPermi(['system:git:repo:manage'])
+    },
+    contributorCount() {
+      return this.contributors.length
+    },
+    contributorsAsidePreview() {
+      return this.contributors.slice(0, 5)
+    },
+    releasesAsidePreview() {
+      return this.releases.slice(0, 5)
+    },
+    latestReleaseId() {
+      const latest = this.releases.find(r => r && r.draft !== 1)
+      return latest ? latest.releaseId : null
+    },
     fullCloneUrl() {
       const path = this.cloneUrlPath
         || (this.repoTeamKey && this.repoProjectKey && this.repoSlug
@@ -710,6 +975,12 @@ export default {
       handler() {
         this.scheduleRefreshRootDocToc()
       }
+    },
+    '$route.params.releaseId'() {
+      this.syncReleaseRouteFromParams()
+    },
+    '$route.name'() {
+      this.syncReleaseRouteFromParams()
     }
   },
   beforeUnmount() {
@@ -718,11 +989,66 @@ export default {
   created() {
     this.repositoryId = Number(this.$route.params.repositoryId)
     if (this.$route.query.name) this.repoName = String(this.$route.query.name)
+    this.syncReleaseRouteFromParams()
     this.init()
   },
   methods: {
     goBack() {
       this.$router.push({ path: '/project/git-repo' })
+    },
+    syncReleaseRouteFromParams() {
+      const releaseId = this.$route.params.releaseId
+      if (releaseId) {
+        this.selectedReleaseId = releaseId
+        this.activeTab = 'releases'
+        this.$nextTick(() => this.scrollToRelease(releaseId))
+        return
+      }
+      if (this.$route.name === 'GitRepoBrowse' && this.activeTab !== 'releases') {
+        this.selectedReleaseId = null
+      }
+    },
+    onBrowseTabChange(tab) {
+      if (tab === 'releases') {
+        if (this.selectedReleaseId) {
+          this.$router.replace({
+            name: 'GitRepoReleaseDetail',
+            params: {
+              repositoryId: String(this.repositoryId),
+              releaseId: String(this.selectedReleaseId)
+            }
+          }).catch(() => {})
+          this.$nextTick(() => this.scrollToRelease(this.selectedReleaseId))
+        } else if (this.$route.name === 'GitRepoReleaseDetail') {
+          this.$router.replace({
+            name: 'GitRepoBrowse',
+            params: { repositoryId: String(this.repositoryId) }
+          }).catch(() => {})
+        }
+        return
+      }
+      this.selectedReleaseId = null
+      if (this.$route.name === 'GitRepoReleaseDetail') {
+        this.$router.replace({
+          name: 'GitRepoBrowse',
+          params: { repositoryId: String(this.repositoryId) }
+        }).catch(() => {})
+      }
+    },
+    isLatestRelease(release) {
+      if (!release || release.draft === 1 || this.latestReleaseId == null) return false
+      return Number(release.releaseId) === Number(this.latestReleaseId)
+    },
+    isReleaseHighlighted(release) {
+      if (!release || this.selectedReleaseId == null) return false
+      return Number(release.releaseId) === Number(this.selectedReleaseId)
+    },
+    scrollToRelease(releaseId) {
+      if (!releaseId) return
+      const el = document.getElementById('git-release-item-' + releaseId)
+      if (el && typeof el.scrollIntoView === 'function') {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
     },
     timeValue(t) {
       if (!t) return 0
@@ -734,6 +1060,34 @@ export default {
       const ms = this.timeValue(t)
       if (!ms) return parseTime(t) || '—'
       return formatTime(ms)
+    },
+    releaseRelativeTime(release) {
+      if (!release) return '—'
+      return this.relativeTime(release.publishedAt || release.createTime)
+    },
+    openReleaseDetail(release) {
+      if (!release || !release.releaseId || !this.repositoryId) return
+      this.selectedReleaseId = release.releaseId
+      this.activeTab = 'releases'
+      this.$router.push({
+        name: 'GitRepoReleaseDetail',
+        params: {
+          repositoryId: String(this.repositoryId),
+          releaseId: String(release.releaseId)
+        }
+      }).catch(() => {})
+      this.$nextTick(() => this.scrollToRelease(release.releaseId))
+    },
+    onReleaseDeleted() {
+      this.selectedReleaseId = null
+      this.loadReleases()
+      if (this.$route.name === 'GitRepoReleaseDetail') {
+        this.$router.replace({
+          name: 'GitRepoBrowse',
+          params: { repositoryId: String(this.repositoryId) }
+        }).catch(() => {})
+      }
+      this.activeTab = 'releases'
     },
     /** 按 git author 匹配项目成员，用于展示平台头像 */
     memberForAuthor(commit) {
@@ -763,6 +1117,177 @@ export default {
         nickName: name || '?',
         userName: name || '?',
         email: email || undefined
+      }
+    },
+    /** 贡献者头像：优先 API userId/avatar，否则与 commit 作者一致 */
+    memberForContributor(contributor) {
+      if (!contributor) {
+        return { nickName: '?', userName: '?' }
+      }
+      if (contributor.userId != null) {
+        const uid = Number(contributor.userId)
+        const fromMembers = this.projectMembers.find(m => m && Number(m.userId) === uid)
+        if (fromMembers) return fromMembers
+        return {
+          userId: contributor.userId,
+          nickName: contributor.displayName || '?',
+          userName: contributor.displayName || '?',
+          avatar: contributor.avatar || undefined,
+          email: contributor.email || undefined
+        }
+      }
+      return this.memberForAuthor({
+        authorName: contributor.displayName,
+        authorEmail: contributor.email
+      })
+    },
+    contributorKey(c, idx) {
+      const email = (c && c.email ? String(c.email) : '').trim()
+      const name = (c && c.displayName ? String(c.displayName) : '').trim()
+      return email || name || `contributor-${idx}`
+    },
+    loadReleases() {
+      if (!this.repositoryId) return
+      this.releasesLoading = true
+      listGitRepoReleases(this.repositoryId).then(response => {
+        this.releases = response.data || []
+        this.releasesRefreshToken += 1
+      }).catch(() => {
+        this.releases = []
+      }).finally(() => {
+        this.releasesLoading = false
+        if (this.selectedReleaseId && this.activeTab === 'releases') {
+          this.$nextTick(() => this.scrollToRelease(this.selectedReleaseId))
+        }
+      })
+    },
+    loadContributors() {
+      if (!this.repositoryId || !this.currentRef) {
+        this.contributors = []
+        return
+      }
+      this.contributorsLoading = true
+      listGitRepoContributors(this.repositoryId, this.currentRef, 100).then(response => {
+        this.contributors = response.data || []
+      }).catch(() => {
+        this.contributors = []
+      }).finally(() => {
+        this.contributorsLoading = false
+      })
+    },
+    openContributorsDialog() {
+      this.contributorsDialogVisible = true
+    },
+    openCreateRelease() {
+      if (!this.canManageGitRepo) return
+      this.editingReleaseId = null
+      this.createReleaseForm.targetRef = this.currentRef || this.defaultBranch || ''
+      this.createReleaseAssetList = []
+      this.createReleaseVisible = true
+    },
+    openEditRelease(release) {
+      if (!this.canManageGitRepo || !release) return
+      this.editingReleaseId = release.releaseId
+      this.createReleaseForm = {
+        tagName: release.tagName || '',
+        title: release.title || '',
+        body: release.body || '',
+        targetRef: this.currentRef || this.defaultBranch || '',
+        draft: release.draft === 1 ? 1 : 0,
+        prerelease: release.prerelease === 1 ? 1 : 0
+      }
+      this.createReleaseAssetList = []
+      this.createReleaseVisible = true
+    },
+    resetCreateReleaseForm() {
+      this.editingReleaseId = null
+      this.createReleaseForm = {
+        tagName: '',
+        title: '',
+        body: '',
+        targetRef: this.currentRef || this.defaultBranch || '',
+        draft: 0,
+        prerelease: 0
+      }
+      this.createReleaseAssetList = []
+    },
+    onCreateReleaseAssetChange(file, fileList) {
+      const raw = file && file.raw
+      if (raw && raw.size > CREATE_RELEASE_MAX_ASSET_BYTES) {
+        this.$modal.msgWarning(this.$t('git.repo.release.form.assets-too-large', { name: file.name }))
+        this.createReleaseAssetList = (fileList || []).filter(f => f.uid !== file.uid)
+        return
+      }
+      this.createReleaseAssetList = fileList || []
+    },
+    onCreateReleaseAssetRemove(file, fileList) {
+      this.createReleaseAssetList = fileList || []
+    },
+    onCreateReleaseAssetExceed() {
+      this.$modal.msgWarning(this.$t('git.repo.release.form.assets-limit', { n: CREATE_RELEASE_MAX_ASSETS }))
+    },
+    async submitCreateRelease() {
+      if (!this.canManageGitRepo) return
+      const tagName = (this.createReleaseForm.tagName || '').trim()
+      const title = (this.createReleaseForm.title || '').trim()
+      if (!tagName || !title) {
+        this.$modal.msgWarning(this.$t('git.repo.release.form.tag') + ' / ' + this.$t('git.repo.release.form.title'))
+        return
+      }
+      if (!this.editingReleaseId && !this.createReleaseForm.targetRef) {
+        this.$modal.msgWarning(this.$t('git.repo.select-branch'))
+        return
+      }
+      this.createReleaseSubmitting = true
+      try {
+        if (this.editingReleaseId) {
+          await updateGitRepoRelease(this.repositoryId, this.editingReleaseId, {
+            title,
+            body: this.createReleaseForm.body || '',
+            draft: this.createReleaseForm.draft,
+            prerelease: this.createReleaseForm.prerelease
+          })
+          this.$modal.msgSuccess(this.$t('git.repo.release.update-success'))
+          this.createReleaseVisible = false
+          this.loadReleases()
+          return
+        }
+        const payload = {
+          tagName,
+          title,
+          body: this.createReleaseForm.body || '',
+          targetRef: this.createReleaseForm.targetRef,
+          draft: this.createReleaseForm.draft,
+          prerelease: this.createReleaseForm.prerelease
+        }
+        const pendingFiles = (this.createReleaseAssetList || [])
+          .map(f => f.raw)
+          .filter(Boolean)
+        const response = await createGitRepoRelease(this.repositoryId, payload)
+        const release = response.data || {}
+        const releaseId = release.releaseId
+        let uploadFailed = 0
+        if (releaseId && pendingFiles.length) {
+          for (const file of pendingFiles) {
+            try {
+              await uploadGitRepoReleaseAsset(this.repositoryId, releaseId, file)
+            } catch (e) {
+              uploadFailed += 1
+            }
+          }
+        }
+        if (uploadFailed > 0) {
+          this.$modal.msgWarning(this.$t('git.repo.release.create-assets-partial', {
+            ok: pendingFiles.length - uploadFailed,
+            fail: uploadFailed
+          }))
+        } else {
+          this.$modal.msgSuccess(this.$t('git.repo.release.create-success'))
+        }
+        this.createReleaseVisible = false
+        this.loadReleases()
+      } finally {
+        this.createReleaseSubmitting = false
       }
     },
     loadProjectMembers(projectId) {
@@ -853,6 +1378,7 @@ export default {
         this.repoProjectKey = repo.projectKey || ''
         this.cloneUrlPath = repo.cloneUrl || ''
         this.loadProjectMembers(repo.projectId)
+        this.loadReleases()
       }).catch(() => {}).finally(() => {
         this.pageLoading = false
       })
@@ -867,6 +1393,7 @@ export default {
         this.currentRef = current ? current.name : null
         this.loadTree('')
         this.loadCommits()
+        this.loadContributors()
       }).catch(() => {
         this.branchesLoading = false
       })
@@ -876,6 +1403,7 @@ export default {
       this.viewMode = 'tree'
       this.loadTree('')
       this.loadCommits()
+      this.loadContributors()
     },
     breadcrumbPathAt(idx) {
       return this.breadcrumbSegments.slice(0, idx + 1).join('/')
@@ -2053,6 +2581,132 @@ export default {
   color: var(--text-color-primary);
 }
 
+.git-aside-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+
+  .git-aside-title {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.git-aside-releases-wrap {
+  min-height: 24px;
+}
+
+.git-aside-releases {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.git-aside-release-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+.git-aside-release-title {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--el-color-primary, #ffc107);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.git-aside-release-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+}
+
+.git-aside-release-tag {
+  font-weight: 500;
+  color: var(--text-color-regular);
+}
+
+.git-aside-release-sep {
+  color: var(--text-color-secondary);
+}
+
+.git-aside-release-time {
+  color: var(--text-color-secondary);
+}
+
+.git-aside-contributors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.git-aside-contributors :deep(.member-avatar),
+.git-contributors-list :deep(.member-avatar) {
+  flex-shrink: 0;
+}
+
+.git-aside-empty--releases {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.git-contributors-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color-light);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.git-contributors-list-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.git-contributors-list-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color-primary);
+}
+
+.git-contributors-list-email {
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.git-contributors-list-count {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+}
+
 .git-aside-desc {
   margin: 0 0 12px;
   font-size: 13px;
@@ -2131,6 +2785,29 @@ export default {
   color: var(--text-color-placeholder);
 }
 
+.git-browse-releases {
+  min-height: 200px;
+}
+
+.git-browse-releases__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.git-browse-releases__heading {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-color-primary);
+}
+
+.git-browse-releases__timeline {
+  width: 100%;
+}
+
 .git-browse-commits {
   border: 1px solid var(--border-color-light);
   border-radius: 6px;
@@ -2181,6 +2858,127 @@ export default {
 
   .git-browse-tree-time {
     text-align: left;
+  }
+}
+</style>
+
+<style lang="scss">
+/* append-to-body：弹窗样式不能写在 scoped 里 */
+.git-create-release-dialog {
+  .git-create-release-body-item {
+    align-items: flex-start;
+
+    .el-form-item__content {
+      width: 100%;
+    }
+  }
+
+  .cat2bug-textarea {
+    width: 100%;
+  }
+
+  .git-create-release-markdown {
+    width: 100%;
+    height: 320px;
+    border: 1px solid var(--border-color-base, #dcdfe6);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--card-bg, #fff);
+
+    .markdown {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: none;
+    }
+
+    .markdown-tools {
+      flex-shrink: 0;
+      padding: 2px 6px;
+      min-height: 0;
+      border-bottom: 1px solid var(--border-color-light, #ebeef5);
+
+      .tools-menu.el-menu--horizontal {
+        height: auto !important;
+        border: none !important;
+      }
+
+      .el-menu-item,
+      .el-sub-menu,
+      .el-sub-menu__title {
+        height: 26px !important;
+        min-height: 26px !important;
+        line-height: 26px !important;
+        width: 26px !important;
+        padding: 0 !important;
+        margin: 0 1px !important;
+      }
+
+      .el-menu--horizontal > .el-menu-item,
+      .el-menu--horizontal > .el-sub-menu .el-sub-menu__title {
+        border-bottom: none !important;
+      }
+    }
+
+    .markdown-body {
+      flex: 1;
+      min-height: 0;
+      background: var(--card-bg, #fff) !important;
+
+      > .markdown-body-edit,
+      > .markdown-body-view {
+        padding: 8px 12px;
+        background: var(--card-bg, #fff) !important;
+        border-right: none !important;
+      }
+
+      .cat2bug-md-editor-pane,
+      .md-editor {
+        --md-bk-color: var(--card-bg, #fff);
+        --md-color: var(--text-color-primary, #303133);
+        background: var(--card-bg, #fff) !important;
+        background-color: var(--card-bg, #fff) !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      .md-editor .cm-editor,
+      .md-editor .cm-scroller,
+      .md-editor .cm-content,
+      .md-editor .cm-gutters {
+        background: var(--card-bg, #fff) !important;
+        background-color: var(--card-bg, #fff) !important;
+      }
+
+      .md-editor .cm-gutters {
+        border-right: none !important;
+      }
+    }
+  }
+
+  .git-create-release-upload {
+    width: 100%;
+
+    .el-upload,
+    .el-upload-dragger {
+      width: 100%;
+    }
+
+    .el-upload-dragger {
+      padding: 20px 12px;
+    }
+  }
+
+  .git-create-release-upload__icon {
+    font-size: 40px;
+    color: var(--el-color-primary, #ffc107);
+    margin-bottom: 8px;
+  }
+
+  .el-upload__tip {
+    margin-top: 6px;
+    line-height: 1.4;
+    color: var(--text-color-secondary, #909399);
   }
 }
 </style>

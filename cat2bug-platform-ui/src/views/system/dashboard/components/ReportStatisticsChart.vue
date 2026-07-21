@@ -51,7 +51,7 @@ export default {
   },
   methods: {
     handleClick() {
-      const targetRoute = this.$router.resolve({ name:'Report', params: {}});
+      const targetRoute = this.$router.resolve({ name:'ProjectReport', params: {}});
       window.open(targetRoute.href, '_blank');
     },
     getReportStatistics() {

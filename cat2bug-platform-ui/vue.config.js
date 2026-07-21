@@ -115,6 +115,8 @@ module.exports = {
       [process.env.VUE_APP_BASE_API]: {
         target: `http://localhost:2020`,
         changeOrigin: true,
+        timeout: 0,
+        proxyTimeout: 0,
         onError: proxyOnError,
         onProxyReqWs: proxyOnProxyReqWs,
         pathRewrite: {

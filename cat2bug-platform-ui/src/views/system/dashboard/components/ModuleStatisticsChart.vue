@@ -52,7 +52,7 @@ export default {
   },
   methods: {
     handleClick() {
-      const targetRoute = this.$router.resolve({ name:'Module', params: {}});
+      const targetRoute = this.$router.resolve({ name:'ProjectModule', params: {}});
       window.open(targetRoute.href, '_blank');
     },
     getModuleStatistics() {
