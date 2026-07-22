@@ -457,7 +457,7 @@ export default {
 
 <style lang="scss" scoped>
 .git-commit-detail {
-  padding: 20px 20px 0;
+  padding: 20px 20px 16px;
   box-sizing: border-box;
   color: var(--text-color-regular);
   flex: 1 1 auto;

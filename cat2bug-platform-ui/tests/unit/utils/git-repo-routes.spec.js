@@ -4,6 +4,7 @@ import {
   gitRepoBrowseRoute,
   gitRepoCommitDetailRoute,
   isGitCloneSlugParam,
+  resolveBrowseActiveTab,
   spaAndClonePathsDistinct
 } from '@/utils/git-repo-routes'
 
@@ -30,5 +31,14 @@ describe('git-repo-routes', () => {
       name: 'GitRepoCommitDetail',
       params: { teamKey: 'acme', projectKey: 'demo', slug: 'backend', commitId: 'abc123' }
     })
+  })
+
+  it('resolves browse active tab from params and query (incl. releases from PR shell)', () => {
+    expect(resolveBrowseActiveTab(null)).toBe('code')
+    expect(resolveBrowseActiveTab({ params: {}, query: {} })).toBe('code')
+    expect(resolveBrowseActiveTab({ params: {}, query: { tab: 'releases' } })).toBe('releases')
+    expect(resolveBrowseActiveTab({ params: {}, query: { tab: 'commits' } })).toBe('commits')
+    expect(resolveBrowseActiveTab({ params: { releaseId: '9' }, query: { tab: 'code' } })).toBe('releases')
+    expect(resolveBrowseActiveTab({ params: { commitId: 'abc' }, query: {} })).toBe('commits')
   })
 })

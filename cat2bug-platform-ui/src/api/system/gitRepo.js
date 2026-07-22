@@ -70,6 +70,28 @@ export function addGitRepo(data) {
   })
 }
 
+/** 从远端 URL 一次性导入为本地 bare 仓（manage）；大仓可能较久，超时略大于服务端默认 120s */
+export function importGitRepo(data) {
+  return request({
+    url: '/system/git/repo/import',
+    method: 'post',
+    data,
+    timeout: 130000
+  })
+}
+
+/**
+ * 用会话 PAT 列远端仓库（不落库）
+ * @param {{ provider: 'github'|'gitlab'|'gitee', token: string, host?: string }} data
+ */
+export function listRemoteGitRepos(data) {
+  return request({
+    url: '/system/git/repo/remote/list',
+    method: 'post',
+    data
+  })
+}
+
 // 修改代码仓库（slug 变更会导致旧 clone 地址失效，响应体带 cloneUrlChanged/message）
 export function updateGitRepo(data) {
   return request({

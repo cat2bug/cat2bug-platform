@@ -1,15 +1,19 @@
 package com.cat2bug.system.service.impl;
 
+import com.cat2bug.common.config.Cat2BugConfig;
 import com.cat2bug.common.core.domain.entity.SysRole;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.domain.model.LoginUser;
 import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.system.domain.SysGitRepository;
 import com.cat2bug.system.domain.SysProject;
+import com.cat2bug.system.domain.git.SysGitRepositoryImportRequest;
 import com.cat2bug.system.mapper.SysGitRepositoryMapper;
 import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysRoleMapper;
+import com.cat2bug.system.mapper.SysUserGitRepositoryMapper;
 import com.cat2bug.system.service.git.GitPathValidator;
+import com.cat2bug.system.service.git.GitRemoteRepositoryClient;
 import com.cat2bug.system.service.git.JGitBareRepositoryHelper;
 import com.cat2bug.system.support.MessageSourceTestSupport;
 import org.junit.After;
@@ -35,6 +39,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,6 +57,8 @@ public class SysGitRepositoryServiceTest
     @Mock
     private SysGitRepositoryMapper sysGitRepositoryMapper;
     @Mock
+    private SysUserGitRepositoryMapper sysUserGitRepositoryMapper;
+    @Mock
     private SysProjectMapper sysProjectMapper;
     @Mock
     private SysRoleMapper sysRoleMapper;
@@ -58,6 +66,10 @@ public class SysGitRepositoryServiceTest
     private GitPathValidator gitPathValidator;
     @Mock
     private JGitBareRepositoryHelper jGitBareRepositoryHelper;
+    @Mock
+    private GitRemoteRepositoryClient gitRemoteRepositoryClient;
+    @Mock
+    private Cat2BugConfig cat2BugConfig;
 
     @InjectMocks
     private SysGitRepositoryServiceImpl service;
@@ -70,6 +82,9 @@ public class SysGitRepositoryServiceTest
         messageCleanup = MessageSourceTestSupport.installMessageSource();
         when(sysProjectMapper.selectSysProjectByProjectId(eq(PROJECT_ID), isNull())).thenReturn(project());
         when(gitPathValidator.resolveStoredDiskPath(anyString())).thenAnswer(invocation -> invocation.getArgument(0));
+        Cat2BugConfig.Git git = new Cat2BugConfig.Git();
+        git.setImportTimeoutSeconds(120);
+        when(cat2BugConfig.getGit()).thenReturn(git);
     }
 
     @After
@@ -459,7 +474,117 @@ public class SysGitRepositoryServiceTest
         verify(jGitBareRepositoryHelper).wipeBareRepository(second.getDiskPath());
     }
 
+    // ---------- 导入 ----------
+
+    @Test
+    public void importSysGitRepository_publicUrl_clonesThenInserts()
+    {
+        loginAs(1L, 6L);
+        when(gitPathValidator.validateSlug("api")).thenReturn("api");
+        when(sysGitRepositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(PROJECT_ID, "api")).thenReturn(null);
+        when(gitPathValidator.buildDefaultDiskPath("acme", "app", "api")).thenReturn("/data/git/acme/app/api.git");
+        when(jGitBareRepositoryHelper.resolveDefaultBranch("/data/git/acme/app/api.git")).thenReturn("main");
+        when(sysGitRepositoryMapper.insertSysGitRepository(any())).thenReturn(1);
+
+        SysGitRepositoryImportRequest request = newImportRequest("api", "https://github.com/org/api.git");
+        SysGitRepository result = service.importSysGitRepository(request);
+
+        assertEquals("api", result.getSlug());
+        assertEquals("main", result.getDefaultBranch());
+        assertEquals("/data/git/acme/app/api.git", result.getDiskPath());
+        verify(jGitBareRepositoryHelper).cloneBareRepository(
+            eq("https://github.com/org/api.git"),
+            eq("/data/git/acme/app/api.git"),
+            isNull(),
+            isNull());
+        verify(sysGitRepositoryMapper).insertSysGitRepository(any());
+        verify(jGitBareRepositoryHelper, never()).initBareRepository(any(), any());
+    }
+
+    @Test
+    public void importSysGitRepository_cloneFails_wipesDiskAndSkipsInsert()
+    {
+        loginAs(1L, 6L);
+        when(gitPathValidator.validateSlug("api")).thenReturn("api");
+        when(gitPathValidator.buildDefaultDiskPath("acme", "app", "api")).thenReturn("/data/git/acme/app/api.git");
+        doThrow(new ServiceException("i18n:git.repo.import.auth-failed"))
+            .when(jGitBareRepositoryHelper)
+            .cloneBareRepository(anyString(), anyString(), nullable(String.class), nullable(String.class));
+
+        try
+        {
+            service.importSysGitRepository(newImportRequest("api", "https://github.com/org/private.git"));
+            fail("expected ServiceException when clone fails");
+        }
+        catch (ServiceException expected)
+        {
+            // auth / clone failure
+        }
+        verify(jGitBareRepositoryHelper).wipeBareRepository("/data/git/acme/app/api.git");
+        verify(sysGitRepositoryMapper, never()).insertSysGitRepository(any());
+    }
+
+    @Test
+    public void importSysGitRepository_duplicateSlug_rejectedBeforeClone()
+    {
+        loginAs(1L, 6L);
+        when(gitPathValidator.validateSlug("api")).thenReturn("api");
+        when(sysGitRepositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(PROJECT_ID, "api"))
+            .thenReturn(repository(1L, "api"));
+
+        try
+        {
+            service.importSysGitRepository(newImportRequest("api", "https://github.com/org/api.git"));
+            fail("expected ServiceException for duplicate slug");
+        }
+        catch (ServiceException expected)
+        {
+            // slug conflict
+        }
+        verify(jGitBareRepositoryHelper, never()).cloneBareRepository(anyString(), anyString(), nullable(String.class), nullable(String.class));
+        verify(sysGitRepositoryMapper, never()).insertSysGitRepository(any());
+    }
+
+    @Test
+    public void importSysGitRepository_rejectsNonHttpScheme()
+    {
+        loginAs(1L, 6L);
+        try
+        {
+            service.importSysGitRepository(newImportRequest("api", "ssh://git@github.com/org/api.git"));
+            fail("expected ServiceException for scheme");
+        }
+        catch (ServiceException expected)
+        {
+            // scheme rejected
+        }
+        verify(jGitBareRepositoryHelper, never()).cloneBareRepository(anyString(), anyString(), nullable(String.class), nullable(String.class));
+    }
+
+    @Test
+    public void importRequest_toStringHidesToken()
+    {
+        SysGitRepositoryImportRequest request = newImportRequest("api", "https://github.com/org/api.git");
+        request.setUsername("alice");
+        request.setToken("ghp_secret_token_value");
+        String text = request.toString();
+        assertTrue(text.contains("***"));
+        assertFalse(text.contains("ghp_secret_token_value"));
+        assertFalse(text.contains("alice"));
+    }
+
     // ---------- 测试夹具 ----------
+
+    private SysGitRepositoryImportRequest newImportRequest(String slug, String sourceUrl)
+    {
+        SysGitRepositoryImportRequest request = new SysGitRepositoryImportRequest();
+        request.setProjectId(PROJECT_ID);
+        request.setName(slug);
+        request.setSlug(slug);
+        request.setSourceUrl(sourceUrl);
+        request.setVisibility("project");
+        return request;
+    }
 
     private void loginAs(Long userId, Long... projectRoleIds)
     {

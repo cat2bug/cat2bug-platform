@@ -8,6 +8,9 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.system.domain.SysGitRepository;
+import com.cat2bug.system.domain.git.SysGitRemoteListRequest;
+import com.cat2bug.system.domain.git.SysGitRemoteRepository;
+import com.cat2bug.system.domain.git.SysGitRepositoryImportRequest;
 import com.cat2bug.system.service.ISysGitRepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -72,6 +75,29 @@ public class SysGitRepositoryController extends BaseController
     public AjaxResult add(@RequestBody SysGitRepository sysGitRepository)
     {
         return success(sysGitRepositoryService.insertSysGitRepository(sysGitRepository));
+    }
+
+    /**
+     * 从远端 URL 一次性导入为本地 bare 仓（manage 权限）。
+     * 操作日志排除 token/username，避免 PAT 写入 oper_log。
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage')")
+    @Log(title = "代码仓库导入", businessType = BusinessType.INSERT, excludeParamNames = { "token", "username" })
+    @PostMapping("/import")
+    public AjaxResult importRepository(@RequestBody SysGitRepositoryImportRequest request)
+    {
+        return success(sysGitRepositoryService.importSysGitRepository(request));
+    }
+
+    /**
+     * 使用会话内 PAT 列远端仓库（GitHub / GitLab / Gitee；manage 权限）。token 不持久化。
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage')")
+    @PostMapping("/remote/list")
+    public AjaxResult listRemote(@RequestBody SysGitRemoteListRequest request)
+    {
+        List<SysGitRemoteRepository> list = sysGitRepositoryService.listRemoteRepositories(request);
+        return success(list);
     }
 
     /**

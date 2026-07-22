@@ -69,6 +69,8 @@ cat2bug:
   # 项目 Git 仓库（bare 仓默认根目录相对 cat2bug.profile，如 uploadPath/git）
   git:
     root: git
+    # 从远端一次性导入（JGit bare clone）超时秒数
+    import-timeout-seconds: 120
   file:
     view-url: http://localhost:8012
 # 开发环境配置

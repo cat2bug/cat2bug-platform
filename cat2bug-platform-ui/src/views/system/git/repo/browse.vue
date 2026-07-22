@@ -1,60 +1,54 @@
 <template>
   <div class="app-container git-browse-page" v-loading="pageLoading">
-    <div class="git-browse-top">
-      <el-page-header @back="goBack" class="git-browse-back">
-        <template #content>
-          <div class="git-browse-title">
-            <el-icon class="git-browse-title-icon"><FolderOpened /></el-icon>
-            <span class="git-browse-repo-name">{{ repoName || '-' }}</span>
-            <el-tag size="small" type="info" effect="plain">{{ $t('git.repo.private') }}</el-tag>
-          </div>
-        </template>
-      </el-page-header>
+    <git-repo-shell
+      :repository-id="repositoryId"
+      :project-id="repoProjectId"
+      :repo-name="repoName"
+      :visibility="repoVisibility"
+      :active-tab="shellActiveTab"
+      @tab-click="onShellTabClick"
+    >
+    <div v-if="selectedCommitId" class="git-browse-commits-pane">
+      <git-repo-commit-detail-panel
+        :key="'commit-' + selectedCommitId"
+        embedded
+        :repository-id="repositoryId"
+        :commit-id="String(selectedCommitId)"
+        :repo-name="repoName"
+        :project-members="projectMembers"
+        @back="clearCommitFocus"
+      />
     </div>
 
-    <el-tabs
-      v-model="activeTab"
-      class="git-browse-tabs"
-      @tab-change="onBrowseTabChange"
-      @tab-click="onBrowseTabClick"
-    >
-      <el-tab-pane name="code">
-        <template #label>
-          <span class="git-browse-tab-label">
-            <el-icon><Document /></el-icon>
-            {{ $t('git.repo.tab.code') }}
-          </span>
-        </template>
-      </el-tab-pane>
-      <el-tab-pane name="pulls">
-        <template #label>
-          <span class="git-browse-tab-label">
-            <el-icon><Connection /></el-icon>
-            {{ $t('git.repo.pr.title') }}
-            <span v-if="openPullCount > 0" class="git-browse-tab-count">{{ openPullCountLabel }}</span>
-          </span>
-        </template>
-      </el-tab-pane>
-      <el-tab-pane name="commits">
-        <template #label>
-          <span class="git-browse-tab-label">
-            <el-icon><List /></el-icon>
-            {{ $t('git.repo.tab.commits') }}
-          </span>
-        </template>
-      </el-tab-pane>
-      <el-tab-pane name="releases">
-        <template #label>
-          <span class="git-browse-tab-label">
-            <git-tag-icon class="git-browse-tab-tag-icon" />
-            {{ $t('git.repo.aside.releases') }}
-          </span>
-        </template>
-      </el-tab-pane>
-    </el-tabs>
+    <div v-else-if="activeTab === 'commits'" class="git-browse-commits-pane">
+      <div v-loading="commitsLoading" class="git-browse-commits">
+        <div v-for="c in commits" :key="c.id" class="git-browse-commit-item">
+          <cat2-bug-avatar :member="memberForAuthor(c)" :size="32" />
+          <div class="git-browse-commit-item-body">
+            <div class="git-browse-commit-item-msg">
+              <a
+                href="javascript:;"
+                class="is-link"
+                @click.prevent="openCommitDetail(c.id || c.shortId)"
+              >{{ c.message }}</a>
+            </div>
+            <div class="git-browse-commit-item-meta">
+              <span>{{ c.authorName }}</span>
+              <span>{{ relativeTime(c.commitTime) }}</span>
+              <a
+                href="javascript:;"
+                class="git-browse-commit-hash is-link"
+                @click.prevent="openCommitDetail(c.id || c.shortId)"
+              >{{ c.shortId }}</a>
+            </div>
+          </div>
+        </div>
+        <div v-if="!commitsLoading && !commits.length" class="git-browse-empty">{{ $t('git.repo.empty-repository') }}</div>
+      </div>
+    </div>
 
     <div
-      v-show="activeTab === 'code'"
+      v-show="!selectedCommitId && activeTab === 'code'"
       class="git-browse-layout"
       :class="{ 'has-side-tree': showSideFileTree }"
     >
@@ -205,7 +199,7 @@
                   </span>
                 </el-option>
               </el-select>
-              <el-button link class="git-browse-meta-chip" @click="openBranchesPage">
+              <el-button plain size="small" class="git-browse-meta-chip" @click="openBranchesPage">
                 <el-icon class="git-browse-meta-chip-icon">
                   <git-branch-icon />
                 </el-icon>
@@ -250,11 +244,24 @@
               </el-button>
               <template #dropdown>
                 <div class="git-browse-clone-panel" @click.stop>
-                  <div class="git-browse-clone-proto">HTTPS</div>
-                  <div class="git-browse-clone-row">
-                    <el-input :model-value="fullCloneUrl" readonly size="small" />
+                  <div class="git-browse-clone-proto-row">
+                    <div class="git-browse-clone-proto">HTTPS</div>
                     <el-button
-                      size="small"
+                      class="git-browse-clone-zip"
+                      type="primary"
+                      link
+                      :loading="archiveDownloading"
+                      :disabled="!repositoryId || !archiveRef"
+                      @click="downloadSourceZip"
+                    >
+                      <el-icon class="el-icon--left"><Download /></el-icon>
+                      {{ $t('git.repo.download-source-zip') }}
+                    </el-button>
+                  </div>
+                  <div class="git-browse-clone-row">
+                    <el-input :model-value="fullCloneUrl" readonly class="git-browse-clone-url" />
+                    <el-button
+                      class="git-browse-clone-copy"
                       :icon="CopyDocument"
                       :title="$t('git.repo.copy')"
                       @click="copyCloneUrl"
@@ -317,9 +324,9 @@
             >{{ latestCommit.shortId }}</a>
             <span class="git-browse-commit-time">{{ relativeTime(latestCommit.commitTime) }}</span>
           </div>
-          <a class="git-browse-commit-total" href="javascript:;" @click="activeTab = 'commits'">
+          <a class="git-browse-commit-total" href="javascript:;" @click.prevent="openCommitsList">
             {{ $t('git.repo.commit-count', { n: commits.length }) }}
-            <el-icon><ArrowRight /></el-icon>
+            <el-icon><component :is="ArrowRightIcon" /></el-icon>
           </a>
         </div>
 
@@ -367,7 +374,11 @@
           v-loading="rootDocsLoading"
           class="git-browse-root-docs"
         >
-          <el-tabs v-model="activeRootDocTab" class="git-browse-root-docs-tabs">
+          <el-tabs
+            v-model="activeRootDocTab"
+            class="git-browse-root-docs-tabs"
+            @tab-click="onRootDocTabClick"
+          >
             <el-tab-pane
               v-for="tab in displayRootDocTabs"
               :key="tab.key"
@@ -554,44 +565,7 @@
       </aside>
     </div>
 
-    <div v-show="activeTab === 'commits'" class="git-browse-commits-pane">
-      <git-repo-commit-detail-panel
-        v-if="selectedCommitId"
-        :key="'commit-' + selectedCommitId"
-        embedded
-        :repository-id="repositoryId"
-        :commit-id="String(selectedCommitId)"
-        :repo-name="repoName"
-        :project-members="projectMembers"
-        @back="clearCommitFocus"
-      />
-      <div v-else v-loading="commitsLoading" class="git-browse-commits">
-      <div v-for="c in commits" :key="c.id" class="git-browse-commit-item">
-        <cat2-bug-avatar :member="memberForAuthor(c)" :size="32" />
-        <div class="git-browse-commit-item-body">
-          <div class="git-browse-commit-item-msg">
-            <a
-              href="javascript:;"
-              class="is-link"
-              @click.prevent="openCommitDetail(c.id || c.shortId)"
-            >{{ c.message }}</a>
-          </div>
-          <div class="git-browse-commit-item-meta">
-            <span>{{ c.authorName }}</span>
-            <span>{{ relativeTime(c.commitTime) }}</span>
-            <a
-              href="javascript:;"
-              class="git-browse-commit-hash is-link"
-              @click.prevent="openCommitDetail(c.id || c.shortId)"
-            >{{ c.shortId }}</a>
-          </div>
-        </div>
-      </div>
-      <div v-if="!commitsLoading && !commits.length" class="git-browse-empty">{{ $t('git.repo.empty-repository') }}</div>
-      </div>
-    </div>
-
-    <div v-show="activeTab === 'releases'" class="git-browse-releases">
+    <div v-show="!selectedCommitId && activeTab === 'releases'" class="git-browse-releases">
       <div class="git-browse-releases__toolbar">
         <h2 class="git-browse-releases__heading">{{ $t('git.repo.aside.releases') }}</h2>
         <el-button
@@ -629,6 +603,8 @@
         </el-empty>
       </div>
     </div>
+
+    </git-repo-shell>
 
     <el-dialog
       v-model="contributorsDialogVisible"
@@ -741,7 +717,7 @@
 
 <script>
 import { h, markRaw } from 'vue'
-import { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link, List, CopyDocument, Plus, Upload, Connection } from '@element-plus/icons-vue'
+import { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link, CopyDocument, Plus, Upload, Download } from '@element-plus/icons-vue'
 import {
   getGitRepo,
   listGitRepoBranches,
@@ -753,22 +729,24 @@ import {
   listGitRepoReleases,
   createGitRepoRelease,
   updateGitRepoRelease,
-  uploadGitRepoReleaseAsset
+  uploadGitRepoReleaseAsset,
+  resolveGitRepoByProjectAndSlug,
+  downloadGitRepoArchive
 } from '@/api/system/gitRepo'
+import { getCurrentProjectId } from '@/utils/store-context'
 import {
   gitRepoBrowseRoute,
   gitRepoBranchesRoute,
-  gitRepoPullsRoute,
-  gitRepoReleaseDetailRoute
+  gitRepoReleaseDetailRoute,
+  resolveBrowseActiveTab
 } from '@/utils/git-repo-routes'
 import { listMemberOfProject } from '@/api/system/project'
-import { listGitPullRequests } from '@/api/system/gitPullRequest'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import Cat2BugMarkdown from '@/components/Cat2BugMarkdown'
 import { MarkdownRenderer } from '@/components/Markdown'
 import GitRepoReleaseDetailPanel from './release-detail.vue'
 import GitRepoCommitDetailPanel from './commit-detail.vue'
-import GitTagIcon from './GitTagIcon.vue'
+import GitRepoShell from './GitRepoShell.vue'
 import { extractHeadings } from '@/components/Report/annotation/report-toc'
 import { useUserStore } from '@/stores/user'
 import { checkPermi } from '@/utils/permission'
@@ -826,19 +804,17 @@ export default {
     Document,
     Share,
     ArrowDown,
-    ArrowRight,
     Link,
-    List,
     CopyDocument,
     Plus,
     Upload,
-    Connection,
+    Download,
     Cat2BugAvatar,
     Cat2BugMarkdown,
     MarkdownRenderer,
     GitRepoReleaseDetailPanel,
     GitRepoCommitDetailPanel,
-    GitTagIcon,
+    GitRepoShell,
     GitBranchIcon
   },
   data() {
@@ -846,9 +822,13 @@ export default {
       // :icon 需要实例属性；markRaw 避免图标组件被做成响应式
       CopyDocument: markRaw(CopyDocument),
       Plus: markRaw(Plus),
+      ArrowRightIcon: markRaw(ArrowRight),
       repositoryId: null,
+      /** Bumps on each init so stale branch/tree responses are ignored after repo switch */
+      loadSeq: 0,
       repoName: '',
       repoRemark: '',
+      repoVisibility: 'project',
       repoSlug: '',
       repoProjectId: null,
       repoTeamKey: '',
@@ -858,9 +838,7 @@ export default {
       branches: [],
       branchesLoading: false,
       currentRef: null,
-      activeTab: this.$route && this.$route.params.commitId
-        ? 'commits'
-        : (this.$route && this.$route.params.releaseId ? 'releases' : 'code'),
+      activeTab: resolveBrowseActiveTab(this.$route),
       selectedReleaseId: (this.$route && this.$route.params.releaseId) || null,
       selectedCommitId: (this.$route && this.$route.params.commitId) || null,
       currentPath: '',
@@ -872,11 +850,13 @@ export default {
       commits: [],
       commitsLoading: false,
       pageLoading: false,
+      archiveDownloading: false,
       projectMembers: [],
-      openPullCount: 0,
       /** 根目录文档 tab：[{ key, name, path }] */
       rootDocTabs: [],
       activeRootDocTab: '',
+      /** 用户是否手动点过根文档 tab；未点过时始终优先 README */
+      rootDocTabUserSelected: false,
       /** path -> { content, loading, binary } */
       rootDocCache: {},
       rootDocToc: [],
@@ -926,8 +906,9 @@ export default {
     showSideFileTree() {
       return !!(this.currentPath && String(this.currentPath).trim())
     },
-    openPullCountLabel() {
-      return this.openPullCount > 99 ? '99+' : String(this.openPullCount)
+    /** Primary shell tabs: commits list still highlights「代码」 */
+    shellActiveTab() {
+      return this.activeTab === 'releases' ? 'releases' : 'code'
     },
     showRootDocs() {
       if (this.viewMode !== 'tree' || this.currentPath) return false
@@ -1006,6 +987,10 @@ export default {
       if (!path) return ''
       return window.location.origin + path
     },
+    /** Current browse ref for archive download (branch / commit) */
+    archiveRef() {
+      return this.currentRef || this.defaultBranch || ''
+    },
     gitCloneCommand() {
       return this.fullCloneUrl ? `git clone ${this.fullCloneUrl}` : ''
     },
@@ -1050,6 +1035,15 @@ export default {
         this.scheduleRefreshRootDocToc()
       }
     },
+    '$route.params.slug'() {
+      this.bindRouteContext(true)
+    },
+    '$route.params.repositoryId'(id) {
+      // beforeEach may attach id after slug-only navigation; reload when it arrives
+      if (this.parseRepositoryId(id) && this.parseRepositoryId(id) !== this.repositoryId) {
+        this.bindRouteContext(true)
+      }
+    },
     '$route.params.releaseId'() {
       this.syncReleaseRouteFromParams()
     },
@@ -1076,39 +1070,76 @@ export default {
     this.stopRootDocTocResize()
   },
   created() {
-    this.repositoryId = Number(this.$route.params.repositoryId)
-    if (this.$route.params.slug) this.repoName = String(this.$route.params.slug)
-    this.syncReleaseRouteFromParams()
-    this.syncCommitRouteFromParams()
-    this.syncBrowseQueryFromRoute()
-    this.init()
+    this.bindRouteContext(true)
   },
   methods: {
-    goBack() {
-      const { teamKey, projectKey } = this.$route.params
-      if (teamKey && projectKey) {
-        this.$router.push({ name: 'GitRepoList', params: { teamKey, projectKey } })
+    parseRepositoryId(value) {
+      const n = Number(value)
+      return Number.isFinite(n) && n > 0 ? n : null
+    },
+    async bindRouteContext(reload) {
+      const slug = this.$route.params.slug ? String(this.$route.params.slug) : ''
+      if (slug) this.repoName = slug
+      this.syncReleaseRouteFromParams()
+      this.syncCommitRouteFromParams()
+      this.syncBrowseQueryFromRoute()
+
+      let nextId = this.parseRepositoryId(this.$route.params.repositoryId)
+      // Same-route slug switches skip route beforeEnter; resolve from slug if needed
+      if (!nextId && slug) {
+        try {
+          const projectId = getCurrentProjectId() || this.repoProjectId
+          const repo = await resolveGitRepoByProjectAndSlug(projectId, slug)
+          nextId = this.parseRepositoryId(repo && repo.repositoryId)
+          if (nextId && this.$route.params) {
+            this.$route.params.repositoryId = String(nextId)
+          }
+        } catch (e) {
+          nextId = null
+        }
+      }
+
+      if (!nextId) {
+        this.repositoryId = null
+        this.resetBrowseContent()
         return
       }
-      this.$router.push({ path: '/project/git-repo' })
+      const changed = Number(this.repositoryId) !== nextId
+      this.repositoryId = nextId
+      if (reload || changed) {
+        this.init()
+      }
+    },
+    resetBrowseContent() {
+      this.currentPath = ''
+      this.viewMode = 'tree'
+      this.currentRef = null
+      this.branches = []
+      this.treeEntries = []
+      this.blob = null
+      this.commits = []
+      this.clearRootDocs()
+      this.sideTreeBootLoading = false
     },
     openBranchesPage() {
       if (!this.repositoryId) return
       this.$router.push(gitRepoBranchesRoute(this.$route)).catch(() => {})
     },
-    /** 提交详情（4.x 入口点击复用；勿删） */
+    /** 代码页「N 次提交」→ 提交列表（顶部无提交记录 Tab） */
+    openCommitsList() {
+      this.selectedCommitId = null
+      this.activeTab = 'commits'
+      this.$router.replace(gitRepoBrowseRoute(this.$route, { tab: 'commits' })).catch(() => {})
+    },
+    /** 提交详情入口（代码页最近提交 / 侧栏活动 / 提交列表） */
     openCommitDetail(commitId) {
       if (!commitId || !this.repositoryId) return
       this.selectedCommitId = commitId
-      this.activeTab = 'commits'
       this.$router.push(gitRepoCommitDetailRoute(this.$route, commitId)).catch(() => {})
     },
     syncBrowseQueryFromRoute() {
       if (this.$route.name !== 'GitRepoBrowse') return
-      const tab = this.$route.query.tab
-      if (tab === 'commits' || tab === 'code' || tab === 'releases') {
-        this.activeTab = tab
-      }
+      this.activeTab = resolveBrowseActiveTab(this.$route)
     },
     syncReleaseRouteFromParams() {
       const releaseId = this.$route.params.releaseId
@@ -1117,7 +1148,7 @@ export default {
         this.activeTab = 'releases'
         return
       }
-      if (this.$route.name === 'GitRepoBrowse' && this.activeTab !== 'releases') {
+      if (this.$route.name === 'GitRepoBrowse') {
         this.selectedReleaseId = null
       }
     },
@@ -1125,55 +1156,36 @@ export default {
       const commitId = this.$route.params.commitId
       if (commitId) {
         this.selectedCommitId = commitId
-        this.activeTab = 'commits'
         return
       }
-      if (this.$route.name === 'GitRepoBrowse' && this.activeTab !== 'commits') {
+      if (this.$route.name === 'GitRepoBrowse') {
         this.selectedCommitId = null
       }
     },
-    /** 点击顶部「发行版」/「提交记录」Tab：显示全部列表（含再次点击已激活 Tab） */
-    onBrowseTabClick(pane) {
-      const name = pane && (pane.paneName != null ? pane.paneName : (pane.props && pane.props.name))
+    /** Shell tab click: clear nested focus; optimistic pane switch on browse */
+    onShellTabClick(name) {
       if (name === 'releases') {
         this.clearReleaseFocus()
-      }
-      if (name === 'commits') {
-        this.clearCommitFocus()
-      }
-    },
-    onBrowseTabChange(tab) {
-      if (tab === 'pulls') {
-        this.$router.push(gitRepoPullsRoute(this.$route)).catch(() => {})
-        this.$nextTick(() => {
-          this.activeTab = 'code'
-        })
+        this.selectedCommitId = null
+        this.activeTab = 'releases'
         return
       }
-      if (tab === 'releases') {
-        this.clearCommitFocus()
-        return
-      }
-      if (tab === 'commits') {
-        this.clearReleaseFocus()
-        return
-      }
-      this.selectedReleaseId = null
-      this.selectedCommitId = null
-      if (this.$route.name === 'GitRepoReleaseDetail' || this.$route.name === 'GitRepoCommitDetail') {
-        this.$router.replace(gitRepoBrowseRoute(this.$route)).catch(() => {})
+      if (name === 'code') {
+        this.selectedReleaseId = null
+        this.selectedCommitId = null
       }
     },
     clearReleaseFocus() {
       this.selectedReleaseId = null
       if (this.$route.name === 'GitRepoReleaseDetail') {
-        this.$router.replace(gitRepoBrowseRoute(this.$route)).catch(() => {})
+        this.$router.replace(gitRepoBrowseRoute(this.$route, { tab: 'releases' })).catch(() => {})
       }
     },
     clearCommitFocus() {
       this.selectedCommitId = null
       if (this.$route.name === 'GitRepoCommitDetail') {
         this.$router.replace(gitRepoBrowseRoute(this.$route, { tab: 'commits' })).catch(() => {})
+        this.activeTab = 'commits'
       }
     },
     isLatestRelease(release) {
@@ -1205,7 +1217,7 @@ export default {
       this.selectedReleaseId = null
       this.loadReleases()
       if (this.$route.name === 'GitRepoReleaseDetail') {
-        this.$router.replace(gitRepoBrowseRoute(this.$route)).catch(() => {})
+        this.$router.replace(gitRepoBrowseRoute(this.$route, { tab: 'releases' })).catch(() => {})
       }
       this.activeTab = 'releases'
     },
@@ -1455,6 +1467,18 @@ export default {
     copyCloneUrl() {
       this.copyText(this.fullCloneUrl)
     },
+    downloadSourceZip() {
+      if (!this.repositoryId || !this.archiveRef || this.archiveDownloading) return
+      const slug = this.repoSlug || this.repoName || 'source'
+      const refLabel = String(this.archiveRef).replace(/[\\/]+/g, '-')
+      const fileName = `${slug}-${refLabel}.zip`
+      this.archiveDownloading = true
+      downloadGitRepoArchive(this.repositoryId, this.archiveRef, 'zip', fileName).catch(() => {
+        this.$modal.msgError(this.$t('git.repo.download-source-zip-failed'))
+      }).finally(() => {
+        this.archiveDownloading = false
+      })
+    },
     copyCurrentPath() {
       const path = this.currentBrowsePath
       if (!path) {
@@ -1483,11 +1507,20 @@ export default {
       this.$modal.msgWarning(this.$t('git.repo.write-coming-soon'))
     },
     init() {
+      if (!this.repositoryId) {
+        this.pageLoading = false
+        return
+      }
+      const seq = ++this.loadSeq
+      this.resetBrowseContent()
+      this.activeTab = resolveBrowseActiveTab(this.$route)
       this.pageLoading = true
       getGitRepo(this.repositoryId).then(response => {
+        if (seq !== this.loadSeq) return
         const repo = response.data || {}
         this.repoName = repo.name || this.repoName
         this.repoRemark = repo.remark || ''
+        this.repoVisibility = repo.visibility === 'public' ? 'public' : 'project'
         this.defaultBranch = repo.defaultBranch || ''
         this.repoSlug = repo.slug || ''
         this.repoProjectId = repo.projectId
@@ -1496,32 +1529,29 @@ export default {
         this.cloneUrlPath = repo.cloneUrl || ''
         this.loadProjectMembers(repo.projectId)
         this.loadReleases()
-        this.loadOpenPullCount()
       }).catch(() => {}).finally(() => {
-        this.pageLoading = false
+        if (seq === this.loadSeq) {
+          this.pageLoading = false
+        }
       })
-      this.loadBranches()
+      this.loadBranches(seq)
     },
-    loadOpenPullCount() {
+    loadBranches(seq) {
       if (!this.repositoryId) {
-        this.openPullCount = 0
+        this.branches = []
+        this.branchesLoading = false
         return
       }
-      listGitPullRequests(this.repositoryId, 'open').then(res => {
-        const list = res.data || []
-        this.openPullCount = Array.isArray(list) ? list.length : 0
-      }).catch(() => {
-        this.openPullCount = 0
-      })
-    },
-    loadBranches() {
+      const loadSeq = seq != null ? seq : this.loadSeq
       this.branchesLoading = true
       listGitRepoBranches(this.repositoryId).then(response => {
+        if (loadSeq !== this.loadSeq) return
         this.branches = response.data || []
         this.branchesLoading = false
-        const qRef = this.$route.query.ref
-        if (qRef) {
-          this.currentRef = String(qRef)
+        const names = this.branches.map(b => b && b.name).filter(Boolean)
+        const qRef = this.$route.query.ref ? String(this.$route.query.ref) : ''
+        if (qRef && names.includes(qRef)) {
+          this.currentRef = qRef
         } else {
           const current = this.branches.find(b => b.default) || this.branches[0]
           this.currentRef = current ? current.name : null
@@ -1530,7 +1560,12 @@ export default {
         this.loadCommits()
         this.loadContributors()
       }).catch(() => {
+        if (loadSeq !== this.loadSeq) return
         this.branchesLoading = false
+        this.branches = []
+        this.currentRef = null
+        this.treeEntries = []
+        this.clearRootDocs()
       })
     },
     onRefChange() {
@@ -1639,6 +1674,7 @@ export default {
     clearRootDocs() {
       this.rootDocTabs = []
       this.activeRootDocTab = ''
+      this.rootDocTabUserSelected = false
       this.rootDocCache = {}
       this.rootDocToc = []
     },
@@ -1653,10 +1689,19 @@ export default {
     rootDocTabLabel(fileName) {
       return String(fileName || '').replace(/\.(md|markdown|txt)$/i, '')
     },
+    onRootDocTabClick() {
+      this.rootDocTabUserSelected = true
+    },
+    preferredRootDocTabKey(tabs) {
+      const list = tabs || []
+      const readme = list.find(t => t && t.key === 'readme')
+      return readme ? readme.key : (list[0] && list[0].key) || ''
+    },
     syncRootDocsFromTree() {
       if (this.currentPath || this.viewMode !== 'tree') {
         this.rootDocTabs = []
         this.activeRootDocTab = ''
+        this.rootDocTabUserSelected = false
         return
       }
       const tabs = []
@@ -1679,9 +1724,9 @@ export default {
         })
       }
       this.rootDocTabs = tabs
-      if (!tabs.some(t => t.key === this.activeRootDocTab)) {
-        this.activeRootDocTab = tabs.length ? tabs[0].key : ''
-      }
+      this.rootDocTabUserSelected = false
+      // Always default to README when present (avoid LICENSE winning the load race)
+      this.activeRootDocTab = this.preferredRootDocTabKey(tabs)
       // 切换分支时清空旧内容缓存，按新 ref 重拉
       this.rootDocCache = {}
       tabs.forEach(tab => this.loadRootDocContent(tab.path))
@@ -1700,9 +1745,11 @@ export default {
         this.rootDocToc = []
         return
       }
-      if (!visible.some(t => t.key === this.activeRootDocTab)) {
-        this.activeRootDocTab = visible[0].key
+      // Keep manual selection only after user clicked a tab
+      if (this.rootDocTabUserSelected && visible.some(t => t.key === this.activeRootDocTab)) {
+        return
       }
+      this.activeRootDocTab = this.preferredRootDocTabKey(visible)
     },
     loadRootDocContent(path) {
       if (!path || !this.currentRef) return
@@ -1816,8 +1863,8 @@ export default {
 <style lang="scss" scoped>
 /* 使用 theme-dark.scss 全局语义色：--text-color-* / --card-bg / --border-color-* */
 .git-browse-page {
-  /* 与缺陷页一致：顶左右留白，底边不额外垫高，避免 AppMain flex 底部大块留白 */
-  padding: 20px 20px 0;
+  /* 与缺陷页顶左右一致；底部留少量间距，避免内容贴底 */
+  padding: 20px 20px 16px;
   box-sizing: border-box;
   color: var(--text-color-regular);
   /* 承接 AppMain 首子 flex + min-height:0；勿用 100vh-84 max-height（会与 padding-top 叠算产生底部空隙） */
@@ -1827,77 +1874,6 @@ export default {
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-.git-browse-top {
-  margin-bottom: 4px;
-}
-
-.git-browse-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.git-browse-title-icon {
-  color: var(--text-color-secondary);
-}
-
-.git-browse-repo-name {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-color-primary);
-}
-
-.git-browse-tabs {
-  margin-bottom: 12px;
-
-  :deep(.el-tabs__header) {
-    margin-bottom: 0;
-  }
-
-  :deep(.el-tabs__item.is-active) {
-    color: var(--el-color-primary);
-    font-weight: 600;
-  }
-
-  :deep(.el-tabs__active-bar) {
-    background-color: var(--el-color-primary);
-  }
-}
-
-.git-browse-tab-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-
-  .el-icon {
-    font-size: 14px;
-  }
-
-  .git-browse-tab-tag-icon {
-    font-size: 14px;
-  }
-}
-
-.git-browse-tab-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1;
-  color: var(--text-color-primary);
-  background: rgba(144, 147, 153, 0.45);
-}
-
-.git-browse-tabs :deep(.el-tabs__item.is-active) .git-browse-tab-count {
-  color: #141414;
-  background: var(--el-color-primary);
 }
 
 .git-browse-layout {
@@ -2153,13 +2129,15 @@ export default {
 .git-browse-meta-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 0;
+  gap: 6px;
+  height: var(--cat2bug-toolbar-control-height, 32px);
+  padding: 0 12px;
   font-size: 13px;
   color: var(--text-color-secondary);
 
   &:hover {
     color: var(--el-color-primary);
+    border-color: var(--el-color-primary);
   }
 }
 
@@ -2194,14 +2172,29 @@ export default {
   color: var(--text-color-regular);
 }
 
+.git-browse-clone-proto-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
 .git-browse-clone-proto {
   display: inline-block;
-  margin-bottom: 10px;
   padding-bottom: 6px;
   font-size: 13px;
   font-weight: 600;
   color: var(--el-color-primary);
   border-bottom: 2px solid var(--el-color-primary);
+}
+
+.git-browse-clone-zip {
+  flex-shrink: 0;
+  padding: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  font-size: 13px;
 }
 
 .git-browse-clone-row {
@@ -2210,9 +2203,24 @@ export default {
   align-items: center;
   margin-bottom: 14px;
 
-  .el-input {
+  .git-browse-clone-url {
     flex: 1 1 auto;
     min-width: 0;
+
+    :deep(.el-input__wrapper) {
+      height: var(--cat2bug-control-height, 32px) !important;
+      min-height: var(--cat2bug-control-height, 32px) !important;
+      box-sizing: border-box;
+    }
+  }
+
+  .git-browse-clone-copy {
+    flex-shrink: 0;
+    width: var(--cat2bug-control-height, 32px) !important;
+    height: var(--cat2bug-control-height, 32px) !important;
+    min-height: var(--cat2bug-control-height, 32px) !important;
+    padding: 0 !important;
+    box-sizing: border-box;
   }
 }
 
@@ -2353,6 +2361,7 @@ export default {
   color: var(--el-color-primary);
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
 
   &:hover {
     text-decoration: underline;

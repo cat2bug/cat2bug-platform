@@ -117,3 +117,19 @@ export function gitRepoReleaseDetailRoute(routeOrCtx, releaseId, query) {
 export function gitRepoCommitDetailRoute(routeOrCtx, commitId, query) {
   return withCtx('GitRepoCommitDetail', routeOrCtx, { commitId: String(commitId) }, query)
 }
+
+/**
+ * Browse page primary pane from route params / query.
+ * Used so `?tab=releases` (e.g. from Pull Request shell) is not lost on init.
+ * @param {{ params?: Record<string, string>, query?: Record<string, string> }|null|undefined} route
+ * @returns {'code'|'releases'|'commits'}
+ */
+export function resolveBrowseActiveTab(route) {
+  if (!route) return 'code'
+  const params = route.params || {}
+  if (params.releaseId) return 'releases'
+  if (params.commitId) return 'commits'
+  const tab = route.query && route.query.tab
+  if (tab === 'commits' || tab === 'releases' || tab === 'code') return tab
+  return 'code'
+}

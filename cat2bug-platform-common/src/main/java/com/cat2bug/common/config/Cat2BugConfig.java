@@ -60,6 +60,12 @@ public class Cat2BugConfig
         /** 相对 {@link Cat2BugConfig#profile} 的根目录名 */
         private String root = "git";
 
+        /**
+         * 从远端 URL 一次性导入（bare clone）超时秒数，默认 120。
+         * 对应配置项 {@code cat2bug.git.import-timeout-seconds}。
+         */
+        private int importTimeoutSeconds = 120;
+
         public String getRoot()
         {
             return root;
@@ -69,6 +75,16 @@ public class Cat2BugConfig
         {
             this.root = root;
             Cat2BugConfig.gitRoot = StringUtils.isEmpty(root) ? "git" : root;
+        }
+
+        public int getImportTimeoutSeconds()
+        {
+            return importTimeoutSeconds;
+        }
+
+        public void setImportTimeoutSeconds(int importTimeoutSeconds)
+        {
+            this.importTimeoutSeconds = importTimeoutSeconds > 0 ? importTimeoutSeconds : 120;
         }
     }
 

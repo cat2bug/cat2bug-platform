@@ -17,6 +17,7 @@ import { getCodeImg } from '@/api/login'
 import i18n from '@/utils/i18n/i18n'
 import { cancelColdBootComplete, installNProgressColdBootGuard, isColdBootPending, scheduleColdBootComplete } from '@/utils/bootstrap-progress'
 import { ensureProjectScopedContext } from '@/utils/project-scoped-guard'
+import { ensureGitRepoIdAttached, routeNeedsGitRepoId } from '@/utils/git-repo-route-guards'
 
 NProgress.configure({ showSpinner: false })
 installNProgressColdBootGuard(NProgress)
@@ -77,13 +78,33 @@ function handleUpgradeAwaitingReadyRoute(to, next) {
 }
 
 /**
+ * Inject repositoryId for code/:slug routes. Route `beforeEnter` does not re-run
+ * when only the slug param changes (repo switch), so this must live in beforeEach.
+ */
+function proceedAfterGitRepoId(to, next) {
+  if (!routeNeedsGitRepoId(to)) {
+    next()
+    return
+  }
+  ensureGitRepoIdAttached(to).then(result => {
+    if (result === 'ok') {
+      next()
+      return
+    }
+    next({ path: '/404', replace: true })
+  }).catch(() => {
+    next({ path: '/404', replace: true })
+  })
+}
+
+/**
  * After auth + dynamic routes are ready: align current project from path keys.
  * Keeps setup/upgrade/login flows untouched (only reached via proceedWithAuth).
  */
 function proceedAfterProjectContext(to, next) {
   ensureProjectScopedContext(to).then(result => {
     if (result === 'skip' || result === 'ok') {
-      next()
+      proceedAfterGitRepoId(to, next)
       return
     }
     if (result === 'switched') {

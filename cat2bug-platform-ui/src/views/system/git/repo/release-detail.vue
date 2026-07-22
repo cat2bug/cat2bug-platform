@@ -34,14 +34,16 @@
               effect="dark"
               class="git-release-detail__latest"
             >{{ $t('git.repo.release.latest') }}</el-tag>
-            <span
+            <a
               v-if="release.targetCommitId"
+              href="javascript:;"
               class="git-release-detail__commit"
               :title="release.targetCommitId"
+              @click.prevent="openCommitDetail"
             >
               <el-icon><Share /></el-icon>
               <span>{{ shortCommit(release.targetCommitId) }}</span>
-            </span>
+            </a>
           </div>
         </div>
       </aside>
@@ -152,6 +154,7 @@ import { MarkdownRenderer } from '@/components/Markdown'
 import { checkPermi } from '@/utils/permission'
 import { formatTime } from '@/utils/index'
 import { parseTime } from '@/utils/ruoyi'
+import { gitRepoCommitDetailRoute } from '@/utils/git-repo-routes'
 
 export default {
   name: 'GitRepoReleaseDetailPanel',
@@ -268,6 +271,11 @@ export default {
     shortCommit(id) {
       if (!id) return '—'
       return String(id).slice(0, 7)
+    },
+    openCommitDetail() {
+      const id = this.release && this.release.targetCommitId
+      if (!id) return
+      this.$router.push(gitRepoCommitDetailRoute(this.$route, id)).catch(() => {})
     },
     absoluteTime(t) {
       if (!t) return '—'
@@ -418,10 +426,21 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  padding: 0;
+  border: none;
+  background: transparent;
   font-family: Menlo, Consolas, monospace;
   font-size: 12px;
   font-weight: 500;
-  color: var(--text-color-secondary);
+  color: var(--el-color-primary);
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  &:hover {
+    color: var(--el-color-primary-light-3);
+    text-decoration: underline;
+  }
 }
 
 .git-release-detail__header {

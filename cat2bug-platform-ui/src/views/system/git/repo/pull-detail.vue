@@ -315,7 +315,7 @@ export default {
   width: 100%;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 20px 20px 0;
+  padding: 20px 20px 16px;
   box-sizing: border-box;
   color: var(--text-color-regular);
 }

@@ -4,9 +4,12 @@
       <el-page-header class="git-repo-shell__back" @back="goRepoList">
         <template #content>
           <div class="git-repo-shell__title">
-            <el-icon class="git-repo-shell__title-icon"><FolderOpened /></el-icon>
-            <span class="git-repo-shell__repo-name">{{ displayName }}</span>
-            <el-tag size="small" type="info" effect="plain">{{ $t('git.repo.private') }}</el-tag>
+            <git-repo-select
+              :repository-id="repositoryId"
+              :project-id="projectId"
+              :repo-name="repoName"
+              :visibility="visibility"
+            />
             <slot name="title-extra" />
           </div>
         </template>
@@ -17,14 +20,15 @@
     </div>
 
     <el-tabs
-      :model-value="activeTab"
+      :model-value="shellTab"
       class="git-repo-shell__tabs"
+      @tab-click="onTabClick"
       @tab-change="onTabChange"
     >
       <el-tab-pane name="code">
         <template #label>
           <span class="git-repo-shell__tab-label">
-            <el-icon><Document /></el-icon>
+            <svg-icon icon-class="code" class="git-repo-shell__tab-icon" />
             {{ $t('git.repo.tab.code') }}
           </span>
         </template>
@@ -32,17 +36,9 @@
       <el-tab-pane name="pulls">
         <template #label>
           <span class="git-repo-shell__tab-label">
-            <el-icon><Connection /></el-icon>
+            <git-branch-icon class="git-repo-shell__tab-icon" />
             {{ $t('git.repo.pr.title') }}
             <span v-if="openPullCount > 0" class="git-repo-shell__tab-count">{{ openPullCountLabel }}</span>
-          </span>
-        </template>
-      </el-tab-pane>
-      <el-tab-pane name="commits">
-        <template #label>
-          <span class="git-repo-shell__tab-label">
-            <el-icon><List /></el-icon>
-            {{ $t('git.repo.tab.commits') }}
           </span>
         </template>
       </el-tab-pane>
@@ -63,23 +59,64 @@
 </template>
 
 <script>
-import { Connection, Document, FolderOpened, List } from '@element-plus/icons-vue'
+import { h } from 'vue'
 import { listGitPullRequests } from '@/api/system/gitPullRequest'
 import {
   gitRepoBrowseRoute,
   gitRepoPullsRoute
 } from '@/utils/git-repo-routes'
 import GitTagIcon from './GitTagIcon.vue'
+import GitRepoSelect from '@/components/Git/GitRepoSelect'
+
+/** 与 browse 页分支按钮同源图标 */
+const GitBranchIcon = {
+  name: 'GitBranchIcon',
+  render() {
+    return h(
+      'svg',
+      {
+        viewBox: '0 0 24 24',
+        width: '1em',
+        height: '1em',
+        fill: 'none',
+        stroke: 'currentColor',
+        'stroke-width': '2',
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+        'aria-hidden': 'true',
+        class: this.$attrs.class
+      },
+      [
+        h('circle', { cx: '6', cy: '5', r: '2.5' }),
+        h('circle', { cx: '6', cy: '19', r: '2.5' }),
+        h('circle', { cx: '18', cy: '7', r: '2.5' }),
+        h('path', { d: 'M6 7.5v9' }),
+        h('path', { d: 'M8.5 5.5h2a5 5 0 0 1 5 5' })
+      ]
+    )
+  }
+}
+
+const SHELL_TABS = new Set(['code', 'pulls', 'releases'])
 
 export default {
   name: 'GitRepoShell',
-  components: { Connection, Document, FolderOpened, List, GitTagIcon },
+  components: { GitBranchIcon, GitTagIcon, GitRepoSelect },
+  emits: ['tab-click'],
   props: {
     repositoryId: {
       type: [Number, String],
-      required: true
+      default: null
+    },
+    projectId: {
+      type: [Number, String],
+      default: null
     },
     repoName: {
+      type: String,
+      default: ''
+    },
+    visibility: {
       type: String,
       default: ''
     },
@@ -94,8 +131,9 @@ export default {
     }
   },
   computed: {
-    displayName() {
-      return this.repoName || '-'
+    /** Map non-shell pages (branches / commits) onto the nearest primary tab */
+    shellTab() {
+      return SHELL_TABS.has(this.activeTab) ? this.activeTab : 'code'
     },
     openPullCountLabel() {
       return this.openPullCount > 99 ? '99+' : String(this.openPullCount)
@@ -136,16 +174,40 @@ export default {
       }
       this.$router.push({ path: '/project/git-repo' }).catch(() => {})
     },
+    tabNameFromPane(pane) {
+      if (!pane) return ''
+      if (pane.paneName != null) return String(pane.paneName)
+      if (pane.props && pane.props.name != null) return String(pane.props.name)
+      return ''
+    },
+    onTabClick(pane) {
+      const name = this.tabNameFromPane(pane)
+      if (name) this.$emit('tab-click', name)
+    },
+    isPlainCodeBrowse() {
+      const route = this.$route
+      return route.name === 'GitRepoBrowse'
+        && !route.query.tab
+        && !route.params.releaseId
+        && !route.params.commitId
+    },
+    isReleasesBrowse() {
+      return this.$route.name === 'GitRepoBrowse' && this.$route.query.tab === 'releases'
+    },
     onTabChange(tab) {
-      if (!this.repositoryId || tab === this.activeTab) return
+      if (!this.repositoryId || !tab) return
       if (tab === 'pulls') {
+        if (this.shellTab === 'pulls') return
         this.$router.push(gitRepoPullsRoute(this.$route)).catch(() => {})
         return
       }
-      if (tab === 'commits' || tab === 'releases') {
-        this.$router.push(gitRepoBrowseRoute(this.$route, { tab })).catch(() => {})
+      if (tab === 'releases') {
+        if (this.isReleasesBrowse()) return
+        this.$router.push(gitRepoBrowseRoute(this.$route, { tab: 'releases' })).catch(() => {})
         return
       }
+      // code: leave commits/release detail / releases query back to plain browse
+      if (this.isPlainCodeBrowse()) return
       this.$router.push(gitRepoBrowseRoute(this.$route)).catch(() => {})
     }
   }
@@ -161,16 +223,8 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-}
-
-.git-repo-shell__title-icon {
-  color: var(--text-color-secondary);
-}
-
-.git-repo-shell__repo-name {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-color-primary);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .git-repo-shell__tabs {
@@ -194,6 +248,13 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.git-repo-shell__tab-icon {
+  font-size: 14px;
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
 }
 
 .git-repo-shell__tab-tag {

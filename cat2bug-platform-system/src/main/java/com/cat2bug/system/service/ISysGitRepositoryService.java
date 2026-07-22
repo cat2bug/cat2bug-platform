@@ -3,6 +3,9 @@ package com.cat2bug.system.service;
 import java.util.List;
 
 import com.cat2bug.system.domain.SysGitRepository;
+import com.cat2bug.system.domain.git.SysGitRemoteListRequest;
+import com.cat2bug.system.domain.git.SysGitRemoteRepository;
+import com.cat2bug.system.domain.git.SysGitRepositoryImportRequest;
 
 /**
  * 项目代码仓库Service接口
@@ -74,4 +77,21 @@ public interface ISysGitRepositoryService
      * @return 影响行数
      */
     public int collectSysGitRepository(Long repositoryId, boolean collect);
+
+    /**
+     * 从远端 URL 一次性导入为本地 bare 仓：先 clone 成功再落库；失败 wipe 磁盘且不插入。
+     * 凭据仅请求作用域，不持久化。
+     *
+     * @param request 公共元数据 + sourceUrl + 可选 username/token
+     * @return 创建后的仓库（与新增空白仓同形）
+     */
+    public SysGitRepository importSysGitRepository(SysGitRepositoryImportRequest request);
+
+    /**
+     * 使用会话内 PAT 列远端仓库（GitHub / GitLab / Gitee）；token 不持久化。
+     *
+     * @param request provider + token + 可选 GitLab host
+     * @return 仓库摘要列表
+     */
+    public List<SysGitRemoteRepository> listRemoteRepositories(SysGitRemoteListRequest request);
 }

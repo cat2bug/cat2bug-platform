@@ -5,7 +5,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import com.cat2bug.common.config.Cat2BugConfig;
 import com.cat2bug.common.core.domain.entity.SysRole;
 import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.common.utils.DateUtils;
@@ -19,12 +26,17 @@ import org.springframework.transaction.annotation.Transactional;
 import com.cat2bug.system.domain.SysGitRepository;
 import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.domain.SysUserGitRepository;
+import com.cat2bug.system.domain.git.SysGitRemoteListRequest;
+import com.cat2bug.system.domain.git.SysGitRemoteRepository;
+import com.cat2bug.system.domain.git.SysGitRepositoryImportRequest;
 import com.cat2bug.system.mapper.SysGitRepositoryMapper;
 import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysRoleMapper;
 import com.cat2bug.system.mapper.SysUserGitRepositoryMapper;
 import com.cat2bug.system.service.ISysGitRepositoryService;
+import com.cat2bug.system.service.git.GitImportUrlValidator;
 import com.cat2bug.system.service.git.GitPathValidator;
+import com.cat2bug.system.service.git.GitRemoteRepositoryClient;
 import com.cat2bug.system.service.git.JGitBareRepositoryHelper;
 
 /**
@@ -75,6 +87,12 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
 
     @Autowired
     private JGitBareRepositoryHelper jGitBareRepositoryHelper;
+
+    @Autowired
+    private GitRemoteRepositoryClient gitRemoteRepositoryClient;
+
+    @Autowired
+    private Cat2BugConfig cat2BugConfig;
 
     /**
      * 查询仓库（要求当前用户在该仓库所属项目具备 pull 及以上权限）
@@ -153,21 +171,10 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         Long projectId = sysGitRepository.getProjectId();
         assertManage(projectId);
 
-        String rawSlug = sysGitRepository.getSlug();
-        if (StringUtils.isEmpty(rawSlug))
-        {
-            rawSlug = gitPathValidator.suggestSlugFromName(sysGitRepository.getName());
-        }
-        String slug = gitPathValidator.validateSlug(rawSlug);
-        if (sysGitRepositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(projectId, slug) != null)
-        {
-            throw new ServiceException(MessageUtils.message("git.repo.slug-duplicate"));
-        }
-
-        SysProject project = requireProjectWithPathKeys(projectId);
-        // 磁盘路径由系统按 teamKey/projectKey/slug 生成，与 Clone URL 对齐；忽略客户端传入的 diskPath
-        String diskPath = gitPathValidator.buildDefaultDiskPath(project.getTeamKey(), project.getProjectKey(), slug);
-        diskPath = gitPathValidator.resolveStoredDiskPath(diskPath);
+        PreparedRepositoryPaths prepared = prepareNewRepositoryPaths(projectId, sysGitRepository.getName(),
+            sysGitRepository.getSlug());
+        String diskPath = prepared.diskPath;
+        String slug = prepared.slug;
         gitPathValidator.ensureParentWritable(diskPath);
 
         String defaultBranch = StringUtils.isNotEmpty(sysGitRepository.getDefaultBranch())
@@ -202,6 +209,192 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
             throw e;
         }
         return toInsert;
+    }
+
+    /**
+     * 从远端一次性导入：校验 URL → slug 唯一 → 限时 bare clone → 成功后才插入元数据；
+     * 失败 wipe 磁盘且不落库。username/token 仅用于当次 clone，不写入实体。
+     */
+    @Override
+    @Transactional
+    public SysGitRepository importSysGitRepository(SysGitRepositoryImportRequest request)
+    {
+        if (request == null || request.getProjectId() == null)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.project-id-required"));
+        }
+        Long projectId = request.getProjectId();
+        assertManage(projectId);
+
+        String sourceUrl = GitImportUrlValidator.validateCloneUrl(request.getSourceUrl());
+        PreparedRepositoryPaths prepared = prepareNewRepositoryPaths(projectId, request.getName(), request.getSlug());
+        String diskPath = prepared.diskPath;
+        String slug = prepared.slug;
+        gitPathValidator.ensureParentWritable(diskPath);
+
+        // 凭据仅局部变量，不进入 toInsert
+        String username = request.getUsername();
+        String token = request.getToken();
+
+        try
+        {
+            cloneWithTimeout(sourceUrl, diskPath, username, token);
+        }
+        catch (RuntimeException e)
+        {
+            safeWipe(diskPath);
+            throw e;
+        }
+
+        String defaultBranch = StringUtils.isNotEmpty(request.getDefaultBranch())
+            ? request.getDefaultBranch()
+            : jGitBareRepositoryHelper.resolveDefaultBranch(diskPath);
+        if (StringUtils.isEmpty(defaultBranch))
+        {
+            defaultBranch = DEFAULT_BRANCH;
+        }
+        String visibility = normalizeVisibility(request.getVisibility());
+
+        SysGitRepository toInsert = new SysGitRepository();
+        toInsert.setProjectId(projectId);
+        toInsert.setName(StringUtils.isNotEmpty(request.getName()) ? request.getName() : slug);
+        toInsert.setSlug(slug);
+        toInsert.setDiskPath(diskPath);
+        toInsert.setDefaultBranch(defaultBranch);
+        toInsert.setVisibility(visibility);
+        toInsert.setRemark(request.getRemark());
+        toInsert.setCreateBy(SecurityUtils.getUsername());
+        toInsert.setCreateTime(DateUtils.getNowDate());
+        toInsert.setUpdateBy(SecurityUtils.getUsername());
+        toInsert.setUpdateTime(DateUtils.getNowDate());
+
+        try
+        {
+            int rows = sysGitRepositoryMapper.insertSysGitRepository(toInsert);
+            if (rows <= 0)
+            {
+                throw new ServiceException(MessageUtils.message("git.repo.insert-failed"));
+            }
+        }
+        catch (RuntimeException e)
+        {
+            safeWipe(diskPath);
+            throw e;
+        }
+        return toInsert;
+    }
+
+    /**
+     * 列远端仓（manage 权限不绑定 projectId：入口层已有 manage 菜单权限；
+     * 此处要求 token 非空，由 {@link GitRemoteRepositoryClient} 完成出站调用）。
+     * <p>
+     * 为与「导入同属 manage」一致，调用方须已通过 {@code @PreAuthorize}；
+     * 本方法不再二次校验项目角色（列仓无 projectId）。
+     */
+    @Override
+    public List<SysGitRemoteRepository> listRemoteRepositories(SysGitRemoteListRequest request)
+    {
+        return gitRemoteRepositoryClient.listRepositories(request);
+    }
+
+    /**
+     * 校验 slug 格式与项目内唯一性，并计算默认磁盘路径（与空白新建共用）。
+     */
+    private PreparedRepositoryPaths prepareNewRepositoryPaths(Long projectId, String name, String rawSlugInput)
+    {
+        String rawSlug = rawSlugInput;
+        if (StringUtils.isEmpty(rawSlug))
+        {
+            rawSlug = gitPathValidator.suggestSlugFromName(name);
+        }
+        String slug = gitPathValidator.validateSlug(rawSlug);
+        if (sysGitRepositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(projectId, slug) != null)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.slug-duplicate"));
+        }
+
+        SysProject project = requireProjectWithPathKeys(projectId);
+        String diskPath = gitPathValidator.buildDefaultDiskPath(project.getTeamKey(), project.getProjectKey(), slug);
+        diskPath = gitPathValidator.resolveStoredDiskPath(diskPath);
+        return new PreparedRepositoryPaths(slug, diskPath);
+    }
+
+    private void cloneWithTimeout(String sourceUrl, String diskPath, String username, String token)
+    {
+        int timeoutSeconds = resolveImportTimeoutSeconds();
+        ExecutorService executor = Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r, "git-repo-import-clone");
+            t.setDaemon(true);
+            return t;
+        });
+        Future<?> future = executor.submit(() ->
+            jGitBareRepositoryHelper.cloneBareRepository(sourceUrl, diskPath, username, token));
+        try
+        {
+            future.get(timeoutSeconds, TimeUnit.SECONDS);
+        }
+        catch (TimeoutException e)
+        {
+            future.cancel(true);
+            throw new ServiceException(MessageUtils.message("git.repo.import.timeout"));
+        }
+        catch (ExecutionException e)
+        {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            if (cause instanceof ServiceException)
+            {
+                throw (ServiceException) cause;
+            }
+            if (cause instanceof RuntimeException)
+            {
+                throw (RuntimeException) cause;
+            }
+            throw new ServiceException(MessageUtils.message("git.repo.import.clone-failed"))
+                .setDetailMessage(cause.getClass().getSimpleName());
+        }
+        catch (InterruptedException e)
+        {
+            Thread.currentThread().interrupt();
+            future.cancel(true);
+            throw new ServiceException(MessageUtils.message("git.repo.import.clone-failed"));
+        }
+        finally
+        {
+            executor.shutdownNow();
+        }
+    }
+
+    private int resolveImportTimeoutSeconds()
+    {
+        if (cat2BugConfig != null && cat2BugConfig.getGit() != null)
+        {
+            return cat2BugConfig.getGit().getImportTimeoutSeconds();
+        }
+        return 120;
+    }
+
+    private void safeWipe(String diskPath)
+    {
+        try
+        {
+            jGitBareRepositoryHelper.wipeBareRepository(diskPath);
+        }
+        catch (RuntimeException ignored)
+        {
+            // 清理失败不掩盖原始导入错误
+        }
+    }
+
+    private static final class PreparedRepositoryPaths
+    {
+        private final String slug;
+        private final String diskPath;
+
+        private PreparedRepositoryPaths(String slug, String diskPath)
+        {
+            this.slug = slug;
+            this.diskPath = diskPath;
+        }
     }
 
     /**

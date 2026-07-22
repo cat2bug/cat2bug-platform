@@ -128,6 +128,16 @@
       <el-empty v-else-if="!loading" :description="$t('git.repo.empty')" />
     </div>
 
+    <!-- 新建 / 导入（共享对话框） -->
+    <git-repo-create-dialog
+      v-model="createOpen"
+      :project-id="listProjectId"
+      :team-key="pathTeamKey"
+      :project-key="pathProjectKey"
+      @success="onCreateSuccess"
+    />
+
+    <!-- 编辑 / 设置（保留原对话框） -->
     <el-dialog
       :title="title"
       v-model="open"
@@ -194,10 +204,11 @@
 
 <script>
 import { FolderOpened, View, CopyDocument, Setting, Lock, Unlock, Document } from '@element-plus/icons-vue'
-import { listGitRepo, addGitRepo, updateGitRepo, delGitRepo, collectGitRepo } from '@/api/system/gitRepo'
+import { listGitRepo, updateGitRepo, delGitRepo, collectGitRepo } from '@/api/system/gitRepo'
 import { getProject } from '@/api/system/project'
 import ProjectLabel from '@/components/Project/ProjectLabel'
 import StarSwitch from '@/components/StarSwitch'
+import GitRepoCreateDialog from '@/components/Git/GitRepoCreateDialog'
 import { getCurrentProjectId } from '@/utils/store-context'
 import { formatTime } from '@/utils/index'
 import { parseTime } from '@/utils/ruoyi'
@@ -206,11 +217,23 @@ const SLUG_PATTERN = /^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?$/
 
 export default {
   name: 'GitRepo',
-  components: { ProjectLabel, StarSwitch, FolderOpened, View, CopyDocument, Setting, Lock, Unlock, Document },
+  components: {
+    ProjectLabel,
+    StarSwitch,
+    GitRepoCreateDialog,
+    FolderOpened,
+    View,
+    CopyDocument,
+    Setting,
+    Lock,
+    Unlock,
+    Document
+  },
   data() {
     return {
       loading: true,
       repoList: [],
+      createOpen: false,
       open: false,
       title: '',
       form: {},
@@ -232,6 +255,9 @@ export default {
     }
   },
   computed: {
+    listProjectId() {
+      return getCurrentProjectId()
+    },
     pathPrefixDisplay() {
       if (this.pathTeamKey && this.pathProjectKey) {
         return `/${this.pathTeamKey}/${this.pathProjectKey}/code/`
@@ -451,11 +477,12 @@ export default {
       this.reset()
     },
     handleAdd() {
-      this.reset()
       this.ensurePathKeys().finally(() => {
-        this.open = true
-        this.title = this.$t('git.repo.new')
+        this.createOpen = true
       })
+    },
+    onCreateSuccess() {
+      this.getList()
     },
     handleUpdate(row) {
       this.reset()
@@ -532,10 +559,9 @@ export default {
         visibility: this.form.visibility === 'public' ? 'public' : 'project',
         remark: this.form.remark
       }
-      const request = isEdit ? updateGitRepo(payload) : addGitRepo(payload)
-      request.then(response => {
-        this.$modal.msgSuccess(isEdit ? this.$t('modify-success') : this.$t('create-success'))
-        if (isEdit && response && response.cloneUrlChanged) {
+      updateGitRepo(payload).then(response => {
+        this.$modal.msgSuccess(this.$t('modify-success'))
+        if (response && response.cloneUrlChanged) {
           this.$modal.msgWarning(response.message || this.$t('git.repo.slug-changed-hint'))
         }
         this.open = false
