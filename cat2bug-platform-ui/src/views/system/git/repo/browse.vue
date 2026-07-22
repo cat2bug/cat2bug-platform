@@ -755,6 +755,12 @@ import {
   updateGitRepoRelease,
   uploadGitRepoReleaseAsset
 } from '@/api/system/gitRepo'
+import {
+  gitRepoBrowseRoute,
+  gitRepoBranchesRoute,
+  gitRepoPullsRoute,
+  gitRepoReleaseDetailRoute
+} from '@/utils/git-repo-routes'
 import { listMemberOfProject } from '@/api/system/project'
 import { listGitPullRequests } from '@/api/system/gitPullRequest'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
@@ -1071,7 +1077,7 @@ export default {
   },
   created() {
     this.repositoryId = Number(this.$route.params.repositoryId)
-    if (this.$route.query.name) this.repoName = String(this.$route.query.name)
+    if (this.$route.params.slug) this.repoName = String(this.$route.params.slug)
     this.syncReleaseRouteFromParams()
     this.syncCommitRouteFromParams()
     this.syncBrowseQueryFromRoute()
@@ -1079,26 +1085,23 @@ export default {
   },
   methods: {
     goBack() {
+      const { teamKey, projectKey } = this.$route.params
+      if (teamKey && projectKey) {
+        this.$router.push({ name: 'GitRepoList', params: { teamKey, projectKey } })
+        return
+      }
       this.$router.push({ path: '/project/git-repo' })
     },
     openBranchesPage() {
       if (!this.repositoryId) return
-      this.$router.push({
-        name: 'GitRepoBranches',
-        params: { repositoryId: String(this.repositoryId) },
-        query: this.repoName ? { name: this.repoName } : {}
-      }).catch(() => {})
+      this.$router.push(gitRepoBranchesRoute(this.$route)).catch(() => {})
     },
     /** 提交详情（4.x 入口点击复用；勿删） */
     openCommitDetail(commitId) {
       if (!commitId || !this.repositoryId) return
       this.selectedCommitId = commitId
       this.activeTab = 'commits'
-      const query = this.repoName ? { name: this.repoName } : {}
-      this.$router.push({
-        ...gitRepoCommitDetailRoute(this.repositoryId, commitId),
-        query
-      }).catch(() => {})
+      this.$router.push(gitRepoCommitDetailRoute(this.$route, commitId)).catch(() => {})
     },
     syncBrowseQueryFromRoute() {
       if (this.$route.name !== 'GitRepoBrowse') return
@@ -1141,11 +1144,7 @@ export default {
     },
     onBrowseTabChange(tab) {
       if (tab === 'pulls') {
-        this.$router.push({
-          name: 'GitRepoPullRequests',
-          params: { repositoryId: String(this.repositoryId) },
-          query: this.repoName ? { name: this.repoName } : {}
-        }).catch(() => {})
+        this.$router.push(gitRepoPullsRoute(this.$route)).catch(() => {})
         this.$nextTick(() => {
           this.activeTab = 'code'
         })
@@ -1162,29 +1161,19 @@ export default {
       this.selectedReleaseId = null
       this.selectedCommitId = null
       if (this.$route.name === 'GitRepoReleaseDetail' || this.$route.name === 'GitRepoCommitDetail') {
-        this.$router.replace({
-          name: 'GitRepoBrowse',
-          params: { repositoryId: String(this.repositoryId) }
-        }).catch(() => {})
+        this.$router.replace(gitRepoBrowseRoute(this.$route)).catch(() => {})
       }
     },
     clearReleaseFocus() {
       this.selectedReleaseId = null
       if (this.$route.name === 'GitRepoReleaseDetail') {
-        this.$router.replace({
-          name: 'GitRepoBrowse',
-          params: { repositoryId: String(this.repositoryId) }
-        }).catch(() => {})
+        this.$router.replace(gitRepoBrowseRoute(this.$route)).catch(() => {})
       }
     },
     clearCommitFocus() {
       this.selectedCommitId = null
       if (this.$route.name === 'GitRepoCommitDetail') {
-        this.$router.replace({
-          name: 'GitRepoBrowse',
-          params: { repositoryId: String(this.repositoryId) },
-          query: { tab: 'commits', ...(this.repoName ? { name: this.repoName } : {}) }
-        }).catch(() => {})
+        this.$router.replace(gitRepoBrowseRoute(this.$route, { tab: 'commits' })).catch(() => {})
       }
     },
     isLatestRelease(release) {
@@ -1210,22 +1199,13 @@ export default {
       if (!release || !release.releaseId || !this.repositoryId) return
       this.selectedReleaseId = release.releaseId
       this.activeTab = 'releases'
-      this.$router.push({
-        name: 'GitRepoReleaseDetail',
-        params: {
-          repositoryId: String(this.repositoryId),
-          releaseId: String(release.releaseId)
-        }
-      }).catch(() => {})
+      this.$router.push(gitRepoReleaseDetailRoute(this.$route, release.releaseId)).catch(() => {})
     },
     onReleaseDeleted() {
       this.selectedReleaseId = null
       this.loadReleases()
       if (this.$route.name === 'GitRepoReleaseDetail') {
-        this.$router.replace({
-          name: 'GitRepoBrowse',
-          params: { repositoryId: String(this.repositoryId) }
-        }).catch(() => {})
+        this.$router.replace(gitRepoBrowseRoute(this.$route)).catch(() => {})
       }
       this.activeTab = 'releases'
     },
@@ -1836,14 +1816,14 @@ export default {
 <style lang="scss" scoped>
 /* 使用 theme-dark.scss 全局语义色：--text-color-* / --card-bg / --border-color-* */
 .git-browse-page {
-  padding: 16px 20px 24px;
+  /* 与缺陷页一致：顶左右留白，底边不额外垫高，避免 AppMain flex 底部大块留白 */
+  padding: 20px 20px 0;
   box-sizing: border-box;
   color: var(--text-color-regular);
-  /* 承接 AppMain 首子 flex + min-height:0，由本页纵向滚动，避免 README 过长被裁切 */
+  /* 承接 AppMain 首子 flex + min-height:0；勿用 100vh-84 max-height（会与 padding-top 叠算产生底部空隙） */
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  max-height: calc(100vh - 84px);
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;

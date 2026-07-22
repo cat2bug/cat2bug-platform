@@ -177,7 +177,7 @@ export default {
     return {
       repositoryId: Number(this.$route.params.repositoryId),
       number: Number(this.$route.params.number),
-      repoName: String(this.$route.query.name || ''),
+      repoName: String(this.$route.params.slug || ''),
       projectId: null,
       projectMembers: [],
       pull: null, commits: [], files: [], comments: [], activeTab: 'commits',
@@ -251,10 +251,7 @@ export default {
     shortId(id) { return String(id || '').slice(0, 7) },
     openCommitDetail(commitId) {
       if (!commitId || !this.repositoryId) return
-      this.$router.push({
-        ...gitRepoCommitDetailRoute(this.repositoryId, commitId),
-        query: this.repoName ? { name: this.repoName } : {}
-      }).catch(() => {})
+      this.$router.push(gitRepoCommitDetailRoute(this.$route, commitId)).catch(() => {})
     },
     relativeTime(value) { if (!value) return '—'; const time = new Date(value).getTime(); return Number.isNaN(time) ? (parseTime(value) || '—') : formatTime(time) },
     stateType(state) { return state === 'open' ? 'success' : (state === 'merged' ? 'warning' : 'info') },
@@ -312,7 +309,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.git-pr-detail { max-height: calc(100vh - 84px); overflow: auto; padding: 16px 20px 24px; color: var(--text-color-regular); }
+.git-pr-detail {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 20px 20px 0;
+  box-sizing: border-box;
+  color: var(--text-color-regular);
+}
 .git-pr-detail__sep { color: var(--text-color-secondary); font-weight: 400; }
 .git-pr-detail__number { padding: 2px 6px; border-radius: 4px; background: var(--bg-color-block); font-size: 13px; color: var(--text-color-secondary); }
 .git-pr-detail__summary {

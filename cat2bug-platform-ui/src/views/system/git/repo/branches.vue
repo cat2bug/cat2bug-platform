@@ -171,6 +171,7 @@ import {
 import { checkPermi } from '@/utils/permission'
 import { formatTime } from '@/utils/index'
 import { parseTime } from '@/utils/ruoyi'
+import { gitRepoBrowseRoute, gitRepoPullNewRoute } from '@/utils/git-repo-routes'
 import GitRepoShell from './GitRepoShell.vue'
 
 export default {
@@ -211,7 +212,7 @@ export default {
   },
   created() {
     this.repositoryId = Number(this.$route.params.repositoryId)
-    this.repoName = String(this.$route.query.name || '')
+    this.repoName = String(this.$route.params.slug || '')
     this.init()
   },
   beforeUnmount() {
@@ -220,25 +221,36 @@ export default {
   methods: {
     init() {
       this.pageLoading = true
-      getGitRepo(this.repositoryId).then(response => {
-        const repo = response.data || {}
-        this.repoName = repo.name || this.repoName
-        this.defaultBranch = repo.defaultBranch || ''
+      Promise.all([
+        getGitRepo(this.repositoryId).then(response => {
+          const repo = response.data || {}
+          this.repoName = repo.name || this.repoName
+          return repo.defaultBranch || ''
+        }).catch(() => ''),
+        listGitRepoBranches(this.repositoryId).then(response => {
+          this.allBranches = response.data || []
+          return this.allBranches
+        }).catch(() => {
+          this.allBranches = []
+          return []
+        })
+      ]).then(([metaDefault, branches]) => {
+        const liveDefault = (branches || []).find(branch => branch && branch.default)
+        // Prefer live refs; metadata may still be master while HEAD is main
+        this.defaultBranch = (liveDefault && liveDefault.name)
+          || ((branches || []).some(b => b && b.name === metaDefault) ? metaDefault : '')
+          || metaDefault
+          || ''
       }).finally(() => {
         this.pageLoading = false
       })
       this.loadBranches()
-      this.loadAllBranches()
     },
     openBranchBrowse(branch) {
       if (!branch || !branch.name || !this.repositoryId) return
       this.$router.push({
-        name: 'GitRepoBrowse',
-        params: { repositoryId: String(this.repositoryId) },
-        query: {
-          ref: branch.name,
-          ...(this.repoName ? { name: this.repoName } : {})
-        }
+        ...gitRepoBrowseRoute(this.$route),
+        query: { ref: branch.name }
       }).catch(() => {})
     },
     scheduleSearch() {
@@ -287,7 +299,12 @@ export default {
       return `${branch.authorName || branch.authorEmail || '—'} · ${parseTime(branch.commitTime) || branch.commitTime}`
     },
     openCreateDialog() {
-      this.createForm.fromRef = this.defaultBranch || ''
+      const live = this.defaultBranchInfo && this.defaultBranchInfo.name
+      const fromRef = live
+        || (this.allBranches.some(b => b && b.name === this.defaultBranch) ? this.defaultBranch : '')
+        || (this.allBranches[0] && this.allBranches[0].name)
+        || ''
+      this.createForm.fromRef = fromRef
       this.createDialogVisible = true
     },
     resetCreateForm() {
@@ -297,10 +314,15 @@ export default {
     submitCreate() {
       this.$refs.createFormRef.validate(valid => {
         if (!valid) return
+        const fromRef = (this.createForm.fromRef || '').trim()
+        if (fromRef && !this.allBranches.some(b => b && b.name === fromRef)) {
+          this.$modal.msgError(this.$t('git.repo.branches.from-ref-missing'))
+          return
+        }
         this.createSubmitting = true
         const data = {
           name: this.createForm.name.trim(),
-          ...(this.createForm.fromRef ? { fromRef: this.createForm.fromRef } : {})
+          ...(fromRef ? { fromRef } : {})
         }
         createGitRepoBranch(this.repositoryId, data).then(() => {
           this.$modal.msgSuccess(this.$t('git.repo.branches.create-success'))
@@ -343,7 +365,7 @@ export default {
     createPullRequest(branch) {
       if (!branch || !branch.name || !this.defaultBranch) return
       this.$router.push({
-        path: `/project/git-repo/browse/${this.repositoryId}/pulls/new`,
+        ...gitRepoPullNewRoute(this.$route),
         query: {
           source: branch.name,
           target: this.defaultBranch
@@ -356,10 +378,13 @@ export default {
 
 <style lang="scss" scoped>
 .git-branches-page {
+  flex: 1 1 auto;
   min-height: 0;
-  max-height: calc(100vh - 84px);
+  width: 100%;
+  overflow-x: hidden;
   overflow-y: auto;
-  padding: 16px 20px 24px;
+  padding: 20px 20px 0;
+  box-sizing: border-box;
   color: var(--text-color-regular);
 }
 

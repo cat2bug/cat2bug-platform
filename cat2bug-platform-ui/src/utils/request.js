@@ -23,13 +23,23 @@ const service = axios.create({
   timeout: 60000
 })
 
-/** 登录/安装等页：会话失效时不再弹「重新登录」 */
-function isAuthWhitePath() {
-  const hash = window.location.hash || ''
-  const path = (hash.replace(/^#/, '').split('?')[0] || '/').trim() || '/'
+/** 登录/安装等页：会话失效时不再弹「重新登录」（History path，无 `#`） */
+export function isAuthWhitePath(pathname) {
+  const raw = (pathname || window.location.pathname || '/').trim() || '/'
+  const path = raw.split('?')[0] || '/'
   return ['/login', '/register', '/setup', '/upgrade'].some(
     (p) => path === p || path.startsWith(p + '/')
   )
+}
+
+/** 进入登录等白名单页时关闭残留的「登录状态已过期」弹窗 */
+export function dismissReloginPrompt() {
+  isRelogin.show = false
+  try {
+    ElMessageBox.close()
+  } catch (_e) {
+    /* ignore */
+  }
 }
 
 // request拦截器
@@ -103,14 +113,21 @@ service.interceptors.response.use(res => {
       )
       if (!skipReloginPrompt && !isRelogin.show) {
         isRelogin.show = true;
-        ElMessageBox.confirm(i18n.global.t('http.login-expired').toString(), i18n.global.t('prompted').toString(), { confirmButtonText: i18n.global.t('login-again').toString(), cancelButtonText: i18n.global.t('cancel').toString(), type: 'warning' }).then(() => {
-          isRelogin.show = false;
-          useUserStore(pinia).LogOut().then(() => {
-            location.href = '/index';
-          })
-        }).catch(() => {
-          isRelogin.show = false;
-        });
+        // 延迟一拍：冷启动/守卫可能已跳到登录页，避免弹窗盖在登录上
+        Promise.resolve().then(() => {
+          if (isAuthWhitePath()) {
+            dismissReloginPrompt()
+            return
+          }
+          ElMessageBox.confirm(i18n.global.t('http.login-expired').toString(), i18n.global.t('prompted').toString(), { confirmButtonText: i18n.global.t('login-again').toString(), cancelButtonText: i18n.global.t('cancel').toString(), type: 'warning' }).then(() => {
+            isRelogin.show = false;
+            useUserStore(pinia).LogOut().then(() => {
+              location.href = '/index';
+            })
+          }).catch(() => {
+            isRelogin.show = false;
+          });
+        })
       }
       return Promise.reject(i18n.global.t('http.invalid-session'))
     } else if (code > 10000) {

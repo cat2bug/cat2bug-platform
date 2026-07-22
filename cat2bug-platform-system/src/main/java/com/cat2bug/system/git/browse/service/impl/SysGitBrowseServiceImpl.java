@@ -177,14 +177,20 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
         try (Repository repository = openRepository(repo.getDiskPath()))
         {
             String source = StringUtils.isNotBlank(fromRef) ? fromRef.trim() : repo.getDefaultBranch();
+            boolean usedMetaDefault = StringUtils.isBlank(fromRef);
             if (StringUtils.isBlank(source))
             {
                 throw new ServiceException(MessageUtils.message("git.repo.branch.source-required"), HttpStatus.BAD_REQUEST);
             }
             ObjectId sourceId = repository.resolve(source);
+            // Metadata default / symbolic HEAD may still name master while only main exists.
+            if (sourceId == null && usedMetaDefault)
+            {
+                sourceId = resolveFallbackBranchTip(repository);
+            }
             if (sourceId == null)
             {
-                throw new ServiceException(MessageUtils.message("git.repo.branch.source-not-found"), HttpStatus.NOT_FOUND);
+                throw new ServiceException(MessageUtils.message("git.repo.branch.source-not-found"), HttpStatus.BAD_REQUEST);
             }
             String refName = Constants.R_HEADS + branchName;
             if (repository.exactRef(refName) != null)
@@ -730,6 +736,27 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
         {
             return null;
         }
+    }
+
+    /**
+     * When create omits fromRef and metadata default is stale, prefer HEAD then any local branch tip.
+     */
+    private static ObjectId resolveFallbackBranchTip(Repository repository) throws IOException
+    {
+        ObjectId head = repository.resolve(Constants.HEAD);
+        if (head != null)
+        {
+            return head;
+        }
+        List<Ref> refs = repository.getRefDatabase().getRefsByPrefix(Constants.R_HEADS);
+        for (Ref ref : refs)
+        {
+            if (ref != null && ref.getObjectId() != null)
+            {
+                return ref.getObjectId();
+            }
+        }
+        return null;
     }
 
     private Repository openRepository(String diskPath)

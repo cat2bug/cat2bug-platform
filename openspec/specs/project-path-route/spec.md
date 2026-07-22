@@ -4,13 +4,14 @@
 
 ### Requirement: Share link opens project dashboard
 
-The system SHALL resolve the browser path `/{teamKey}/{projectKey}` to the corresponding project and, for an authenticated user allowed to enter that project, open the project **dashboard** as the default landing view.
+The system SHALL resolve the browser History path `/{teamKey}/{projectKey}` (without requiring a `#` route fragment) to the corresponding project and, for an authenticated user allowed to enter that project, open the project **dashboard** as the default landing view. The same dashboard MUST also be reachable at `/{teamKey}/{projectKey}/dashboard` when module routes are enabled.
 
 #### Scenario: Member opens share link
 
 - **WHEN** a project member visits `/{teamKey}/{projectKey}` while logged in
 - **THEN** the current project context becomes that project
 - **THEN** the dashboard for that project is shown
+- **THEN** the location remains a History path under `/{teamKey}/{projectKey}` without a `#` route fragment
 
 #### Scenario: Unknown path keys
 
@@ -24,9 +25,9 @@ The system SHALL resolve the browser path `/{teamKey}/{projectKey}` to the corre
 
 ### Requirement: Project path is copyable
 
-The system SHALL expose the canonical project path `/{teamKey}/{projectKey}` (relative to the deployment origin) in the product UI so users can share it.
+The system SHALL expose the canonical project path `/{teamKey}/{projectKey}` (relative to the deployment origin, History style without `#`) in the product UI so users can share it.
 
 #### Scenario: Copy project path
 
 - **WHEN** an authorized user views project settings or an equivalent surface that shows the project path
-- **THEN** the displayed path uses the current `teamKey` and `projectKey`
+- **THEN** the displayed path uses the current `teamKey` and `projectKey` and MUST NOT include a `#` before the path keys

@@ -104,11 +104,11 @@ export default {
     defectViewHref() {
       if (!this.defectNotice || this.defectNotice.defectId == null) return ''
       const projectId = this.defectNotice.projectId || this.notice.projectId
-      const base = `${window.location.origin}${window.location.pathname}`
+      const base = (process.env.BASE_URL || '/').replace(/\/$/, '')
       const query = projectId != null
         ? `?projectId=${projectId}&defectId=${this.defectNotice.defectId}`
         : `?defectId=${this.defectNotice.defectId}`
-      return `${base}#/project/defect${query}`
+      return `${window.location.origin}${base}/project/defect${query}`
     }
   },
   methods: {

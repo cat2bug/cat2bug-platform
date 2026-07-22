@@ -50,8 +50,8 @@ export default {
   computed: {
     getDefectUrl: function () {
       return function (id) {
-        let mode = this.$router.mode=='hash'?'/#':'';
-        return `${window.location.protocol}//${window.location.host}${mode}/shard/defect?id=${id}`;
+        const base = (process.env.BASE_URL || '/').replace(/\/$/, '')
+        return `${window.location.origin}${base}/shard/defect?id=${id}`;
       }
     },
     defectAgingHour: function () {

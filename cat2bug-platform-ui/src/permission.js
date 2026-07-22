@@ -6,7 +6,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { ElMessage as Message } from 'element-plus'
 import NProgress from 'nprogress'
 import { getToken } from '@/utils/auth'
-import { isRelogin } from '@/utils/request'
+import { dismissReloginPrompt, isAuthWhitePath, isRelogin } from '@/utils/request'
 import { isLockTeamPath } from '@/utils/team'
 import { isLockProjectPath } from '@/utils/project'
 import { isCurrentTeamMember, isTeamManagementPath } from '@/utils/team-membership'
@@ -16,6 +16,7 @@ import { isUpgradeAwaitingReady } from '@/utils/upgrade-await'
 import { getCodeImg } from '@/api/login'
 import i18n from '@/utils/i18n/i18n'
 import { cancelColdBootComplete, installNProgressColdBootGuard, isColdBootPending, scheduleColdBootComplete } from '@/utils/bootstrap-progress'
+import { ensureProjectScopedContext } from '@/utils/project-scoped-guard'
 
 NProgress.configure({ showSpinner: false })
 installNProgressColdBootGuard(NProgress)
@@ -75,6 +76,31 @@ function handleUpgradeAwaitingReadyRoute(to, next) {
   return true
 }
 
+/**
+ * After auth + dynamic routes are ready: align current project from path keys.
+ * Keeps setup/upgrade/login flows untouched (only reached via proceedWithAuth).
+ */
+function proceedAfterProjectContext(to, next) {
+  ensureProjectScopedContext(to).then(result => {
+    if (result === 'skip' || result === 'ok') {
+      next()
+      return
+    }
+    if (result === 'switched') {
+      // Route table may have been rebuilt with the new project; re-enter cleanly.
+      next({ ...to, replace: true })
+      return
+    }
+    if (result === 'forbidden') {
+      next({ path: '/401', replace: true })
+      return
+    }
+    next({ path: '/404', replace: true })
+  }).catch(() => {
+    next({ path: '/404', replace: true })
+  })
+}
+
 function proceedWithAuth(to, from, next) {
   const userStore = useUserStore(pinia)
   const permissionStore = usePermissionStore(pinia)
@@ -98,18 +124,18 @@ function proceedWithAuth(to, from, next) {
           next({ ...to, replace: true })
         }).catch(() => {
           // 路由生成失败：清本地会话后去登录，勿再弹「重新登录」/错误条
-          isRelogin.show = false
           userStore.FedLogOut()
+          dismissReloginPrompt()
           next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
         })
       }).catch(() => {
         // getInfo 401/会话失效：FedLogOut 避免再请求 /logout 触发二次弹框
-        isRelogin.show = false
         userStore.FedLogOut()
+        dismissReloginPrompt()
         next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
       })
     } else {
-      next()
+      proceedAfterProjectContext(to, next)
     }
   } else if (isPublicPath(to.path)) {
     next()
@@ -221,6 +247,10 @@ function handleInstalledRouteGuards(to, from, next, setupStatus, upgradeStatus) 
 router.beforeEach((to, from, next) => {
   cancelColdBootComplete()
   startRouteProgress()
+  // 进入登录/安装等页时关掉可能残留的会话过期弹窗（冷启动 401 或业务页跳转后）
+  if (isAuthWhitePath(to.path)) {
+    dismissReloginPrompt()
+  }
   if (handleUpgradeAwaitingReadyRoute(to, next)) {
     return
   }
@@ -258,7 +288,10 @@ router.beforeEach((to, from, next) => {
   })
 })
 
-router.afterEach(() => {
+router.afterEach((to) => {
+  if (isAuthWhitePath(to.path)) {
+    dismissReloginPrompt()
+  }
   if (isColdBootPending()) {
     scheduleColdBootComplete(220)
     return

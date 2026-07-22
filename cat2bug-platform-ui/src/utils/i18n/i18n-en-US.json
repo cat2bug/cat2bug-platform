@@ -1856,6 +1856,7 @@
   "git.repo.branches.from-ref": "Create from",
   "git.repo.branches.from-ref-placeholder": "Use the default branch",
   "git.repo.branches.from-ref-tip": "Leave blank to create from the current default branch",
+  "git.repo.branches.from-ref-missing": "Base branch not found; please select one from the list",
   "git.repo.branches.create-success": "Branch created",
   "git.repo.branches.manage-actions": "Branch management actions",
   "git.repo.branches.set-default": "Set as default",

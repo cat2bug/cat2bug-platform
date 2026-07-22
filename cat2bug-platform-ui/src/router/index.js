@@ -1,9 +1,240 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import i18n from '@/utils/i18n/i18n.js'
-import { isPathKeyReserved } from '@/utils/path-key.js'
+import { isPathKeyFormatValid, isPathKeyReserved } from '@/utils/path-key.js'
+import {
+  LEGACY_PROJECT_MODULE_REDIRECTS,
+  PROJECT_MODULES,
+  PROJECT_MODULE_VIEW
+} from '@/utils/project-module-path.js'
+import {
+  attachGitRepoIdFromSlug,
+  createLegacyGitBrowseRedirect
+} from '@/utils/git-repo-route-guards.js'
+import { createLegacyProjectModuleRedirect } from '@/utils/legacy-project-module-redirect.js'
 
 /* Layout */
 import Layout from '@/layout'
+
+const projectDashboardView = () => import('@/views/system/dashboard/index')
+const projectModulePlaceholder = () => import('@/views/system/project/module-placeholder')
+const gitRepoBrowseView = () => import('@/views/system/git/repo/browse')
+const gitRepoBranchesView = () => import('@/views/system/git/repo/branches')
+const gitRepoPullsView = () => import('@/views/system/git/repo/pulls')
+const gitRepoPullNewView = () => import('@/views/system/git/repo/pull-new')
+const gitRepoPullDetailView = () => import('@/views/system/git/repo/pull-detail')
+
+/** Lazy view loader for namespaced whitelist modules (paths from PROJECT_MODULE_VIEW). */
+const PROJECT_MODULE_LAZY_VIEWS = Object.freeze({
+  dashboard: projectDashboardView,
+  defect: () => import('@/views/system/defect/index'),
+  case: () => import('@/views/system/case/index'),
+  plan: () => import('@/views/system/plan/index'),
+  report: () => import('@/views/system/report/index'),
+  document: () => import('@/views/system/document/index'),
+  module: () => import('@/views/system/module/index'),
+  notice: () => import('@/views/notice/index'),
+  member: () => import('@/views/system/project/member/index'),
+  option: () => import('@/views/system/project/option/index'),
+  api: () => import('@/views/system/api/index'),
+  tools: () => import('@/views/tool/project/index')
+})
+
+/**
+ * Real `code` list + `code/{slug}/**` browse tree (replaces module-placeholder for code).
+ */
+function buildGitCodeChildren() {
+  const codeMeta = {
+    projectScoped: true,
+    projectModule: 'code',
+    projectListPage: true
+  }
+  const breadcrumbBase = [
+    { path: '/project', redirect: 'noRedirect', meta: { titleI18nKey: 'project.manage' } },
+    { path: 'code', meta: { titleI18nKey: 'git.repo.menu' } }
+  ]
+  const browseCrumb = {
+    name: 'GitRepoBrowse',
+    meta: { titleI18nKey: 'git.repo.library' }
+  }
+
+  return [
+    {
+      path: 'code',
+      name: 'GitRepoList',
+      component: () => import('@/views/system/git/repo/index'),
+      meta: {
+        ...codeMeta,
+        title: i18n.global.t('git.repo.menu'),
+        titleI18nKey: 'git.repo.menu'
+      }
+    },
+    {
+      path: 'code/:slug',
+      name: 'GitRepoBrowse',
+      component: gitRepoBrowseView,
+      beforeEnter: attachGitRepoIdFromSlug,
+      meta: {
+        ...codeMeta,
+        title: i18n.global.t('git.repo.library'),
+        titleI18nKey: 'git.repo.library',
+        breadcrumbParents: breadcrumbBase
+      }
+    },
+    {
+      path: 'code/:slug/branches',
+      name: 'GitRepoBranches',
+      component: gitRepoBranchesView,
+      beforeEnter: attachGitRepoIdFromSlug,
+      meta: {
+        ...codeMeta,
+        title: i18n.global.t('git.repo.branches.title'),
+        titleI18nKey: 'git.repo.branches.title',
+        breadcrumbParents: [...breadcrumbBase, browseCrumb]
+      }
+    },
+    {
+      path: 'code/:slug/pulls',
+      name: 'GitRepoPullRequests',
+      component: gitRepoPullsView,
+      beforeEnter: attachGitRepoIdFromSlug,
+      meta: {
+        ...codeMeta,
+        title: i18n.global.t('git.repo.pr.title'),
+        titleI18nKey: 'git.repo.pr.title',
+        breadcrumbParents: [...breadcrumbBase, browseCrumb]
+      }
+    },
+    {
+      path: 'code/:slug/pulls/new',
+      name: 'GitRepoPullRequestNew',
+      component: gitRepoPullNewView,
+      beforeEnter: attachGitRepoIdFromSlug,
+      meta: {
+        ...codeMeta,
+        title: i18n.global.t('git.repo.pr.new'),
+        titleI18nKey: 'git.repo.pr.new',
+        breadcrumbParents: [...breadcrumbBase, browseCrumb]
+      }
+    },
+    {
+      path: 'code/:slug/pulls/:number(\\d+)',
+      name: 'GitRepoPullRequestDetail',
+      component: gitRepoPullDetailView,
+      beforeEnter: attachGitRepoIdFromSlug,
+      meta: {
+        ...codeMeta,
+        title: i18n.global.t('git.repo.pr.detail-title'),
+        titleI18nKey: 'git.repo.pr.detail-title',
+        breadcrumbParents: [...breadcrumbBase, browseCrumb]
+      }
+    },
+    {
+      path: 'code/:slug/releases/:releaseId(\\d+)',
+      name: 'GitRepoReleaseDetail',
+      component: gitRepoBrowseView,
+      beforeEnter: attachGitRepoIdFromSlug,
+      meta: {
+        ...codeMeta,
+        title: i18n.global.t('git.repo.release.detail-title'),
+        titleI18nKey: 'git.repo.release.detail-title',
+        breadcrumbParents: [...breadcrumbBase, browseCrumb]
+      }
+    },
+    {
+      path: 'code/:slug/commits/:commitId',
+      name: 'GitRepoCommitDetail',
+      component: gitRepoBrowseView,
+      beforeEnter: attachGitRepoIdFromSlug,
+      meta: {
+        ...codeMeta,
+        title: i18n.global.t('git.repo.commit.detail-title'),
+        titleI18nKey: 'git.repo.commit.detail-title',
+        breadcrumbParents: [...breadcrumbBase, browseCrumb]
+      }
+    }
+  ]
+}
+
+/**
+ * Children under `/:teamKey/:projectKey`:
+ * - `` and `dashboard` → real project dashboard (URL stays namespaced)
+ * - `code` → repo list; `code/{slug}/**` → git browse (4.x)
+ * - whitelist business modules → real views (5.1 / 5.3); see PROJECT_MODULE_VIEW
+ * - anything else → 404
+ */
+function buildProjectScopedChildren() {
+  const dashboardMeta = {
+    title: i18n.global.t('dashboard'),
+    titleI18nKey: 'dashboard',
+    projectScoped: true,
+    projectModule: 'dashboard'
+  }
+  const children = [
+    {
+      path: '',
+      name: 'ProjectScopedHome',
+      component: projectDashboardView,
+      meta: { ...dashboardMeta }
+    },
+    {
+      path: 'dashboard',
+      name: 'ProjectScopedDashboard',
+      component: projectDashboardView,
+      meta: { ...dashboardMeta }
+    }
+  ]
+
+  children.push(...buildGitCodeChildren())
+
+  PROJECT_MODULES.filter(mod => mod !== 'dashboard' && mod !== 'code').forEach(mod => {
+    const pascal = mod.charAt(0).toUpperCase() + mod.slice(1)
+    const view = PROJECT_MODULE_LAZY_VIEWS[mod] || projectModulePlaceholder
+    children.push({
+      path: `${mod}/:pathMatch(.*)*`,
+      name: `ProjectScoped${pascal}`,
+      component: view,
+      meta: {
+        title: mod,
+        titleI18nKey: mod === 'document' ? 'doc' : mod,
+        projectScoped: true,
+        projectModule: mod,
+        projectModuleView: PROJECT_MODULE_VIEW[mod] || null
+      }
+    })
+  })
+
+  // Non-whitelist third segment (and deeper) → 404
+  children.push({
+    path: ':unknownModule(.*)*',
+    name: 'ProjectScopedUnknown',
+    beforeEnter: (_to, _from, next) => {
+      next({ path: '/404', replace: true })
+    },
+    component: () => import('@/views/error/404'),
+    meta: { projectScoped: true }
+  })
+
+  return children
+}
+
+/** Tiny stand-in while legacy beforeEnter redirects to namespaced paths. */
+const legacyGitRedirectStub = { render: () => null }
+
+/**
+ * Client redirects from legacy `/defect` and `/project/defect` style paths (5.2).
+ * Registered after special sub-routes (`/defect/template`, …) and before the
+ * namespaced `/:teamKey/:projectKey` parent.
+ */
+function buildLegacyProjectModuleRedirectRoutes() {
+  return LEGACY_PROJECT_MODULE_REDIRECTS.map(entry => ({
+    path: entry.path,
+    name: entry.name,
+    beforeEnter: createLegacyProjectModuleRedirect(entry.module),
+    component: legacyGitRedirectStub,
+    hidden: true,
+    meta: { legacyProjectModuleRedirect: true, projectModule: entry.module }
+  }))
+}
 
 /**
  * Note: 路由配置项
@@ -241,25 +472,117 @@ export const constantRoutes = [
       }
     ]
   },
+  // Legacy id-based browse → namespaced code/{slug} (must precede /:teamKey/:projectKey)
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '',
+        name: 'GitRepoBrowseLegacy',
+        beforeEnter: createLegacyGitBrowseRedirect(() => ''),
+        component: legacyGitRedirectStub,
+        meta: { titleI18nKey: 'git.repo.library' }
+      }
+    ]
+  },
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)/branches',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '',
+        name: 'GitRepoBranchesLegacy',
+        beforeEnter: createLegacyGitBrowseRedirect(() => '/branches'),
+        component: legacyGitRedirectStub
+      }
+    ]
+  },
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)/pulls',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '',
+        name: 'GitRepoPullRequestsLegacy',
+        beforeEnter: createLegacyGitBrowseRedirect(() => '/pulls'),
+        component: legacyGitRedirectStub
+      }
+    ]
+  },
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)/pulls/new',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '',
+        name: 'GitRepoPullRequestNewLegacy',
+        beforeEnter: createLegacyGitBrowseRedirect(() => '/pulls/new'),
+        component: legacyGitRedirectStub
+      }
+    ]
+  },
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)/pulls/:number(\\d+)',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '',
+        name: 'GitRepoPullRequestDetailLegacy',
+        beforeEnter: createLegacyGitBrowseRedirect(to => `/pulls/${to.params.number}`),
+        component: legacyGitRedirectStub
+      }
+    ]
+  },
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)/releases/:releaseId(\\d+)',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '',
+        name: 'GitRepoReleaseDetailLegacy',
+        beforeEnter: createLegacyGitBrowseRedirect(to => `/releases/${to.params.releaseId}`),
+        component: legacyGitRedirectStub
+      }
+    ]
+  },
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)/commits/:commitId',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '',
+        name: 'GitRepoCommitDetailLegacy',
+        beforeEnter: createLegacyGitBrowseRedirect(to => `/commits/${to.params.commitId}`),
+        component: legacyGitRedirectStub
+      }
+    ]
+  },
+  // Legacy `/defect`, `/project/defect`, … → `/{teamKey}/{projectKey}/{module}` (5.2)
+  ...buildLegacyProjectModuleRedirectRoutes(),
   {
     path: '/:teamKey/:projectKey',
     component: Layout,
     hidden: true,
+    meta: { projectScoped: true },
     beforeEnter: (to, from, next) => {
-      if (isPathKeyReserved(to.params.teamKey)) {
+      const { teamKey, projectKey } = to.params
+      if (isPathKeyReserved(teamKey)
+        || !isPathKeyFormatValid(teamKey)
+        || !isPathKeyFormatValid(projectKey)) {
         next({ path: '/404', replace: true })
         return
       }
       next()
     },
-    children: [
-      {
-        path: '',
-        name: 'ProjectPathShare',
-        component: () => import('@/views/system/project/path-entry'),
-        meta: { title: i18n.global.t('dashboard'), titleI18nKey: 'dashboard' }
-      }
-    ]
+    children: buildProjectScopedChildren()
   }
 ]
 
@@ -339,176 +662,6 @@ export const dynamicRoutes = [
         }
       }
     ]
-  },
-  {
-    path: '/project/git-repo/browse/:repositoryId(\\d+)',
-    component: Layout,
-    hidden: true,
-    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/system/git/repo/browse'),
-        name: 'GitRepoBrowse',
-        meta: {
-          title: i18n.global.t('git.repo.library'),
-          titleI18nKey: 'git.repo.library',
-          activeMenu: '/project/git-repo',
-          projectListPage: true,
-          // 隐藏路由不在侧栏树中，需显式补齐：项目管理 / 源码管理 / 源码库
-          breadcrumbParents: [
-            { path: '/project', redirect: 'noRedirect', meta: { titleI18nKey: 'project.manage' } },
-            { path: '/project/git-repo', meta: { titleI18nKey: 'git.repo.menu' } }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    path: '/project/git-repo/browse/:repositoryId(\\d+)/branches',
-    component: Layout,
-    hidden: true,
-    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/system/git/repo/branches'),
-        name: 'GitRepoBranches',
-        meta: {
-          title: i18n.global.t('git.repo.branches.title'),
-          titleI18nKey: 'git.repo.branches.title',
-          activeMenu: '/project/git-repo',
-          projectListPage: true,
-          breadcrumbParents: [
-            { path: '/project', redirect: 'noRedirect', meta: { titleI18nKey: 'project.manage' } },
-            { path: '/project/git-repo', meta: { titleI18nKey: 'git.repo.menu' } },
-            {
-              path: '/project/git-repo/browse/:repositoryId',
-              name: 'GitRepoBrowse',
-              meta: { titleI18nKey: 'git.repo.library' }
-            }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    path: '/project/git-repo/browse/:repositoryId(\\d+)/pulls',
-    component: Layout,
-    hidden: true,
-    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/system/git/repo/pulls'),
-        name: 'GitRepoPullRequests',
-        meta: {
-          title: i18n.global.t('git.repo.pr.title'),
-          titleI18nKey: 'git.repo.pr.title',
-          activeMenu: '/project/git-repo',
-          projectListPage: true,
-          breadcrumbParents: [
-            { path: '/project', redirect: 'noRedirect', meta: { titleI18nKey: 'project.manage' } },
-            { path: '/project/git-repo', meta: { titleI18nKey: 'git.repo.menu' } },
-            { path: '/project/git-repo/browse/:repositoryId', name: 'GitRepoBrowse', meta: { titleI18nKey: 'git.repo.library' } }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    path: '/project/git-repo/browse/:repositoryId(\\d+)/pulls/new',
-    component: Layout,
-    hidden: true,
-    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/system/git/repo/pull-new'),
-        name: 'GitRepoPullRequestNew',
-        meta: {
-          title: i18n.global.t('git.repo.pr.new'),
-          titleI18nKey: 'git.repo.pr.new',
-          activeMenu: '/project/git-repo',
-          projectListPage: true
-        }
-      }
-    ]
-  },
-  {
-    path: '/project/git-repo/browse/:repositoryId(\\d+)/pulls/:number(\\d+)',
-    component: Layout,
-    hidden: true,
-    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/system/git/repo/pull-detail'),
-        name: 'GitRepoPullRequestDetail',
-        meta: {
-          title: i18n.global.t('git.repo.pr.detail-title'),
-          titleI18nKey: 'git.repo.pr.detail-title',
-          activeMenu: '/project/git-repo',
-          projectListPage: true
-        }
-      }
-    ]
-  },
-  {
-    path: '/project/git-repo/browse/:repositoryId(\\d+)/releases/:releaseId(\\d+)',
-    component: Layout,
-    hidden: true,
-    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/system/git/repo/browse'),
-        name: 'GitRepoReleaseDetail',
-        meta: {
-          title: i18n.global.t('git.repo.release.detail-title'),
-          titleI18nKey: 'git.repo.release.detail-title',
-          activeMenu: '/project/git-repo',
-          projectListPage: true,
-          breadcrumbParents: [
-            { path: '/project', redirect: 'noRedirect', meta: { titleI18nKey: 'project.manage' } },
-            { path: '/project/git-repo', meta: { titleI18nKey: 'git.repo.menu' } },
-            {
-              path: '/project/git-repo/browse/:repositoryId',
-              name: 'GitRepoBrowse',
-              meta: { titleI18nKey: 'git.repo.library' }
-            }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    path: '/project/git-repo/browse/:repositoryId(\\d+)/commits/:commitId',
-    component: Layout,
-    hidden: true,
-    permissions: ['system:git:repo:list', 'system:git:repo:pull'],
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/system/git/repo/browse'),
-        name: 'GitRepoCommitDetail',
-        meta: {
-          title: i18n.global.t('git.repo.commit.detail-title'),
-          titleI18nKey: 'git.repo.commit.detail-title',
-          activeMenu: '/project/git-repo',
-          projectListPage: true,
-          breadcrumbParents: [
-            { path: '/project', redirect: 'noRedirect', meta: { titleI18nKey: 'project.manage' } },
-            { path: '/project/git-repo', meta: { titleI18nKey: 'git.repo.menu' } },
-            {
-              path: '/project/git-repo/browse/:repositoryId',
-              name: 'GitRepoBrowse',
-              meta: { titleI18nKey: 'git.repo.library' }
-            }
-          ]
-        }
-      }
-    ]
   }
 ]
 
@@ -521,8 +674,9 @@ function collectRouteNames(routes) {
   })
 }
 
+// base: vite `base` / vue-cli `publicPath`（当前均为 `/`；子路径部署时依赖 BASE_URL）
 const createRouterInstance = () => createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(process.env.BASE_URL || '/'),
   scrollBehavior: () => ({ top: 0 }),
   routes: constantRoutes
 })

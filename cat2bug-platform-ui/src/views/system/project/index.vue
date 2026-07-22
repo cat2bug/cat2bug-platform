@@ -176,6 +176,7 @@ import {
   getCurrentUserId,
   resolveEffectiveTeamId
 } from '@/utils/store-context'
+import { buildProjectModulePath } from '@/utils/project-module-path'
 
 const PROJECT_MANAGE_KBD_SCOPE = 'project-manage'
 
@@ -588,12 +589,23 @@ export default {
         }
       });
     },
+    /** Prefer namespaced module path when project has path keys. */
+    pushProjectModule(project, module, fallbackName) {
+      const namespaced = project && project.teamKey && project.projectKey
+        ? buildProjectModulePath(project.teamKey, project.projectKey, module)
+        : ''
+      if (namespaced) {
+        this.$router.push(namespaced)
+      } else if (fallbackName) {
+        this.$router.push({ name: fallbackName })
+      }
+    },
     /** 点击项目跳转 */
     clickProject(project) {
       let _this = this;
       if(this.isViewDefect(project)) {
         useUserStore().SwitchCurrentProject(project.projectId).then(() => {
-          _this.$router.push({ name: 'ProjectDashboard' })
+          _this.pushProjectModule(project, 'dashboard', 'ProjectDashboard')
         });
       } else {
         this.$message.warning(this.$i18n.t('project.no-permission-access-project').toString());
@@ -608,7 +620,7 @@ export default {
     goProjectOptionHandle(e,project) {
       let _this = this;
       useUserStore().SwitchCurrentProject(project.projectId).then(() => {
-        _this.$router.push({ name: 'ProjectOption' })
+        _this.pushProjectModule(project, 'option', 'ProjectOption')
       });
       e.stopPropagation();
     },
@@ -616,7 +628,7 @@ export default {
     goCaseHandle(e,project) {
       let _this = this;
       useUserStore().SwitchCurrentProject(project.projectId).then(() => {
-        _this.$router.push({ name: 'ProjectCase' })
+        _this.pushProjectModule(project, 'case', 'ProjectCase')
       });
     }
   }

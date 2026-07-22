@@ -2,6 +2,47 @@ import request, { setHeader } from '@/utils/request'
 import { getToken } from '@/utils/auth'
 import { saveAs } from 'file-saver'
 import { blobValidate } from '@/utils/ruoyi'
+import { gitRepoCommitDetailRoute as namespacedCommitDetailRoute } from '@/utils/git-repo-routes'
+
+/** projectId:slug → repo (in-memory for tab navigations within the same repo) */
+const repoByProjectSlugCache = new Map()
+
+/**
+ * Resolve repository metadata by project + slug (REST still uses repositoryId afterward).
+ * @param {number|string} projectId
+ * @param {string} slug
+ * @returns {Promise<object|null>}
+ */
+export function resolveGitRepoByProjectAndSlug(projectId, slug) {
+  const pid = Number(projectId)
+  const s = slug != null ? String(slug).trim() : ''
+  if (!Number.isFinite(pid) || pid <= 0 || !s) {
+    return Promise.resolve(null)
+  }
+  const cacheKey = `${pid}:${s}`
+  if (repoByProjectSlugCache.has(cacheKey)) {
+    return Promise.resolve(repoByProjectSlugCache.get(cacheKey))
+  }
+  return listGitRepo({ projectId: pid, slug: s }).then(res => {
+    const list = (res && res.data) || []
+    const repo = Array.isArray(list)
+      ? (list.find(item => item && item.slug === s) || list[0] || null)
+      : null
+    if (repo && repo.repositoryId != null) {
+      repoByProjectSlugCache.set(cacheKey, repo)
+    }
+    return repo
+  })
+}
+
+/**
+ * Commit detail route under namespaced `code/{slug}`.
+ * @param {object} routeOrCtx route or { teamKey, projectKey, slug }
+ * @param {string} commitId
+ */
+export function gitRepoCommitDetailRoute(routeOrCtx, commitId) {
+  return namespacedCommitDetailRoute(routeOrCtx, commitId)
+}
 
 // 查询代码仓库列表（按项目）
 export function listGitRepo(query) {
@@ -125,17 +166,6 @@ export function getGitRepoCommit(repositoryId, commitId) {
     url: '/system/git/repo/' + repositoryId + '/commits/' + encodeURIComponent(commitId),
     method: 'get'
   })
-}
-
-/** 跳转到独立提交详情页（供 browse 等入口复用） */
-export function gitRepoCommitDetailRoute(repositoryId, commitId) {
-  return {
-    name: 'GitRepoCommitDetail',
-    params: {
-      repositoryId: String(repositoryId),
-      commitId: String(commitId)
-    }
-  }
 }
 
 // 查询贡献者（pull 权限）

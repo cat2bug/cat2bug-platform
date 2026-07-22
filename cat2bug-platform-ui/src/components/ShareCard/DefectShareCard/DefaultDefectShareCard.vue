@@ -91,9 +91,8 @@ export default {
   computed: {
     getDefectUrl: function () {
       return function (id) {
-        let mode = this.$router.mode=='hash'?'/#':'';
-        let basePath = this.$router.options.base?'/'+this.$router.options.base:''
-        return `${window.location.protocol}//${window.location.host}${mode}${basePath}/shard/defect?id=${id}`;
+        const base = (process.env.BASE_URL || '/').replace(/\/$/, '')
+        return `${window.location.origin}${base}/shard/defect?id=${id}`;
       }
     },
     getUrl: function () {

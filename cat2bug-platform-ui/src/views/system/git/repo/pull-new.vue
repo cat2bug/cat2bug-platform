@@ -48,6 +48,7 @@
 import { createGitPullRequest } from '@/api/system/gitPullRequest'
 import { getGitRepo, listGitRepoBranches } from '@/api/system/gitRepo'
 import { checkPermi } from '@/utils/permission'
+import { gitRepoPullDetailRoute, gitRepoPullsRoute } from '@/utils/git-repo-routes'
 import GitRepoShell from './GitRepoShell.vue'
 
 export default {
@@ -56,7 +57,7 @@ export default {
   data() {
     return {
       repositoryId: Number(this.$route.params.repositoryId),
-      repoName: String(this.$route.query.name || ''),
+      repoName: String(this.$route.params.slug || ''),
       branches: [],
       loading: false,
       submitting: false,
@@ -84,11 +85,7 @@ export default {
   },
   methods: {
     goBack() {
-      this.$router.push({
-        name: 'GitRepoPullRequests',
-        params: { repositoryId: String(this.repositoryId) },
-        query: this.repoName ? { name: this.repoName } : {}
-      }).catch(() => {})
+      this.$router.push(gitRepoPullsRoute(this.$route)).catch(() => {})
     },
     loadRepo() {
       getGitRepo(this.repositoryId).then(res => {
@@ -123,11 +120,7 @@ export default {
         }).then(res => {
           const pull = res.data || {}
           this.$modal.msgSuccess(this.$t('git.repo.pr.create-success'))
-          this.$router.replace({
-            name: 'GitRepoPullRequestDetail',
-            params: { repositoryId: String(this.repositoryId), number: String(pull.number) },
-            query: this.repoName ? { name: this.repoName } : {}
-          }).catch(() => {})
+          this.$router.replace(gitRepoPullDetailRoute(this.$route, pull.number)).catch(() => {})
         }).finally(() => {
           this.submitting = false
         })
@@ -139,9 +132,13 @@ export default {
 
 <style lang="scss" scoped>
 .git-pr-new {
-  max-height: calc(100vh - 84px);
-  overflow: auto;
-  padding: 16px 20px 24px;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 20px 20px 0;
+  box-sizing: border-box;
   color: var(--text-color-regular);
 }
 

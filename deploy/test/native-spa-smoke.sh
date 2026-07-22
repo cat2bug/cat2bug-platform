@@ -5,10 +5,13 @@
 #   ./deploy/test/native-spa-smoke.sh
 #   ./deploy/test/native-spa-smoke.sh http://127.0.0.1:2020
 #
-# 覆盖:
+# 覆盖（History 路由 / 无 #）:
 #   - GET / 返回 HTML
 #   - GET /static/js/*.js（Vue2）或 /static/index-*.js（Vite）至少一个 200
-#   - GET /login（Accept: text/html）SPA fallback HTML
+#   - GET /login（Accept: text/html）SPA fallback HTML — refresh of /login must not 404
+#   - GET /{team}/{project}/{module}（Accept: text/html）History deep-link SPA fallback
+# Manual / not asserted here: .git Smart HTTP must NOT receive index.html
+#   (see EmbeddedSpaFallbackFilterTest + openspec/.../TESTING.md).
 # POST /login API 由 native-api-smoke.sh 覆盖
 set -euo pipefail
 
@@ -67,7 +70,7 @@ else
   log_fail "GET /static/*.js" "no js path found in index.html"
 fi
 
-# SPA fallback: /login with Accept: text/html
+# SPA fallback: /login with Accept: text/html (History — no /#/login)
 login_body=$(curl -sS -H 'Accept: text/html' "$BASE/login" || true)
 login_code=$(curl -sS -o /dev/null -w '%{http_code}' -H 'Accept: text/html' "$BASE/login" || echo 000)
 if [[ "$login_code" == "200" ]] && echo "$login_body" | rg -qi '<!DOCTYPE|<html'; then
@@ -80,8 +83,24 @@ else
   log_fail "GET /login (Accept: text/html)" "code=$login_code body=${login_body:0:120}"
 fi
 
+# History deep-link: namespaced module path must also get SPA shell on refresh
+deep_path="/smoke-team/smoke-project/defect"
+deep_body=$(curl -sS -H 'Accept: text/html' "$BASE$deep_path" || true)
+deep_code=$(curl -sS -o /dev/null -w '%{http_code}' -H 'Accept: text/html' "$BASE$deep_path" || echo 000)
+if [[ "$deep_code" == "200" ]] && echo "$deep_body" | rg -qi '<!DOCTYPE|<html'; then
+  if echo "$deep_body" | rg -q '^\s*\{'; then
+    log_fail "GET $deep_path (Accept: text/html)" "response looks like JSON"
+  else
+    log_ok "GET $deep_path (Accept: text/html) History deep-link SPA fallback"
+  fi
+else
+  log_fail "GET $deep_path (Accept: text/html)" "code=$deep_code body=${deep_body:0:120}"
+fi
+
 echo
 echo "NOTE POST /login API covered by native-api-smoke.sh"
+echo "NOTE History URLs have no #; refresh /login and /{t}/{p}/{module} need SPA fallback"
+echo "NOTE .git Smart HTTP isolation is unit-tested; live clone is manual (TESTING.md)"
 echo
 if [[ "$FAIL" -eq 0 ]]; then
   echo "==> SPA smoke PASSED"

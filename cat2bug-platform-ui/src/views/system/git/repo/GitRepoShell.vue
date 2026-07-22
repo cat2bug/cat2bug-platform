@@ -65,6 +65,10 @@
 <script>
 import { Connection, Document, FolderOpened, List } from '@element-plus/icons-vue'
 import { listGitPullRequests } from '@/api/system/gitPullRequest'
+import {
+  gitRepoBrowseRoute,
+  gitRepoPullsRoute
+} from '@/utils/git-repo-routes'
 import GitTagIcon from './GitTagIcon.vue'
 
 export default {
@@ -92,9 +96,6 @@ export default {
   computed: {
     displayName() {
       return this.repoName || '-'
-    },
-    repoQuery() {
-      return this.repoName ? { name: this.repoName } : {}
     },
     openPullCountLabel() {
       return this.openPullCount > 99 ? '99+' : String(this.openPullCount)
@@ -125,24 +126,27 @@ export default {
       })
     },
     goRepoList() {
+      const { teamKey, projectKey } = this.$route.params
+      if (teamKey && projectKey) {
+        this.$router.push({
+          name: 'GitRepoList',
+          params: { teamKey, projectKey }
+        }).catch(() => {})
+        return
+      }
       this.$router.push({ path: '/project/git-repo' }).catch(() => {})
     },
     onTabChange(tab) {
       if (!this.repositoryId || tab === this.activeTab) return
-      const params = { repositoryId: String(this.repositoryId) }
       if (tab === 'pulls') {
-        this.$router.push({ name: 'GitRepoPullRequests', params, query: this.repoQuery }).catch(() => {})
+        this.$router.push(gitRepoPullsRoute(this.$route)).catch(() => {})
         return
       }
       if (tab === 'commits' || tab === 'releases') {
-        this.$router.push({
-          name: 'GitRepoBrowse',
-          params,
-          query: { ...this.repoQuery, tab }
-        }).catch(() => {})
+        this.$router.push(gitRepoBrowseRoute(this.$route, { tab })).catch(() => {})
         return
       }
-      this.$router.push({ name: 'GitRepoBrowse', params, query: this.repoQuery }).catch(() => {})
+      this.$router.push(gitRepoBrowseRoute(this.$route)).catch(() => {})
     }
   }
 }

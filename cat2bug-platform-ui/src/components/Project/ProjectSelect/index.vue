@@ -370,15 +370,18 @@ export default {
         })
       })
     },
-    /** 选择项目 */
+    /** 选择项目：切换上下文并按当前 module 重写 URL 前缀 */
     handleProjectChange(project) {
       this.detachProjectSelectKeyboardListener();
-      this.userStore.UpdateCurrentProjectId(project.projectId).then(() => {
-        this.userStore.GetInfo().then(() => {
-          // 设置缺陷列表显示哪些列属性
-          window.location.reload();
-        });
-      });
+      if (!project || !project.projectId) return;
+      const currentPath = this.$route && this.$route.path
+      this.popoverVisible = false;
+      this.userStore.SwitchCurrentProject(project.projectId, {
+        rewriteUrl: true,
+        currentPath
+      }).then(() => {
+        this.currentProject = project
+      })
     },
     /** 设置当前项目是否收藏 */
     handleProjectCollect(project, event) {

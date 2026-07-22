@@ -169,7 +169,7 @@ export default {
             dangerouslyUseHTMLString: true,
             type: 'success',
             offset: 50,
-            message: `<a target="_blank" style="color: #409eff;" href="${host}/#/notice/index?noticeId=${msg.noticeId}">${msg.title}<\a>`
+            message: `<a target="_blank" style="color: #409eff;" href="${host}/notice/index?noticeId=${msg.noticeId}">${msg.title}<\a>`
           })
         }
       }

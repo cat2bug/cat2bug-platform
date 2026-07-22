@@ -48,11 +48,12 @@ export function buildProjectPathSegment(teamKey, projectKey) {
   return `/${teamKey}/${projectKey}`
 }
 
-/** 完整分享 URL（Hash 路由） */
+/** 完整分享 URL（History 路由，无 `#`） */
 export function buildProjectShareUrl(teamKey, projectKey) {
   const segment = buildProjectPathSegment(teamKey, projectKey)
   if (!segment || typeof window === 'undefined') return segment
-  return `${window.location.origin}${window.location.pathname}#${segment}`
+  const base = (process.env.BASE_URL || '/').replace(/\/$/, '')
+  return `${window.location.origin}${base}${segment}`
 }
 
 export function confirmPathKeyRename(vm, originalKey, newKey, onConfirm) {

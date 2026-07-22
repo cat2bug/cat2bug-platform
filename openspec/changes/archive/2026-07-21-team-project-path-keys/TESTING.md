@@ -15,10 +15,12 @@
 
 ## 2. 分享链接 → 仪表盘
 
-1. 浏览器打开 `http://{host}/#/cat2bug/cat2bug-platform`（hash 模式）  
+> **History 更新（`project-scoped-spa-routes`）**：规范 URL 已无 `#`。完整 History / 模块深链清单见 `openspec/changes/project-scoped-spa-routes/TESTING.md`。
+
+1. 浏览器打开 `http://{host}/cat2bug/cat2bug-platform`（History 路径；勿再使用 `/#/...`）  
 2. 已登录且为项目成员 → 切换当前项目并进入 **Dashboard**  
 3. 未登录 → 登录页；非成员 → 401/403；错误 key → 404  
-4. 打开 `/#/login` 等保留路径 → 不被动态路由抢走
+4. 打开 `/login` 等保留路径 → 不被动态路由抢走
 
 ## 3. Clone URL
 

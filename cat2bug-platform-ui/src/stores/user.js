@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { login, logout, getInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { updateConfig } from '@/api/system/user-config'
+import { getProject } from '@/api/system/project'
+import { buildPathForProjectSwitch } from '@/utils/project-module-path'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -22,13 +24,26 @@ export const useUserStore = defineStore('user', {
     UpdateCurrentProjectId(projectId) {
       return updateConfig({ currentProjectId: projectId }).then(() => {})
     },
-    SwitchCurrentProject(projectId) {
+    /**
+     * Switch current project, refresh auth menus, optionally rewrite URL prefix (3.2).
+     * @param {number|string} projectId
+     * @param {{ rewriteUrl?: boolean, currentPath?: string }} [options]
+     *   rewriteUrl — when true, navigate to same module under new /{teamKey}/{projectKey}
+     *   currentPath — override location path used for module extraction
+     */
+    SwitchCurrentProject(projectId, options = {}) {
+      const rewriteUrl = !!(options && options.rewriteUrl)
+      const currentPath = options && options.currentPath
       return import('@/stores/permission').then(({ usePermissionStore }) => {
         const permissionStore = usePermissionStore()
         permissionStore.SetRoutesRefreshing(true)
         return updateConfig({ currentProjectId: projectId })
           .then(() => this.GetInfo())
           .then(() => permissionStore.GenerateRoutes())
+          .then(() => {
+            if (!rewriteUrl) return null
+            return navigateAfterProjectSwitch(projectId, currentPath)
+          })
           .finally(() => {
             permissionStore.SetRoutesRefreshing(false)
           })
@@ -88,3 +103,30 @@ export const useUserStore = defineStore('user', {
     }
   }
 })
+
+/**
+ * After a successful project switch, rewrite the History URL to the same module
+ * under the destination project's path keys when applicable.
+ *
+ * @param {number|string} projectId
+ * @param {string} [currentPath]
+ * @returns {Promise<string|null>} navigated path or null
+ */
+function navigateAfterProjectSwitch(projectId, currentPath) {
+  return getProject(projectId).then(res => {
+    const project = res && res.data
+    if (!project || !project.teamKey || !project.projectKey) return null
+
+    const fromPath = currentPath
+      || (typeof window !== 'undefined' && window.location
+        ? window.location.pathname
+        : '')
+    const nextPath = buildPathForProjectSwitch(fromPath, project.teamKey, project.projectKey)
+    if (!nextPath || nextPath === fromPath) return null
+
+    return import('@/router').then(routerMod => {
+      const router = routerMod.default
+      return router.replace(nextPath).then(() => nextPath)
+    })
+  }).catch(() => null)
+}

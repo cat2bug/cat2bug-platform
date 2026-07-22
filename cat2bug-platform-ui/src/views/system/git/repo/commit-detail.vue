@@ -154,6 +154,7 @@
 import { Share, ArrowDown, ArrowRight, ArrowLeft } from '@element-plus/icons-vue'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import { getGitRepo, getGitRepoCommit, gitRepoCommitDetailRoute } from '@/api/system/gitRepo'
+import { gitRepoBrowseRoute } from '@/utils/git-repo-routes'
 import { listMemberOfProject } from '@/api/system/project'
 import { useUserStore } from '@/stores/user'
 import { formatTime } from '@/utils/index'
@@ -246,8 +247,8 @@ export default {
     }
   },
   created() {
-    if (this.$route.query.name) {
-      this.localRepoName = String(this.$route.query.name)
+    if (this.$route.params.slug) {
+      this.localRepoName = String(this.$route.params.slug)
     }
     if (this.repoName) {
       this.localRepoName = this.repoName
@@ -312,29 +313,20 @@ export default {
       }
     },
     parentRoute(parentId) {
-      return gitRepoCommitDetailRoute(this.resolvedRepositoryId, parentId)
+      return gitRepoCommitDetailRoute(this.$route, parentId)
     },
     goBackToCommits() {
       if (this.embedded) {
         this.$emit('back')
       }
-      this.$router.push({
-        name: 'GitRepoBrowse',
-        params: { repositoryId: String(this.resolvedRepositoryId) },
-        query: { tab: 'commits', ...(this.displayRepoName ? { name: this.displayRepoName } : {}) }
-      }).catch(() => {})
+      this.$router.push(gitRepoBrowseRoute(this.$route, { tab: 'commits' })).catch(() => {})
     },
     browseFilesAtCommit() {
       const ref = (this.commit && this.commit.id) || this.resolvedCommitId
-      this.$router.push({
-        name: 'GitRepoBrowse',
-        params: { repositoryId: String(this.resolvedRepositoryId) },
-        query: {
-          ref,
-          tab: 'code',
-          ...(this.displayRepoName ? { name: this.displayRepoName } : {})
-        }
-      }).catch(() => {})
+      this.$router.push(gitRepoBrowseRoute(this.$route, {
+        ref,
+        tab: 'code'
+      })).catch(() => {})
     },
     loadProjectMembers(projectId) {
       if (!projectId) {
@@ -465,7 +457,7 @@ export default {
 
 <style lang="scss" scoped>
 .git-commit-detail {
-  padding: 16px 20px 24px;
+  padding: 20px 20px 0;
   box-sizing: border-box;
   color: var(--text-color-regular);
   flex: 1 1 auto;
@@ -473,14 +465,12 @@ export default {
   width: 100%;
 
   &:not(.is-embedded) {
-    max-height: calc(100vh - 84px);
     overflow-x: hidden;
     overflow-y: auto;
   }
 
   &.is-embedded {
-    padding: 4px 0 24px;
-    max-height: none;
+    padding: 4px 0 0;
     overflow: visible;
   }
 }

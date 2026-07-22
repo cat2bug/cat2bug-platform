@@ -1,6 +1,13 @@
 import { getRouters } from '@/api/menu'
+import { getProject } from '@/api/system/project'
 import { isProjectListPageView } from '@/utils/project-list-page'
 import { applyMenuIconOverrides } from '@/utils/menu-icon'
+import {
+  isProjectRootMenu,
+  keepLegacyProjectMenuRoute,
+  rewriteProjectMenuPaths
+} from '@/utils/project-module-path'
+import { getCurrentProjectId } from '@/utils/store-context'
 import { defineStore } from 'pinia'
 
 const devToolsEnabled = process.env.VUE_APP_ENABLE_DEV_TOOLS === 'true'
@@ -133,6 +140,36 @@ export const loadView = (view) => {
   return () => import('@/views/error/404.vue')
 }
 
+/** Resolve current project path keys for sidebar menu rewriting (3.1). */
+function resolveCurrentProjectPathKeys() {
+  const projectId = getCurrentProjectId()
+  if (!projectId) return Promise.resolve(null)
+  return getProject(projectId).then(res => {
+    const project = res && res.data
+    if (!project || !project.teamKey || !project.projectKey) return null
+    return {
+      teamKey: project.teamKey,
+      projectKey: project.projectKey,
+      projectId: project.projectId
+    }
+  }).catch(() => null)
+}
+
+/**
+ * Remove whitelist business children from dynamic `/project` registration so
+ * legacy URLs hit constant redirect routes (5.2) instead of duplicate mounts.
+ * Integrations and `git-repo` list remain (keepLegacyProjectMenuRoute).
+ *
+ * @param {Array<{ path?: string, name?: string, children?: unknown[] }>} routes
+ */
+function stripNamespacedProjectMenuRoutes(routes) {
+  if (!Array.isArray(routes)) return
+  routes.forEach(route => {
+    if (!isProjectRootMenu(route) || !Array.isArray(route.children)) return
+    route.children = route.children.filter(child => keepLegacyProjectMenuRoute(child && child.path))
+  })
+}
+
 export const usePermissionStore = defineStore('permission', {
   state: () => ({
     routes: [],
@@ -150,13 +187,23 @@ export const usePermissionStore = defineStore('permission', {
       this.sidebarRouters = routes
     },
     GenerateRoutes() {
-      return loadPermissionDeps().then(() => getRouters().then(res => {
+      return loadPermissionDeps().then(() => Promise.all([
+        getRouters(),
+        resolveCurrentProjectPathKeys()
+      ]).then(([res, pathKeys]) => {
         try {
           const routeData = Array.isArray(res.data) ? res.data : []
           const sdata = JSON.parse(JSON.stringify(routeData))
           const rdata = JSON.parse(JSON.stringify(routeData))
           applyMenuIconOverrides(sdata)
           applyMenuIconOverrides(rdata)
+          // Sidebar/topbar: prefix project-function menus with /{teamKey}/{projectKey}/{module}.
+          // Router registration drops whitelist modules (served by namespaced constant routes);
+          // integrations stay on legacy `/project/...` (see keepLegacyProjectMenuRoute).
+          if (pathKeys) {
+            rewriteProjectMenuPaths(sdata, pathKeys.teamKey, pathKeys.projectKey)
+          }
+          stripNamespacedProjectMenuRoutes(rdata)
           const sidebarRoutes = filterAsyncRouter(sdata)
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
           const asyncRoutes = filterDynamicRoutes(dynamicRoutesRef)

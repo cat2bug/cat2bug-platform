@@ -84,10 +84,6 @@
         <div v-for="item in displayList" :key="item.repositoryId" class="git-repo-item">
           <div class="git-repo-item__main">
             <div class="git-repo-item__title-row">
-              <star-switch
-                v-model="item.collect"
-                @change="clickCollectHandle($event, item)"
-              />
               <el-icon class="git-visibility-icon" :title="visibilityTitle(item)">
                 <Unlock v-if="item.visibility === 'public'" />
                 <Lock v-else />
@@ -107,6 +103,11 @@
             </div>
           </div>
           <div class="git-repo-item__stats">
+            <star-switch
+              class="git-repo-stat-star"
+              v-model="item.collect"
+              @change="clickCollectHandle($event, item)"
+            />
             <span class="git-stat" :title="$t('git.repo.browse')" @click="handleBrowse(item)">
               <el-icon><View /></el-icon>
             </span>
@@ -237,13 +238,13 @@ export default {
       }
       return '/…/…/code/'
     },
-    /** 路径名称下方的仓库地址预览（随 slug / 团队项目 key 变化） */
+    /** 路径名称下方的仓库地址预览（随 slug / 团队项目 key 变化；clone 含 .git） */
     slugRepoAddressPreview() {
       const slug = (this.form && this.form.slug || '').trim()
       if (!slug || !this.pathTeamKey || !this.pathProjectKey) {
         return ''
       }
-      return `${window.location.origin}/${this.pathTeamKey}/${this.pathProjectKey}/code/${slug}`
+      return `${window.location.origin}/${this.pathTeamKey}/${this.pathProjectKey}/code/${slug}.git`
     },
     sortedList() {
       const list = [...this.repoList]
@@ -485,9 +486,21 @@ export default {
       })
     },
     handleBrowse(row) {
+      if (row.teamKey && row.projectKey && row.slug) {
+        this.$router.push({
+          name: 'GitRepoBrowse',
+          params: {
+            teamKey: row.teamKey,
+            projectKey: row.projectKey,
+            slug: row.slug
+          }
+        })
+        return
+      }
+      // Fallback: legacy id path (redirects to slug when resolvable)
       this.$router.push({
         path: '/project/git-repo/browse/' + row.repositoryId,
-        query: { name: row.name, slug: row.slug }
+        query: row.slug ? { slug: row.slug } : {}
       })
     },
     submitForm() {
@@ -751,6 +764,11 @@ export default {
     flex-shrink: 0;
     padding-top: 2px;
   }
+}
+
+.git-repo-stat-star {
+  flex-shrink: 0;
+  line-height: 1;
 }
 
 .git-visibility-icon {

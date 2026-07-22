@@ -19,12 +19,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * 内嵌前端（classpath:/static/index.html）history 路由：浏览器 GET 且 Accept 含 text/html 时直接输出 index.html。
  * <p>
  * 避免 GET /login 等 SPA 路径落到 {@code @PostMapping("/login")} 等 API 上返回 405；
  * 不使用 {@code forward:/index.html}，以免与 Thymeleaf/Controller 视图解析冲突。
+ * 排除 Git Smart HTTP：既有 {@code /git/**}，以及 namespaced
+ * {@code /{teamKey}/{projectKey}/code/{slug}.git/**}。
  * </p>
  */
 @Component
@@ -33,6 +36,13 @@ import java.util.List;
 public class EmbeddedSpaFallbackFilter extends OncePerRequestFilter
 {
     private static final String INDEX_HTML_LOCATION = "classpath:/static/index.html";
+
+    /**
+     * Namespaced Git Smart HTTP: /{teamKey}/{projectKey}/code/{slug}.git and everything under it.
+     * SPA browse paths like /{teamKey}/{projectKey}/code/{slug} are not matched.
+     */
+    private static final Pattern NAMESPACED_GIT_SMART_HTTP =
+            Pattern.compile("^/[^/]+/[^/]+/code/[^/]+\\.git(?:/.*)?$");
 
     private static final List<String> EXCLUDED_PREFIXES = List.of(
             "/static/",
@@ -116,7 +126,15 @@ public class EmbeddedSpaFallbackFilter extends OncePerRequestFilter
                 return true;
             }
         }
-        return false;
+        return isNamespacedGitSmartHttp(path);
+    }
+
+    /**
+     * {@code /{teamKey}/{projectKey}/code/{slug}.git} and descendants (Smart HTTP), not SPA {@code .../code/{slug}}.
+     */
+    static boolean isNamespacedGitSmartHttp(String path)
+    {
+        return path != null && NAMESPACED_GIT_SMART_HTTP.matcher(path).matches();
     }
 
     static boolean hasStaticExtension(String path)

@@ -156,6 +156,37 @@ public class SysGitBrowseServiceImplTest
     }
 
     @Test
+    public void createBranch_staleMetaDefault_fallsBackToHead() throws Exception
+    {
+        initRepoWithOneCommit();
+        repositoryMetadata.setDefaultBranch("master");
+        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+
+        GitBranchInfo branch = service.createBranch(REPOSITORY_ID, "feature/from-head", null);
+
+        assertEquals("feature/from-head", branch.getName());
+        assertTrue(branchExists("feature/from-head"));
+    }
+
+    @Test
+    public void createBranch_missingExplicitFromRef_rejected() throws Exception
+    {
+        initRepoWithOneCommit();
+        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+
+        try
+        {
+            service.createBranch(REPOSITORY_ID, "feature/bad", "master");
+            fail("expected ServiceException: source not found");
+        }
+        catch (ServiceException expected)
+        {
+            // explicit missing fromRef must not silently fall back to HEAD
+        }
+        assertFalse(branchExists("feature/bad"));
+    }
+
+    @Test
     public void createBranch_developUserDenied() throws Exception
     {
         initRepoWithOneCommit();

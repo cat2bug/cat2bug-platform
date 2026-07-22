@@ -38,7 +38,7 @@
                   v-for="(route, index) in projectRouters"
                   :key="route.path  + index"
                   :item="route"
-                  :base-path="'project/'+route.path"
+                  :base-path="projectMenuBasePath(route)"
               />
           </el-menu>
           <div v-show="!teamLock && teamId && !projectLock && projectId && projectRouters.length > 0 && !routesRefreshing" class="sidebar-divider">
@@ -117,6 +117,7 @@ import { useUserStore } from '@/stores/user'
 import TeamSelect from "./TeamSelect"
 import SidebarItem from "./SidebarItem";
 import variables from "@/assets/styles/variables.js";
+import { resolveProjectScopedActiveMenu } from '@/utils/project-module-path'
 
 export default {
     components: { SidebarItem, TeamSelect },
@@ -214,14 +215,18 @@ export default {
           return [];
         }
       },
+      /** Absolute namespaced menu paths use themselves as base; legacy keep `project/{seg}`. */
+      projectMenuBasePath() {
+        return function (route) {
+          const p = route && route.path != null ? String(route.path) : ''
+          if (p.startsWith('/')) return p
+          return 'project/' + p
+        }
+      },
       activeMenu() {
           const route = this.$route;
           const { meta, path } = route;
-          // if set path, the sidebar will highlight the path you set
-          if (meta.activeMenu) {
-              return meta.activeMenu;
-          }
-          return path;
+          return resolveProjectScopedActiveMenu(path, meta && meta.activeMenu);
       },
       showLogo() {
           return this.sidebarLogo

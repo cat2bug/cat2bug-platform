@@ -1857,6 +1857,7 @@
   "git.repo.branches.from-ref": "基于分支",
   "git.repo.branches.from-ref-placeholder": "默认使用默认分支",
   "git.repo.branches.from-ref-tip": "留空时基于当前默认分支创建",
+  "git.repo.branches.from-ref-missing": "基于分支不存在，请从列表中选择",
   "git.repo.branches.create-success": "分支已创建",
   "git.repo.branches.manage-actions": "分支管理操作",
   "git.repo.branches.set-default": "设为默认分支",

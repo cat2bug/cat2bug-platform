@@ -63,6 +63,7 @@
 import { ArrowRight, Plus, Search } from '@element-plus/icons-vue'
 import { listGitPullRequests } from '@/api/system/gitPullRequest'
 import { getGitRepo } from '@/api/system/gitRepo'
+import { gitRepoPullDetailRoute, gitRepoPullNewRoute } from '@/utils/git-repo-routes'
 import { checkPermi } from '@/utils/permission'
 import { formatTime } from '@/utils/index'
 import { parseTime } from '@/utils/ruoyi'
@@ -74,7 +75,7 @@ export default {
   data() {
     return {
       repositoryId: Number(this.$route.params.repositoryId),
-      repoName: String(this.$route.query.name || ''),
+      repoName: String(this.$route.params.slug || ''),
       state: String(this.$route.query.state || 'open'),
       keyword: '',
       pulls: [],
@@ -122,18 +123,10 @@ export default {
       })
     },
     openNew() {
-      this.$router.push({
-        name: 'GitRepoPullRequestNew',
-        params: { repositoryId: String(this.repositoryId) },
-        query: this.repoName ? { name: this.repoName } : {}
-      }).catch(() => {})
+      this.$router.push(gitRepoPullNewRoute(this.$route)).catch(() => {})
     },
     openDetail(number) {
-      this.$router.push({
-        name: 'GitRepoPullRequestDetail',
-        params: { repositoryId: String(this.repositoryId), number: String(number) },
-        query: this.repoName ? { name: this.repoName } : {}
-      }).catch(() => {})
+      this.$router.push(gitRepoPullDetailRoute(this.$route, number)).catch(() => {})
     },
     stateLabel(state) {
       return this.$t('git.repo.pr.state.' + state)
@@ -149,9 +142,13 @@ export default {
 
 <style lang="scss" scoped>
 .git-pr-page {
-  max-height: calc(100vh - 84px);
-  overflow: auto;
-  padding: 16px 20px 24px;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 20px 20px 0;
+  box-sizing: border-box;
   color: var(--text-color-regular);
 }
 
