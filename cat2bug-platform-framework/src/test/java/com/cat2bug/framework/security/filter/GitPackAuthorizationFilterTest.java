@@ -37,6 +37,7 @@ import static org.mockito.Mockito.when;
 class GitPackAuthorizationFilterTest
 {
     private static final Long PROJECT_ID = 10L;
+    private static final Long REPOSITORY_ID = 1L;
     private static final Long USER_ID = 7L;
     private static final String SLUG = "backend";
 
@@ -123,7 +124,7 @@ class GitPackAuthorizationFilterTest
         MockHttpServletRequest request = infoRefsRequest("git-upload-pack");
         GitRepositoryRef ref = new GitRepositoryRef(1L, PROJECT_ID, SLUG, "/tmp/repo.git", "main");
         when(gitRepositoryLookup.findByProjectIdAndSlug(PROJECT_ID, SLUG)).thenReturn(Optional.of(ref));
-        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(false);
+        when(gitRepositoryAccessService.canPull(USER_ID, REPOSITORY_ID)).thenReturn(false);
 
         filter.doFilterInternal(request, response, filterChain);
 
@@ -139,8 +140,8 @@ class GitPackAuthorizationFilterTest
                 "/git/p/" + PROJECT_ID + "/" + SLUG + ".git/git-receive-pack");
         GitRepositoryRef ref = new GitRepositoryRef(1L, PROJECT_ID, SLUG, "/tmp/repo.git", "main");
         when(gitRepositoryLookup.findByProjectIdAndSlug(PROJECT_ID, SLUG)).thenReturn(Optional.of(ref));
-        when(gitRepositoryAccessService.canPush(USER_ID, PROJECT_ID)).thenReturn(true);
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(false);
+        when(gitRepositoryAccessService.canPush(USER_ID, REPOSITORY_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(false);
 
         filter.doFilterInternal(request, response, filterChain);
 
@@ -158,8 +159,8 @@ class GitPackAuthorizationFilterTest
                 "/git/p/" + PROJECT_ID + "/" + SLUG + ".git/git-receive-pack");
         GitRepositoryRef ref = new GitRepositoryRef(1L, PROJECT_ID, SLUG, "/tmp/repo.git", "main");
         when(gitRepositoryLookup.findByProjectIdAndSlug(PROJECT_ID, SLUG)).thenReturn(Optional.of(ref));
-        when(gitRepositoryAccessService.canPush(USER_ID, PROJECT_ID)).thenReturn(true);
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canPush(USER_ID, REPOSITORY_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(true);
 
         filter.doFilterInternal(request, response, filterChain);
 
@@ -178,7 +179,7 @@ class GitPackAuthorizationFilterTest
         GitRepositoryRef ref = new GitRepositoryRef(1L, PROJECT_ID, SLUG, "/tmp/repo.git", "main");
         when(gitRepositoryLookup.findByTeamKeyAndProjectKeyAndSlug("acme", "demo", SLUG))
                 .thenReturn(Optional.of(ref));
-        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canPull(USER_ID, REPOSITORY_ID)).thenReturn(true);
 
         filter.doFilterInternal(request, response, filterChain);
 

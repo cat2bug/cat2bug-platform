@@ -12,7 +12,7 @@
       </template>
       <router-link
         v-if="canListDefectFields"
-        to="defect-fields"
+        :to="href('defect-fields')"
       >
         <el-link>{{ $t('defect.custom-field.manage') }}</el-link>
       </router-link>
@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import { hasAnyPermi } from '@/utils/project-option-card'
+import { hasAnyPermi, projectOptionHref } from '@/utils/project-option-card'
 
 export default {
   name: "DefectSettingsCard",
@@ -38,6 +38,9 @@ export default {
     cardVisible() {
       return this.canListDefectFields
     }
+  },
+  methods: {
+    href: projectOptionHref
   }
 }
 </script>

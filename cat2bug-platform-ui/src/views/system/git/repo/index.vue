@@ -137,74 +137,12 @@
       @success="onCreateSuccess"
     />
 
-    <!-- 编辑 / 设置（保留原对话框） -->
-    <el-dialog
-      :title="title"
-      v-model="open"
-      width="560px"
-      append-to-body
-      :close-on-click-modal="false"
-      destroy-on-close
-    >
-      <el-form ref="form" :model="form" :rules="rules" label-width="110px">
-        <el-form-item :label="$t('git.repo.name')" prop="name">
-          <el-input
-            v-model="form.name"
-            maxlength="100"
-            :placeholder="$t('git.repo.name')"
-            @input="onRepoNameInput"
-          />
-        </el-form-item>
-        <el-form-item :label="$t('git.repo.slug')" prop="slug">
-          <el-input
-            v-model="form.slug"
-            style="max-width: 600px"
-            maxlength="100"
-            :placeholder="$t('git.repo.slug-placeholder')"
-            @input="onRepoSlugInput"
-          >
-            <template #prepend>{{ pathPrefixDisplay }}</template>
-          </el-input>
-          <div v-if="slugRepoAddressPreview" class="form-tip git-repo-address-tip">
-            {{ $t('git.repo.repo-address') }}{{ slugRepoAddressPreview }}
-          </div>
-          <div class="form-tip">
-            {{ $t('git.repo.slug-format-hint') }}
-            <span v-if="form.repositoryId">，{{ $t('git.repo.slug-readonly-hint') }}</span>
-          </div>
-        </el-form-item>
-        <el-form-item :label="$t('git.repo.visibility')" prop="visibility">
-          <el-radio-group v-model="form.visibility">
-            <el-radio label="public">{{ $t('git.repo.visibility-public') }}</el-radio>
-            <el-radio label="project">{{ $t('git.repo.visibility-project') }}</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item :label="$t('git.repo.default-branch')" prop="defaultBranch">
-          <el-input v-model="form.defaultBranch" maxlength="100" placeholder="master" />
-        </el-form-item>
-        <el-form-item :label="$t('git.repo.remark')" prop="remark">
-          <el-input v-model="form.remark" type="textarea" :rows="3" maxlength="500" show-word-limit />
-        </el-form-item>
-        <el-form-item v-if="form.repositoryId" :label="$t('git.repo.clone-url')">
-          <div class="clone-url-row">
-            <el-input :model-value="fullCloneUrl(form)" readonly size="small" />
-            <el-button size="small" :icon="$legacyIcon('el-icon-document-copy')" @click="copyCloneUrl(form)">{{ $t('git.repo.copy-clone-url') }}</el-button>
-          </div>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" size="small" @click="submitForm">{{ $t('ok') }}</el-button>
-          <el-button size="small" @click="cancel">{{ $t('cancel') }}</el-button>
-        </div>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script>
 import { FolderOpened, View, CopyDocument, Setting, Lock, Unlock, Document } from '@element-plus/icons-vue'
-import { listGitRepo, updateGitRepo, delGitRepo, collectGitRepo } from '@/api/system/gitRepo'
+import { listGitRepo, delGitRepo, collectGitRepo } from '@/api/system/gitRepo'
 import { getProject } from '@/api/system/project'
 import ProjectLabel from '@/components/Project/ProjectLabel'
 import StarSwitch from '@/components/StarSwitch'
@@ -212,8 +150,7 @@ import GitRepoCreateDialog from '@/components/Git/GitRepoCreateDialog'
 import { getCurrentProjectId } from '@/utils/store-context'
 import { formatTime } from '@/utils/index'
 import { parseTime } from '@/utils/ruoyi'
-
-const SLUG_PATTERN = /^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?$/
+import { gitRepoSettingsGeneralRoute } from '@/utils/git-repo-routes'
 
 export default {
   name: 'GitRepo',
@@ -234,43 +171,17 @@ export default {
       loading: true,
       repoList: [],
       createOpen: false,
-      open: false,
-      title: '',
-      form: {},
-      originalSlug: null,
-      slugManual: false,
       pathTeamKey: '',
       pathProjectKey: '',
       queryParams: {
         keyword: '',
         sort: 'updated'
-      },
-      rules: {
-        name: [{ required: true, message: this.$t('git.repo.name-required'), trigger: 'blur' }],
-        slug: [
-          { required: true, message: this.$t('git.repo.slug-required'), trigger: 'blur' },
-          { pattern: SLUG_PATTERN, message: this.$t('git.repo.slug-format-hint'), trigger: 'blur' }
-        ]
       }
     }
   },
   computed: {
     listProjectId() {
       return getCurrentProjectId()
-    },
-    pathPrefixDisplay() {
-      if (this.pathTeamKey && this.pathProjectKey) {
-        return `/${this.pathTeamKey}/${this.pathProjectKey}/code/`
-      }
-      return '/…/…/code/'
-    },
-    /** 路径名称下方的仓库地址预览（随 slug / 团队项目 key 变化；clone 含 .git） */
-    slugRepoAddressPreview() {
-      const slug = (this.form && this.form.slug || '').trim()
-      if (!slug || !this.pathTeamKey || !this.pathProjectKey) {
-        return ''
-      }
-      return `${window.location.origin}/${this.pathTeamKey}/${this.pathProjectKey}/code/${slug}.git`
     },
     sortedList() {
       const list = [...this.repoList]
@@ -323,38 +234,6 @@ export default {
       return item && item.visibility === 'public'
         ? this.$t('git.repo.visibility-public')
         : this.$t('git.repo.visibility-project')
-    },
-    /** 由仓库名称推导路径名称（仅保留 slug 允许字符） */
-    suggestSlugFromName(name) {
-      if (!name) return ''
-      let s = String(name).trim().replace(/[^a-zA-Z0-9._-]+/g, '-')
-      s = s.replace(/[-._]{2,}/g, '-')
-      s = s.replace(/^[^a-zA-Z0-9]+/, '').replace(/[^a-zA-Z0-9]+$/, '')
-      if (s.length > 100) {
-        s = s.slice(0, 100).replace(/[^a-zA-Z0-9]+$/, '')
-      }
-      return s
-    },
-    onRepoNameInput() {
-      if (this.form.repositoryId || this.slugManual) return
-      this.form.slug = this.suggestSlugFromName(this.form.name)
-      // 程序化回填不会触发 slug 的 blur 校验，需主动清除/重校，否则会残留「不能为空」
-      this.$nextTick(() => {
-        const form = this.$refs.form
-        if (!form) return
-        if (this.form.slug) {
-          form.clearValidate('slug')
-        } else {
-          form.validateField('slug')
-        }
-      })
-    },
-    onRepoSlugInput() {
-      if (!(this.form.slug || '').trim()) {
-        this.slugManual = false
-        return
-      }
-      this.slugManual = true
     },
     getProjectId() {
       return getCurrentProjectId()
@@ -458,24 +337,6 @@ export default {
         this.pathProjectKey = d.projectKey || ''
       }).catch(() => {})
     },
-    reset() {
-      this.form = {
-        repositoryId: null,
-        projectId: this.getProjectId(),
-        name: null,
-        slug: null,
-        defaultBranch: 'master',
-        visibility: 'project',
-        remark: null
-      }
-      this.originalSlug = null
-      this.slugManual = false
-      this.resetForm('form')
-    },
-    cancel() {
-      this.open = false
-      this.reset()
-    },
     handleAdd() {
       this.ensurePathKeys().finally(() => {
         this.createOpen = true
@@ -484,32 +345,27 @@ export default {
     onCreateSuccess() {
       this.getList()
     },
+    /** Open shell settings (preferred editor); featured card + list share this entry. */
     handleUpdate(row) {
-      this.reset()
-      if (row.teamKey && row.projectKey) {
-        this.pathTeamKey = row.teamKey
-        this.pathProjectKey = row.projectKey
+      const teamKey = row.teamKey || this.pathTeamKey
+      const projectKey = row.projectKey || this.pathProjectKey
+      const slug = row.slug
+      if (teamKey && projectKey && slug) {
+        this.$router.push(gitRepoSettingsGeneralRoute({ teamKey, projectKey, slug })).catch(() => {})
+        return
       }
-      this.form = {
-        repositoryId: row.repositoryId,
-        projectId: row.projectId || this.getProjectId(),
-        name: row.name,
-        slug: row.slug,
-        defaultBranch: row.defaultBranch || 'master',
-        visibility: row.visibility === 'public' ? 'public' : 'project',
-        remark: row.remark,
-        cloneUrl: row.cloneUrl,
-        teamKey: row.teamKey,
-        projectKey: row.projectKey
-      }
-      this.originalSlug = row.slug
-      this.slugManual = true
       this.ensurePathKeys().finally(() => {
-        this.open = true
-        this.title = this.$t('modify')
-        this.$nextTick(() => {
-          if (this.$refs.form) this.$refs.form.clearValidate()
-        })
+        const tk = row.teamKey || this.pathTeamKey
+        const pk = row.projectKey || this.pathProjectKey
+        if (tk && pk && row.slug) {
+          this.$router.push(gitRepoSettingsGeneralRoute({
+            teamKey: tk,
+            projectKey: pk,
+            slug: row.slug
+          })).catch(() => {})
+          return
+        }
+        this.$modal.msgError(this.$t('git.repo.settings.nav-failed'))
       })
     },
     handleBrowse(row) {
@@ -528,44 +384,6 @@ export default {
       this.$router.push({
         path: '/project/git-repo/browse/' + row.repositoryId,
         query: row.slug ? { slug: row.slug } : {}
-      })
-    },
-    submitForm() {
-      if (!this.form.repositoryId && !(this.form.slug || '').trim()) {
-        this.form.slug = this.suggestSlugFromName(this.form.name)
-      }
-      this.$refs.form.validate(valid => {
-        if (!valid) return
-        const isEdit = !!this.form.repositoryId
-        const slugChanged = isEdit && this.originalSlug != null && this.form.slug !== this.originalSlug
-        if (slugChanged) {
-          this.$modal.confirm(
-            this.$t('git.repo.slug-change-warning-content'),
-            this.$t('git.repo.slug-change-warning-title'),
-            { confirmButtonText: this.$t('ok'), cancelButtonText: this.$t('cancel'), type: 'warning' }
-          ).then(() => this.doSubmit(isEdit)).catch(() => {})
-        } else {
-          this.doSubmit(isEdit)
-        }
-      })
-    },
-    doSubmit(isEdit) {
-      const payload = {
-        repositoryId: this.form.repositoryId,
-        projectId: this.form.projectId || this.getProjectId(),
-        name: this.form.name,
-        slug: this.form.slug,
-        defaultBranch: this.form.defaultBranch,
-        visibility: this.form.visibility === 'public' ? 'public' : 'project',
-        remark: this.form.remark
-      }
-      updateGitRepo(payload).then(response => {
-        this.$modal.msgSuccess(this.$t('modify-success'))
-        if (response && response.cloneUrlChanged) {
-          this.$modal.msgWarning(response.message || this.$t('git.repo.slug-changed-hint'))
-        }
-        this.open = false
-        this.getList()
       })
     },
     handleDelete(row) {

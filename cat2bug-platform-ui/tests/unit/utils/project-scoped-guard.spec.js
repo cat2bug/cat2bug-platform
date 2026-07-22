@@ -55,6 +55,18 @@ describe('project-module-path (scoped routes)', () => {
   it('rejects illegal third segment', () => {
     expect(parseProjectScopedPath('/acme/demo/not-a-module')).toBeNull()
   })
+
+  it('does not treat /invite/:token as project-scoped path', () => {
+    expect(parseProjectScopedPath(
+      '/invite/b7bd912c89ad43e88139e089ad716cffa9fa8b062a5a4f79a14eeb5c6c9dc370'
+    )).toBeNull()
+  })
+
+  it('does not treat /team-options/* as project-scoped path', () => {
+    expect(parseProjectScopedPath('/team-options/team-option')).toBeNull()
+    expect(parseProjectScopedPath('/team-options/team-base-info')).toBeNull()
+    expect(parseProjectScopedPath('/team-options/team-member')).toBeNull()
+  })
 })
 
 describe('project menu rewrite (3.1 / 3.3)', () => {

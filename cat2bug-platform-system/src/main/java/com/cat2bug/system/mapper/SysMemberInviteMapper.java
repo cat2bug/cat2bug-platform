@@ -21,9 +21,13 @@ public interface SysMemberInviteMapper {
     List<SysMemberInvite> selectActiveSysMemberInviteListByProjectId(@Param("projectId") Long projectId,
                                                                        @Param("now") Date now);
 
+    List<SysMemberInvite> selectActiveSysMemberInviteListByRepositoryId(@Param("repositoryId") Long repositoryId,
+                                                                          @Param("now") Date now);
+
     int insertSysMemberInvite(SysMemberInvite invite);
 
     int revokeSysMemberInvite(@Param("inviteId") Long inviteId,
                               @Param("teamId") Long teamId,
-                              @Param("projectId") Long projectId);
+                              @Param("projectId") Long projectId,
+                              @Param("repositoryId") Long repositoryId);
 }

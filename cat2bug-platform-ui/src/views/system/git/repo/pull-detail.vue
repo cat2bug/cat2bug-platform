@@ -1,13 +1,6 @@
 <template>
   <div class="app-container git-pr-detail" v-loading="loading">
     <git-repo-shell :repository-id="repositoryId" :repo-name="repoName" active-tab="pulls">
-      <template #title-extra>
-        <template v-if="pull">
-          <span class="git-pr-detail__sep">/</span>
-          <code class="git-pr-detail__number">#{{ pull.number }}</code>
-        </template>
-      </template>
-
       <template v-if="pull">
         <section class="git-pr-detail__summary">
           <div class="git-pr-detail__summary-head">
@@ -319,8 +312,6 @@ export default {
   box-sizing: border-box;
   color: var(--text-color-regular);
 }
-.git-pr-detail__sep { color: var(--text-color-secondary); font-weight: 400; }
-.git-pr-detail__number { padding: 2px 6px; border-radius: 4px; background: var(--bg-color-block); font-size: 13px; color: var(--text-color-secondary); }
 .git-pr-detail__summary {
   margin-bottom: 18px;
   padding: 18px;

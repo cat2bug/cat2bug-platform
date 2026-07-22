@@ -1,7 +1,9 @@
 package com.cat2bug.web.controller.git;
 
+import com.cat2bug.common.core.domain.model.LoginUser;
 import com.cat2bug.framework.security.git.GitPackRequestContext;
 import com.cat2bug.system.domain.git.GitRepositoryRef;
+import com.cat2bug.system.service.git.GitWebhookEnqueueService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jgit.lib.Repository;
@@ -12,7 +14,10 @@ import org.eclipse.jgit.transport.RefAdvertiser;
 import org.eclipse.jgit.transport.UploadPack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,6 +50,9 @@ import java.util.zip.GZIPInputStream;
 public class GitSmartHttpController
 {
     private static final Logger log = LoggerFactory.getLogger(GitSmartHttpController.class);
+
+    @Autowired
+    private GitWebhookEnqueueService gitWebhookEnqueueService;
 
     private static final String SERVICE_UPLOAD_PACK = "git-upload-pack";
     private static final String SERVICE_RECEIVE_PACK = "git-receive-pack";
@@ -159,6 +167,20 @@ public class GitSmartHttpController
             receivePack.setBiDirectionalPipe(false);
             // 3.4：非 manage 用户不允许非快进；JGit 内建校验会按此逐条拒绝非快进的 ref update
             receivePack.setAllowNonFastForwards(context.isForcePushAllowed());
+            Long pusherUserId = currentUserId();
+            GitRepositoryRef repoRef = context.getRepository();
+            receivePack.setPostReceiveHook((pack, commands) -> {
+                try
+                {
+                    gitWebhookEnqueueService.onReceivePackSuccessful(
+                            repoRef.getRepositoryId(), pusherUserId, pack.getRepository(), commands);
+                }
+                catch (Exception ex)
+                {
+                    log.warn("Webhook PostReceiveHook 失败：repositoryId={} {}", repoRef.getRepositoryId(),
+                            ex.toString());
+                }
+            });
             // 推送人身份仅由 HTTP Basic + 项目 push 权限识别，不强制 commit author/committer 与账号一致
             // （便于导入既有历史；提交作者仍保留在 Git 元数据中供浏览展示）
             try
@@ -241,5 +263,16 @@ public class GitSmartHttpController
             input.close();
         }
         return Files.newInputStream(tmp, StandardOpenOption.READ, StandardOpenOption.DELETE_ON_CLOSE);
+    }
+
+    private static Long currentUserId()
+    {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated())
+        {
+            return null;
+        }
+        Object principal = authentication.getPrincipal();
+        return principal instanceof LoginUser ? ((LoginUser) principal).getUserId() : null;
     }
 }

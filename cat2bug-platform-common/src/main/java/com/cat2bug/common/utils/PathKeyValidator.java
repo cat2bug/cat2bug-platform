@@ -19,7 +19,10 @@ public final class PathKeyValidator
     private static final Set<String> RESERVED = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "login", "register", "logout", "setup", "upgrade", "static", "profile", "prod-api",
             "git", "system", "project", "docs", "websocket", "captchaImage", "version", "index",
-            "home", "api", "oauth", "actuator", "error", "favicon.ico", "code"
+            "home", "api", "oauth", "actuator", "error", "favicon.ico", "code",
+            // SPA 第一路径段，不可作 teamKey（与前端 PATH_KEY_RESERVED 对齐）
+            "invite", "redirect", "404", "401", "tools", "tool", "shard", "monitor", "admin",
+            "team", "team-options"
     )));
 
     private PathKeyValidator()

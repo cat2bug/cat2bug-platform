@@ -59,8 +59,8 @@ public class SysGitReleaseServiceImpl implements ISysGitReleaseService
     public List<SysGitRelease> listReleases(Long repositoryId)
     {
         SysGitRepository repo = requireRepository(repositoryId);
-        assertPull(repo.getProjectId());
-        boolean excludeDraft = !canManage(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
+        boolean excludeDraft = !canManage(repo.getRepositoryId());
         return sysGitReleaseMapper.selectSysGitReleaseListByRepositoryId(repositoryId, excludeDraft);
     }
 
@@ -68,9 +68,9 @@ public class SysGitReleaseServiceImpl implements ISysGitReleaseService
     public SysGitRelease getRelease(Long repositoryId, Long releaseId)
     {
         SysGitRepository repo = requireRepository(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         SysGitRelease release = requireRelease(releaseId, repositoryId);
-        assertVisible(release, repo.getProjectId());
+        assertVisible(release, repo.getRepositoryId());
         release.setAssets(sysGitReleaseAssetMapper.selectSysGitReleaseAssetListByReleaseId(releaseId));
         fillTargetCommitMessage(repo, release);
         return release;
@@ -102,7 +102,7 @@ public class SysGitReleaseServiceImpl implements ISysGitReleaseService
     public SysGitRelease createRelease(Long repositoryId, SysGitRelease release)
     {
         SysGitRepository repo = requireRepository(repositoryId);
-        assertManage(repo.getProjectId());
+        assertManage(repo.getRepositoryId());
         validateCreateBody(release);
 
         String tagName = release.getTagName().trim();
@@ -172,7 +172,7 @@ public class SysGitReleaseServiceImpl implements ISysGitReleaseService
     public SysGitRelease updateRelease(Long repositoryId, Long releaseId, SysGitRelease patch)
     {
         SysGitRepository repo = requireRepository(repositoryId);
-        assertManage(repo.getProjectId());
+        assertManage(repo.getRepositoryId());
         SysGitRelease existing = requireRelease(releaseId, repositoryId);
 
         if (patch.getTitle() != null)
@@ -215,7 +215,7 @@ public class SysGitReleaseServiceImpl implements ISysGitReleaseService
     public void deleteRelease(Long repositoryId, Long releaseId)
     {
         SysGitRepository repo = requireRepository(repositoryId);
-        assertManage(repo.getProjectId());
+        assertManage(repo.getRepositoryId());
         requireRelease(releaseId, repositoryId);
 
         List<SysGitReleaseAsset> assets =
@@ -234,7 +234,7 @@ public class SysGitReleaseServiceImpl implements ISysGitReleaseService
     public SysGitReleaseAsset uploadAsset(Long repositoryId, Long releaseId, MultipartFile file) throws IOException
     {
         SysGitRepository repo = requireRepository(repositoryId);
-        assertManage(repo.getProjectId());
+        assertManage(repo.getRepositoryId());
         SysGitRelease release = requireRelease(releaseId, repositoryId);
 
         if (file == null || file.isEmpty())
@@ -297,9 +297,9 @@ public class SysGitReleaseServiceImpl implements ISysGitReleaseService
     public List<SysGitReleaseAsset> listAssets(Long repositoryId, Long releaseId)
     {
         SysGitRepository repo = requireRepository(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         SysGitRelease release = requireRelease(releaseId, repositoryId);
-        assertVisible(release, repo.getProjectId());
+        assertVisible(release, repo.getRepositoryId());
         return sysGitReleaseAssetMapper.selectSysGitReleaseAssetListByReleaseId(releaseId);
     }
 
@@ -308,7 +308,7 @@ public class SysGitReleaseServiceImpl implements ISysGitReleaseService
     public void deleteAsset(Long repositoryId, Long releaseId, Long assetId)
     {
         SysGitRepository repo = requireRepository(repositoryId);
-        assertManage(repo.getProjectId());
+        assertManage(repo.getRepositoryId());
         requireRelease(releaseId, repositoryId);
         SysGitReleaseAsset asset = requireAsset(assetId, releaseId, repositoryId);
         deleteAssetFile(asset);
@@ -320,9 +320,9 @@ public class SysGitReleaseServiceImpl implements ISysGitReleaseService
             throws IOException
     {
         SysGitRepository repo = requireRepository(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         SysGitRelease release = requireRelease(releaseId, repositoryId);
-        assertVisible(release, repo.getProjectId());
+        assertVisible(release, repo.getRepositoryId());
         SysGitReleaseAsset asset = requireAsset(assetId, releaseId, repositoryId);
 
         File file = GitReleaseStoragePaths.absoluteFile(asset.getStoragePath());
@@ -388,36 +388,36 @@ public class SysGitReleaseServiceImpl implements ISysGitReleaseService
         return asset;
     }
 
-    private void assertVisible(SysGitRelease release, Long projectId)
+    private void assertVisible(SysGitRelease release, Long repositoryId)
     {
-        if (release.isDraftRelease() && !canManage(projectId))
+        if (release.isDraftRelease() && !canManage(repositoryId))
         {
             throw new ServiceException(com.cat2bug.common.utils.MessageUtils.message("no-permission"),
                     HttpStatus.FORBIDDEN);
         }
     }
 
-    private void assertPull(Long projectId)
+    private void assertPull(Long repositoryId)
     {
-        if (!gitRepositoryAccessService.canPull(SecurityUtils.getUserId(), projectId))
+        if (!gitRepositoryAccessService.canPull(SecurityUtils.getUserId(), repositoryId))
         {
             throw new ServiceException(com.cat2bug.common.utils.MessageUtils.message("no-permission"),
                     HttpStatus.FORBIDDEN);
         }
     }
 
-    private void assertManage(Long projectId)
+    private void assertManage(Long repositoryId)
     {
-        if (!canManage(projectId))
+        if (!canManage(repositoryId))
         {
             throw new ServiceException(com.cat2bug.common.utils.MessageUtils.message("no-permission"),
                     HttpStatus.FORBIDDEN);
         }
     }
 
-    private boolean canManage(Long projectId)
+    private boolean canManage(Long repositoryId)
     {
-        return gitRepositoryAccessService.canManage(SecurityUtils.getUserId(), projectId);
+        return gitRepositoryAccessService.canManage(SecurityUtils.getUserId(), repositoryId);
     }
 
     private static int booleanToInt(Integer value, Integer defaultValue)

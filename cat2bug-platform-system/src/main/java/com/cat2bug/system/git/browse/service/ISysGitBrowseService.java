@@ -46,6 +46,16 @@ public interface ISysGitBrowseService
     List<GitCommitInfo> listCommits(Long repositoryId, String ref, Integer limit);
 
     /**
+     * 提交列表（可按作者与日期过滤；过滤后再应用 limit）。
+     *
+     * @param author 作者 email 或 name（与贡献者下拉口径一致），空则不过滤
+     * @param since  起始日 {@code yyyy-MM-dd}（含当天 00:00:00），空则无下界
+     * @param until  结束日 {@code yyyy-MM-dd}（含当天 23:59:59），空则无上界
+     */
+    List<GitCommitInfo> listCommits(Long repositoryId, String ref, Integer limit, String author, String since,
+            String until);
+
+    /**
      * 单条提交详情（全文消息 + 相对 first parent 的文件 diff，含 patch 大小限制）。
      *
      * @param commitId 完整或仓库内可解析的缩写 commit id
@@ -66,5 +76,13 @@ public interface ISysGitBrowseService
      * @param format {@code zip} 或 {@code tar.gz}
      */
     void writeArchive(Long repositoryId, String ref, String format, jakarta.servlet.http.HttpServletResponse response)
+            throws java.io.IOException;
+
+    /**
+     * 将指定 ref 下的文件字节流写入响应（供 README 等 Markdown 内相对图片引用）。
+     *
+     * @param path 仓库内相对路径
+     */
+    void writeRawBlob(Long repositoryId, String ref, String path, jakarta.servlet.http.HttpServletResponse response)
             throws java.io.IOException;
 }

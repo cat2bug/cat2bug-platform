@@ -172,7 +172,9 @@
   height: auto;
   margin: 16px 0;
   box-sizing: border-box;
-  background-color: #fff;
+  /* 浅色默认白底（透明图可读）；暗色由 theme-dark 覆盖，避免破图 alt 白块 */
+  background-color: var(--markdown-img-bg, #fff);
+  color: var(--markdown-img-alt-color, inherit);
   border-radius: 3px;
   vertical-align: middle;
   display: block;

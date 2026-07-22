@@ -1,6 +1,7 @@
-import { getGitRepo, resolveGitRepoByProjectAndSlug } from '@/api/system/gitRepo'
+import { getGitRepo, getGitRepoMyAccess, resolveGitRepoByProjectAndSlug } from '@/api/system/gitRepo'
+import { checkPermi } from '@/utils/permission'
 import { getCurrentProjectId } from '@/utils/store-context'
-import { isGitCloneSlugParam } from '@/utils/git-repo-routes'
+import { gitRepoBrowseRoute, isGitCloneSlugParam } from '@/utils/git-repo-routes'
 
 /** Named routes under `code/:slug/**` that need `repositoryId` injected. */
 export const GIT_REPO_SLUG_ROUTE_NAMES = new Set([
@@ -10,7 +11,12 @@ export const GIT_REPO_SLUG_ROUTE_NAMES = new Set([
   'GitRepoPullRequestNew',
   'GitRepoPullRequestDetail',
   'GitRepoReleaseDetail',
-  'GitRepoCommitDetail'
+  'GitRepoCommitDetail',
+  'GitRepoSettings',
+  'GitRepoSettingsGeneral',
+  'GitRepoSettingsDanger',
+  'GitRepoSettingsMembers',
+  'GitRepoSettingsWebhooks'
 ])
 
 function isValidRepositoryId(value) {
@@ -71,6 +77,53 @@ export async function attachGitRepoIdFromSlug(to, _from, next) {
   const result = await ensureGitRepoIdAttached(to)
   if (result !== 'ok') {
     next({ path: '/404', replace: true })
+    return
+  }
+  next()
+}
+
+/**
+ * True when the current user may manage the repository.
+ * Prefers permission word, then falls back to `GET .../my-access` (repo ACL admin
+ * may lack `system:git:repo:manage`). On my-access failure, only the permission word counts.
+ * @param {string|number} repositoryId
+ * @returns {Promise<boolean>}
+ */
+export async function canManageGitRepo(repositoryId) {
+  if (checkPermi(['system:git:repo:manage'])) {
+    return true
+  }
+  const id = Number(repositoryId)
+  if (!Number.isFinite(id) || id <= 0) {
+    return false
+  }
+  try {
+    const res = await getGitRepoMyAccess(id)
+    const access = (res && res.data) || {}
+    return !!access.canManage
+  } catch (e) {
+    return false
+  }
+}
+
+/**
+ * Attach repositoryId then require effective manage:
+ * `system:git:repo:manage` OR `my-access.canManage`.
+ * Used for settings routes (constant routes; not filtered via dynamic `permissions`).
+ * Denied users are redirected to the repository browse page.
+ */
+export async function attachGitRepoIdAndRequireManage(to, _from, next) {
+  const result = await ensureGitRepoIdAttached(to)
+  if (result !== 'ok') {
+    next({ path: '/404', replace: true })
+    return
+  }
+  const allowed = await canManageGitRepo(to.params.repositoryId)
+  if (!allowed) {
+    next({
+      ...gitRepoBrowseRoute(to),
+      replace: true
+    })
     return
   }
   next()

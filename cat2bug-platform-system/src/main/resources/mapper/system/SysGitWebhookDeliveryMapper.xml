@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysGitWebhookDeliveryMapper">
+
+    <resultMap type="SysGitWebhookDelivery" id="SysGitWebhookDeliveryResult">
+        <result property="deliveryId"              column="delivery_id" />
+        <result property="webhookId"               column="webhook_id" />
+        <result property="repositoryId"            column="repository_id" />
+        <result property="event"                   column="event" />
+        <result property="deliveryGuid"            column="delivery_guid" />
+        <result property="requestHeadersSummary"   column="request_headers_summary" />
+        <result property="requestBody"             column="request_body" />
+        <result property="responseStatus"          column="response_status" />
+        <result property="responseBodyTruncated"   column="response_body_truncated" />
+        <result property="durationMs"              column="duration_ms" />
+        <result property="success"                 column="success" />
+        <result property="errorMessage"            column="error_message" />
+        <result property="createTime"              column="create_time" />
+    </resultMap>
+
+    <insert id="insert" parameterType="SysGitWebhookDelivery" useGeneratedKeys="true" keyProperty="deliveryId">
+        insert into sys_git_webhook_delivery (
+            webhook_id, repository_id, event, delivery_guid, request_headers_summary, request_body,
+            response_status, response_body_truncated, duration_ms, success, error_message, create_time
+        ) values (
+            #{webhookId}, #{repositoryId}, #{event}, #{deliveryGuid}, #{requestHeadersSummary}, #{requestBody},
+            #{responseStatus}, #{responseBodyTruncated}, #{durationMs}, #{success}, #{errorMessage}, #{createTime}
+        )
+    </insert>
+
+    <select id="selectRecentByWebhookId" resultMap="SysGitWebhookDeliveryResult">
+        select delivery_id, webhook_id, repository_id, event, delivery_guid, request_headers_summary,
+               request_body, response_status, response_body_truncated, duration_ms, success,
+               error_message, create_time
+        from sys_git_webhook_delivery
+        where webhook_id = #{webhookId}
+        order by create_time desc, delivery_id desc
+        limit #{limit}
+    </select>
+
+    <delete id="deleteOlderThanKeepCount">
+        delete from sys_git_webhook_delivery
+        where webhook_id = #{webhookId}
+          and delivery_id not in (
+            select delivery_id from (
+                select delivery_id
+                from sys_git_webhook_delivery
+                where webhook_id = #{webhookId}
+                order by create_time desc, delivery_id desc
+                limit #{keepCount}
+            ) keep_rows
+          )
+    </delete>
+</mapper>

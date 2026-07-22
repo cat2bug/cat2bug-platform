@@ -84,6 +84,17 @@ export default {
           delete params.releaseId
           delete params.number
         }
+        if (
+          name === 'GitRepoSettings'
+          || name === 'GitRepoSettingsGeneral'
+          || name === 'GitRepoSettingsDanger'
+          || name === 'GitRepoSettingsMembers'
+          || name === 'GitRepoSettingsWebhooks'
+        ) {
+          delete params.commitId
+          delete params.releaseId
+          delete params.number
+        }
         if (name === 'GitRepoList') {
           delete params.slug
         }

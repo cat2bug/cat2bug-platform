@@ -6,6 +6,7 @@ import com.cat2bug.common.core.domain.model.LoginUser;
 import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.domain.SysUserProject;
+import com.cat2bug.system.mapper.SysGitRepositoryMemberMapper;
 import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.support.MessageSourceTestSupport;
@@ -38,6 +39,8 @@ public class SysProjectPathResolveServiceTest
     private SysProjectMapper sysProjectMapper;
     @Mock
     private SysUserProjectMapper sysUserProjectMapper;
+    @Mock
+    private SysGitRepositoryMemberMapper sysGitRepositoryMemberMapper;
 
     @InjectMocks
     private SysProjectServiceImpl sysProjectService;
@@ -107,6 +110,7 @@ public class SysProjectPathResolveServiceTest
         SysProject byKey = projectByKey();
         when(sysProjectMapper.selectSysProjectByTeamAndProjectKey("acme", "platform")).thenReturn(byKey);
         when(sysUserProjectMapper.selectSysUserProjectList(any(SysUserProject.class))).thenReturn(Collections.emptyList());
+        when(sysGitRepositoryMemberMapper.countByProjectIdAndUserId(PROJECT_ID, USER_ID)).thenReturn(0);
         try
         {
             sysProjectService.selectSysProjectByTeamAndProjectKey("acme", "platform");
@@ -116,6 +120,22 @@ public class SysProjectPathResolveServiceTest
         {
             assertEquals(Integer.valueOf(HttpStatus.FORBIDDEN), e.getCode());
         }
+    }
+
+    @Test
+    public void resolveByPath_allowsWhenRepoAclMemberOnly()
+    {
+        SysProject byKey = projectByKey();
+        SysProject enriched = projectByKey();
+        when(sysProjectMapper.selectSysProjectByTeamAndProjectKey("acme", "platform")).thenReturn(byKey);
+        when(sysUserProjectMapper.selectSysUserProjectList(any(SysUserProject.class))).thenReturn(Collections.emptyList());
+        when(sysGitRepositoryMemberMapper.countByProjectIdAndUserId(PROJECT_ID, USER_ID)).thenReturn(1);
+        when(sysProjectMapper.selectSysProjectByProjectId(eq(PROJECT_ID), eq(USER_ID))).thenReturn(enriched);
+
+        SysProject result = sysProjectService.selectSysProjectByTeamAndProjectKey("acme", "platform");
+
+        assertNotNull(result);
+        assertEquals(PROJECT_ID, result.getProjectId());
     }
 
     private SysProject projectByKey()

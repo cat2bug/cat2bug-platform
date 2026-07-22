@@ -1,11 +1,6 @@
 <template>
   <div class="app-container git-branches-page" v-loading="pageLoading">
     <git-repo-shell :repository-id="repositoryId" :repo-name="repoName" active-tab="branches">
-      <template #title-extra>
-        <span class="git-branches-title-separator">/</span>
-        <span class="git-branches-title-sub">{{ $t('git.repo.branches.title') }}</span>
-      </template>
-
       <div class="git-branches-toolbar">
         <el-input
           v-model="branchName"
@@ -394,17 +389,6 @@ export default {
 .git-branches-section__header {
   display: flex;
   align-items: center;
-}
-
-.git-branches-title-separator {
-  color: var(--text-color-secondary);
-  font-weight: 400;
-}
-
-.git-branches-title-sub {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-color-regular);
 }
 
 .git-branches-toolbar {

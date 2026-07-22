@@ -107,18 +107,19 @@ public class GitPackAuthorizationFilter extends OncePerRequestFilter
             return;
         }
 
-        Long projectId = repository.get().getProjectId();
+        Long repositoryId = repository.get().getRepositoryId();
         boolean granted = SERVICE_UPLOAD_PACK.equals(service)
-                ? gitRepositoryAccessService.canPull(userId, projectId)
-                : gitRepositoryAccessService.canPush(userId, projectId);
+                ? gitRepositoryAccessService.canPull(userId, repositoryId)
+                : gitRepositoryAccessService.canPush(userId, repositoryId);
         if (!granted)
         {
-            log.info("Git Smart HTTP 拒绝：userId={} projectId={} slug={} service={}", userId, projectId, slug, service);
+            log.info("Git Smart HTTP 拒绝：userId={} repositoryId={} projectId={} slug={} service={}",
+                    userId, repositoryId, repository.get().getProjectId(), slug, service);
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
-        boolean forcePushAllowed = gitRepositoryAccessService.canManage(userId, projectId);
+        boolean forcePushAllowed = gitRepositoryAccessService.canManage(userId, repositoryId);
         request.setAttribute(GitPackRequestContext.REQUEST_ATTRIBUTE,
                 new GitPackRequestContext(repository.get(), forcePushAllowed));
 

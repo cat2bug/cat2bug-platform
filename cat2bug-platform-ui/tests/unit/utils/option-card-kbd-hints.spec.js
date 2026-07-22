@@ -9,6 +9,7 @@ describe('option-card-kbd-hints', () => {
     expect(hrefToOptionActionRouteKey('#/project/project-base-info')).toBe('route-project-base-info')
     expect(hrefToOptionActionRouteKey('/project/push')).toBe('route-push')
     expect(hrefToOptionActionRouteKey('#/team/team-member')).toBe('route-team-member')
+    expect(hrefToOptionActionRouteKey('/team-options/team-member')).toBe('route-team-member')
   })
 
   it('resolveOptionActionKey falls back to card index', () => {

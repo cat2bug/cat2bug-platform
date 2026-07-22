@@ -7,6 +7,7 @@ import {
   PROJECT_MODULE_VIEW
 } from '@/utils/project-module-path.js'
 import {
+  attachGitRepoIdAndRequireManage,
   attachGitRepoIdFromSlug,
   createLegacyGitBrowseRedirect
 } from '@/utils/git-repo-route-guards.js'
@@ -22,6 +23,11 @@ const gitRepoBranchesView = () => import('@/views/system/git/repo/branches')
 const gitRepoPullsView = () => import('@/views/system/git/repo/pulls')
 const gitRepoPullNewView = () => import('@/views/system/git/repo/pull-new')
 const gitRepoPullDetailView = () => import('@/views/system/git/repo/pull-detail')
+const gitRepoSettingsLayout = () => import('@/views/system/git/repo/settings/SettingsLayout')
+const gitRepoSettingsGeneralView = () => import('@/views/system/git/repo/settings/general')
+const gitRepoSettingsDangerView = () => import('@/views/system/git/repo/settings/danger')
+const gitRepoSettingsMembersView = () => import('@/views/system/git/repo/settings/members')
+const gitRepoSettingsWebhooksView = () => import('@/views/system/git/repo/settings/webhooks')
 
 /** Lazy view loader for namespaced whitelist modules (paths from PROJECT_MODULE_VIEW). */
 const PROJECT_MODULE_LAZY_VIEWS = Object.freeze({
@@ -151,6 +157,69 @@ function buildGitCodeChildren() {
         titleI18nKey: 'git.repo.commit.detail-title',
         breadcrumbParents: [...breadcrumbBase, browseCrumb]
       }
+    },
+    {
+      path: 'code/:slug/settings',
+      name: 'GitRepoSettings',
+      component: gitRepoSettingsLayout,
+      beforeEnter: attachGitRepoIdAndRequireManage,
+      redirect: { name: 'GitRepoSettingsGeneral' },
+      meta: {
+        ...codeMeta,
+        breadcrumb: false,
+        // Documented for parity with dynamicRoutes; enforced via beforeEnter (constant route).
+        permissions: ['system:git:repo:manage']
+      },
+      children: [
+        {
+          path: 'general',
+          name: 'GitRepoSettingsGeneral',
+          component: gitRepoSettingsGeneralView,
+          meta: {
+            ...codeMeta,
+            title: i18n.global.t('git.repo.settings'),
+            titleI18nKey: 'git.repo.settings',
+            breadcrumbParents: [...breadcrumbBase, browseCrumb],
+            permissions: ['system:git:repo:manage']
+          }
+        },
+        {
+          path: 'danger',
+          name: 'GitRepoSettingsDanger',
+          component: gitRepoSettingsDangerView,
+          meta: {
+            ...codeMeta,
+            title: i18n.global.t('git.repo.settings.danger'),
+            titleI18nKey: 'git.repo.settings.danger',
+            breadcrumbParents: [...breadcrumbBase, browseCrumb],
+            permissions: ['system:git:repo:manage']
+          }
+        },
+        {
+          path: 'members',
+          name: 'GitRepoSettingsMembers',
+          component: gitRepoSettingsMembersView,
+          meta: {
+            ...codeMeta,
+            title: i18n.global.t('git.repo.settings.nav.members'),
+            titleI18nKey: 'git.repo.settings.nav.members',
+            breadcrumbParents: [...breadcrumbBase, browseCrumb],
+            permissions: ['system:git:repo:manage']
+          }
+        },
+        {
+          path: 'webhooks',
+          name: 'GitRepoSettingsWebhooks',
+          component: gitRepoSettingsWebhooksView,
+          meta: {
+            ...codeMeta,
+            title: i18n.global.t('git.repo.settings.nav.webhooks'),
+            titleI18nKey: 'git.repo.settings.nav.webhooks',
+            breadcrumbParents: [...breadcrumbBase, browseCrumb],
+            permissions: ['system:git:repo:manage']
+          }
+        }
+      ]
     }
   ]
 }

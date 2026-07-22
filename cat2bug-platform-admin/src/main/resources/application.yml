@@ -71,6 +71,9 @@ cat2bug:
     root: git
     # 从远端一次性导入（JGit bare clone）超时秒数
     import-timeout-seconds: 120
+    webhook:
+      # AES 加密 webhook secret 的主密钥；生产务必覆盖
+      secret-key: cat2bug-local-git-webhook-secret-key
   file:
     view-url: http://localhost:8012
 # 开发环境配置

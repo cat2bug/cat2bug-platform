@@ -21,25 +21,103 @@
     </div>
 
     <div v-else-if="activeTab === 'commits'" class="git-browse-commits-pane">
+      <div class="git-browse-commits-toolbar">
+        <el-form
+          class="git-browse-commits-query"
+          :inline="true"
+          size="small"
+          @submit.prevent
+        >
+          <el-form-item>
+            <el-select
+              v-model="currentRef"
+              size="small"
+              class="git-browse-branch-select"
+              :placeholder="$t('git.repo.select-branch')"
+              :loading="branchesLoading"
+              @change="onCommitFilterRefChange"
+            >
+              <template #prefix>
+                <el-icon class="git-browse-branch-icon">
+                  <git-branch-icon />
+                </el-icon>
+              </template>
+              <el-option
+                v-for="b in branches"
+                :key="b.name"
+                :label="b.name"
+                :value="b.name"
+              >
+                <span class="git-browse-branch-option">
+                  <el-icon class="git-browse-branch-icon">
+                    <git-branch-icon />
+                  </el-icon>
+                  <span>{{ b.name }}</span>
+                </span>
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-select
+              v-model="commitFilter.author"
+              size="small"
+              clearable
+              filterable
+              class="git-browse-commits-filter-control"
+              :placeholder="$t('git.repo.commit.filter.all-authors')"
+              :loading="commitFilterContributorsLoading"
+              @change="onCommitFilterChange"
+            >
+              <el-option
+                v-for="(c, idx) in commitFilterContributors"
+                :key="contributorKey(c, idx)"
+                :label="c.displayName || c.email || '-'"
+                :value="contributorFilterValue(c)"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-date-picker
+              v-model="commitFilter.dateRange"
+              type="daterange"
+              size="small"
+              clearable
+              value-format="YYYY-MM-DD"
+              range-separator="-"
+              class="git-browse-commits-filter-daterange"
+              :start-placeholder="$t('git.repo.commit.filter.since')"
+              :end-placeholder="$t('git.repo.commit.filter.until')"
+              @change="onCommitFilterChange"
+            />
+          </el-form-item>
+        </el-form>
+      </div>
       <div v-loading="commitsLoading" class="git-browse-commits">
-        <div v-for="c in commits" :key="c.id" class="git-browse-commit-item">
-          <cat2-bug-avatar :member="memberForAuthor(c)" :size="32" />
-          <div class="git-browse-commit-item-body">
-            <div class="git-browse-commit-item-msg">
-              <a
-                href="javascript:;"
-                class="is-link"
-                @click.prevent="openCommitDetail(c.id || c.shortId)"
-              >{{ c.message }}</a>
-            </div>
-            <div class="git-browse-commit-item-meta">
-              <span>{{ c.authorName }}</span>
-              <span>{{ relativeTime(c.commitTime) }}</span>
-              <a
-                href="javascript:;"
-                class="git-browse-commit-hash is-link"
-                @click.prevent="openCommitDetail(c.id || c.shortId)"
-              >{{ c.shortId }}</a>
+        <div
+          v-for="group in commitsByDate"
+          :key="group.dateKey"
+          class="git-browse-commit-group"
+        >
+          <div v-if="group.label" class="git-browse-commit-group-title">{{ group.label }}</div>
+          <div v-for="c in group.items" :key="c.id" class="git-browse-commit-item">
+            <cat2-bug-avatar :member="memberForAuthor(c)" :size="32" />
+            <div class="git-browse-commit-item-body">
+              <div class="git-browse-commit-item-msg">
+                <a
+                  href="javascript:;"
+                  class="is-link"
+                  @click.prevent="openCommitDetail(c.id || c.shortId)"
+                >{{ c.message }}</a>
+              </div>
+              <div class="git-browse-commit-item-meta">
+                <span>{{ c.authorName }}</span>
+                <span>{{ relativeTime(c.commitTime) }}</span>
+                <a
+                  href="javascript:;"
+                  class="git-browse-commit-hash is-link"
+                  @click.prevent="openCommitDetail(c.id || c.shortId)"
+                >{{ c.shortId }}</a>
+              </div>
             </div>
           </div>
         </div>
@@ -444,9 +522,13 @@
                 @mousedown.prevent="startRootDocTocResize"
               />
               <div ref="rootDocMarkdown" class="git-browse-root-docs-body markdown-body">
-                <markdown-renderer
+                <git-repo-markdown
                   :key="activeRootDoc.path + ':' + (activeRootDocState.content || '').length"
                   :content="activeRootDocState.content"
+                  :file-path="activeRootDoc.path"
+                  :repository-id="repositoryId"
+                  :git-ref="currentRef"
+                  @navigate="openRepoPathFromMarkdown"
                 />
               </div>
             </div>
@@ -734,6 +816,7 @@ import {
   downloadGitRepoArchive
 } from '@/api/system/gitRepo'
 import { getCurrentProjectId } from '@/utils/store-context'
+import { groupCommitsByDate } from '@/utils/git-commits-by-date'
 import {
   gitRepoBrowseRoute,
   gitRepoBranchesRoute,
@@ -743,7 +826,7 @@ import {
 import { listMemberOfProject } from '@/api/system/project'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import Cat2BugMarkdown from '@/components/Cat2BugMarkdown'
-import { MarkdownRenderer } from '@/components/Markdown'
+import GitRepoMarkdown from './GitRepoMarkdown.vue'
 import GitRepoReleaseDetailPanel from './release-detail.vue'
 import GitRepoCommitDetailPanel from './commit-detail.vue'
 import GitRepoShell from './GitRepoShell.vue'
@@ -811,7 +894,7 @@ export default {
     Download,
     Cat2BugAvatar,
     Cat2BugMarkdown,
-    MarkdownRenderer,
+    GitRepoMarkdown,
     GitRepoReleaseDetailPanel,
     GitRepoCommitDetailPanel,
     GitRepoShell,
@@ -849,6 +932,12 @@ export default {
       blobLoading: false,
       commits: [],
       commitsLoading: false,
+      commitFilter: {
+        author: '',
+        dateRange: null
+      },
+      commitFilterContributors: [],
+      commitFilterContributorsLoading: false,
       pageLoading: false,
       archiveDownloading: false,
       projectMembers: [],
@@ -1023,6 +1112,10 @@ export default {
         `Username for '${origin}': ${username}`,
         `Password for '${protocol}//${username}@${host}': ${this.$t('git.repo.clone-https-password-placeholder')}`
       ].join('\n')
+    },
+    commitsByDate() {
+      const locale = (this.$i18n && this.$i18n.locale) || 'zh-CN'
+      return groupCommitsByDate(this.commits, locale)
     }
   },
   watch: {
@@ -1129,7 +1222,10 @@ export default {
     openCommitsList() {
       this.selectedCommitId = null
       this.activeTab = 'commits'
+      this.resetCommitFilterDraft()
       this.$router.replace(gitRepoBrowseRoute(this.$route, { tab: 'commits' })).catch(() => {})
+      this.loadCommitFilterContributors()
+      this.loadCommits()
     },
     /** 提交详情入口（代码页最近提交 / 侧栏活动 / 提交列表） */
     openCommitDetail(commitId) {
@@ -1139,7 +1235,14 @@ export default {
     },
     syncBrowseQueryFromRoute() {
       if (this.$route.name !== 'GitRepoBrowse') return
-      this.activeTab = resolveBrowseActiveTab(this.$route)
+      const nextTab = resolveBrowseActiveTab(this.$route)
+      const enteringCommits = nextTab === 'commits' && this.activeTab !== 'commits'
+      this.activeTab = nextTab
+      if (enteringCommits) {
+        this.resetCommitFilterDraft()
+        this.loadCommitFilterContributors()
+        this.loadCommits()
+      }
     },
     syncReleaseRouteFromParams() {
       const releaseId = this.$route.params.releaseId
@@ -1164,6 +1267,8 @@ export default {
     },
     /** Shell tab click: clear nested focus; optimistic pane switch on browse */
     onShellTabClick(name) {
+      // Settings / pulls navigation is handled by GitRepoShell.onTabChange
+      if (name === 'settings' || name === 'pulls') return
       if (name === 'releases') {
         this.clearReleaseFocus()
         this.selectedCommitId = null
@@ -1173,6 +1278,17 @@ export default {
       if (name === 'code') {
         this.selectedReleaseId = null
         this.selectedCommitId = null
+        this.activeTab = 'code'
+        this.commitFilter.author = ''
+        this.commitFilter.dateRange = null
+        // 已在浏览页时再点「代码」：清掉 tab query，并回到仓库根目录
+        if (this.$route.name === 'GitRepoBrowse' && this.$route.query.tab) {
+          this.$router.replace(gitRepoBrowseRoute(this.$route)).catch(() => {})
+        }
+        this.viewMode = 'tree'
+        this.blob = null
+        this.navigateToPath('')
+        this.loadCommits()
       }
     },
     clearReleaseFocus() {
@@ -1559,6 +1675,9 @@ export default {
         this.loadTree('')
         this.loadCommits()
         this.loadContributors()
+        if (this.activeTab === 'commits') {
+          this.loadCommitFilterContributors()
+        }
       }).catch(() => {
         if (loadSeq !== this.loadSeq) return
         this.branchesLoading = false
@@ -1571,9 +1690,14 @@ export default {
     onRefChange() {
       this.currentPath = ''
       this.viewMode = 'tree'
+      this.commitFilter.author = ''
+      this.commitFilter.dateRange = null
       this.loadTree('')
       this.loadCommits()
       this.loadContributors()
+      if (this.activeTab === 'commits') {
+        this.loadCommitFilterContributors()
+      }
     },
     breadcrumbPathAt(idx) {
       return this.breadcrumbSegments.slice(0, idx + 1).join('/')
@@ -1842,18 +1966,88 @@ export default {
         this.blobLoading = false
       })
     },
+    /** README / 根文档 Markdown 内相对链接：优先按文件打开，失败则按目录打开 */
+    openRepoPathFromMarkdown(path) {
+      const target = String(path || '').replace(/^\/+|\/+$/g, '')
+      if (!target || !this.currentRef) return
+      this.selectedCommitId = null
+      this.selectedReleaseId = null
+      this.activeTab = 'code'
+      if (target.endsWith('/')) {
+        this.navigateToPath(target.replace(/\/+$/g, ''))
+        return
+      }
+      this.blobLoading = true
+      this.viewMode = 'blob'
+      const slash = target.lastIndexOf('/')
+      this.currentPath = slash > 0 ? target.slice(0, slash) : ''
+      getGitRepoBlob(this.repositoryId, this.currentRef, target).then(response => {
+        this.blob = response.data || null
+        this.blobLoading = false
+        this.$nextTick(() => this.syncSideTreeHighlight())
+      }).catch(() => {
+        this.blob = null
+        this.blobLoading = false
+        this.navigateToPath(target)
+      })
+    },
     loadCommits() {
       if (!this.currentRef) {
         this.commits = []
         return
       }
       this.commitsLoading = true
-      listGitRepoCommits(this.repositoryId, this.currentRef, 50).then(response => {
+      const params = {
+        ref: this.currentRef,
+        limit: 50
+      }
+      if (this.activeTab === 'commits') {
+        const author = (this.commitFilter.author || '').trim()
+        if (author) params.author = author
+        const range = this.commitFilter.dateRange
+        if (Array.isArray(range) && range.length === 2) {
+          if (range[0]) params.since = range[0]
+          if (range[1]) params.until = range[1]
+        }
+      }
+      listGitRepoCommits(this.repositoryId, params).then(response => {
         this.commits = response.data || []
         this.commitsLoading = false
       }).catch(() => {
         this.commits = []
         this.commitsLoading = false
+      })
+    },
+    resetCommitFilterDraft() {
+      this.commitFilter.author = ''
+      this.commitFilter.dateRange = null
+    },
+    contributorFilterValue(c) {
+      if (!c) return ''
+      const email = (c.email || '').trim()
+      if (email) return email
+      return (c.displayName || '').trim()
+    },
+    onCommitFilterRefChange() {
+      this.commitFilter.author = ''
+      this.loadCommitFilterContributors()
+      this.loadCommits()
+    },
+    onCommitFilterChange() {
+      this.loadCommits()
+    },
+    loadCommitFilterContributors() {
+      if (!this.repositoryId || !this.currentRef) {
+        this.commitFilterContributors = []
+        return
+      }
+      this.commitFilterContributorsLoading = true
+      listGitRepoContributors(this.repositoryId, this.currentRef, 100).then(response => {
+        this.commitFilterContributors = response.data || []
+      }).catch(() => {
+        this.commitFilterContributors = []
+      }).finally(() => {
+        this.commitFilterContributorsLoading = false
       })
     }
   }
@@ -2613,6 +2807,11 @@ export default {
     color: inherit;
   }
 
+  :deep(img) {
+    background-color: var(--markdown-img-bg, transparent);
+    color: var(--markdown-img-alt-color, var(--text-color-secondary));
+  }
+
   :deep(a) {
     color: var(--el-color-primary);
   }
@@ -3099,6 +3298,79 @@ export default {
   background: var(--card-bg);
 }
 
+.git-browse-commits-toolbar {
+  margin-bottom: 12px;
+}
+
+/* 与缺陷页查询条同构：inline form + 统一间距/高度 */
+.git-browse-commits-query {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--cat2bug-toolbar-item-gap, 10px);
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+
+  :deep(.el-form-item) {
+    margin: 0 !important;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  :deep(.el-form-item__content) {
+    display: inline-flex !important;
+    align-items: center !important;
+    line-height: 1 !important;
+    min-height: var(--cat2bug-toolbar-control-height, 32px);
+  }
+
+  :deep(.el-select__wrapper),
+  :deep(.el-input__wrapper) {
+    height: var(--cat2bug-toolbar-control-height, 32px) !important;
+    min-height: var(--cat2bug-toolbar-control-height, 32px) !important;
+    max-height: var(--cat2bug-toolbar-control-height, 32px) !important;
+    box-sizing: border-box;
+  }
+
+  :deep(.el-date-editor.el-input),
+  :deep(.el-date-editor.el-input__wrapper),
+  :deep(.el-date-editor.el-range-editor) {
+    height: var(--cat2bug-toolbar-control-height, 32px) !important;
+    min-height: var(--cat2bug-toolbar-control-height, 32px) !important;
+    max-height: var(--cat2bug-toolbar-control-height, 32px) !important;
+    box-sizing: border-box;
+  }
+
+  /* 与分支/贡献者下拉选中文字同色 */
+  :deep(.el-date-editor .el-range-input) {
+    color: var(--input-color, var(--text-color-regular)) !important;
+  }
+
+  :deep(.el-date-editor .el-range-separator) {
+    color: var(--text-color-regular) !important;
+  }
+}
+
+.git-browse-commits-filter-control {
+  width: 180px;
+}
+
+.git-browse-commits-filter-daterange {
+  width: 260px;
+}
+
+.git-browse-commit-group-title {
+  padding: 10px 16px 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color-secondary);
+  background: var(--border-color-lighter, #f2f6fc);
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.git-browse-commit-group + .git-browse-commit-group {
+  border-top: 1px solid var(--border-color-light);
+}
+
 .git-browse-commit-item {
   display: flex;
   gap: 12px;
@@ -3108,6 +3380,10 @@ export default {
   &:last-child {
     border-bottom: none;
   }
+}
+
+.git-browse-commit-group .git-browse-commit-item:last-child {
+  border-bottom: none;
 }
 
 .git-browse-commit-item-msg {

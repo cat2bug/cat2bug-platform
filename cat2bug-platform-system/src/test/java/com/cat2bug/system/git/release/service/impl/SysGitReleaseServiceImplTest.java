@@ -100,8 +100,8 @@ public class SysGitReleaseServiceImplTest
     @Test
     public void listReleases_pullUser_excludesDrafts()
     {
-        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(true);
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(false);
+        when(gitRepositoryAccessService.canPull(USER_ID, REPOSITORY_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(false);
 
         service.listReleases(REPOSITORY_ID);
 
@@ -111,8 +111,8 @@ public class SysGitReleaseServiceImplTest
     @Test
     public void listReleases_manageUser_includesDrafts()
     {
-        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(true);
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canPull(USER_ID, REPOSITORY_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(true);
 
         service.listReleases(REPOSITORY_ID);
 
@@ -122,7 +122,7 @@ public class SysGitReleaseServiceImplTest
     @Test
     public void createRelease_pullOnlyUser_denied()
     {
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(false);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(false);
 
         SysGitRelease body = newReleaseBody("v1.0.0");
         try
@@ -140,8 +140,8 @@ public class SysGitReleaseServiceImplTest
     @Test
     public void getRelease_draft_pullOnlyUser_denied()
     {
-        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(true);
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(false);
+        when(gitRepositoryAccessService.canPull(USER_ID, REPOSITORY_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(false);
 
         SysGitRelease draft = new SysGitRelease();
         draft.setReleaseId(RELEASE_ID);
@@ -163,8 +163,8 @@ public class SysGitReleaseServiceImplTest
     @Test
     public void createRelease_manageUser_persistsAndTags() throws Exception
     {
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
-        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canPull(USER_ID, REPOSITORY_ID)).thenReturn(true);
         when(sysGitReleaseMapper.selectSysGitReleaseByRepositoryIdAndTagName(eq(REPOSITORY_ID), eq("v2.0.0")))
                 .thenReturn(null);
 

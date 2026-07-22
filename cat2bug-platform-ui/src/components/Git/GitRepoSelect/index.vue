@@ -379,6 +379,17 @@ export default {
       const name = this.$route && this.$route.name
       if (name === 'GitRepoBranches') return 'GitRepoBranches'
       if (name === 'GitRepoPullRequests') return 'GitRepoPullRequests'
+      if (
+        name === 'GitRepoSettings'
+        || name === 'GitRepoSettingsGeneral'
+        || name === 'GitRepoSettingsDanger'
+        || name === 'GitRepoSettingsMembers'
+        || name === 'GitRepoSettingsWebhooks'
+      ) {
+        return name === 'GitRepoSettingsMembers' || name === 'GitRepoSettingsWebhooks'
+          ? name
+          : 'GitRepoSettingsGeneral'
+      }
       return 'GitRepoBrowse'
     },
     applyPathKeysFromRepos(list) {

@@ -146,7 +146,7 @@ public class SysGitBrowseServiceImplTest
     public void createBranch_manageUser_createsFromDefaultTip() throws Exception
     {
         initRepoWithOneCommit();
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(true);
 
         GitBranchInfo branch = service.createBranch(REPOSITORY_ID, "feature/new", null);
 
@@ -160,7 +160,7 @@ public class SysGitBrowseServiceImplTest
     {
         initRepoWithOneCommit();
         repositoryMetadata.setDefaultBranch("master");
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(true);
 
         GitBranchInfo branch = service.createBranch(REPOSITORY_ID, "feature/from-head", null);
 
@@ -172,7 +172,7 @@ public class SysGitBrowseServiceImplTest
     public void createBranch_missingExplicitFromRef_rejected() throws Exception
     {
         initRepoWithOneCommit();
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(true);
 
         try
         {
@@ -190,7 +190,7 @@ public class SysGitBrowseServiceImplTest
     public void createBranch_developUserDenied() throws Exception
     {
         initRepoWithOneCommit();
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(false);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(false);
 
         try
         {
@@ -208,7 +208,7 @@ public class SysGitBrowseServiceImplTest
     public void deleteBranch_manageUser_deletesNonDefaultBranch() throws Exception
     {
         initRepoWithOneCommit();
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(true);
         service.createBranch(REPOSITORY_ID, "feature/delete", null);
 
         service.deleteBranch(REPOSITORY_ID, "feature/delete");
@@ -220,7 +220,7 @@ public class SysGitBrowseServiceImplTest
     public void deleteBranch_defaultBranchRejected() throws Exception
     {
         initRepoWithOneCommit();
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(true);
 
         try
         {
@@ -238,7 +238,7 @@ public class SysGitBrowseServiceImplTest
     public void setDefaultBranch_manageUser_persistsExistingBranch() throws Exception
     {
         initRepoWithOneCommit();
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(true);
         service.createBranch(REPOSITORY_ID, "core", null);
         ArgumentCaptor<SysGitRepository> captor = ArgumentCaptor.forClass(SysGitRepository.class);
 
@@ -334,10 +334,64 @@ public class SysGitBrowseServiceImplTest
     }
 
     @Test
+    public void listCommits_filterByAuthorEmail_returnsMatchingCommits() throws Exception
+    {
+        initRepoWithMultiAuthorCommits();
+        allowPull();
+
+        List<GitCommitInfo> alice = service.listCommits(REPOSITORY_ID, null, null, "alice@example.com", null, null);
+
+        assertEquals(2, alice.size());
+        assertEquals("alice-2", alice.get(0).getMessage());
+        assertEquals("alice-1", alice.get(1).getMessage());
+    }
+
+    @Test
+    public void listCommits_filterBySinceUntil_returnsCommitsInWindow() throws Exception
+    {
+        initRepoWithDatedCommits();
+        allowPull();
+
+        List<GitCommitInfo> mid = service.listCommits(REPOSITORY_ID, null, null, null, "2024-06-15", "2024-06-15");
+
+        assertEquals(1, mid.size());
+        assertEquals("mid", mid.get(0).getMessage());
+    }
+
+    @Test
+    public void listCommits_filterThenLimit_appliesLimitAfterFilter() throws Exception
+    {
+        initRepoWithMultiAuthorCommits();
+        allowPull();
+
+        List<GitCommitInfo> limited = service.listCommits(REPOSITORY_ID, null, 1, "alice@example.com", null, null);
+
+        assertEquals(1, limited.size());
+        assertEquals("alice-2", limited.get(0).getMessage());
+    }
+
+    @Test
+    public void listCommits_sinceAfterUntil_rejected() throws Exception
+    {
+        initRepoWithOneCommit();
+        allowPull();
+
+        try
+        {
+            service.listCommits(REPOSITORY_ID, null, null, null, "2024-06-20", "2024-06-10");
+            fail("expected ServiceException for since after until");
+        }
+        catch (ServiceException expected)
+        {
+            // 日期区间非法
+        }
+    }
+
+    @Test
     public void listBranches_noPullPermission_denied() throws Exception
     {
         initRepoWithOneCommit();
-        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(false);
+        when(gitRepositoryAccessService.canPull(USER_ID, REPOSITORY_ID)).thenReturn(false);
 
         try
         {
@@ -365,7 +419,7 @@ public class SysGitBrowseServiceImplTest
         {
             // 仓库不存在
         }
-        verify(gitRepositoryAccessService, never()).canPull(eq(USER_ID), eq(PROJECT_ID));
+        verify(gitRepositoryAccessService, never()).canPull(eq(USER_ID), eq(REPOSITORY_ID));
     }
 
     @Test
@@ -406,7 +460,7 @@ public class SysGitBrowseServiceImplTest
     public void listContributors_noPullPermission_denied() throws Exception
     {
         initRepoWithOneCommit();
-        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(false);
+        when(gitRepositoryAccessService.canPull(USER_ID, REPOSITORY_ID)).thenReturn(false);
 
         try
         {
@@ -498,7 +552,7 @@ public class SysGitBrowseServiceImplTest
     public void getCommitDetail_noPullPermission_denied() throws Exception
     {
         String commitId = initRepoWithTextModifyCommit();
-        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(false);
+        when(gitRepositoryAccessService.canPull(USER_ID, REPOSITORY_ID)).thenReturn(false);
 
         try
         {
@@ -542,7 +596,7 @@ public class SysGitBrowseServiceImplTest
 
     private void allowPull()
     {
-        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canPull(USER_ID, REPOSITORY_ID)).thenReturn(true);
     }
 
     private void mockRepository()
@@ -686,6 +740,40 @@ public class SysGitBrowseServiceImplTest
         }
 
         mockRepository();
+    }
+
+    /** bare 仓：三天各一条提交（2024-06-10 / 06-15 / 06-20） */
+    private void initRepoWithDatedCommits() throws Exception
+    {
+        bareRepoDir = temporaryFolder.newFolder("dated.git");
+        Git.init().setDirectory(bareRepoDir).setBare(true).call().close();
+
+        java.util.TimeZone tz = java.util.TimeZone.getDefault();
+        File workDir = temporaryFolder.newFolder("dated-work");
+        try (Git git = Git.init().setDirectory(workDir).setInitialBranch("main").call())
+        {
+            commitWithWhen(git, workDir, "early.txt", "early",
+                    new PersonIdent("A", "a@example.com",
+                            java.sql.Timestamp.valueOf("2024-06-10 12:00:00"), tz));
+            commitWithWhen(git, workDir, "mid.txt", "mid",
+                    new PersonIdent("A", "a@example.com",
+                            java.sql.Timestamp.valueOf("2024-06-15 12:00:00"), tz));
+            commitWithWhen(git, workDir, "late.txt", "late",
+                    new PersonIdent("A", "a@example.com",
+                            java.sql.Timestamp.valueOf("2024-06-20 12:00:00"), tz));
+            git.push().setRemote(bareRepoDir.getAbsolutePath()).setRefSpecs(
+                    new org.eclipse.jgit.transport.RefSpec("refs/heads/main:refs/heads/main")).call();
+        }
+
+        mockRepository();
+    }
+
+    private static void commitWithWhen(Git git, File workDir, String fileName, String message, PersonIdent when)
+            throws Exception
+    {
+        Files.write(new File(workDir, fileName).toPath(), message.getBytes(StandardCharsets.UTF_8));
+        git.add().addFilepattern(fileName).call();
+        git.commit().setMessage(message).setAuthor(when).setCommitter(when).call();
     }
 
     private void initRepoWithDivergentBranches() throws Exception

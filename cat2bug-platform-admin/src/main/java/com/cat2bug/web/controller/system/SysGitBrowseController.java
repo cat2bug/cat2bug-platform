@@ -94,6 +94,17 @@ public class SysGitBrowseController extends BaseController
     }
 
     @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/system/git/repo/{repositoryId}/raw")
+    public void raw(
+            @PathVariable Long repositoryId,
+            @RequestParam(required = false) String ref,
+            @RequestParam String path,
+            jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException
+    {
+        gitBrowseService.writeRawBlob(repositoryId, ref, path, response);
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")
     @GetMapping("/system/git/repo/{repositoryId}/commits/{commitId}")
     public AjaxResult commitDetail(
             @PathVariable Long repositoryId,
@@ -107,9 +118,12 @@ public class SysGitBrowseController extends BaseController
     public AjaxResult commits(
             @PathVariable Long repositoryId,
             @RequestParam(required = false) String ref,
-            @RequestParam(required = false) Integer limit)
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) String since,
+            @RequestParam(required = false) String until)
     {
-        return success(gitBrowseService.listCommits(repositoryId, ref, limit));
+        return success(gitBrowseService.listCommits(repositoryId, ref, limit, author, since, until));
     }
 
     @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")

@@ -1,11 +1,6 @@
 <template>
   <div class="app-container git-pr-new" v-loading="loading">
     <git-repo-shell :repository-id="repositoryId" :repo-name="repoName" active-tab="pulls">
-      <template #title-extra>
-        <span class="git-pr-new__sep">/</span>
-        <span class="git-pr-new__sub">{{ $t('git.repo.pr.new') }}</span>
-      </template>
-
       <el-alert
         v-if="!canPush"
         type="warning"
@@ -139,17 +134,6 @@ export default {
   overflow-y: auto;
   padding: 20px 20px 16px;
   box-sizing: border-box;
-  color: var(--text-color-regular);
-}
-
-.git-pr-new__sep {
-  color: var(--text-color-secondary);
-  font-weight: 400;
-}
-
-.git-pr-new__sub {
-  font-size: 16px;
-  font-weight: 500;
   color: var(--text-color-regular);
 }
 

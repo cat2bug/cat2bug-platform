@@ -1,5 +1,9 @@
 # git-smart-http Specification
 
+## Purpose
+
+Expose in-process JGit Smart HTTP for project repositories so authorized clients can clone, fetch, and push with platform credentials, using effective repository ACL when present and otherwise the project-role matrix.
+
 ## Requirements
 
 ### Requirement: Smart HTTP clone and push via JGit
@@ -37,36 +41,56 @@ The system SHALL authenticate Git Smart HTTP requests with HTTP Basic credential
 
 ### Requirement: Pull and push role matrix
 
-The system SHALL allow pull (upload-pack) and push (receive-pack) only for users who hold at least one of `project.create-by`, `project.admin`, `project.develop`, or `project.tester` on the repository's project. Other project members without those roles MUST be denied. Permission MUST be the union of the user's project roles.
+The system SHALL allow pull (upload-pack) and push (receive-pack) according to **effective** repository permission for that repository: ACL `read`/`write`/`admin` when an ACL row exists for the user; otherwise the project-role matrix (`project.create-by`, `project.admin`, `project.develop`, `project.tester` for pull and push). Other users without effective pull/push MUST be denied. Permission MUST be the union of applicable project roles only when no ACL row exists.
 
 #### Scenario: Tester can pull and push
 
-- **WHEN** a user with only `project.tester` clones and pushes to a project repository
+- **WHEN** a user with only `project.tester` and no ACL row clones and pushes to a project repository
 - **THEN** both operations succeed if credentials are valid
 
 #### Scenario: Member without four roles denied
 
-- **WHEN** a project member who holds none of the four roles attempts to clone
+- **WHEN** a project member who holds none of the four roles and has no ACL row attempts to clone
 - **THEN** the system denies access
 
 #### Scenario: Multi-role union
 
-- **WHEN** a user holds both `project.develop` and another non-git project role
+- **WHEN** a user holds both `project.develop` and another non-git project role and has no ACL row
 - **THEN** the user receives pull and push from the develop role
+
+#### Scenario: ACL write grants non-project member push
+
+- **WHEN** a non-project member with ACL `write` pushes with valid credentials
+- **THEN** the server accepts the push subject to fast-forward rules
+
+#### Scenario: ACL read denies push
+
+- **WHEN** a user with ACL `read` (even if project admin) attempts to push
+- **THEN** the system denies the push
 
 ### Requirement: Force-push restricted to manage roles
 
-The system SHALL reject non-fast-forward updates for users who lack repository manage permission, and SHALL allow force-push (non-fast-forward) only for users with `project.create-by` or `project.admin` on that project.
+The system SHALL reject non-fast-forward updates for users who lack **effective** repository manage permission, and SHALL allow force-push (non-fast-forward) only for users with effective manage (ACL `admin`, or—when no ACL row—`project.create-by` or `project.admin` on that project).
 
 #### Scenario: Developer force-push denied
 
-- **WHEN** a user with only `project.develop` attempts a non-fast-forward push
+- **WHEN** a user with only `project.develop` and no ACL row attempts a non-fast-forward push
 - **THEN** the system rejects the push
 
 #### Scenario: Admin force-push allowed
 
-- **WHEN** a project admin attempts a non-fast-forward push to a repository in their project
+- **WHEN** a project admin with no demoting ACL row attempts a non-fast-forward push to a repository in their project
 - **THEN** the system accepts the push
+
+#### Scenario: ACL admin force-push allowed
+
+- **WHEN** a user with ACL `admin` (who may not be a project admin) attempts a non-fast-forward push
+- **THEN** the system accepts the push
+
+#### Scenario: ACL read force-push denied for project admin
+
+- **WHEN** a project admin with ACL `read` attempts a non-fast-forward push
+- **THEN** the system rejects the push
 
 ### Requirement: Push identity comes from HTTP authentication
 
@@ -90,3 +114,17 @@ In addition to existing Smart HTTP behavior (JGit, Basic auth, role matrix), the
 
 - **WHEN** a Git client requests `info/refs` on `/{teamKey}/{projectKey}/code/{slug}.git` with valid credentials and pull permission
 - **THEN** the server responds with refs advertisement for that repository
+
+### Requirement: Successful receive-pack triggers push and tag webhooks
+
+After a successful Smart HTTP receive-pack that updates one or more refs, the system SHALL enqueue outbound webhook deliveries for active repository webhooks subscribed to push and/or tag events, according to whether the updated refs are branch refs or tag refs (`refs/tags/*`). Delivery failures MUST NOT fail the already-accepted push.
+
+#### Scenario: Branch push notifies push subscribers
+
+- **WHEN** a user with push permission successfully pushes commits to a branch ref
+- **THEN** active webhooks subscribed to `push` for that repository are enqueued for delivery with a push-style payload
+
+#### Scenario: Tag update notifies tag subscribers
+
+- **WHEN** a successful receive-pack creates, updates, or deletes a `refs/tags/*` ref
+- **THEN** active webhooks subscribed to `tag` for that repository are enqueued for delivery

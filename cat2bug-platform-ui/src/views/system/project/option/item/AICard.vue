@@ -10,15 +10,15 @@
           </div>
         </div>
       </template>
-      <router-link v-if="canManageAiModel" to="ollama"><el-link>{{$t('project.ai-model-manager')}}</el-link></router-link>
-      <router-link v-if="canManageAiAccount" to="openai"><el-link>{{$t('project.ai-account-manager')}}</el-link></router-link>
+      <router-link v-if="canManageAiModel" :to="href('ollama')"><el-link>{{$t('project.ai-model-manager')}}</el-link></router-link>
+      <router-link v-if="canManageAiAccount" :to="href('openai')"><el-link>{{$t('project.ai-account-manager')}}</el-link></router-link>
     </el-card>
   </el-col>
 </template>
 
 <script>
 import { projectAiModelOptions } from "@/api/system/ai";
-import { hasAnyPermi } from '@/utils/project-option-card'
+import { hasAnyPermi, projectOptionHref } from '@/utils/project-option-card'
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/user'
 
@@ -58,6 +58,7 @@ export default {
     this.checkAiEnabled();
   },
   methods: {
+    href: projectOptionHref,
     checkAiEnabled() {
       if (this.projectId) {
         projectAiModelOptions(this.projectId).then(res => {

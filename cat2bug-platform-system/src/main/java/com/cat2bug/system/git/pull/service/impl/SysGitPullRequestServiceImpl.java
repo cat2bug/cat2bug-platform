@@ -18,6 +18,7 @@ import com.cat2bug.system.mapper.SysGitPullRequestMapper;
 import com.cat2bug.system.mapper.SysGitRepositoryMapper;
 import com.cat2bug.system.service.git.GitPathValidator;
 import com.cat2bug.system.service.git.GitRepositoryAccessService;
+import com.cat2bug.system.service.git.GitWebhookEnqueueService;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.lib.Constants;
@@ -71,13 +72,15 @@ public class SysGitPullRequestServiceImpl implements ISysGitPullRequestService
     private GitRepositoryAccessService gitRepositoryAccessService;
     @Autowired
     private GitPathValidator gitPathValidator;
+    @Autowired
+    private GitWebhookEnqueueService gitWebhookEnqueueService;
 
     @Override
     @Transactional
     public SysGitPullRequest createPullRequest(Long repositoryId, SysGitPullRequest input)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPush(repo.getProjectId());
+        assertPush(repo.getRepositoryId());
         validateCreate(input);
         String source = normalizeBranch(input.getSourceBranch());
         String target = normalizeBranch(input.getTargetBranch());
@@ -119,6 +122,7 @@ public class SysGitPullRequestServiceImpl implements ISysGitPullRequestService
                 {
                     throw new ServiceException(MessageUtils.message("git.pull.create-failed"), HttpStatus.ERROR);
                 }
+                gitWebhookEnqueueService.onPullRequestOpened(repositoryId, row, SecurityUtils.getUserId());
                 return row;
             }
             catch (DuplicateKeyException ignore)
@@ -133,7 +137,7 @@ public class SysGitPullRequestServiceImpl implements ISysGitPullRequestService
     public List<SysGitPullRequest> listPullRequests(Long repositoryId, String state)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         if (StringUtils.isNotBlank(state) && !isState(state))
         {
             throw badRequest("git.pull.state-invalid");
@@ -145,7 +149,7 @@ public class SysGitPullRequestServiceImpl implements ISysGitPullRequestService
     public SysGitPullRequest getPullRequest(Long repositoryId, Integer number)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         return requirePullRequest(repositoryId, number);
     }
 
@@ -156,8 +160,8 @@ public class SysGitPullRequestServiceImpl implements ISysGitPullRequestService
         SysGitRepository repo = requireRepo(repositoryId);
         SysGitPullRequest pullRequest = requirePullRequest(repositoryId, number);
         Long userId = SecurityUtils.getUserId();
-        if (!(userId.equals(pullRequest.getAuthorId()) && gitRepositoryAccessService.canPush(userId, repo.getProjectId()))
-                && !gitRepositoryAccessService.canManage(userId, repo.getProjectId()))
+        if (!(userId.equals(pullRequest.getAuthorId()) && gitRepositoryAccessService.canPush(userId, repo.getRepositoryId()))
+                && !gitRepositoryAccessService.canManage(userId, repo.getRepositoryId()))
         {
             throw forbidden();
         }
@@ -167,13 +171,14 @@ public class SysGitPullRequestServiceImpl implements ISysGitPullRequestService
         pullRequest.setUpdateBy(SecurityUtils.getUsername());
         pullRequest.setUpdateTime(DateUtils.getNowDate());
         sysGitPullRequestMapper.updateStateFields(pullRequest);
+        gitWebhookEnqueueService.onPullRequestClosed(repositoryId, pullRequest, userId, false);
     }
 
     @Override
     public List<GitCommitInfo> listCommits(Long repositoryId, Integer number)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         SysGitPullRequest pullRequest = requirePullRequest(repositoryId, number);
         List<GitCommitInfo> result = new ArrayList<>();
         try (Repository git = openRepository(repo); RevWalk walk = new RevWalk(git))
@@ -198,7 +203,7 @@ public class SysGitPullRequestServiceImpl implements ISysGitPullRequestService
     public List<GitCommitFileChange> listFiles(Long repositoryId, Integer number)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         SysGitPullRequest pullRequest = requirePullRequest(repositoryId, number);
         try (Repository git = openRepository(repo); RevWalk walk = new RevWalk(git))
         {
@@ -224,7 +229,7 @@ public class SysGitPullRequestServiceImpl implements ISysGitPullRequestService
     public List<SysGitPullRequestComment> listComments(Long repositoryId, Integer number)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         return sysGitPullRequestCommentMapper.selectListByPullRequestId(
                 requirePullRequest(repositoryId, number).getPullRequestId());
     }
@@ -235,7 +240,7 @@ public class SysGitPullRequestServiceImpl implements ISysGitPullRequestService
             Long repositoryId, Integer number, SysGitPullRequestComment input)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPush(repo.getProjectId());
+        assertPush(repo.getRepositoryId());
         SysGitPullRequest pullRequest = requirePullRequest(repositoryId, number);
         if (input == null || StringUtils.isBlank(input.getBody()))
         {
@@ -273,7 +278,7 @@ public class SysGitPullRequestServiceImpl implements ISysGitPullRequestService
     public SysGitPullRequest mergePullRequest(Long repositoryId, Integer number)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertManage(repo.getProjectId());
+        assertManage(repo.getRepositoryId());
         SysGitPullRequest pullRequest = requirePullRequest(repositoryId, number);
         requireOpen(pullRequest);
         try (Repository git = openRepository(repo))
@@ -295,6 +300,7 @@ public class SysGitPullRequestServiceImpl implements ISysGitPullRequestService
             pullRequest.setUpdateBy(SecurityUtils.getUsername());
             pullRequest.setUpdateTime(DateUtils.getNowDate());
             sysGitPullRequestMapper.updateStateFields(pullRequest);
+            gitWebhookEnqueueService.onPullRequestClosed(repositoryId, pullRequest, SecurityUtils.getUserId(), true);
             return pullRequest;
         }
         catch (ServiceException e)
@@ -462,25 +468,25 @@ public class SysGitPullRequestServiceImpl implements ISysGitPullRequestService
         return id;
     }
 
-    private void assertPull(Long projectId)
+    private void assertPull(Long repositoryId)
     {
-        if (!gitRepositoryAccessService.canPull(SecurityUtils.getUserId(), projectId))
+        if (!gitRepositoryAccessService.canPull(SecurityUtils.getUserId(), repositoryId))
         {
             throw forbidden();
         }
     }
 
-    private void assertPush(Long projectId)
+    private void assertPush(Long repositoryId)
     {
-        if (!gitRepositoryAccessService.canPush(SecurityUtils.getUserId(), projectId))
+        if (!gitRepositoryAccessService.canPush(SecurityUtils.getUserId(), repositoryId))
         {
             throw forbidden();
         }
     }
 
-    private void assertManage(Long projectId)
+    private void assertManage(Long repositoryId)
     {
-        if (!gitRepositoryAccessService.canManage(SecurityUtils.getUserId(), projectId))
+        if (!gitRepositoryAccessService.canManage(SecurityUtils.getUserId(), repositoryId))
         {
             throw forbidden();
         }

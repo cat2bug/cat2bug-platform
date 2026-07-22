@@ -157,7 +157,8 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: var(--cat2bug-toolbar-section-gap, 10px);
-  margin-bottom: 16px;
+  /* 与上方 GitRepoShell tabs 分割线到底部间距（12px）对称 */
+  margin-bottom: 12px;
 }
 
 .git-pr-page__search {

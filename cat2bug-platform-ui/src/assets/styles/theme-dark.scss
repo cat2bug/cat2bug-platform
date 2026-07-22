@@ -1124,8 +1124,9 @@ html.dark {
     }
   }
 
-  // 全局适配 Element UI 日期范围选择器 (el-range-editor) 暗黑模式
-  .el-range-editor.el-input__inner {
+  // 全局适配 Element UI / Element Plus 日期范围选择器暗黑模式
+  .el-range-editor.el-input__inner,
+  .el-date-editor.el-range-editor {
     background-color: var(--input-bg) !important;
     border-color: var(--input-border) !important;
 
@@ -1142,7 +1143,10 @@ html.dark {
       color: var(--text-color-regular) !important;
     }
 
-    i[class^="el-icon-"] {
+    i[class^="el-icon-"],
+    .el-icon,
+    .el-range__icon,
+    .el-range__close-icon {
       color: var(--text-color-secondary) !important;
     }
   }
@@ -5050,6 +5054,14 @@ html.dark {
 
   // 全局 Markdown 预览代码块（编辑模式、缺陷描述等）
   .markdown-body {
+    --markdown-img-bg: transparent;
+    --markdown-img-alt-color: var(--text-color-secondary);
+
+    img {
+      background-color: var(--markdown-img-bg) !important;
+      color: var(--markdown-img-alt-color);
+    }
+
     pre {
       background-color: var(--bg-color-base) !important;
       border: 1px solid var(--border-color-light) !important;

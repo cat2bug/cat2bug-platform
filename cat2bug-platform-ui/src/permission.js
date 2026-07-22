@@ -102,6 +102,11 @@ function proceedAfterGitRepoId(to, next) {
  * Keeps setup/upgrade/login flows untouched (only reached via proceedWithAuth).
  */
 function proceedAfterProjectContext(to, next) {
+  // Public pages (e.g. /invite/:token) must not be treated as /{teamKey}/{projectKey}
+  if (isPublicPath(to.path)) {
+    next()
+    return
+  }
   ensureProjectScopedContext(to).then(result => {
     if (result === 'skip' || result === 'ok') {
       proceedAfterGitRepoId(to, next)
@@ -277,11 +282,16 @@ router.beforeEach((to, from, next) => {
   }
 
   // 进出安装/登录页时强制刷新，避免 session 缓存把已安装误判为未安装而锁死在向导
+  // 升级状态同样在登录/首页强制刷新，避免「无需升级」陈旧结果挡住 /upgrade
   const refreshSetupStatus = (from.path === '/login' && !!getToken())
     || to.path === '/login'
     || to.path === '/setup'
     || from.path === '/setup'
-  const refreshUpgradeStatus = to.path === '/upgrade' || from.path === '/upgrade'
+  const refreshUpgradeStatus = to.path === '/upgrade'
+    || from.path === '/upgrade'
+    || to.path === '/login'
+    || to.path === '/'
+    || to.path === '/index'
 
   Promise.all([
     resolveSetupStatus(refreshSetupStatus),

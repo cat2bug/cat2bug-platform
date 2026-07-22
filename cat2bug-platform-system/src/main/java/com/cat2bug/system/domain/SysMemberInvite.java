@@ -21,7 +21,7 @@ public class SysMemberInvite extends BaseEntity {
     /** URL token */
     private String token;
 
-    /** TEAM | PROJECT */
+    /** TEAM | PROJECT | REPO */
     private String scope;
 
     /** 团队 id */
@@ -29,6 +29,9 @@ public class SysMemberInvite extends BaseEntity {
 
     /** 项目 id（项目邀请必填） */
     private Long projectId;
+
+    /** Git 仓库 id（仓库邀请必填） */
+    private Long repositoryId;
 
     /** 角色 id JSON 数组 */
     private String roleIds;

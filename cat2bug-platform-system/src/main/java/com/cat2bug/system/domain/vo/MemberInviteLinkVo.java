@@ -16,7 +16,12 @@ public class MemberInviteLinkVo {
     private String scope;
     private Long teamId;
     private Long projectId;
+    /** 仓库 id（scope=REPO） */
+    private Long repositoryId;
+    /** 团队/项目：sys_role id 数组 */
     private Long[] roleIds;
+    /** 仓库 ACL 角色字面量（read/write/admin） */
+    private String role;
     private Date expiresAt;
     private Boolean revoked;
     private Date createdAt;

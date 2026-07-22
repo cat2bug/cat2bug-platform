@@ -9,6 +9,7 @@ import { tansParams, blobValidate } from "@/utils/ruoyi";
 import cache from '@/plugins/cache'
 import { saveAs } from 'file-saver'
 import i18n from "@/utils/i18n/i18n";
+import { isUpgradeLockMessage, resetUpgradeStatusCache } from '@/utils/upgrade-status'
 const I18N_LOCALE_KEY='i18n-locale'
 let downloadLoadingInstance;
 // 是否显示重新登录
@@ -40,6 +41,18 @@ export function dismissReloginPrompt() {
   } catch (_e) {
     /* ignore */
   }
+}
+
+/** UpgradeFilter 锁业务 API 时强制进入升级向导，避免卡在登录页 */
+function redirectToUpgradeWizard() {
+  resetUpgradeStatusCache()
+  const path = ((window.location && window.location.pathname) || '').split('?')[0] || '/'
+  if (path === '/upgrade' || path.startsWith('/upgrade/')) {
+    return
+  }
+  dismissReloginPrompt()
+  // 不用 import router，避免与 permission/request 循环依赖；直接跳转 History 路由
+  window.location.assign('/upgrade')
 }
 
 // request拦截器
@@ -133,6 +146,11 @@ service.interceptors.response.use(res => {
     } else if (code > 10000) {
       return Promise.reject(res.data)
     } else if (code === 500) {
+      const rawMsg = (res.data && res.data.msg) || msg
+      if (isUpgradeLockMessage(rawMsg)) {
+        redirectToUpgradeWizard()
+        return Promise.reject(res.data)
+      }
       const silent = res.config.silentError === true
       if (!silent) {
         ElMessage({ message: msg, type: 'error' })
@@ -142,6 +160,11 @@ service.interceptors.response.use(res => {
       ElMessage({ message: msg, type: 'warning' })
       return Promise.reject('error')
     } else if (code !== 200) {
+      const rawMsg = (res.data && res.data.msg) || msg
+      if (isUpgradeLockMessage(rawMsg)) {
+        redirectToUpgradeWizard()
+        return Promise.reject(res.data)
+      }
       const silent = res.config.silentError === true
       if (!silent) {
         ElNotification.error({ title: msg })

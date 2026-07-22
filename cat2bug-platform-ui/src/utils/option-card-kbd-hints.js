@@ -53,6 +53,7 @@ export function hrefToOptionActionRouteKey(href) {
   path = path.split('?')[0]
   path = path.replace(/^\/project\/option\/?/, '')
   path = path.replace(/^\/project\//, '')
+  path = path.replace(/^\/team-options\//, '')
   path = path.replace(/^\/team\/option\/?/, '')
   path = path.replace(/^\/team\//, '')
   path = path.replace(/^\//, '')

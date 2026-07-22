@@ -187,6 +187,11 @@ export function parseProjectScopedPath(pathname) {
   const parts = raw.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean)
   if (parts.length < 2) return null
 
+  // Sidebar roots (/team-options, /admin, …) must never be treated as teamKey/projectKey
+  if (NON_PROJECT_MENU_ROOT_SET.has(String(parts[0]).trim().toLowerCase())) {
+    return null
+  }
+
   const teamKey = normalizePathKey(parts[0])
   const projectKey = normalizePathKey(parts[1])
   if (!teamKey || !projectKey) return null

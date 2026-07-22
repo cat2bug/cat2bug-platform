@@ -1,27 +1,32 @@
 package com.cat2bug.system.service.git;
 
 /**
- * Git 仓库角色矩阵判定（design.md D3 / specs/git-smart-http/spec.md）。
+ * Git 仓库有效权限判定（仓级 ACL 优先，否则回落项目角色）。
  *
- * <p>角色取「用户在目标项目下的项目角色」之并集，<b>不</b>因系统超管或团队管理员身份而绕过——
- * 必须显式持有 {@code project.create-by}/{@code project.admin}/{@code project.develop}/
- * {@code project.tester} 之一才允许 pull/push；force-push 仅
- * {@code project.create-by}/{@code project.admin}。</p>
+ * <p>签名以 {@code repositoryId} 为第二参数：有 ACL 行时仅该角色生效；无行时加载仓库的
+ * {@code projectId} 再按项目角色矩阵（develop/tester → pull+push；create-by/admin → manage）。
+ * 超管 / 团队管理员不绕过。</p>
  */
 public interface GitRepositoryAccessService
 {
     /**
-     * 是否可 pull（upload-pack）。
+     * 是否可 pull（upload-pack / 浏览只读）。
      */
-    boolean canPull(Long userId, Long projectId);
+    boolean canPull(Long userId, Long repositoryId);
 
     /**
      * 是否可 push（receive-pack，快进更新）。
      */
-    boolean canPush(Long userId, Long projectId);
+    boolean canPush(Long userId, Long repositoryId);
 
     /**
-     * 是否可 force-push（非快进更新）/ 管理仓库。
+     * 是否可 force-push / 管理仓库 / 管理 ACL。
      */
-    boolean canManage(Long userId, Long projectId);
+    boolean canManage(Long userId, Long repositoryId);
+
+    /**
+     * 有效仓角色：{@code read}/{@code write}/{@code admin}；无权限时返回 {@code null}。
+     * <p>有 ACL 行返回该行角色；否则项目 manage → {@code admin}，项目 pull/push → {@code write}。</p>
+     */
+    String resolveEffectiveRole(Long userId, Long repositoryId);
 }

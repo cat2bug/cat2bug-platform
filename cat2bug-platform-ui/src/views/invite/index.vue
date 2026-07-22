@@ -30,6 +30,10 @@
               <dt>{{ $t('invite.inviter') }}</dt>
               <dd>{{ preview.inviterName || '-' }}</dd>
             </div>
+            <div v-if="isRepoInvite" class="invite-detail-row">
+              <dt>{{ $t('invite.target-repository') }}</dt>
+              <dd>{{ preview.repositoryName || '-' }}</dd>
+            </div>
             <div v-if="isProjectInvite" class="invite-detail-row">
               <dt>{{ $t('invite.target-project') }}</dt>
               <dd>{{ preview.projectName || '-' }}</dd>
@@ -65,7 +69,7 @@
               </div>
               <p class="invite-outcome-title">{{ $t('invite.accept-success') }}</p>
               <div class="invite-outcome-actions">
-                <el-button type="primary" @click="goHome">{{ $t('invite.go-home') }}</el-button>
+                <el-button type="primary" @click="goAfterAccept">{{ primaryActionLabel }}</el-button>
               </div>
             </div>
           </template>
@@ -77,7 +81,7 @@
               </div>
               <p class="invite-outcome-title">{{ alreadyMemberText }}</p>
               <div class="invite-outcome-actions">
-                <el-button type="primary" @click="goHome">{{ $t('invite.go-home') }}</el-button>
+                <el-button type="primary" @click="goAfterAccept">{{ primaryActionLabel }}</el-button>
               </div>
             </div>
           </template>
@@ -116,7 +120,8 @@ export default {
       accepting: false,
       preview: null,
       loadError: '',
-      acceptState: ''
+      acceptState: '',
+      acceptResult: null
     }
   },
   computed: {
@@ -126,8 +131,15 @@ export default {
     isLoggedIn() {
       return !!getToken()
     },
+    inviteScope() {
+      const scope = this.preview && this.preview.scope
+      return scope ? String(scope).toUpperCase() : ''
+    },
     isProjectInvite() {
-      return (this.preview && this.preview.scope) === 'PROJECT'
+      return this.inviteScope === 'PROJECT'
+    },
+    isRepoInvite() {
+      return this.inviteScope === 'REPO'
     },
     previewStatus() {
       if (!this.preview) {
@@ -145,6 +157,9 @@ export default {
       return 'valid'
     },
     pageTitle() {
+      if (this.isRepoInvite) {
+        return this.$t('invite.repo-invite')
+      }
       return this.isProjectInvite ? this.$t('invite.project-invite') : this.$t('invite.team-invite')
     },
     roleNamesText() {
@@ -175,10 +190,23 @@ export default {
       return !!(this.preview && this.preview.alreadyMember)
     },
     alreadyMemberText() {
+      if (this.isRepoInvite) {
+        return this.$t('invite.already-repo-member')
+      }
       if (this.isProjectInvite) {
         return this.$t('invite.already-project-member')
       }
       return this.$t('invite.already-team-member')
+    },
+    canGoToRepo() {
+      const result = this.acceptResult
+      if (!result) {
+        return false
+      }
+      return !!(result.redirectPath || result.repositoryId)
+    },
+    primaryActionLabel() {
+      return this.canGoToRepo ? this.$t('invite.go-repo') : this.$t('invite.go-home')
     }
   },
   watch: {
@@ -194,6 +222,7 @@ export default {
       this.preview = null
       this.loadError = ''
       this.acceptState = ''
+      this.acceptResult = null
       this.loadPreview()
     },
     formatExpiresAt(expiresAt) {
@@ -226,10 +255,14 @@ export default {
       this.accepting = true
       acceptInvite(this.token).then(res => {
         const data = res.data || {}
+        this.acceptResult = data
         if (data.alreadyMember === true || data.alreadyMember === 'true') {
           this.acceptState = 'already-member'
         } else {
           this.acceptState = 'success'
+          // Stay on success UI; user clicks「进入仓库」. Auto-push used to race
+          // route guards before ACL/project context settled (and /invite was
+          // mis-parsed as /{teamKey}/{projectKey} before reserved-word fix).
         }
       }).catch(err => {
         const msg = (err && err.msg) || (err && err.message) || ''
@@ -245,6 +278,38 @@ export default {
       }).finally(() => {
         this.accepting = false
       })
+    },
+    /**
+     * Prefer backend redirectPath; fall back to legacy browse-by-id route.
+     * @returns {boolean} whether navigation was attempted
+     */
+    navigateAfterAccept(result) {
+      if (!result) {
+        return false
+      }
+      const path = result.redirectPath
+      if (path) {
+        this.navigateToPath(path)
+        return true
+      }
+      if (result.repositoryId) {
+        this.$router.push('/project/git-repo/browse/' + result.repositoryId)
+        return true
+      }
+      return false
+    },
+    navigateToPath(path) {
+      if (/^https?:\/\//i.test(path)) {
+        window.location.href = path
+        return
+      }
+      this.$router.push(path)
+    },
+    goAfterAccept() {
+      if (this.navigateAfterAccept(this.acceptResult)) {
+        return
+      }
+      this.goHome()
     },
     goLogin() {
       const redirect = this.$route.fullPath

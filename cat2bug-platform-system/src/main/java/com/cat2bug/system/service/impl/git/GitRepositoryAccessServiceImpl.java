@@ -1,6 +1,11 @@
 package com.cat2bug.system.service.impl.git;
 
 import com.cat2bug.common.core.domain.entity.SysRole;
+import com.cat2bug.system.domain.SysGitRepository;
+import com.cat2bug.system.domain.SysGitRepositoryMember;
+import com.cat2bug.system.domain.git.GitRepositoryAclRoles;
+import com.cat2bug.system.mapper.SysGitRepositoryMapper;
+import com.cat2bug.system.mapper.SysGitRepositoryMemberMapper;
 import com.cat2bug.system.mapper.SysRoleMapper;
 import com.cat2bug.system.service.git.GitRepositoryAccessService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,66 +18,148 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 基于项目角色 role_key 的 Git 仓库权限判定实现。
+ * 仓级 ACL 优先，否则回落项目角色的 Git 仓库权限判定。
  *
  * <p>刻意不检查 {@code SysUser#isAdmin()} / {@code team.admin} / {@code team.create-by}：
- * design.md 明确「超管与团队管理员不绕过」，只有目标项目下的四个项目角色才授予 pull/push，
- * 其中两个（create-by/admin）才授予 manage/force-push。</p>
+ * 只有 ACL 行或目标项目下的四个项目角色才授予权限。</p>
  */
 @Service
 public class GitRepositoryAccessServiceImpl implements GitRepositoryAccessService
 {
-    /** pull + push：design.md D3 「pull + push」一行 */
+    /** pull + push：项目角色回落 */
     private static final Set<String> PULL_PUSH_ROLE_KEYS = new HashSet<>(Arrays.asList(
             "project.create-by", "project.admin", "project.develop", "project.tester"));
 
-    /** manage（含 force-push）：design.md D3 「manage」一行 */
+    /** manage（含 force-push）：项目角色回落 */
     private static final Set<String> MANAGE_ROLE_KEYS = new HashSet<>(Arrays.asList(
             "project.create-by", "project.admin"));
 
     @Autowired
     private SysRoleMapper sysRoleMapper;
 
+    @Autowired
+    private SysGitRepositoryMapper sysGitRepositoryMapper;
+
+    @Autowired
+    private SysGitRepositoryMemberMapper sysGitRepositoryMemberMapper;
+
     @Override
-    public boolean canPull(Long userId, Long projectId)
+    public boolean canPull(Long userId, Long repositoryId)
     {
-        return hasAnyRoleKey(userId, projectId, PULL_PUSH_ROLE_KEYS);
+        AccessFlags flags = evaluate(userId, repositoryId);
+        return flags.canPull;
     }
 
     @Override
-    public boolean canPush(Long userId, Long projectId)
+    public boolean canPush(Long userId, Long repositoryId)
     {
-        return hasAnyRoleKey(userId, projectId, PULL_PUSH_ROLE_KEYS);
+        AccessFlags flags = evaluate(userId, repositoryId);
+        return flags.canPush;
     }
 
     @Override
-    public boolean canManage(Long userId, Long projectId)
+    public boolean canManage(Long userId, Long repositoryId)
     {
-        return hasAnyRoleKey(userId, projectId, MANAGE_ROLE_KEYS);
+        AccessFlags flags = evaluate(userId, repositoryId);
+        return flags.canManage;
     }
 
-    /**
-     * 用户在目标项目下持有的角色（不含团队角色：teamId 传 null，见 SysRoleMapper.xml
-     * selectTeamAndProjectRoleVo，团队 UNION 分支仅在 teamId 非空时生效）。
-     */
-    private boolean hasAnyRoleKey(Long userId, Long projectId, Set<String> allowedRoleKeys)
+    @Override
+    public String resolveEffectiveRole(Long userId, Long repositoryId)
     {
-        if (userId == null || projectId == null)
+        return evaluate(userId, repositoryId).role;
+    }
+
+    private AccessFlags evaluate(Long userId, Long repositoryId)
+    {
+        if (userId == null || repositoryId == null)
         {
-            return false;
+            return AccessFlags.DENIED;
         }
+
+        SysGitRepositoryMember acl = sysGitRepositoryMemberMapper
+                .selectByRepositoryIdAndUserId(repositoryId, userId);
+        if (acl != null && acl.getRole() != null)
+        {
+            return flagsFromAclRole(acl.getRole());
+        }
+
+        SysGitRepository repo = sysGitRepositoryMapper.selectSysGitRepositoryByRepositoryId(repositoryId);
+        if (repo == null || repo.getProjectId() == null)
+        {
+            return AccessFlags.DENIED;
+        }
+        return flagsFromProjectRoles(userId, repo.getProjectId());
+    }
+
+    private static AccessFlags flagsFromAclRole(String role)
+    {
+        if (GitRepositoryAclRoles.ADMIN.equals(role))
+        {
+            return new AccessFlags(GitRepositoryAclRoles.ADMIN, true, true, true);
+        }
+        if (GitRepositoryAclRoles.WRITE.equals(role))
+        {
+            return new AccessFlags(GitRepositoryAclRoles.WRITE, true, true, false);
+        }
+        if (GitRepositoryAclRoles.READ.equals(role))
+        {
+            return new AccessFlags(GitRepositoryAclRoles.READ, true, false, false);
+        }
+        return AccessFlags.DENIED;
+    }
+
+    private AccessFlags flagsFromProjectRoles(Long userId, Long projectId)
+    {
         List<SysRole> roles = sysRoleMapper.selectRolePermissionByUserId(null, projectId, userId);
         if (CollectionUtils.isEmpty(roles))
         {
-            return false;
+            return AccessFlags.DENIED;
         }
+        boolean pullPush = false;
+        boolean manage = false;
         for (SysRole role : roles)
         {
-            if (role != null && allowedRoleKeys.contains(role.getRoleKey()))
+            if (role == null || role.getRoleKey() == null)
             {
-                return true;
+                continue;
+            }
+            if (MANAGE_ROLE_KEYS.contains(role.getRoleKey()))
+            {
+                manage = true;
+                pullPush = true;
+            }
+            else if (PULL_PUSH_ROLE_KEYS.contains(role.getRoleKey()))
+            {
+                pullPush = true;
             }
         }
-        return false;
+        if (manage)
+        {
+            return new AccessFlags(GitRepositoryAclRoles.ADMIN, true, true, true);
+        }
+        if (pullPush)
+        {
+            return new AccessFlags(GitRepositoryAclRoles.WRITE, true, true, false);
+        }
+        return AccessFlags.DENIED;
+    }
+
+    private static final class AccessFlags
+    {
+        static final AccessFlags DENIED = new AccessFlags(null, false, false, false);
+
+        final String role;
+        final boolean canPull;
+        final boolean canPush;
+        final boolean canManage;
+
+        AccessFlags(String role, boolean canPull, boolean canPush, boolean canManage)
+        {
+            this.role = role;
+            this.canPull = canPull;
+            this.canPush = canPush;
+            this.canManage = canManage;
+        }
     }
 }

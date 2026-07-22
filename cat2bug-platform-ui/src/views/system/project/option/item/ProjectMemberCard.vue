@@ -10,13 +10,13 @@
           </div>
         </div>
       </template>
-      <router-link v-if="canManageMember" to="project-member"><el-link>{{$t('member.manage')}}</el-link></router-link>
+      <router-link v-if="canManageMember" :to="href('project-member')"><el-link>{{$t('member.manage')}}</el-link></router-link>
     </el-card>
   </el-col>
 </template>
 
 <script>
-import { hasAnyPermi } from '@/utils/project-option-card'
+import { hasAnyPermi, projectOptionHref } from '@/utils/project-option-card'
 
 export default {
   name: "ProjectMemberCard",
@@ -33,6 +33,9 @@ export default {
     cardVisible() {
       return this.canManageMember
     }
+  },
+  methods: {
+    href: projectOptionHref
   },
 }
 </script>

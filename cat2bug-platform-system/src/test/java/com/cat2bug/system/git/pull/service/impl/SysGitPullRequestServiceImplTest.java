@@ -95,7 +95,7 @@ public class SysGitPullRequestServiceImplTest
     @Test
     public void merge_developUserDeniedBeforeGitRefIsRead()
     {
-        when(gitRepositoryAccessService.canManage(USER_ID, PROJECT_ID)).thenReturn(false);
+        when(gitRepositoryAccessService.canManage(USER_ID, REPOSITORY_ID)).thenReturn(false);
         try
         {
             service.mergePullRequest(REPOSITORY_ID, 1);
@@ -110,7 +110,7 @@ public class SysGitPullRequestServiceImplTest
     @Test
     public void create_nonPushUserDeniedBeforeBranchLookup()
     {
-        when(gitRepositoryAccessService.canPush(USER_ID, PROJECT_ID)).thenReturn(false);
+        when(gitRepositoryAccessService.canPush(USER_ID, REPOSITORY_ID)).thenReturn(false);
         try
         {
             service.createPullRequest(REPOSITORY_ID, new SysGitPullRequest());
@@ -130,7 +130,7 @@ public class SysGitPullRequestServiceImplTest
         pullRequest.setAuthorId(USER_ID);
         pullRequest.setState("open");
         when(sysGitPullRequestMapper.selectByRepoAndNumber(REPOSITORY_ID, 1)).thenReturn(pullRequest);
-        when(gitRepositoryAccessService.canPush(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canPush(USER_ID, REPOSITORY_ID)).thenReturn(true);
 
         service.closePullRequest(REPOSITORY_ID, 1);
 
@@ -146,7 +146,7 @@ public class SysGitPullRequestServiceImplTest
         repository.setProjectId(PROJECT_ID);
         repository.setDiskPath(bare.getAbsolutePath());
         when(sysGitRepositoryMapper.selectSysGitRepositoryByRepositoryId(REPOSITORY_ID)).thenReturn(repository);
-        when(gitRepositoryAccessService.canPull(USER_ID, PROJECT_ID)).thenReturn(true);
+        when(gitRepositoryAccessService.canPull(USER_ID, REPOSITORY_ID)).thenReturn(true);
 
         SysGitPullRequest pullRequest = new SysGitPullRequest();
         pullRequest.setPullRequestId(9L);

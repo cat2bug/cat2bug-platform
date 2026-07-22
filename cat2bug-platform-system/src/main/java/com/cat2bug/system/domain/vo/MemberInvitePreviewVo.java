@@ -14,6 +14,8 @@ public class MemberInvitePreviewVo {
     private String scope;
     private String teamName;
     private String projectName;
+    /** 仓库显示名（scope=REPO） */
+    private String repositoryName;
     private String inviterName;
     private List<String> roleNames;
     private Date expiresAt;
@@ -22,6 +24,6 @@ public class MemberInvitePreviewVo {
     private Boolean expired;
     private Boolean revoked;
     private Boolean valid;
-    /** 当前登录用户是否已是目标团队/项目成员（未登录时为 false） */
+    /** 当前登录用户是否已是目标团队/项目/仓库成员（未登录时为 false） */
     private Boolean alreadyMember;
 }

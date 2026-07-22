@@ -4,6 +4,7 @@ const UPGRADE_STATUS_CACHE_KEY = 'cat2bug-upgrade-status-cache'
 const UPGRADE_STATUS_CACHE_TTL_MS = 30 * 60 * 1000
 
 let upgradeStatusPromise = null
+let upgradeStatusSnapshot = null
 
 function normalizeUpgradeStatus(res) {
   const payload = res && res.data ? res.data : (res || {})
@@ -18,10 +19,12 @@ function normalizeUpgradeStatus(res) {
   }
 }
 
+/** 升级进行中/待重启不得写入长期缓存，避免路由误判留在登录页 */
 function isUpgradeStatusCacheable(data) {
   if (!data) return false
   if (data.restartRequired) return false
-  if (data.upgradeRequired && ['pending', 'running', 'failed'].includes(data.state)) return false
+  if (data.upgradeRequired) return false
+  if (['pending', 'running', 'failed', 'restart_required'].includes(data.state)) return false
   return true
 }
 
@@ -34,6 +37,11 @@ function readUpgradeStatusCache() {
       sessionStorage.removeItem(UPGRADE_STATUS_CACHE_KEY)
       return null
     }
+    // 防御：旧版曾把 upgradeRequired=true 写入缓存
+    if (!isUpgradeStatusCacheable(parsed.data)) {
+      sessionStorage.removeItem(UPGRADE_STATUS_CACHE_KEY)
+      return null
+    }
     return parsed.data
   } catch (e) {
     return null
@@ -42,34 +50,58 @@ function readUpgradeStatusCache() {
 
 function writeUpgradeStatusCache(data) {
   try {
-    if (!isUpgradeStatusCacheable(data)) return
+    if (!isUpgradeStatusCacheable(data)) {
+      sessionStorage.removeItem(UPGRADE_STATUS_CACHE_KEY)
+      return
+    }
     sessionStorage.setItem(UPGRADE_STATUS_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }))
   } catch (e) {
     /* ignore */
   }
 }
 
+function applyUpgradeStatus(data) {
+  upgradeStatusSnapshot = data
+  upgradeStatusPromise = Promise.resolve(data)
+  writeUpgradeStatusCache(data)
+  return data
+}
+
+function fallbackUpgradeStatus() {
+  if (upgradeStatusSnapshot) {
+    return upgradeStatusSnapshot
+  }
+  const cached = readUpgradeStatusCache()
+  if (cached) {
+    upgradeStatusSnapshot = cached
+    return cached
+  }
+  return {
+    upgradeRequired: false,
+    state: '',
+    targetVersion: '',
+    pendingMigrations: [],
+    lastError: '',
+    lastStep: '',
+    restartRequired: false
+  }
+}
+
 function fetchUpgradeStatus() {
   return getUpgradeStatus()
     .then(normalizeUpgradeStatus)
-    .then(data => {
-      writeUpgradeStatusCache(data)
-      return data
-    })
-    .catch(() => ({
-      upgradeRequired: false,
-      state: '',
-      targetVersion: '',
-      pendingMigrations: [],
-      lastError: '',
-      lastStep: '',
-      restartRequired: false
-    }))
+    .then(applyUpgradeStatus)
+    .catch(() => applyUpgradeStatus(fallbackUpgradeStatus()))
 }
 
+/**
+ * @param {boolean} [forceRefresh=false]
+ * @returns {Promise<object>}
+ */
 export function resolveUpgradeStatus(forceRefresh = false) {
   if (forceRefresh) {
     upgradeStatusPromise = null
+    upgradeStatusSnapshot = null
     try {
       sessionStorage.removeItem(UPGRADE_STATUS_CACHE_KEY)
     } catch (e) {
@@ -77,22 +109,23 @@ export function resolveUpgradeStatus(forceRefresh = false) {
     }
   }
   if (!upgradeStatusPromise) {
-    const cached = !forceRefresh ? readUpgradeStatusCache() : null
-    if (cached) {
-      upgradeStatusPromise = Promise.resolve(cached)
-      fetchUpgradeStatus().catch(() => {})
-    } else {
-      upgradeStatusPromise = fetchUpgradeStatus()
-    }
+    // 始终以网络结果为准；缓存仅作请求失败回退，避免「无需升级」陈旧结果锁死登录页
+    upgradeStatusPromise = fetchUpgradeStatus()
   }
   return upgradeStatusPromise
 }
 
 export function resetUpgradeStatusCache() {
   upgradeStatusPromise = null
+  upgradeStatusSnapshot = null
   try {
     sessionStorage.removeItem(UPGRADE_STATUS_CACHE_KEY)
   } catch (e) {
     /* ignore */
   }
+}
+
+/** 后端 UpgradeFilter 锁业务 API 时的提示（中/英） */
+export function isUpgradeLockMessage(msg) {
+  return /系统正在升级|完成升级向导|upgrade wizard|system is upgrading/i.test(String(msg || ''))
 }

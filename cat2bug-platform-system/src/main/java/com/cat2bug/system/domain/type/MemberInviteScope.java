@@ -7,6 +7,7 @@ public final class MemberInviteScope {
 
     public static final String TEAM = "TEAM";
     public static final String PROJECT = "PROJECT";
+    public static final String REPO = "REPO";
 
     private MemberInviteScope() {
     }

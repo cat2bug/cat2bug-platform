@@ -9,11 +9,14 @@ import com.cat2bug.system.domain.SysGitRepository;
 import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.domain.git.SysGitRepositoryImportRequest;
 import com.cat2bug.system.mapper.SysGitRepositoryMapper;
+import com.cat2bug.system.mapper.SysGitRepositoryMemberMapper;
 import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysRoleMapper;
 import com.cat2bug.system.mapper.SysUserGitRepositoryMapper;
+import com.cat2bug.system.service.ISysGitRepositoryMemberService;
 import com.cat2bug.system.service.git.GitPathValidator;
 import com.cat2bug.system.service.git.GitRemoteRepositoryClient;
+import com.cat2bug.system.service.git.GitRepositoryAccessService;
 import com.cat2bug.system.service.git.JGitBareRepositoryHelper;
 import com.cat2bug.system.support.MessageSourceTestSupport;
 import org.junit.After;
@@ -57,6 +60,8 @@ public class SysGitRepositoryServiceTest
     @Mock
     private SysGitRepositoryMapper sysGitRepositoryMapper;
     @Mock
+    private SysGitRepositoryMemberMapper sysGitRepositoryMemberMapper;
+    @Mock
     private SysUserGitRepositoryMapper sysUserGitRepositoryMapper;
     @Mock
     private SysProjectMapper sysProjectMapper;
@@ -70,6 +75,10 @@ public class SysGitRepositoryServiceTest
     private GitRemoteRepositoryClient gitRemoteRepositoryClient;
     @Mock
     private Cat2BugConfig cat2BugConfig;
+    @Mock
+    private ISysGitRepositoryMemberService sysGitRepositoryMemberService;
+    @Mock
+    private GitRepositoryAccessService gitRepositoryAccessService;
 
     @InjectMocks
     private SysGitRepositoryServiceImpl service;
@@ -211,7 +220,11 @@ public class SysGitRepositoryServiceTest
         when(gitPathValidator.validateSlug("api")).thenReturn("api");
         when(sysGitRepositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(PROJECT_ID, "api")).thenReturn(null);
         when(gitPathValidator.buildDefaultDiskPath("acme", "app", "api")).thenReturn("/data/git/acme/app/api.git");
-        when(sysGitRepositoryMapper.insertSysGitRepository(any())).thenReturn(1);
+        when(sysGitRepositoryMapper.insertSysGitRepository(any())).thenAnswer(invocation -> {
+            SysGitRepository row = invocation.getArgument(0);
+            row.setRepositoryId(99L);
+            return 1;
+        });
 
         SysGitRepository result = service.insertSysGitRepository(newRepositoryRequest("api"));
 
@@ -219,6 +232,7 @@ public class SysGitRepositoryServiceTest
         assertEquals("api", result.getSlug());
         verify(jGitBareRepositoryHelper).initBareRepository("/data/git/acme/app/api.git", "master");
         verify(gitPathValidator).ensureParentWritable("/data/git/acme/app/api.git");
+        verify(sysGitRepositoryMemberService).ensureCreatorAdmin(eq(99L), eq(1L));
     }
 
     @Test
@@ -484,7 +498,11 @@ public class SysGitRepositoryServiceTest
         when(sysGitRepositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(PROJECT_ID, "api")).thenReturn(null);
         when(gitPathValidator.buildDefaultDiskPath("acme", "app", "api")).thenReturn("/data/git/acme/app/api.git");
         when(jGitBareRepositoryHelper.resolveDefaultBranch("/data/git/acme/app/api.git")).thenReturn("main");
-        when(sysGitRepositoryMapper.insertSysGitRepository(any())).thenReturn(1);
+        when(sysGitRepositoryMapper.insertSysGitRepository(any())).thenAnswer(invocation -> {
+            SysGitRepository row = invocation.getArgument(0);
+            row.setRepositoryId(88L);
+            return 1;
+        });
 
         SysGitRepositoryImportRequest request = newImportRequest("api", "https://github.com/org/api.git");
         SysGitRepository result = service.importSysGitRepository(request);
@@ -498,6 +516,7 @@ public class SysGitRepositoryServiceTest
             isNull(),
             isNull());
         verify(sysGitRepositoryMapper).insertSysGitRepository(any());
+        verify(sysGitRepositoryMemberService).ensureCreatorAdmin(eq(88L), eq(1L));
         verify(jGitBareRepositoryHelper, never()).initBareRepository(any(), any());
     }
 
@@ -599,6 +618,12 @@ public class SysGitRepositoryServiceTest
             .map(SysRole::new)
             .collect(Collectors.toList());
         when(sysRoleMapper.selectRolePermissionByUserId(isNull(), eq(PROJECT_ID), eq(userId))).thenReturn(roles);
+
+        boolean manage = Arrays.asList(projectRoleIds).contains(6L) || Arrays.asList(projectRoleIds).contains(11L);
+        boolean pull = manage || Arrays.asList(projectRoleIds).contains(7L) || Arrays.asList(projectRoleIds).contains(8L);
+        when(gitRepositoryAccessService.canManage(eq(userId), any())).thenReturn(manage);
+        when(gitRepositoryAccessService.canPull(eq(userId), any())).thenReturn(pull);
+        when(gitRepositoryAccessService.canPush(eq(userId), any())).thenReturn(pull);
     }
 
     private SysGitRepository queryFor(Long projectId)

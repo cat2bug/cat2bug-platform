@@ -118,6 +118,31 @@ export function gitRepoCommitDetailRoute(routeOrCtx, commitId, query) {
   return withCtx('GitRepoCommitDetail', routeOrCtx, { commitId: String(commitId) }, query)
 }
 
+/** @param {object} routeOrCtx @param {Record<string, string>} [query] */
+export function gitRepoSettingsRoute(routeOrCtx, query) {
+  return withCtx('GitRepoSettings', routeOrCtx, null, query)
+}
+
+/** @param {object} routeOrCtx @param {Record<string, string>} [query] */
+export function gitRepoSettingsGeneralRoute(routeOrCtx, query) {
+  return withCtx('GitRepoSettingsGeneral', routeOrCtx, null, query)
+}
+
+/** @param {object} routeOrCtx @param {Record<string, string>} [query] */
+export function gitRepoSettingsDangerRoute(routeOrCtx, query) {
+  return withCtx('GitRepoSettingsDanger', routeOrCtx, null, query)
+}
+
+/** @param {object} routeOrCtx @param {Record<string, string>} [query] */
+export function gitRepoSettingsMembersRoute(routeOrCtx, query) {
+  return withCtx('GitRepoSettingsMembers', routeOrCtx, null, query)
+}
+
+/** @param {object} routeOrCtx @param {Record<string, string>} [query] */
+export function gitRepoSettingsWebhooksRoute(routeOrCtx, query) {
+  return withCtx('GitRepoSettingsWebhooks', routeOrCtx, null, query)
+}
+
 /**
  * Browse page primary pane from route params / query.
  * Used so `?tab=releases` (e.g. from Pull Request shell) is not lost on init.
@@ -131,5 +156,21 @@ export function resolveBrowseActiveTab(route) {
   if (params.commitId) return 'commits'
   const tab = route.query && route.query.tab
   if (tab === 'commits' || tab === 'releases' || tab === 'code') return tab
+  return 'code'
+}
+
+/**
+ * Primary shell tab from the current route name / browse query.
+ * @param {{ name?: string|symbol|null, query?: Record<string, string> }|null|undefined} route
+ * @returns {'code'|'pulls'|'releases'|'settings'}
+ */
+export function resolveShellTabFromRoute(route) {
+  if (!route) return 'code'
+  const name = route.name != null ? String(route.name) : ''
+  if (name.startsWith('GitRepoSettings')) return 'settings'
+  if (name.startsWith('GitRepoPull')) return 'pulls'
+  if (name === 'GitRepoBrowse' && route.query && route.query.tab === 'releases') {
+    return 'releases'
+  }
   return 'code'
 }

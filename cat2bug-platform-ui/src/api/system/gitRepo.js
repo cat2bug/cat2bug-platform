@@ -61,6 +61,164 @@ export function getGitRepo(repositoryId) {
   })
 }
 
+/** 当前用户对该仓库的有效权限（供壳 Tab / settings 守卫） */
+export function getGitRepoMyAccess(repositoryId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/my-access',
+    method: 'get'
+  })
+}
+
+/** 仓库成员 ACL 列表（需 effective manage） */
+export function listGitRepoMembers(repositoryId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/members',
+    method: 'get'
+  })
+}
+
+/** 添加仓库成员 */
+export function addGitRepoMember(repositoryId, data) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/members',
+    method: 'post',
+    data
+  })
+}
+
+/** 更新仓库成员角色 */
+export function updateGitRepoMember(repositoryId, userId, data) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/members/' + userId,
+    method: 'put',
+    data
+  })
+}
+
+/** 移除仓库成员 */
+export function delGitRepoMember(repositoryId, userId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/members/' + userId,
+    method: 'delete'
+  })
+}
+/** 仓库邀请链接列表（需 effective manage） */
+export function listGitRepoInvites(repositoryId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/invites',
+    method: 'get'
+  })
+}
+
+/** 创建仓库邀请链接（data: { role }） */
+export function createGitRepoInvite(repositoryId, data) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/invites',
+    method: 'post',
+    data
+  })
+}
+
+/** 撤销仓库邀请链接 */
+export function revokeGitRepoInvite(repositoryId, inviteId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/invites/' + inviteId + '/revoke',
+    method: 'post'
+  })
+}
+
+/** 可作为邀请来源的同项目仓库列表 */
+export function listGitRepoInviteSources(repositoryId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/invite-sources',
+    method: 'get'
+  })
+}
+
+/** 源仓库成员列表（用于从仓邀请） */
+export function listGitRepoInviteSourceMembers(repositoryId, sourceRepositoryId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/invite-sources/' + sourceRepositoryId + '/members',
+    method: 'get'
+  })
+}
+
+/** 仓库 Webhook 列表（需 effective manage） */
+export function listGitRepoWebhooks(repositoryId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/webhooks',
+    method: 'get'
+  })
+}
+
+/** 创建仓库 Webhook */
+export function createGitRepoWebhook(repositoryId, data) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/webhooks',
+    method: 'post',
+    data
+  })
+}
+
+/** 查询单个 Webhook */
+export function getGitRepoWebhook(repositoryId, webhookId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/webhooks/' + webhookId,
+    method: 'get'
+  })
+}
+
+/** 更新仓库 Webhook（不含 secret） */
+export function updateGitRepoWebhook(repositoryId, webhookId, data) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/webhooks/' + webhookId,
+    method: 'put',
+    data
+  })
+}
+
+/** 删除仓库 Webhook */
+export function delGitRepoWebhook(repositoryId, webhookId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/webhooks/' + webhookId,
+    method: 'delete'
+  })
+}
+
+/** 重置 Webhook secret（明文仅本次响应） */
+export function regenerateGitRepoWebhookSecret(repositoryId, webhookId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/webhooks/' + webhookId + '/secret/regenerate',
+    method: 'post'
+  })
+}
+
+/** 最近投递记录 */
+export function listGitRepoWebhookDeliveries(repositoryId, webhookId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/webhooks/' + webhookId + '/deliveries',
+    method: 'get'
+  })
+}
+
+/** 测试投递（ping） */
+export function testGitRepoWebhook(repositoryId, webhookId) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/webhooks/' + webhookId + '/test',
+    method: 'post'
+  })
+}
+
+/** 从其他仓库批量添加成员（data: { sourceRepositoryId, userIds, role }） */
+export function addGitRepoMembersFromRepo(repositoryId, data) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/members/from-repo',
+    method: 'post',
+    data
+  })
+}
+
+
 // 新增代码仓库
 export function addGitRepo(data) {
   return request({
@@ -173,12 +331,56 @@ export function getGitRepoBlob(repositoryId, ref, path) {
   })
 }
 
-// 查询提交记录（pull 权限）
-export function listGitRepoCommits(repositoryId, ref, limit) {
+/**
+ * Markdown 内相对图片等资源的 raw URL（&lt;img&gt; 无法带 Authorization，需附 ?token=）。
+ * Prefer {@link fetchGitRepoRawBlob} for in-app rendering.
+ * @returns {string}
+ */
+export function gitRepoRawBlobUrl(repositoryId, ref, path) {
+  const base = process.env.VUE_APP_BASE_API || ''
+  const qs = new URLSearchParams()
+  qs.set('path', String(path || ''))
+  if (ref != null && ref !== '') {
+    qs.set('ref', String(ref))
+  }
+  const token = getToken()
+  if (token) {
+    qs.set('token', token)
+  }
+  return `${base}/system/git/repo/${repositoryId}/raw?${qs.toString()}`
+}
+
+/**
+ * Authenticated raw blob fetch for Markdown images (Authorization header).
+ * @returns {Promise<Blob|null>}
+ */
+export function fetchGitRepoRawBlob(repositoryId, ref, path) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/raw',
+    method: 'get',
+    params: {
+      path,
+      ...(ref != null && ref !== '' ? { ref } : {})
+    },
+    responseType: 'blob',
+    silentError: true
+  }).then((data) => {
+    if (!data || !(data instanceof Blob) || data.size < 8) return null
+    // 失败时后端常返回 JSON（code:401/404），被 axios 当成 blob
+    if (data.type && /json|text\//i.test(data.type)) return null
+    return data
+  }).catch(() => null)
+}
+
+// 查询提交记录（pull 权限）；query: { ref, limit, author, since, until }
+export function listGitRepoCommits(repositoryId, refOrQuery, limit) {
+  const params = (refOrQuery && typeof refOrQuery === 'object' && !Array.isArray(refOrQuery))
+    ? { ...refOrQuery }
+    : { ref: refOrQuery, limit }
   return request({
     url: '/system/git/repo/' + repositoryId + '/commits',
     method: 'get',
-    params: { ref, limit }
+    params
   })
 }
 

@@ -97,6 +97,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         order by number desc
     </select>
 
+    <select id="selectOpenBySourceBranch" resultMap="SysGitPullRequestResult">
+        <include refid="selectSysGitPullRequestVo"/>
+        where repository_id = #{repositoryId}
+          and source_branch = #{sourceBranch}
+          and state = 'open'
+    </select>
+
     <update id="updateStateFields" parameterType="SysGitPullRequest">
         update sys_git_pull_request
         <trim prefix="SET" suffixOverrides=",">

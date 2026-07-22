@@ -9,7 +9,7 @@
         </div>
       </div>
     </template>
-    <router-link to="team-base-info" v-hasPermi="['system:team:edit']"><el-link>{{$t('team.base-info')}}</el-link></router-link>
+    <router-link to="/team-options/team-base-info" v-hasPermi="['system:team:edit']"><el-link>{{$t('team.base-info')}}</el-link></router-link>
     <el-link data-cat2bug-kbd-key="delete-team" @click="handleDelete" type="danger" v-hasPermi="['system:team:remove']">{{$t('team.delete')}}</el-link>
   </el-card>
 </template>

@@ -10,15 +10,15 @@
           </div>
         </div>
       </template>
-      <router-link v-if="canManageDing" to="ding"><el-link>{{$t('ding')}}</el-link></router-link>
-      <router-link v-if="canManageFeishu" to="feishu"><el-link>{{$t('feishu')}}</el-link></router-link>
-      <router-link v-if="canManageWechat" to="enterprise-wechat"><el-link>{{$t('enterprise-wechat')}}</el-link></router-link>
+      <router-link v-if="canManageDing" :to="href('ding')"><el-link>{{$t('ding')}}</el-link></router-link>
+      <router-link v-if="canManageFeishu" :to="href('feishu')"><el-link>{{$t('feishu')}}</el-link></router-link>
+      <router-link v-if="canManageWechat" :to="href('enterprise-wechat')"><el-link>{{$t('enterprise-wechat')}}</el-link></router-link>
     </el-card>
   </el-col>
 </template>
 
 <script>
-import { hasAnyPermi } from '@/utils/project-option-card'
+import { hasAnyPermi, projectOptionHref } from '@/utils/project-option-card'
 
 export default {
   name: "OtherSystemCard",
@@ -41,6 +41,9 @@ export default {
     cardVisible() {
       return hasAnyPermi(['ding:list', 'feishu:list', 'wechat:list'])
     }
+  },
+  methods: {
+    href: projectOptionHref
   }
 }
 </script>

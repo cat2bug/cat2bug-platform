@@ -62,6 +62,10 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -83,6 +87,8 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
 {
     /** 文件内容预览上限（字节），超出则截断并标记 truncated */
     private static final int MAX_BLOB_PREVIEW_BYTES = 2 * 1024 * 1024;
+    /** README 等 Markdown 内嵌资源（图片）直出上限 */
+    private static final long MAX_RAW_BLOB_BYTES = 20L * 1024 * 1024;
 
     /** 二进制探测扫描的字节数（沿用 git 的 NUL 字节启发式） */
     private static final int BINARY_DETECT_SCAN_BYTES = 8000;
@@ -135,7 +141,7 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     public List<GitBranchInfo> listBranches(Long repositoryId, String nameFilter)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         List<GitBranchInfo> result = new ArrayList<>();
         try (Repository repository = openRepository(repo.getDiskPath()))
         {
@@ -172,7 +178,7 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     public GitBranchInfo createBranch(Long repositoryId, String name, String fromRef)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertManage(repo.getProjectId());
+        assertManage(repo.getRepositoryId());
         String branchName = normalizeBranchName(name);
         try (Repository repository = openRepository(repo.getDiskPath()))
         {
@@ -225,7 +231,7 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     public void deleteBranch(Long repositoryId, String name)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertManage(repo.getProjectId());
+        assertManage(repo.getRepositoryId());
         String branchName = normalizeBranchName(name);
         if (branchName.equals(repo.getDefaultBranch()))
         {
@@ -261,7 +267,7 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     public void setDefaultBranch(Long repositoryId, String name)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertManage(repo.getProjectId());
+        assertManage(repo.getRepositoryId());
         String branchName = normalizeBranchName(name);
         try (Repository repository = openRepository(repo.getDiskPath()))
         {
@@ -286,7 +292,7 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     public List<GitTreeEntryInfo> listTree(Long repositoryId, String ref, String path)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         try (Repository repository = openRepository(repo.getDiskPath()))
         {
             ObjectId commitId = resolveCommitish(repository, ref, repo.getDefaultBranch());
@@ -312,7 +318,7 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     public GitBlobContent readBlob(Long repositoryId, String ref, String path)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         String normalizedPath = normalizePath(path);
         if (StringUtils.isBlank(normalizedPath))
         {
@@ -350,9 +356,18 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     @Override
     public List<GitCommitInfo> listCommits(Long repositoryId, String ref, Integer limit)
     {
+        return listCommits(repositoryId, ref, limit, null, null, null);
+    }
+
+    @Override
+    public List<GitCommitInfo> listCommits(Long repositoryId, String ref, Integer limit, String author, String since,
+            String until)
+    {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         int max = (limit != null && limit > 0) ? Math.min(limit, MAX_COMMIT_LIMIT) : DEFAULT_COMMIT_LIMIT;
+        CommitTimeWindow window = parseCommitTimeWindow(since, until);
+        String authorFilter = StringUtils.isNotBlank(author) ? author.trim() : null;
         List<GitCommitInfo> result = new ArrayList<>();
         try (Repository repository = openRepository(repo.getDiskPath()))
         {
@@ -367,6 +382,10 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
                 int count = 0;
                 for (RevCommit commit : revWalk)
                 {
+                    if (!matchesCommitAuthor(commit, authorFilter) || !matchesCommitTime(commit, window))
+                    {
+                        continue;
+                    }
                     if (count >= max)
                     {
                         break;
@@ -387,7 +406,7 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     public GitCommitDetail getCommitDetail(Long repositoryId, String commitId)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         if (StringUtils.isBlank(commitId))
         {
             throw new ServiceException(MessageUtils.message("git.repo.browse.commit-not-found"), HttpStatus.NOT_FOUND);
@@ -420,7 +439,7 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     public List<GitContributorInfo> listContributors(Long repositoryId, String ref, Integer limit)
     {
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
         int returnMax = (limit != null && limit > 0)
                 ? Math.min(limit, MAX_CONTRIBUTOR_RETURN_LIMIT) : DEFAULT_CONTRIBUTOR_RETURN_LIMIT;
         List<SysUser> projectMembers = sysUserProjectMapper.selectSysUserListByProjectId(
@@ -482,7 +501,7 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     {
         ensureArchiveFormatsRegistered();
         SysGitRepository repo = requireRepo(repositoryId);
-        assertPull(repo.getProjectId());
+        assertPull(repo.getRepositoryId());
 
         // JGit ArchiveFormats 注册名为 tgz / zip；对外 API 仍接受 tar.gz
         String jgitFormat = normalizeArchiveFormat(format);
@@ -526,6 +545,105 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
         {
             throw new ServiceException(MessageUtils.message("git.repo.browse.archive-failed"), HttpStatus.ERROR);
         }
+    }
+
+    @Override
+    public void writeRawBlob(Long repositoryId, String ref, String path, HttpServletResponse response)
+            throws IOException
+    {
+        SysGitRepository repo = requireRepo(repositoryId);
+        assertPull(repo.getRepositoryId());
+        String normalizedPath = normalizePath(path);
+        if (StringUtils.isBlank(normalizedPath))
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.browse.path-required"), HttpStatus.BAD_REQUEST);
+        }
+        try (Repository repository = openRepository(repo.getDiskPath()))
+        {
+            ObjectId commitId = resolveCommitish(repository, ref, repo.getDefaultBranch());
+            if (commitId == null)
+            {
+                throw new ServiceException(MessageUtils.message("git.repo.browse.empty-repository"), HttpStatus.NOT_FOUND);
+            }
+            try (RevWalk revWalk = new RevWalk(repository))
+            {
+                RevCommit commit = revWalk.parseCommit(commitId);
+                try (TreeWalk treeWalk = TreeWalk.forPath(repository, normalizedPath, commit.getTree()))
+                {
+                    if (treeWalk == null || treeWalk.isSubtree())
+                    {
+                        throw new ServiceException(MessageUtils.message("git.repo.browse.file-not-found"), HttpStatus.NOT_FOUND);
+                    }
+                    ObjectLoader loader = repository.open(treeWalk.getObjectId(0));
+                    long size = loader.getSize();
+                    if (size > MAX_RAW_BLOB_BYTES)
+                    {
+                        throw new ServiceException(MessageUtils.message("git.repo.browse.read-failed"), HttpStatus.BAD_REQUEST);
+                    }
+                    String contentType = guessRawContentType(normalizedPath);
+                    response.setContentType(contentType);
+                    response.setHeader("Cache-Control", "private, max-age=300");
+                    response.setContentLengthLong(size);
+                    try (InputStream in = loader.openStream();
+                         OutputStream out = response.getOutputStream())
+                    {
+                        in.transferTo(out);
+                        out.flush();
+                    }
+                }
+            }
+        }
+        catch (ServiceException e)
+        {
+            throw e;
+        }
+        catch (IOException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.browse.read-failed"), HttpStatus.ERROR);
+        }
+    }
+
+    private static String guessRawContentType(String path)
+    {
+        String lower = path == null ? "" : path.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".png"))
+        {
+            return "image/png";
+        }
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg"))
+        {
+            return "image/jpeg";
+        }
+        if (lower.endsWith(".gif"))
+        {
+            return "image/gif";
+        }
+        if (lower.endsWith(".webp"))
+        {
+            return "image/webp";
+        }
+        if (lower.endsWith(".svg"))
+        {
+            return "image/svg+xml";
+        }
+        if (lower.endsWith(".bmp"))
+        {
+            return "image/bmp";
+        }
+        if (lower.endsWith(".ico"))
+        {
+            return "image/x-icon";
+        }
+        if (lower.endsWith(".pdf"))
+        {
+            return "application/pdf";
+        }
+        String guessed = java.net.URLConnection.guessContentTypeFromName(path);
+        return StringUtils.isNotBlank(guessed) ? guessed : "application/octet-stream";
     }
 
     private static void ensureArchiveFormatsRegistered()
@@ -635,17 +753,17 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
     // ---------------------------------------------------------------------
 
     /** 无 pull 权限（含未持有目标项目角色的系统管理员）直接拒绝，不做任何绕过 */
-    private void assertPull(Long projectId)
+    private void assertPull(Long repositoryId)
     {
-        if (!gitRepositoryAccessService.canPull(SecurityUtils.getUserId(), projectId))
+        if (!gitRepositoryAccessService.canPull(SecurityUtils.getUserId(), repositoryId))
         {
             throw new ServiceException(MessageUtils.message("no-permission"), HttpStatus.FORBIDDEN);
         }
     }
 
-    private void assertManage(Long projectId)
+    private void assertManage(Long repositoryId)
     {
-        if (!gitRepositoryAccessService.canManage(SecurityUtils.getUserId(), projectId))
+        if (!gitRepositoryAccessService.canManage(SecurityUtils.getUserId(), repositoryId))
         {
             throw new ServiceException(MessageUtils.message("no-permission"), HttpStatus.FORBIDDEN);
         }
@@ -989,6 +1107,115 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
             info.setCommitTime(author.getWhen());
         }
         return info;
+    }
+
+    /**
+     * 与贡献者下拉一致：有 email 则按 email 精确匹配（忽略大小写），否则按 name；
+     * 筛选值同时与 email、name 比较，以兼容前端传 {@code email || displayName}。
+     */
+    private static boolean matchesCommitAuthor(RevCommit commit, String authorFilter)
+    {
+        if (StringUtils.isBlank(authorFilter))
+        {
+            return true;
+        }
+        PersonIdent author = commit.getAuthorIdent();
+        if (author == null)
+        {
+            return false;
+        }
+        String filter = authorFilter.trim().toLowerCase(Locale.ROOT);
+        String email = author.getEmailAddress();
+        if (StringUtils.isNotBlank(email) && email.trim().toLowerCase(Locale.ROOT).equals(filter))
+        {
+            return true;
+        }
+        String name = author.getName();
+        return StringUtils.isNotBlank(name) && name.trim().toLowerCase(Locale.ROOT).equals(filter);
+    }
+
+    private static boolean matchesCommitTime(RevCommit commit, CommitTimeWindow window)
+    {
+        if (window == null || (!window.hasSince() && !window.hasUntil()))
+        {
+            return true;
+        }
+        long commitEpochSec = commit.getCommitTime();
+        if (window.hasSince() && commitEpochSec < window.sinceEpochSec)
+        {
+            return false;
+        }
+        if (window.hasUntil() && commitEpochSec > window.untilEpochSec)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    private static CommitTimeWindow parseCommitTimeWindow(String since, String until)
+    {
+        boolean hasSince = StringUtils.isNotBlank(since);
+        boolean hasUntil = StringUtils.isNotBlank(until);
+        if (!hasSince && !hasUntil)
+        {
+            return CommitTimeWindow.EMPTY;
+        }
+        ZoneId zone = ZoneId.systemDefault();
+        LocalDate sinceDate = hasSince ? parseCommitFilterDate(since.trim()) : null;
+        LocalDate untilDate = hasUntil ? parseCommitFilterDate(until.trim()) : null;
+        if (sinceDate != null && untilDate != null && sinceDate.isAfter(untilDate))
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.browse.commit-date-range-invalid"),
+                    HttpStatus.BAD_REQUEST);
+        }
+        long sinceEpoch = sinceDate != null
+                ? sinceDate.atStartOfDay(zone).toEpochSecond()
+                : Long.MIN_VALUE;
+        long untilEpoch = untilDate != null
+                ? untilDate.atTime(23, 59, 59).atZone(zone).toEpochSecond()
+                : Long.MAX_VALUE;
+        return new CommitTimeWindow(hasSince, sinceEpoch, hasUntil, untilEpoch);
+    }
+
+    private static LocalDate parseCommitFilterDate(String value)
+    {
+        try
+        {
+            return LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE);
+        }
+        catch (DateTimeParseException e)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.browse.commit-date-invalid"),
+                    HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private static final class CommitTimeWindow
+    {
+        private static final CommitTimeWindow EMPTY = new CommitTimeWindow(false, 0L, false, 0L);
+
+        private final boolean hasSince;
+        private final long sinceEpochSec;
+        private final boolean hasUntil;
+        private final long untilEpochSec;
+
+        private CommitTimeWindow(boolean hasSince, long sinceEpochSec, boolean hasUntil, long untilEpochSec)
+        {
+            this.hasSince = hasSince;
+            this.sinceEpochSec = sinceEpochSec;
+            this.hasUntil = hasUntil;
+            this.untilEpochSec = untilEpochSec;
+        }
+
+        private boolean hasSince()
+        {
+            return hasSince;
+        }
+
+        private boolean hasUntil()
+        {
+            return hasUntil;
+        }
     }
 
     private GitCommitDetail toCommitDetail(Repository repository, RevWalk revWalk, RevCommit commit)

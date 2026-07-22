@@ -22,6 +22,10 @@ public interface SysGitPullRequestMapper
             @Param("repositoryId") Long repositoryId,
             @Param("state") String state);
 
+    List<SysGitPullRequest> selectOpenBySourceBranch(
+            @Param("repositoryId") Long repositoryId,
+            @Param("sourceBranch") String sourceBranch);
+
     int updateStateFields(SysGitPullRequest pullRequest);
 
     /**

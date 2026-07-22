@@ -10,6 +10,7 @@ import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.common.utils.*;
 import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.system.domain.*;
+import com.cat2bug.system.mapper.SysGitRepositoryMemberMapper;
 import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectRoleMapper;
@@ -49,6 +50,8 @@ public class SysProjectServiceImpl implements ISysProjectService
     private SysUserProjectMapper sysUserProjectMapper;
     @Autowired
     private SysUserProjectRoleMapper sysUserProjectRoleMapper;
+    @Autowired
+    private SysGitRepositoryMemberMapper sysGitRepositoryMemberMapper;
     @Autowired
     private ISysUserConfigService sysUserConfigService;
     @Autowired
@@ -137,7 +140,12 @@ public class SysProjectServiceImpl implements ISysProjectService
         SysUserProject membership = new SysUserProject();
         membership.setUserId(userId);
         membership.setProjectId(project.getProjectId());
-        return !sysUserProjectMapper.selectSysUserProjectList(membership).isEmpty();
+        if (!sysUserProjectMapper.selectSysUserProjectList(membership).isEmpty())
+        {
+            return true;
+        }
+        // 仓 ACL 邀请：非项目成员但已是该项目下某仓成员，仍可解析项目路径进入代码页
+        return sysGitRepositoryMemberMapper.countByProjectIdAndUserId(project.getProjectId(), userId) > 0;
     }
 
     /**

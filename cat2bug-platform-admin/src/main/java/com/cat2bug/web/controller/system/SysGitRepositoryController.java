@@ -8,10 +8,20 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.system.domain.SysGitRepository;
+import com.cat2bug.system.domain.SysGitRepositoryMember;
+import com.cat2bug.system.domain.git.GitRepoMembersFromRepoResult;
+import com.cat2bug.system.domain.git.GitRepoMyAccess;
 import com.cat2bug.system.domain.git.SysGitRemoteListRequest;
 import com.cat2bug.system.domain.git.SysGitRemoteRepository;
+import com.cat2bug.system.domain.git.SysGitRepoInviteCreateRequest;
+import com.cat2bug.system.domain.git.SysGitRepoMembersFromRepoRequest;
 import com.cat2bug.system.domain.git.SysGitRepositoryImportRequest;
+import com.cat2bug.system.domain.git.SysGitRepositoryMemberRequest;
+import com.cat2bug.system.service.ISysGitRepositoryMemberService;
 import com.cat2bug.system.service.ISysGitRepositoryService;
+import com.cat2bug.system.service.ISysMemberInviteService;
+import com.cat2bug.web.util.InviteLinkUrlSupport;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,14 +37,13 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 项目代码仓库 Controller
  *
- * REST 挂载在 {@code /system/git/repo}；由本 Controller 负责元数据 CRUD 与磁盘 bare 仓生命周期，
+ * REST 挂载在 {@code /system/git/repo}；由本 Controller 负责元数据 CRUD、成员 ACL 与磁盘 bare 仓生命周期，
  * 不涉及 Smart HTTP（clone/push 协议见后续任务 3）。
  *
  * clone 地址形态：{@code /{teamKey}/{projectKey}/code/{slug}.git}（见 {@link SysGitRepository#getCloneUrl()}）。
  *
- * 权限：{@code @PreAuthorize} 仅做入口层的粗粒度过滤（菜单权限字符串）；真正的「项目角色」校验
- * 在 {@link ISysGitRepositoryService} 内按目标 projectId 显式判定，系统管理员/团队管理员若未被
- * 赋予项目角色一律拒绝，详见 design.md D3。
+ * 权限：{@code @PreAuthorize} 仅做入口层的粗粒度过滤（菜单权限字符串）；仓级有效权限由
+ * {@link com.cat2bug.system.service.git.GitRepositoryAccessService} 判定（ACL 优先，否则项目角色）。
  *
  * @author cat2bug
  */
@@ -44,6 +53,12 @@ public class SysGitRepositoryController extends BaseController
 {
     @Autowired
     private ISysGitRepositoryService sysGitRepositoryService;
+
+    @Autowired
+    private ISysGitRepositoryMemberService sysGitRepositoryMemberService;
+
+    @Autowired
+    private ISysMemberInviteService sysMemberInviteService;
 
     /**
      * 按项目查询仓库列表（pull 及以上权限）
@@ -142,5 +157,139 @@ public class SysGitRepositoryController extends BaseController
     {
         boolean collect = body != null && Boolean.TRUE.equals(body.getCollect());
         return toAjax(sysGitRepositoryService.collectSysGitRepository(repositoryId, collect));
+    }
+
+    /**
+     * 当前用户对该仓库的有效权限（供前端 Tab / settings 守卫）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull') || @ss.hasPermi('system:git:repo:manage')")
+    @GetMapping("/{repositoryId}/my-access")
+    public AjaxResult myAccess(@PathVariable Long repositoryId)
+    {
+        GitRepoMyAccess access = sysGitRepositoryMemberService.getMyAccess(repositoryId);
+        return success(access);
+    }
+
+    /**
+     * 列出仓库 ACL 成员（需 effective manage）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage') || @ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/{repositoryId}/members")
+    public AjaxResult listMembers(@PathVariable Long repositoryId)
+    {
+        List<SysGitRepositoryMember> list = sysGitRepositoryMemberService.selectMembersByRepositoryId(repositoryId);
+        return success(list);
+    }
+
+    /**
+     * 添加仓库成员（可邀请非项目成员；需 effective manage）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage') || @ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @Log(title = "仓库成员", businessType = BusinessType.INSERT)
+    @PostMapping("/{repositoryId}/members")
+    public AjaxResult addMember(@PathVariable Long repositoryId, @RequestBody SysGitRepositoryMemberRequest body)
+    {
+        Long userId = body != null ? body.getUserId() : null;
+        String role = body != null ? body.getRole() : null;
+        return toAjax(sysGitRepositoryMemberService.insertMember(repositoryId, userId, role));
+    }
+
+    /**
+     * 修改成员角色（需 effective manage；拒绝导致零 admin 的降权）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage') || @ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @Log(title = "仓库成员", businessType = BusinessType.UPDATE)
+    @PutMapping("/{repositoryId}/members/{userId}")
+    public AjaxResult updateMember(@PathVariable Long repositoryId, @PathVariable Long userId,
+            @RequestBody SysGitRepositoryMemberRequest body)
+    {
+        String role = body != null ? body.getRole() : null;
+        return toAjax(sysGitRepositoryMemberService.updateMemberRole(repositoryId, userId, role));
+    }
+
+    /**
+     * 移除成员（需 effective manage；拒绝删除最后一位 admin）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage') || @ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @Log(title = "仓库成员", businessType = BusinessType.DELETE)
+    @DeleteMapping("/{repositoryId}/members/{userId}")
+    public AjaxResult removeMember(@PathVariable Long repositoryId, @PathVariable Long userId)
+    {
+        return toAjax(sysGitRepositoryMemberService.deleteMember(repositoryId, userId));
+    }
+
+    /**
+     * 列出当前有效的仓库 ACL 邀请链接（需 effective manage）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage') || @ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/{repositoryId}/invites")
+    public AjaxResult listInvites(@PathVariable Long repositoryId, HttpServletRequest httpRequest)
+    {
+        return success(sysMemberInviteService.listActiveRepoInviteLinks(
+                repositoryId, InviteLinkUrlSupport.resolveInviteBaseUrl(httpRequest)));
+    }
+
+    /**
+     * 创建仓库 ACL 邀请链接（固定 3 天有效；需 effective manage）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage') || @ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @Log(title = "仓库邀请链接", businessType = BusinessType.INSERT)
+    @PostMapping("/{repositoryId}/invites")
+    public AjaxResult createInvite(@PathVariable Long repositoryId,
+            @RequestBody SysGitRepoInviteCreateRequest body,
+            HttpServletRequest httpRequest)
+    {
+        String role = body != null ? body.getRole() : null;
+        return success(sysMemberInviteService.createRepoInviteLink(
+                repositoryId, role, getUserId(), InviteLinkUrlSupport.resolveInviteBaseUrl(httpRequest)));
+    }
+
+    /**
+     * 吊销仓库 ACL 邀请链接（需 effective manage）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage') || @ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @Log(title = "仓库邀请链接", businessType = BusinessType.DELETE)
+    @PostMapping("/{repositoryId}/invites/{inviteId}/revoke")
+    public AjaxResult revokeInvite(@PathVariable Long repositoryId, @PathVariable Long inviteId)
+    {
+        return toAjax(sysMemberInviteService.revokeRepoInviteLink(repositoryId, inviteId));
+    }
+
+    /**
+     * 可作为「从仓邀请」源的仓库列表（同项目、非本仓、调用方可 manage）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage') || @ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/{repositoryId}/invite-sources")
+    public AjaxResult listInviteSources(@PathVariable Long repositoryId)
+    {
+        return success(sysGitRepositoryMemberService.listInviteSources(repositoryId));
+    }
+
+    /**
+     * 列出源仓 ACL 成员（供勾选导入）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage') || @ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/{repositoryId}/invite-sources/{sourceRepositoryId}/members")
+    public AjaxResult listInviteSourceMembers(@PathVariable Long repositoryId,
+            @PathVariable Long sourceRepositoryId)
+    {
+        return success(sysGitRepositoryMemberService.listInviteSourceMembers(repositoryId, sourceRepositoryId));
+    }
+
+    /**
+     * 从同项目其他仓库批量导入成员（跳过已是目标仓成员的用户）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage') || @ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @Log(title = "仓库成员", businessType = BusinessType.INSERT)
+    @PostMapping("/{repositoryId}/members/from-repo")
+    public AjaxResult addMembersFromRepo(@PathVariable Long repositoryId,
+            @RequestBody SysGitRepoMembersFromRepoRequest body)
+    {
+        Long sourceRepositoryId = body != null ? body.getSourceRepositoryId() : null;
+        List<Long> userIds = body != null ? body.getUserIds() : null;
+        String role = body != null ? body.getRole() : null;
+        GitRepoMembersFromRepoResult result = sysGitRepositoryMemberService.insertMembersFromRepo(
+                repositoryId, sourceRepositoryId, userIds, role);
+        return success(result);
     }
 }

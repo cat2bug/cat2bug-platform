@@ -30,13 +30,16 @@ import com.cat2bug.system.domain.git.SysGitRemoteListRequest;
 import com.cat2bug.system.domain.git.SysGitRemoteRepository;
 import com.cat2bug.system.domain.git.SysGitRepositoryImportRequest;
 import com.cat2bug.system.mapper.SysGitRepositoryMapper;
+import com.cat2bug.system.mapper.SysGitRepositoryMemberMapper;
 import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysRoleMapper;
 import com.cat2bug.system.mapper.SysUserGitRepositoryMapper;
+import com.cat2bug.system.service.ISysGitRepositoryMemberService;
 import com.cat2bug.system.service.ISysGitRepositoryService;
 import com.cat2bug.system.service.git.GitImportUrlValidator;
 import com.cat2bug.system.service.git.GitPathValidator;
 import com.cat2bug.system.service.git.GitRemoteRepositoryClient;
+import com.cat2bug.system.service.git.GitRepositoryAccessService;
 import com.cat2bug.system.service.git.JGitBareRepositoryHelper;
 
 /**
@@ -74,6 +77,9 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
     private SysGitRepositoryMapper sysGitRepositoryMapper;
 
     @Autowired
+    private SysGitRepositoryMemberMapper sysGitRepositoryMemberMapper;
+
+    @Autowired
     private SysUserGitRepositoryMapper sysUserGitRepositoryMapper;
 
     @Autowired
@@ -94,8 +100,14 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
     @Autowired
     private Cat2BugConfig cat2BugConfig;
 
+    @Autowired
+    private ISysGitRepositoryMemberService sysGitRepositoryMemberService;
+
+    @Autowired
+    private GitRepositoryAccessService gitRepositoryAccessService;
+
     /**
-     * 查询仓库（要求当前用户在该仓库所属项目具备 pull 及以上权限）
+     * 查询仓库（要求当前用户对该仓库具备 pull 及以上有效权限）
      */
     @Override
     public SysGitRepository selectSysGitRepositoryByRepositoryId(Long repositoryId)
@@ -105,7 +117,7 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         {
             return null;
         }
-        assertPull(repository.getProjectId());
+        assertRepoPull(repositoryId);
         return repository;
     }
 
@@ -136,7 +148,7 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         {
             throw new ServiceException(MessageUtils.message("git.repo.not-found"));
         }
-        assertPull(repository.getProjectId());
+        assertRepoPull(repositoryId);
 
         Long userId = currentUserId();
         String operator = SecurityUtils.getUsername();
@@ -202,6 +214,7 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
             {
                 throw new ServiceException(MessageUtils.message("git.repo.insert-failed"));
             }
+            sysGitRepositoryMemberService.ensureCreatorAdmin(toInsert.getRepositoryId(), currentUserId());
         }
         catch (RuntimeException e)
         {
@@ -275,6 +288,7 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
             {
                 throw new ServiceException(MessageUtils.message("git.repo.insert-failed"));
             }
+            sysGitRepositoryMemberService.ensureCreatorAdmin(toInsert.getRepositoryId(), currentUserId());
         }
         catch (RuntimeException e)
         {
@@ -414,7 +428,7 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         {
             throw new ServiceException(MessageUtils.message("git.repo.not-found"));
         }
-        assertManage(existing.getProjectId());
+        assertRepoManage(existing.getRepositoryId());
 
         boolean slugChanged = false;
         String newSlug = existing.getSlug();
@@ -522,11 +536,12 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         {
             return 0;
         }
-        assertManage(existing.getProjectId());
+        assertRepoManage(repositoryId);
         int rows = sysGitRepositoryMapper.deleteSysGitRepositoryByRepositoryId(repositoryId);
         if (rows > 0)
         {
             sysUserGitRepositoryMapper.deleteByRepositoryId(repositoryId);
+            sysGitRepositoryMemberMapper.deleteByRepositoryId(repositoryId);
             if (wipeDisk)
             {
                 jGitBareRepositoryHelper.wipeBareRepository(gitPathValidator.resolveStoredDiskPath(existing.getDiskPath()));
@@ -556,6 +571,7 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
 
     /**
      * manage 权限校验：项目角色 project.admin / project.create-by 并集；不满足直接抛出无权限异常。
+     * 用于新建/导入（尚无 repositoryId）与项目级列表。
      */
     private void assertManage(Long projectId)
     {
@@ -567,10 +583,29 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
 
     /**
      * pull/push 权限校验：manage 并集 project.develop / project.tester；不满足直接抛出无权限异常。
+     * 用于项目级列表。
      */
     private void assertPull(Long projectId)
     {
         if (!hasPullPermission(projectId, currentUserId()))
+        {
+            throw new ServiceException(MessageUtils.message("no-permission"));
+        }
+    }
+
+    /** 仓级有效 pull（ACL 优先） */
+    private void assertRepoPull(Long repositoryId)
+    {
+        if (!gitRepositoryAccessService.canPull(currentUserId(), repositoryId))
+        {
+            throw new ServiceException(MessageUtils.message("no-permission"));
+        }
+    }
+
+    /** 仓级有效 manage（ACL 优先） */
+    private void assertRepoManage(Long repositoryId)
+    {
+        if (!gitRepositoryAccessService.canManage(currentUserId(), repositoryId))
         {
             throw new ServiceException(MessageUtils.message("no-permission"));
         }
