@@ -2,130 +2,158 @@
   <div class="app-container case-body git-repo-page git-repo-list-layout project-list-page-host">
     <project-label class="git-repo-project-label" />
 
-    <div v-loading="loading" class="git-repo-body">
-      <!-- 关注仓库 -->
-      <section v-if="featuredRepos.length && !queryParams.keyword" class="git-featured">
-        <h3 class="git-section-title">{{ $t('git.repo.featured') }}</h3>
-        <div class="git-featured-grid">
-          <div
-            v-for="item in featuredRepos"
-            :key="'feat-' + item.repositoryId"
-            class="git-featured-card"
-            @click="handleBrowse(item)"
-          >
-            <div class="git-featured-card__head">
-              <el-icon class="git-repo-icon"><FolderOpened /></el-icon>
-              <a class="git-repo-name" href="javascript:;" @click.stop="handleBrowse(item)">{{ item.name }}</a>
-              <star-switch
-                class="git-featured-star"
-                v-model="item.collect"
-                @change="clickCollectHandle($event, item)"
-              />
-            </div>
-            <p class="git-featured-card__desc">{{ item.remark || $t('git.repo.no-description') }}</p>
-            <div class="git-featured-card__foot">
-              <span class="git-lang-badge">Git</span>
-              <div class="git-stat-row" @click.stop>
-                <span class="git-stat" :title="$t('git.repo.browse')" @click="handleBrowse(item)">
-                  <el-icon><View /></el-icon>
-                </span>
-                <span class="git-stat" :title="$t('git.repo.copy-clone-url')" @click="copyCloneUrl(item)">
-                  <el-icon><CopyDocument /></el-icon>
-                </span>
-                <span
-                  v-hasPermi="['system:git:repo:manage']"
-                  class="git-stat"
-                  :title="$t('git.repo.settings')"
-                  @click="handleUpdate(item)"
-                >
-                  <el-icon><Setting /></el-icon>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 搜索 / 排序（对齐 plan-tools / document-tools 全站列表工具栏规范） -->
-      <div class="git-tools">
-        <el-form class="left" :model="queryParams" size="small" :inline="true" label-width="0">
-          <el-form-item label="" prop="keyword" class="git-hint-query">
-            <el-input
-              v-model="queryParams.keyword"
-              clearable
-              size="small"
-              class="git-search"
-              :placeholder="$t('git.repo.quick-search')"
-              :prefix-icon="$legacyIcon('el-icon-search')"
-              @keyup.enter="noop"
-              @clear="noop"
-            />
-          </el-form-item>
-        </el-form>
-        <div class="git-tools-right">
-          <el-select v-model="queryParams.sort" size="small" class="git-filter">
-            <el-option :label="$t('git.repo.sort-updated')" value="updated" />
-            <el-option :label="$t('git.repo.sort-name')" value="name" />
-            <el-option :label="$t('git.repo.sort-created')" value="created" />
-          </el-select>
-          <el-button
-            v-hasPermi="['system:git:repo:manage']"
-            type="primary"
-            plain
-            size="small"
-            :icon="$legacyIcon('el-icon-plus')"
-            @click="handleAdd"
-          >{{ $t('git.repo.new') }}</el-button>
-        </div>
-      </div>
-
-      <!-- 列表 -->
-      <div v-if="displayList.length" class="git-repo-list">
-        <div v-for="item in displayList" :key="item.repositoryId" class="git-repo-item">
-          <div class="git-repo-item__main">
-            <div class="git-repo-item__title-row">
-              <el-icon class="git-visibility-icon" :title="visibilityTitle(item)">
-                <Unlock v-if="item.visibility === 'public'" />
-                <Lock v-else />
-              </el-icon>
-              <a class="git-repo-name" href="javascript:;" @click="handleBrowse(item)">{{ item.name }}</a>
-              <span class="git-meta-tag"><el-icon><Document /></el-icon> Git</span>
-            </div>
-            <p class="git-repo-item__desc">{{ item.remark || $t('git.repo.no-description') }}</p>
-            <div class="git-repo-item__meta">
-              <span>{{ $t('git.repo.updated-ago', { time: relativeTime(item.updateTime || item.createTime) }) }}</span>
-              <a
-                v-hasPermi="['system:git:repo:manage']"
-                class="git-settings-link"
-                href="javascript:;"
-                @click="handleUpdate(item)"
-              >{{ $t('git.repo.settings') }}</a>
-            </div>
-          </div>
-          <div class="git-repo-item__stats">
+    <!-- 关注仓库：整行区块在双栏之上；内部仍为卡片网格 -->
+    <section v-if="featuredRepos.length && !queryParams.keyword" class="git-featured">
+      <h3 class="git-section-title">{{ $t('git.repo.featured') }}</h3>
+      <div class="git-featured-grid">
+        <div
+          v-for="item in featuredRepos"
+          :key="'feat-' + item.repositoryId"
+          class="git-featured-card"
+          @click="handleBrowse(item)"
+        >
+          <div class="git-featured-card__head">
+            <el-icon class="git-repo-icon"><FolderOpened /></el-icon>
+            <a class="git-repo-name" href="javascript:;" @click.stop="handleBrowse(item)">{{ item.name }}</a>
             <star-switch
-              class="git-repo-stat-star"
+              class="git-featured-star"
               v-model="item.collect"
               @change="clickCollectHandle($event, item)"
             />
-            <span class="git-stat" :title="$t('git.repo.browse')" @click="handleBrowse(item)">
-              <el-icon><View /></el-icon>
-            </span>
-            <span class="git-stat" :title="$t('git.repo.copy-clone-url')" @click="copyCloneUrl(item)">
-              <el-icon><CopyDocument /></el-icon>
-            </span>
-            <span
-              v-hasPermi="['system:git:repo:manage']"
-              class="git-stat git-stat--danger"
-              :title="$t('delete')"
-              @click="handleDelete(item)"
-            >
-              <el-icon><component :is="$legacyIcon('el-icon-delete')" /></el-icon>
-            </span>
+          </div>
+          <p class="git-featured-card__desc">{{ item.remark || $t('git.repo.no-description') }}</p>
+          <div class="git-featured-card__foot">
+            <div class="git-repo-metrics">
+              <span class="git-repo-metric" :title="$t('git.repo.metric-collect')">
+                <el-icon><Star /></el-icon>
+                <span>{{ metricCollect(item) }}</span>
+              </span>
+              <span class="git-repo-metric" :title="$t('git.repo.metric-branch')">
+                <svg-icon icon-class="git-branch" class="git-repo-metric__icon" />
+                <span>{{ metricBranch(item) }}</span>
+              </span>
+            </div>
+            <div class="git-stat-row" @click.stop>
+              <span class="git-stat" :title="$t('git.repo.browse')" @click="handleBrowse(item)">
+                <el-icon><View /></el-icon>
+              </span>
+              <span class="git-stat" :title="$t('git.repo.copy-clone-url')" @click="copyCloneUrl(item)">
+                <el-icon><CopyDocument /></el-icon>
+              </span>
+              <span
+                v-hasPermi="['system:git:repo:manage']"
+                class="git-stat"
+                :title="$t('git.repo.settings')"
+                @click="handleUpdate(item)"
+              >
+                <el-icon><Setting /></el-icon>
+              </span>
+            </div>
           </div>
         </div>
       </div>
-      <el-empty v-else-if="!loading" :description="$t('git.repo.empty')" />
+    </section>
+
+    <!-- 列表 + 右侧统计：同一双栏块 -->
+    <div v-loading="loading" class="git-repo-layout">
+      <div class="git-repo-main">
+        <!-- 搜索 / 排序（对齐 plan-tools / document-tools 全站列表工具栏规范） -->
+        <div class="git-tools">
+          <el-form class="left" :model="queryParams" size="small" :inline="true" label-width="0">
+            <el-form-item label="" prop="keyword" class="git-hint-query">
+              <el-input
+                v-model="queryParams.keyword"
+                clearable
+                size="small"
+                class="git-search"
+                :placeholder="$t('git.repo.quick-search')"
+                :prefix-icon="$legacyIcon('el-icon-search')"
+                @keyup.enter="noop"
+                @clear="noop"
+              />
+            </el-form-item>
+          </el-form>
+          <div class="git-tools-right">
+            <el-select v-model="queryParams.sort" size="small" class="git-filter">
+              <el-option :label="$t('git.repo.sort-updated')" value="updated" />
+              <el-option :label="$t('git.repo.sort-name')" value="name" />
+              <el-option :label="$t('git.repo.sort-created')" value="created" />
+            </el-select>
+            <el-button
+              v-hasPermi="['system:git:repo:manage']"
+              type="primary"
+              plain
+              size="small"
+              :icon="$legacyIcon('el-icon-plus')"
+              @click="handleAdd"
+            >{{ $t('git.repo.new') }}</el-button>
+          </div>
+        </div>
+
+        <!-- 列表 -->
+        <div v-if="displayList.length" class="git-repo-list">
+          <div v-for="item in displayList" :key="item.repositoryId" class="git-repo-item">
+            <div class="git-repo-item__main">
+              <div class="git-repo-item__title-row">
+                <el-icon class="git-visibility-icon" :title="visibilityTitle(item)">
+                  <Unlock v-if="item.visibility === 'public'" />
+                  <Lock v-else />
+                </el-icon>
+                <a class="git-repo-name" href="javascript:;" @click="handleBrowse(item)">{{ item.name }}</a>
+                <span class="git-repo-metrics git-repo-metrics--inline">
+                  <span class="git-repo-metric" :title="$t('git.repo.metric-collect')">
+                    <el-icon><Star /></el-icon>
+                    <span>{{ metricCollect(item) }}</span>
+                  </span>
+                  <span class="git-repo-metric" :title="$t('git.repo.metric-branch')">
+                    <svg-icon icon-class="git-branch" class="git-repo-metric__icon" />
+                    <span>{{ metricBranch(item) }}</span>
+                  </span>
+                </span>
+              </div>
+              <p class="git-repo-item__desc">{{ item.remark || $t('git.repo.no-description') }}</p>
+              <div class="git-repo-item__meta">
+                <span>{{ $t('git.repo.updated-ago', { time: relativeTime(item.updateTime || item.createTime) }) }}</span>
+                <a
+                  v-hasPermi="['system:git:repo:manage']"
+                  class="git-settings-link"
+                  href="javascript:;"
+                  @click="handleUpdate(item)"
+                >{{ $t('git.repo.settings') }}</a>
+              </div>
+            </div>
+            <div class="git-repo-item__stats">
+              <star-switch
+                class="git-repo-stat-star"
+                v-model="item.collect"
+                @change="clickCollectHandle($event, item)"
+              />
+              <span class="git-stat" :title="$t('git.repo.browse')" @click="handleBrowse(item)">
+                <el-icon><View /></el-icon>
+              </span>
+              <span class="git-stat" :title="$t('git.repo.copy-clone-url')" @click="copyCloneUrl(item)">
+                <el-icon><CopyDocument /></el-icon>
+              </span>
+              <span
+                v-hasPermi="['system:git:repo:manage']"
+                class="git-stat git-stat--danger"
+                :title="$t('delete')"
+                @click="handleDelete(item)"
+              >
+                <el-icon><component :is="$legacyIcon('el-icon-delete')" /></el-icon>
+              </span>
+            </div>
+          </div>
+        </div>
+        <el-empty v-else-if="!loading" :description="$t('git.repo.empty')" />
+      </div>
+
+      <!-- 右侧概览栏：≥1200px 展示，与列表同属一块双栏 -->
+      <git-repo-overview-aside
+        ref="overviewAside"
+        class="git-repo-aside"
+        :project-id="listProjectId"
+      />
     </div>
 
     <!-- 新建 / 导入（共享对话框） -->
@@ -141,12 +169,13 @@
 </template>
 
 <script>
-import { FolderOpened, View, CopyDocument, Setting, Lock, Unlock, Document } from '@element-plus/icons-vue'
+import { FolderOpened, View, CopyDocument, Setting, Lock, Unlock, Star } from '@element-plus/icons-vue'
 import { listGitRepo, delGitRepo, collectGitRepo } from '@/api/system/gitRepo'
 import { getProject } from '@/api/system/project'
 import ProjectLabel from '@/components/Project/ProjectLabel'
 import StarSwitch from '@/components/StarSwitch'
 import GitRepoCreateDialog from '@/components/Git/GitRepoCreateDialog'
+import GitRepoOverviewAside from './GitRepoOverviewAside'
 import { getCurrentProjectId } from '@/utils/store-context'
 import { formatTime } from '@/utils/index'
 import { parseTime } from '@/utils/ruoyi'
@@ -158,13 +187,14 @@ export default {
     ProjectLabel,
     StarSwitch,
     GitRepoCreateDialog,
+    GitRepoOverviewAside,
     FolderOpened,
     View,
     CopyDocument,
     Setting,
     Lock,
     Unlock,
-    Document
+    Star
   },
   data() {
     return {
@@ -219,6 +249,7 @@ export default {
     noop() {},
     /** 关注 / 取消关注 */
     clickCollectHandle(collect, item) {
+      const prev = !!item.collect
       item.collect = !!collect
       collectGitRepo(item.repositoryId, collect).then(() => {
         if (collect) {
@@ -226,9 +257,24 @@ export default {
         } else {
           this.$message.success(this.$t('cancel-success'))
         }
+        if (prev !== !!collect) {
+          const next = Math.max(0, this.metricCollect(item) + (collect ? 1 : -1))
+          item.collectCount = next
+          if (this.$refs.overviewAside) {
+            this.$refs.overviewAside.adjustCollectCount(collect ? 1 : -1)
+          }
+        }
       }).catch(() => {
         item.collect = !collect
       })
+    },
+    metricCollect(item) {
+      const n = item && item.collectCount
+      return Number.isFinite(Number(n)) ? Number(n) : 0
+    },
+    metricBranch(item) {
+      const n = item && item.branchCount
+      return Number.isFinite(Number(n)) ? Number(n) : 0
     },
     visibilityTitle(item) {
       return item && item.visibility === 'public'
@@ -416,11 +462,35 @@ export default {
   flex-shrink: 0;
 }
 
-.git-repo-body {
+/* 双栏布局：列表工具栏+列表 | 概览侧栏（关注区在其上方整行） */
+.git-repo-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
   flex: 1 1 auto;
+  min-height: 0;
+}
+
+.git-repo-main {
+  flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.git-repo-aside {
+  flex: 0 0 280px;
+  width: 280px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 4px;
+}
+
+@media (max-width: 1199px) {
+  .git-repo-aside {
+    display: none;
+  }
 }
 
 .git-section-title {
@@ -431,19 +501,21 @@ export default {
 }
 
 .git-featured {
-  margin-bottom: 20px;
+  flex-shrink: 0;
+  width: 100%;
+  /* 与 .git-tools 的 padding-bottom（查询框→分割线 8px）对齐，抵消父级 section gap */
+  margin-bottom: calc(8px - var(--project-list-section-v-gap, 10px));
 }
 
 .git-featured-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 320px));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
-  justify-content: start;
+  width: 100%;
 }
 
 .git-featured-card {
   width: 100%;
-  max-width: 320px;
   padding: 16px 18px;
   border: 1px solid var(--border-color-light);
   border-radius: 8px;
@@ -451,6 +523,7 @@ export default {
   color: var(--text-color-regular);
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
 
   &:hover {
     border-color: var(--el-color-primary);
@@ -474,7 +547,7 @@ export default {
     min-height: 40px;
     font-size: 13px;
     line-height: 1.5;
-    color: var(--text-color-secondary);
+    color: var(--text-color-regular);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -485,6 +558,35 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+}
+
+.git-repo-metrics {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.git-repo-metrics--inline {
+  margin-left: 4px;
+}
+
+.git-repo-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--text-color-regular);
+  font-variant-numeric: tabular-nums;
+
+  .el-icon,
+  .git-repo-metric__icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: var(--text-color-secondary);
   }
 }
 
@@ -502,16 +604,6 @@ export default {
   &:hover {
     text-decoration: underline;
   }
-}
-
-.git-lang-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  font-size: 12px;
-  color: var(--text-color-secondary);
-  background: var(--bg-color-block);
-  border: 1px solid var(--border-color-light);
-  border-radius: 4px;
 }
 
 .git-tools {
@@ -587,7 +679,7 @@ export default {
     margin: 0 0 8px;
     font-size: 13px;
     line-height: 1.5;
-    color: var(--text-color-secondary);
+    color: var(--text-color-regular);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -598,7 +690,7 @@ export default {
     align-items: center;
     gap: 12px;
     font-size: 12px;
-    color: var(--text-color-placeholder);
+    color: var(--text-color-regular);
   }
 
   &__stats {
@@ -617,14 +709,6 @@ export default {
 
 .git-visibility-icon {
   font-size: 14px;
-  color: var(--text-color-secondary);
-}
-
-.git-meta-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
   color: var(--text-color-secondary);
 }
 

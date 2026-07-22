@@ -55,6 +55,12 @@ public class SysGitRepository extends BaseEntity
     /** 当前用户是否关注该仓库（查询时 join，非持久化） */
     private Boolean collect;
 
+    /** 关注该仓库的用户数（查询时子查询聚合，非持久化） */
+    private Integer collectCount;
+
+    /** 本地 heads 分支数（列表查询时由 JGit 统计，非持久化） */
+    private Integer branchCount;
+
     /**
      * 本次更新是否发生了 slug 重命名（服务端计算后回填，非持久化字段）。
      * 供 Controller 组装「旧 clone 地址已失效」提示，不参与数据库读写。
@@ -159,6 +165,26 @@ public class SysGitRepository extends BaseEntity
     public void setCollect(Boolean collect)
     {
         this.collect = collect;
+    }
+
+    public Integer getCollectCount()
+    {
+        return collectCount;
+    }
+
+    public void setCollectCount(Integer collectCount)
+    {
+        this.collectCount = collectCount;
+    }
+
+    public Integer getBranchCount()
+    {
+        return branchCount;
+    }
+
+    public void setBranchCount(Integer branchCount)
+    {
+        this.branchCount = branchCount;
     }
 
     public boolean isSlugChanged()

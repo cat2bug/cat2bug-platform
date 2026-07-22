@@ -6,6 +6,7 @@ import com.cat2bug.system.domain.SysGitRepository;
 import com.cat2bug.system.domain.git.SysGitRemoteListRequest;
 import com.cat2bug.system.domain.git.SysGitRemoteRepository;
 import com.cat2bug.system.domain.git.SysGitRepositoryImportRequest;
+import com.cat2bug.system.git.browse.domain.GitProjectOverview;
 
 /**
  * 项目代码仓库Service接口
@@ -94,4 +95,14 @@ public interface ISysGitRepositoryService
      * @return 仓库摘要列表
      */
     public List<SysGitRemoteRepository> listRemoteRepositories(SysGitRemoteListRequest request);
+
+    /**
+     * 查询项目级 Git 概览（OpenSpec {@code git-repo-project-overview}）：要求当前用户在该项目
+     * 具备 pull 及以上权限（与仓库列表同一鉴权门），否则拒绝。可见仓库集合为空时返回全零聚合与空语言列表；
+     * 单仓语言扫描失败不影响整体聚合结果（design.md D3）。
+     *
+     * @param projectId 项目ID（非空）
+     * @return 项目概览：仓库数、open PR 数、关注合计、语言分布
+     */
+    public GitProjectOverview selectProjectOverview(Long projectId);
 }

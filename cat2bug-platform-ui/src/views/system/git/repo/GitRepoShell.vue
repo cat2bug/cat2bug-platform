@@ -284,7 +284,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.git-repo-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
 .git-repo-shell__top {
+  flex: 0 0 auto;
   margin-bottom: 4px;
 }
 
@@ -297,6 +306,7 @@ export default {
 }
 
 .git-repo-shell__tabs {
+  flex: 0 0 auto;
   margin-bottom: 12px;
 
   :deep(.el-tabs__header) {
@@ -311,6 +321,14 @@ export default {
   :deep(.el-tabs__active-bar) {
     background-color: var(--el-color-primary);
   }
+}
+
+.git-repo-shell__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .git-repo-shell__tab-label {

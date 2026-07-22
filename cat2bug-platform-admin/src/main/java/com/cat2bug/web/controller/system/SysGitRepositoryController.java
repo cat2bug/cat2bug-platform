@@ -148,6 +148,16 @@ public class SysGitRepositoryController extends BaseController
     }
 
     /**
+     * 项目级 Git 概览（pull 及以上权限）：仓库数、open PR 数、关注合计、语言分布（design.md D1）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/project/{projectId}/overview")
+    public AjaxResult projectOverview(@PathVariable Long projectId)
+    {
+        return success(sysGitRepositoryService.selectProjectOverview(projectId));
+    }
+
+    /**
      * 关注 / 取消关注仓库（pull 及以上权限）
      */
     @PreAuthorize("@ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")

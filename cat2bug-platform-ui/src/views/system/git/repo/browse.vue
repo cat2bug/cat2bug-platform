@@ -133,7 +133,10 @@
       <!-- 左侧目录树：仅进入子目录后显示；分支选择在「文件」标题下 -->
       <aside v-if="showSideFileTree" class="git-browse-file-tree">
         <div class="git-browse-file-tree__head">
-          <span class="git-browse-file-tree__title">{{ $t('git.repo.files') }}</span>
+          <span class="git-browse-file-tree__title">
+            <el-icon class="git-browse-file-tree__title-icon"><FolderOpened /></el-icon>
+            {{ $t('git.repo.files') }}
+          </span>
           <el-dropdown trigger="click" @command="onFileTreeAddCommand">
             <el-button
               class="git-browse-file-tree__add"
@@ -163,7 +166,6 @@
         <div class="git-browse-file-tree__branch">
           <el-select
             v-model="currentRef"
-            size="small"
             class="git-browse-branch-select git-browse-branch-select--side"
             :placeholder="$t('git.repo.select-branch')"
             :loading="branchesLoading"
@@ -220,7 +222,7 @@
         </div>
       </aside>
 
-      <div class="git-browse-main">
+      <div class="git-browse-main" :class="{ 'git-browse-main--blob': viewMode === 'blob' }">
         <!-- 工具栏：根目录显示分支；子目录显示路径面包屑 -->
         <div class="git-browse-toolbar">
           <div class="git-browse-toolbar-left">
@@ -385,7 +387,7 @@
         </div>
 
         <!-- 最近提交条 -->
-        <div v-if="latestCommit" class="git-browse-commit-bar">
+        <div v-if="latestCommit && viewMode !== 'blob'" class="git-browse-commit-bar">
           <div class="git-browse-commit-bar-left">
             <cat2-bug-avatar :member="memberForAuthor(latestCommit)" :size="28" />
             <span class="git-browse-author">{{ latestCommit.authorName || '-' }}</span>
@@ -538,18 +540,75 @@
         <!-- 文件内容 -->
         <div v-if="viewMode === 'blob'" v-loading="blobLoading" class="git-browse-blob-card">
           <template v-if="blob">
-            <div v-if="blob.binary" class="git-browse-empty">{{ $t('git.repo.file-binary') }}</div>
-            <div v-else-if="!blob.content" class="git-browse-empty">{{ $t('git.repo.file-empty') }}</div>
-            <template v-else>
-              <div v-if="blob.truncated" class="git-browse-truncated">{{ $t('git.repo.file-truncated') }}</div>
-              <pre class="git-browse-code"><code>{{ blob.content }}</code></pre>
-            </template>
+            <header class="git-browse-blob-header">
+              <div class="git-browse-blob-header-left">
+                <el-icon class="git-browse-blob-file-icon" aria-hidden="true"><Document /></el-icon>
+                <span class="git-browse-blob-file-name">{{ blobFileName }}</span>
+                <span v-if="blob.size != null && blob.size !== ''" class="git-browse-blob-file-size">
+                  {{ fileSizeUnit(blob.size) }}
+                </span>
+              </div>
+              <div class="git-browse-blob-actions">
+                <el-button size="small" plain @click="copyText(blob.content)">
+                  {{ $t('git.repo.blob.copy-all') }}
+                </el-button>
+                <el-button size="small" plain @click="onBlobFeatureWip">
+                  {{ $t('git.repo.blob.edit') }}
+                </el-button>
+                <el-button size="small" plain :loading="blobDownloading" @click="downloadBlobFile">
+                  {{ $t('git.repo.blob.download') }}
+                </el-button>
+                <el-button size="small" plain @click="openCommitsList">
+                  {{ $t('git.repo.blob.history') }}
+                </el-button>
+                <el-button
+                  v-if="canManageGitRepo"
+                  size="small"
+                  plain
+                  :icon="DeleteIcon"
+                  :title="$t('git.repo.blob.delete')"
+                  :aria-label="$t('git.repo.blob.delete')"
+                  @click="onBlobFeatureWip"
+                />
+              </div>
+            </header>
+            <div v-if="latestCommit" class="git-browse-blob-commit">
+              <span class="git-browse-blob-commit-text">
+                {{
+                  $t('git.repo.blob.committed-by', {
+                    name: latestCommit.authorName || '-',
+                    time: relativeTime(latestCommit.commitTime)
+                  })
+                }}
+              </span>
+              <span class="git-browse-blob-commit-sep" aria-hidden="true">·</span>
+              <a
+                href="javascript:;"
+                class="git-browse-blob-commit-link is-link"
+                @click.prevent="openCommitsList"
+              >{{ $t('git.repo.blob.all-updates') }}</a>
+            </div>
+            <div class="git-browse-blob-body">
+              <div v-if="blob.binary" class="git-browse-empty">{{ $t('git.repo.file-binary') }}</div>
+              <div v-else-if="!blob.content && blob.content !== 0" class="git-browse-empty">
+                {{ $t('git.repo.file-empty') }}
+              </div>
+              <template v-else>
+                <div v-if="blob.truncated" class="git-browse-truncated">{{ $t('git.repo.file-truncated') }}</div>
+                <div class="git-browse-blob-code">
+                  <div class="git-browse-blob-gutter" aria-hidden="true">
+                    <pre class="git-browse-blob-ln-pre">{{ blobLineNumbersText }}</pre>
+                  </div>
+                  <pre class="git-browse-code git-browse-blob-code-pre"><code>{{ blob.content }}</code></pre>
+                </div>
+              </template>
+            </div>
           </template>
         </div>
       </div>
 
-      <!-- 右侧栏 -->
-      <aside class="git-browse-aside">
+      <!-- 右侧栏：仅仓库根目录概览显示；进入文件/文件夹后隐藏 -->
+      <aside v-if="!showSideFileTree" class="git-browse-aside">
         <section class="git-aside-block">
           <h4 class="git-aside-title">{{ $t('git.repo.aside.intro') }}</h4>
           <p class="git-aside-desc">{{ repoRemark || $t('git.repo.no-description') }}</p>
@@ -799,7 +858,7 @@
 
 <script>
 import { h, markRaw } from 'vue'
-import { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link, CopyDocument, Plus, Upload, Download } from '@element-plus/icons-vue'
+import { FolderOpened, Folder, Document, Share, ArrowDown, ArrowRight, Link, CopyDocument, Plus, Upload, Download, Delete } from '@element-plus/icons-vue'
 import {
   getGitRepo,
   listGitRepoBranches,
@@ -813,8 +872,10 @@ import {
   updateGitRepoRelease,
   uploadGitRepoReleaseAsset,
   resolveGitRepoByProjectAndSlug,
-  downloadGitRepoArchive
+  downloadGitRepoArchive,
+  fetchGitRepoRawBlob
 } from '@/api/system/gitRepo'
+import { saveAs } from 'file-saver'
 import { getCurrentProjectId } from '@/utils/store-context'
 import { groupCommitsByDate } from '@/utils/git-commits-by-date'
 import {
@@ -833,7 +894,7 @@ import GitRepoShell from './GitRepoShell.vue'
 import { extractHeadings } from '@/components/Report/annotation/report-toc'
 import { useUserStore } from '@/stores/user'
 import { checkPermi } from '@/utils/permission'
-import { formatTime } from '@/utils/index'
+import { formatTime, fileSizeUnit } from '@/utils/index'
 import { parseTime } from '@/utils/ruoyi'
 
 const CREATE_RELEASE_MAX_ASSETS = 20
@@ -905,6 +966,7 @@ export default {
       // :icon 需要实例属性；markRaw 避免图标组件被做成响应式
       CopyDocument: markRaw(CopyDocument),
       Plus: markRaw(Plus),
+      DeleteIcon: markRaw(Delete),
       ArrowRightIcon: markRaw(ArrowRight),
       repositoryId: null,
       /** Bumps on each init so stale branch/tree responses are ignored after repo switch */
@@ -930,6 +992,7 @@ export default {
       treeLoading: false,
       blob: null,
       blobLoading: false,
+      blobDownloading: false,
       commits: [],
       commitsLoading: false,
       commitFilter: {
@@ -991,8 +1054,9 @@ export default {
     sideTreeActivePath() {
       return this.currentBrowsePath
     },
-    /** 仅进入子目录（或子目录内文件）时显示左侧文件夹树；根目录隐藏 */
+    /** 进入子目录，或打开任意文件时显示左侧树；仓库根目录概览隐藏 */
     showSideFileTree() {
+      if (this.viewMode === 'blob') return true
       return !!(this.currentPath && String(this.currentPath).trim())
     },
     /** Primary shell tabs: commits list still highlights「代码」 */
@@ -1037,6 +1101,23 @@ export default {
       const path = this.viewMode === 'blob' ? this.blob && this.blob.path : this.currentPath
       if (!path) return []
       return path.split('/').filter(Boolean)
+    },
+    blobFileName() {
+      const path = this.blob && this.blob.path
+      if (!path) return ''
+      const parts = String(path).split('/').filter(Boolean)
+      return parts.length ? parts[parts.length - 1] : path
+    },
+    blobCodeLines() {
+      if (!this.blob || this.blob.binary) return []
+      const content = this.blob.content
+      if (content == null || content === '') return ['']
+      return String(content).split(/\r?\n/)
+    },
+    blobLineNumbersText() {
+      const n = this.blobCodeLines.length
+      if (!n) return '1'
+      return Array.from({ length: n }, (_, i) => i + 1).join('\n')
     },
     latestCommit() {
       return this.commits.length ? this.commits[0] : null
@@ -1166,6 +1247,30 @@ export default {
     this.bindRouteContext(true)
   },
   methods: {
+    fileSizeUnit,
+    onBlobFeatureWip() {
+      this.$modal.msgWarning(this.$t('git.repo.blob.feature-wip'))
+    },
+    downloadBlobFile() {
+      if (!this.repositoryId || !this.blob || !this.blob.path || this.blobDownloading) return
+      const fileName = this.blobFileName || 'download'
+      this.blobDownloading = true
+      fetchGitRepoRawBlob(this.repositoryId, this.currentRef, this.blob.path).then(data => {
+        if (data) {
+          saveAs(data, fileName)
+          return
+        }
+        if (this.blob.content != null && this.blob.content !== '') {
+          saveAs(new Blob([this.blob.content], { type: 'text/plain;charset=utf-8' }), fileName)
+          return
+        }
+        this.$modal.msgError(this.$t('git.repo.blob.download-failed'))
+      }).catch(() => {
+        this.$modal.msgError(this.$t('git.repo.blob.download-failed'))
+      }).finally(() => {
+        this.blobDownloading = false
+      })
+    },
     parseRepositoryId(value) {
       const n = Number(value)
       return Number.isFinite(n) && n > 0 ? n : null
@@ -2061,38 +2166,42 @@ export default {
   padding: 20px 20px 16px;
   box-sizing: border-box;
   color: var(--text-color-regular);
-  /* 承接 AppMain 首子 flex + min-height:0；勿用 100vh-84 max-height（会与 padding-top 叠算产生底部空隙） */
+  /* 承接 AppMain 首子 flex + min-height:0；三栏在剩余高度内置底 */
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 }
 
 .git-browse-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 
   &.has-side-tree {
-    grid-template-columns: 220px minmax(0, 1fr) 280px;
+    /* 左树 + 内容；右侧简介栏已隐藏，不再预留第三列 */
+    grid-template-columns: 280px minmax(0, 1fr);
   }
 }
 
 .git-browse-file-tree {
-  position: sticky;
-  top: 0;
-  max-height: calc(100vh - 160px);
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  height: 100%;
   border: 1px solid var(--border-color-light);
   border-radius: 6px;
   background: var(--card-bg);
   overflow: hidden;
   min-width: 0;
   padding: 0 15px;
+  box-sizing: border-box;
 }
 
 .git-browse-file-tree__head {
@@ -2122,15 +2231,28 @@ export default {
   flex-direction: row;
   align-items: center;
   gap: 6px;
+  width: 100%;
+  min-width: 0;
   padding: 8px 0;
   border-bottom: none;
   background: transparent;
+  box-sizing: border-box;
 }
 
 .git-browse-file-tree__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-color-primary);
+}
+
+.git-browse-file-tree__title-icon {
+  flex-shrink: 0;
+  font-size: 15px;
+  color: var(--text-color-secondary);
 }
 
 .git-browse-file-tree__body {
@@ -2205,12 +2327,16 @@ export default {
     grid-template-columns: minmax(0, 1fr);
 
     &.has-side-tree {
-      grid-template-columns: 200px minmax(0, 1fr);
+      grid-template-columns: 240px minmax(0, 1fr);
     }
   }
 
   .git-browse-aside {
     display: none;
+  }
+
+  .git-browse-layout {
+    overflow: auto;
   }
 }
 
@@ -2225,6 +2351,27 @@ export default {
   }
 }
 
+.git-browse-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.git-browse-main--blob {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.git-browse-commits-pane {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
 .git-browse-toolbar {
   display: flex;
   align-items: center;
@@ -2232,6 +2379,7 @@ export default {
   gap: var(--cat2bug-toolbar-section-gap, 10px);
   margin-bottom: 12px;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .git-browse-toolbar-left,
@@ -2246,7 +2394,7 @@ export default {
   width: 220px;
   min-width: 180px;
 
-  /* 侧栏整行：分支下拉占满宽度，保留 prefix / 下拉箭头 */
+  /* 侧栏整行：标准高度，单行水平对齐（勿改 EP selected-item 的 absolute 定位） */
   &.git-browse-branch-select--side {
     flex: 1 1 auto;
     width: 100%;
@@ -2256,29 +2404,40 @@ export default {
     :deep(.el-select__wrapper) {
       min-width: 0;
       width: 100%;
-      padding-left: 8px;
-      padding-right: 8px;
-    }
-
-    :deep(.el-select__prefix),
-    :deep(.el-select__suffix) {
-      display: inline-flex !important;
-      flex-shrink: 0;
+      height: var(--cat2bug-toolbar-control-height, 32px) !important;
+      min-height: var(--cat2bug-toolbar-control-height, 32px) !important;
+      max-height: var(--cat2bug-toolbar-control-height, 32px) !important;
+      padding: 0 8px !important;
+      box-sizing: border-box;
       align-items: center;
     }
 
     :deep(.el-select__prefix) {
-      min-width: 16px;
-      margin-right: 4px;
+      display: inline-flex !important;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      margin-right: 6px;
       color: var(--text-color-secondary);
+    }
+
+    :deep(.el-select__suffix) {
+      display: inline-flex !important;
+      flex: 0 0 auto;
+      align-items: center;
+      height: 100%;
     }
 
     :deep(.el-select__prefix .el-icon),
     :deep(.el-select__prefix .git-browse-branch-icon) {
       display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
       width: 14px;
       height: 14px;
       font-size: 14px;
+      line-height: 1;
     }
 
     :deep(.el-select__caret),
@@ -2288,13 +2447,21 @@ export default {
     }
 
     :deep(.el-select__selection) {
-      min-width: 0;
+      flex: 1 1 auto !important;
+      min-width: 0 !important;
+      height: 100%;
+      position: relative;
       overflow: hidden;
     }
 
-    :deep(.el-select__selected-item) {
-      overflow: hidden;
-      text-overflow: ellipsis;
+    :deep(.el-select__selected-item),
+    :deep(.el-select__placeholder) {
+      color: var(--text-color-regular) !important;
+      line-height: var(--cat2bug-toolbar-control-height, 32px);
+    }
+
+    :deep(.el-select__placeholder.is-transparent) {
+      color: var(--text-color-placeholder) !important;
     }
   }
 }
@@ -2483,6 +2650,7 @@ export default {
   border-radius: 6px;
   background: var(--card-bg);
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .git-browse-commit-bar-left {
@@ -2604,14 +2772,162 @@ export default {
   }
 }
 
-.git-browse-tree-card,
-.git-browse-blob-card {
+.git-browse-tree-card {
   border: 1px solid var(--border-color-light);
   border-radius: 6px;
   overflow: hidden;
   background: var(--card-bg);
   min-height: 120px;
+  flex: 0 0 auto;
   color: var(--text-color-regular);
+}
+
+.git-browse-blob-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color-light);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--card-bg);
+  min-height: 0;
+  flex: 1 1 auto;
+  color: var(--text-color-regular);
+}
+
+.git-browse-blob-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color-light);
+  background: var(--bg-color-block, rgba(127, 127, 127, 0.06));
+  flex-wrap: wrap;
+}
+
+.git-browse-blob-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.git-browse-blob-file-icon {
+  flex: 0 0 auto;
+  font-size: 16px;
+  color: var(--text-color-secondary);
+}
+
+.git-browse-blob-file-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-color-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.git-browse-blob-file-size {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+}
+
+.git-browse-blob-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 0 0 auto;
+
+  :deep(.el-button) {
+    margin: 0 !important;
+  }
+}
+
+.git-browse-blob-commit {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.git-browse-blob-commit-text {
+  min-width: 0;
+}
+
+.git-browse-blob-commit-sep {
+  color: var(--text-color-placeholder);
+}
+
+.git-browse-blob-commit-link {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--el-color-primary);
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.git-browse-blob-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.git-browse-blob-code {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  align-items: stretch;
+}
+
+.git-browse-blob-gutter {
+  flex: 0 0 auto;
+  border-right: 1px solid var(--border-color-light);
+  background: var(--bg-color-block, rgba(127, 127, 127, 0.04));
+  user-select: none;
+}
+
+.git-browse-blob-ln-pre {
+  margin: 0;
+  padding: 14px 12px 14px 14px;
+  text-align: right;
+  font-family: Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-color-secondary);
+  white-space: pre;
+}
+
+.git-browse-blob-code-pre {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 14px 16px;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
+  border-radius: 0;
+  background: var(--input-bg);
+  white-space: pre;
+
+  code {
+    display: block;
+  }
 }
 
 .git-browse-root-docs {
@@ -2984,13 +3300,16 @@ export default {
 }
 
 .git-browse-aside {
-  position: sticky;
-  top: 12px;
+  min-height: 0;
+  height: 100%;
   padding: 14px 16px;
   border: 1px solid var(--border-color-light);
   border-radius: 6px;
   background: var(--card-bg);
   color: var(--text-color-regular);
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .git-aside-block {
@@ -3228,7 +3547,9 @@ export default {
 }
 
 .git-browse-releases {
-  min-height: 200px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
 }
 
 .git-releases-empty {
@@ -3419,6 +3740,7 @@ export default {
 
   .git-browse-aside {
     position: static;
+    height: auto;
     order: 2;
   }
 

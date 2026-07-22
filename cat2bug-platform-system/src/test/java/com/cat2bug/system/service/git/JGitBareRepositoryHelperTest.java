@@ -57,6 +57,14 @@ public class JGitBareRepositoryHelperTest
     }
 
     @Test
+    public void countLocalBranches_emptyPath_returnsZero()
+    {
+        assertEquals(0, helper.countLocalBranches(null));
+        assertEquals(0, helper.countLocalBranches(""));
+        assertEquals(0, helper.countLocalBranches("/nonexistent/path/to/repo.git"));
+    }
+
+    @Test
     public void cloneBareRepository_fromLocalFileUrl_createsValidBareRepo() throws Exception
     {
         File target = new File(temporaryFolder.getRoot(), "imported.git");

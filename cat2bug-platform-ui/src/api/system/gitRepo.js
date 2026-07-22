@@ -53,6 +53,14 @@ export function listGitRepo(query) {
   })
 }
 
+/** 项目级仓库概览：统计三格（仓库/PR/关注）+ 轻量语言分布，供列表页右侧栏使用 */
+export function getGitRepoProjectOverview(projectId) {
+  return request({
+    url: '/system/git/repo/project/' + projectId + '/overview',
+    method: 'get'
+  })
+}
+
 // 查询代码仓库详细
 export function getGitRepo(repositoryId) {
   return request({

@@ -3,6 +3,7 @@ package com.cat2bug.system.mapper;
 import java.util.List;
 
 import com.cat2bug.system.domain.SysGitRepository;
+import com.cat2bug.system.git.browse.domain.GitProjectOverview;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -76,4 +77,25 @@ public interface SysGitRepositoryMapper
      * @return 结果
      */
     public int deleteSysGitRepositoryByRepositoryIds(Long[] repositoryIds);
+
+    /**
+     * 统计项目级 Git 概览聚合数（OpenSpec {@code git-repo-project-overview} 任务 1.2）：
+     * 与仓库列表同一可见集（{@code project_id} + {@code project_state > 0}）下的仓库数、
+     * open 状态 PR 数、关注（收藏）行数合计（跨用户）。仅填充
+     * {@link GitProjectOverview#getRepoCount()} / {@link GitProjectOverview#getOpenPrCount()} /
+     * {@link GitProjectOverview#getCollectCount()} 三个聚合字段，{@code languages} 由 Service 层填充。
+     *
+     * @param projectId 项目ID
+     * @return 聚合计数（projectId 无匹配仓库时三个字段均为 0，不返回 null）
+     */
+    public GitProjectOverview selectProjectOverviewCounts(Long projectId);
+
+    /**
+     * 查询项目级 Git 概览可见仓库集合（仅 repositoryId/diskPath/defaultBranch 等语言扫描所需字段），
+     * 与 {@link #selectSysGitRepositoryList} 使用同一可见集判定（不含关注 join，语言扫描无需该字段）。
+     *
+     * @param projectId 项目ID
+     * @return 可见仓库集合
+     */
+    public List<SysGitRepository> selectRepositoriesForOverviewScan(Long projectId);
 }

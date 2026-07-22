@@ -23,13 +23,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="teamKey"       column="team_key"       />
         <result property="projectKey"    column="project_key"    />
         <result property="collect"       column="collect"        />
+        <result property="collectCount"  column="collect_count"  />
     </resultMap>
 
     <sql id="selectSysGitRepositoryWithKeysVo">
         select r.repository_id, r.project_id, r.name, r.slug, r.disk_path, r.default_branch, r.visibility,
                r.create_by, r.create_time, r.update_by, r.update_time, r.remark,
                p.project_key, t.team_key,
-               coalesce(ugr.collect, 0) as collect
+               coalesce(ugr.collect, 0) as collect,
+               (select count(1) from sys_user_git_repository c where c.repository_id = r.repository_id and c.collect = 1) as collect_count
         from sys_git_repository r
         inner join sys_project p on r.project_id = p.project_id and p.project_state &gt; 0
         inner join sys_team t on p.team_id = t.team_id
@@ -47,7 +49,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select r.repository_id, r.project_id, r.name, r.slug, r.disk_path, r.default_branch, r.visibility,
                r.create_by, r.create_time, r.update_by, r.update_time, r.remark,
                p.project_key, t.team_key,
-               0 as collect
+               0 as collect,
+               (select count(1) from sys_user_git_repository c where c.repository_id = r.repository_id and c.collect = 1) as collect_count
         from sys_git_repository r
         inner join sys_project p on r.project_id = p.project_id and p.project_state &gt; 0
         inner join sys_team t on p.team_id = t.team_id
@@ -133,5 +136,40 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{repositoryId}
         </foreach>
     </delete>
+
+    <resultMap type="GitProjectOverview" id="GitProjectOverviewCountsResult">
+        <result property="repoCount"    column="repo_count"    />
+        <result property="openPrCount"  column="open_pr_count"  />
+        <result property="collectCount" column="collect_count" />
+    </resultMap>
+
+    <!-- 三个子查询各自独立聚合，避免多表 join 后行数放大导致计数错误；
+         可见集判定与 selectSysGitRepositoryWithKeysVo 一致：project_id + project_state > 0 -->
+    <select id="selectProjectOverviewCounts" parameterType="Long" resultMap="GitProjectOverviewCountsResult">
+        select
+            (select count(*)
+               from sys_git_repository r
+               inner join sys_project p on r.project_id = p.project_id and p.project_state &gt; 0
+               where r.project_id = #{projectId}) as repo_count,
+            (select count(*)
+               from sys_git_pull_request pr
+               inner join sys_git_repository r on pr.repository_id = r.repository_id
+               inner join sys_project p on r.project_id = p.project_id and p.project_state &gt; 0
+               where r.project_id = #{projectId} and pr.state = 'open') as open_pr_count,
+            (select count(*)
+               from sys_user_git_repository ugr
+               inner join sys_git_repository r on ugr.repository_id = r.repository_id
+               inner join sys_project p on r.project_id = p.project_id and p.project_state &gt; 0
+               where r.project_id = #{projectId} and ugr.collect = 1) as collect_count
+    </select>
+
+    <select id="selectRepositoriesForOverviewScan" parameterType="Long" resultMap="SysGitRepositoryResult">
+        select r.repository_id, r.project_id, r.name, r.slug, r.disk_path, r.default_branch, r.visibility,
+               r.create_by, r.create_time, r.update_by, r.update_time, r.remark
+        from sys_git_repository r
+        inner join sys_project p on r.project_id = p.project_id and p.project_state &gt; 0
+        where r.project_id = #{projectId}
+        order by r.create_time asc
+    </select>
 
 </mapper>

@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.cat2bug.common.config.Cat2BugConfig;
+import com.cat2bug.common.constant.HttpStatus;
 import com.cat2bug.common.core.domain.entity.SysRole;
 import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.common.utils.DateUtils;
@@ -29,6 +30,7 @@ import com.cat2bug.system.domain.SysUserGitRepository;
 import com.cat2bug.system.domain.git.SysGitRemoteListRequest;
 import com.cat2bug.system.domain.git.SysGitRemoteRepository;
 import com.cat2bug.system.domain.git.SysGitRepositoryImportRequest;
+import com.cat2bug.system.git.browse.domain.GitProjectOverview;
 import com.cat2bug.system.mapper.SysGitRepositoryMapper;
 import com.cat2bug.system.mapper.SysGitRepositoryMemberMapper;
 import com.cat2bug.system.mapper.SysProjectMapper;
@@ -39,6 +41,7 @@ import com.cat2bug.system.service.ISysGitRepositoryService;
 import com.cat2bug.system.service.git.GitImportUrlValidator;
 import com.cat2bug.system.service.git.GitPathValidator;
 import com.cat2bug.system.service.git.GitRemoteRepositoryClient;
+import com.cat2bug.system.service.git.GitRepoLanguageScanner;
 import com.cat2bug.system.service.git.GitRepositoryAccessService;
 import com.cat2bug.system.service.git.JGitBareRepositoryHelper;
 
@@ -106,6 +109,9 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
     @Autowired
     private GitRepositoryAccessService gitRepositoryAccessService;
 
+    @Autowired
+    private GitRepoLanguageScanner gitRepoLanguageScanner;
+
     /**
      * 查询仓库（要求当前用户对该仓库具备 pull 及以上有效权限）
      */
@@ -133,7 +139,62 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         }
         assertPull(sysGitRepository.getProjectId());
         sysGitRepository.getParams().put("userId", currentUserId());
-        return sysGitRepositoryMapper.selectSysGitRepositoryList(sysGitRepository);
+        List<SysGitRepository> list = sysGitRepositoryMapper.selectSysGitRepositoryList(sysGitRepository);
+        for (SysGitRepository repo : list)
+        {
+            if (repo.getCollectCount() == null)
+            {
+                repo.setCollectCount(0);
+            }
+            String diskPath = repo.getDiskPath();
+            if (StringUtils.isNotEmpty(diskPath))
+            {
+                try
+                {
+                    diskPath = gitPathValidator.resolveStoredDiskPath(diskPath);
+                }
+                catch (RuntimeException ignored)
+                {
+                    // 列表侧统计失败时降级为原路径 / 0，不阻断列表
+                }
+            }
+            repo.setBranchCount(jGitBareRepositoryHelper.countLocalBranches(diskPath));
+        }
+        return list;
+    }
+
+    /**
+     * 查询项目级 Git 概览（design.md D1/D2/D3；OpenSpec {@code git-repo-project-overview} 任务 1.3）。
+     * <p>鉴权与仓库列表同一门（项目 pull 及以上权限），拒绝时抛出 {@code HttpStatus.FORBIDDEN}
+     * 的 {@link ServiceException}，确保 Controller 侧统一返回 403（与列表接口共用判定但显式带码，
+     * 见 tasks 1.4 「unauthorized denial」用例）。可见仓库集合为空时短路返回全零聚合，不触发语言扫描。</p>
+     */
+    @Override
+    public GitProjectOverview selectProjectOverview(Long projectId)
+    {
+        if (projectId == null)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.project-id-required"));
+        }
+        if (!hasPullPermission(projectId, currentUserId()))
+        {
+            throw new ServiceException(MessageUtils.message("no-permission"), HttpStatus.FORBIDDEN);
+        }
+
+        GitProjectOverview overview = sysGitRepositoryMapper.selectProjectOverviewCounts(projectId);
+        if (overview == null)
+        {
+            overview = new GitProjectOverview();
+        }
+        if (overview.getRepoCount() <= 0)
+        {
+            overview.setLanguages(Collections.emptyList());
+            return overview;
+        }
+
+        List<SysGitRepository> visibleRepositories = sysGitRepositoryMapper.selectRepositoriesForOverviewScan(projectId);
+        overview.setLanguages(gitRepoLanguageScanner.scan(visibleRepositories));
+        return overview;
     }
 
     /**

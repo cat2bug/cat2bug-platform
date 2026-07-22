@@ -111,6 +111,30 @@ public class JGitBareRepositoryHelper
     }
 
     /**
+     * 统计本地 heads 分支数；路径缺失或读失败返回 0，不抛业务异常。
+     */
+    public int countLocalBranches(String diskPath)
+    {
+        if (StringUtils.isEmpty(diskPath))
+        {
+            return 0;
+        }
+        File repoDir = new File(diskPath);
+        try (Repository repository = new FileRepositoryBuilder()
+            .setGitDir(repoDir)
+            .setBare()
+            .setMustExist(true)
+            .build())
+        {
+            return repository.getRefDatabase().getRefsByPrefix(Constants.R_HEADS).size();
+        }
+        catch (IOException e)
+        {
+            return 0;
+        }
+    }
+
+    /**
      * 读取 bare 仓 HEAD 指向的本地分支名（无则返回 null）。
      */
     public String resolveDefaultBranch(String diskPath)
