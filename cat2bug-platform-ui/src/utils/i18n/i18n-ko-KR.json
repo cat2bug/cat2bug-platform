@@ -285,6 +285,8 @@
   "project": "프로젝트",
   "project.count": "프로젝트 총수",
   "project.select": "프로젝트 전환",
+  "project.select-search-placeholder": "이름으로 프로젝트 검색",
+  "project.select-empty": "일치하는 프로젝트 없음",
   "project.is-delete-project": "프로젝트를 삭제하면 복구할 수 없습니다. 삭제를 확인하시려면 로그인 비밀번호를 입력한 후 '삭제' 버튼을 클릭해주세요.",
   "project.admin": "관리자",
   "project.collect-project": "프로젝트 즐겨찾기",

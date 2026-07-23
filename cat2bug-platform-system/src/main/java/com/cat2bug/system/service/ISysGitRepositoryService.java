@@ -3,6 +3,7 @@ package com.cat2bug.system.service;
 import java.util.List;
 
 import com.cat2bug.system.domain.SysGitRepository;
+import com.cat2bug.system.domain.SysGitRepositoryMember;
 import com.cat2bug.system.domain.git.SysGitRemoteListRequest;
 import com.cat2bug.system.domain.git.SysGitRemoteRepository;
 import com.cat2bug.system.domain.git.SysGitRepositoryImportRequest;
@@ -105,4 +106,12 @@ public interface ISysGitRepositoryService
      * @return 项目概览：仓库数、open PR 数、关注合计、语言分布
      */
     public GitProjectOverview selectProjectOverview(Long projectId);
+
+    /**
+     * 项目下各仓库 ACL 成员去重预览（源码成员，非项目成员）：鉴权与 {@link #selectProjectOverview} 相同。
+     *
+     * @param projectId 项目ID（非空）
+     * @return 去重后的仓库 ACL 成员（含用户展示字段）；无仓库或无 ACL 时为空列表
+     */
+    public List<SysGitRepositoryMember> selectProjectGitMembers(Long projectId);
 }

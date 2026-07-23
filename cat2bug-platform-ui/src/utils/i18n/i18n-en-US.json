@@ -332,6 +332,8 @@
   "project": "Project",
   "project.count": "Projects Total",
   "project.select": "Project Switch",
+  "project.select-search-placeholder": "Search projects by name",
+  "project.select-empty": "No matching projects",
   "project.is-delete-project": "After deleting the project, you will not be able to reply. If you confirm the deletion, please fill in your login password and click the \"Delete\" button.",
   "project.admin": "Admin",
   "project.collect-project": "Collect Project",
@@ -2102,5 +2104,5 @@
   "git.repo.overview.languages-empty": "No language data",
   "git.repo.overview.other": "Other",
   "git.repo.overview.members": "Members ({n})",
-  "git.repo.overview.members-empty": "No members"
+  "git.repo.overview.members-empty": "No repository members"
 }

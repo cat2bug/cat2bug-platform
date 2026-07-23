@@ -62,6 +62,14 @@ export function getGitRepoProjectOverview(projectId) {
   })
 }
 
+/** 项目下各仓库 ACL 成员去重预览（源码成员，非项目成员） */
+export function listGitRepoProjectMembers(projectId) {
+  return request({
+    url: '/system/git/repo/project/' + projectId + '/members',
+    method: 'get'
+  })
+}
+
 // 查询代码仓库详细
 export function getGitRepo(repositoryId) {
   return request({

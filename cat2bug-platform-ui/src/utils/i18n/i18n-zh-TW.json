@@ -285,6 +285,8 @@
   "project": "專案",
   "project.count": "專案總數",
   "project.select": "專案切換",
+  "project.select-search-placeholder": "依名稱搜尋專案",
+  "project.select-empty": "暫無符合的專案",
   "project.is-delete-project": "專案刪除後將無法復原，若您確認刪除，請填寫您的登入密碼，然後點擊「刪除」按鈕。",
   "project.admin": "管理員",
   "project.collect-project": "關注專案",

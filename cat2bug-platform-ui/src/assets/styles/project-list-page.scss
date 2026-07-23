@@ -59,7 +59,8 @@
 .project-list-page-host .plan-page,
 .project-list-page-host .report-page,
 .project-list-page-host .document-page,
-.project-list-page-host .defect-field-page {
+.project-list-page-host .defect-field-page,
+.project-list-page-host.git-repo-page {
   overflow: hidden;
 }
 

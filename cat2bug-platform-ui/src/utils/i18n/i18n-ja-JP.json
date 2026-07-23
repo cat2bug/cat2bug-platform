@@ -285,6 +285,8 @@
   "project": "プロジェクト",
   "project.count": "プロジェクト総数",
   "project.select": "プロジェクト切り替え",
+  "project.select-search-placeholder": "名前でプロジェクトを検索",
+  "project.select-empty": "一致するプロジェクトがありません",
   "project.is-delete-project": "プロジェクトを削除すると復元できません。削除する場合はログインパスワードを入力して「削除」ボタンをクリックしてください。",
   "project.admin": "管理者",
   "project.collect-project": "プロジェクトをフォロー",

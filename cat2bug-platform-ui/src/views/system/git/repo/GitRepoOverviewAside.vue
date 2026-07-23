@@ -45,13 +45,13 @@
       <p v-else-if="!langLoading" class="git-aside-empty">{{ $t('git.repo.overview.languages-empty') }}</p>
     </section>
 
-    <!-- 成员：纯头像墙，无胶囊底 -->
+    <!-- 源码仓库 ACL 成员预览（跨仓去重；无仓库时为空） -->
     <section class="git-aside-section git-aside-members" v-loading="membersLoading">
       <h4 class="git-aside-section__title">{{ $t('git.repo.overview.members', { n: memberTotal }) }}</h4>
       <div v-if="!membersLoading && displayMembers.length" class="git-member-wall">
         <div
-          v-for="m in displayMembers"
-          :key="m.userId"
+          v-for="(m, index) in displayMembers"
+          :key="memberKey(m, index)"
           class="git-member-cell"
           :title="memberName(m)"
         >
@@ -69,11 +69,9 @@
 
 <script>
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
-import { getGitRepoProjectOverview } from '@/api/system/gitRepo'
-import { listMemberOfProject } from '@/api/system/project'
+import { getGitRepoProjectOverview, listGitRepoProjectMembers } from '@/api/system/gitRepo'
 
-/** 侧栏成员预览：拉取的分页大小与展示上限（超出以 “+N” 折叠） */
-const MEMBERS_PAGE_SIZE = 50
+/** 侧栏成员预览：展示上限（超出以 “+N” 折叠） */
 const MEMBERS_DISPLAY_LIMIT = 15
 
 /** 仓库语言色板（按列表下标取色，超出循环） */
@@ -119,8 +117,10 @@ export default {
       return (this.members || []).slice(0, MEMBERS_DISPLAY_LIMIT)
     },
     memberOverflow() {
-      const total = this.memberTotal || this.members.length
-      return Math.max(0, total - this.displayMembers.length)
+      const loaded = (this.members || []).length
+      const shown = this.displayMembers.length
+      if (loaded <= shown) return 0
+      return Math.max(0, (this.memberTotal || loaded) - shown)
     }
   },
   watch: {
@@ -163,7 +163,7 @@ export default {
         this.langLoading = false
       })
     },
-    /** 项目成员预览，复用现有项目成员接口（非仓库级成员） */
+    /** 源码仓库 ACL 成员去重预览（非项目成员）；无仓库时为空 */
     loadMembers() {
       if (!this.projectId) {
         this.members = []
@@ -172,16 +172,20 @@ export default {
         return
       }
       this.membersLoading = true
-      listMemberOfProject(this.projectId, { pageNum: 1, pageSize: MEMBERS_PAGE_SIZE }).then(res => {
-        const rows = res.rows || res.data || []
+      listGitRepoProjectMembers(this.projectId).then(res => {
+        const rows = res.data || res.rows || []
         this.members = Array.isArray(rows) ? rows : []
-        this.memberTotal = typeof res.total === 'number' ? res.total : this.members.length
+        this.memberTotal = this.members.length
         this.membersLoading = false
       }).catch(() => {
         this.members = []
         this.memberTotal = 0
         this.membersLoading = false
       })
+    },
+    memberKey(member, index) {
+      if (member && member.userId != null) return member.userId
+      return 'member-' + index
     },
     memberName(member) {
       if (!member) return ''

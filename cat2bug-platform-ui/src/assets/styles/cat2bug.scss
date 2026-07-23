@@ -147,6 +147,19 @@
   border-left: var(--cat2bug-drawer-accent-width) solid var(--cat2bug-drawer-accent-cloud-case) !important;
 }
 
+/* 浅色主题分割线：使用 --divider-color（比 input 边框更淡） */
+.el-divider {
+  --el-border-color: var(--divider-color, var(--border-color-lighter, #f0f2f5));
+}
+
+.el-divider--horizontal {
+  border-top-color: var(--divider-color, var(--border-color-lighter, #f0f2f5));
+}
+
+.el-divider--vertical {
+  border-left-color: var(--divider-color, var(--border-color-lighter, #f0f2f5));
+}
+
 /* 右侧抽屉标题栏：统一高度（EP 默认 padding 偏大；teleport 到 body，须全局） */
 .el-drawer__header {
   margin-bottom: 0 !important;

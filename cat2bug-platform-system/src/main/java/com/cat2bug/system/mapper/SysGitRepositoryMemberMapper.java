@@ -31,6 +31,11 @@ public interface SysGitRepositoryMemberMapper
     int countByProjectIdAndUserId(@Param("projectId") Long projectId, @Param("userId") Long userId);
 
     /**
+     * 项目下各仓库 ACL 成员去重预览（同用户多仓取最高角色；仅启用项目内的仓库）
+     */
+    List<SysGitRepositoryMember> selectDistinctMembersByProjectId(@Param("projectId") Long projectId);
+
+    /**
      * 新增 ACL 行
      */
     int insertSysGitRepositoryMember(SysGitRepositoryMember member);

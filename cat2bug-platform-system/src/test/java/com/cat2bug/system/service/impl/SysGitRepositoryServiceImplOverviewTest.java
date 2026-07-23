@@ -6,9 +6,11 @@ import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.domain.model.LoginUser;
 import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.system.domain.SysGitRepository;
+import com.cat2bug.system.domain.SysGitRepositoryMember;
 import com.cat2bug.system.git.browse.domain.GitLanguageShare;
 import com.cat2bug.system.git.browse.domain.GitProjectOverview;
 import com.cat2bug.system.mapper.SysGitRepositoryMapper;
+import com.cat2bug.system.mapper.SysGitRepositoryMemberMapper;
 import com.cat2bug.system.mapper.SysRoleMapper;
 import com.cat2bug.system.service.git.GitRepoLanguageScanner;
 import com.cat2bug.system.support.MessageSourceTestSupport;
@@ -55,6 +57,9 @@ public class SysGitRepositoryServiceImplOverviewTest
 
     @Mock
     private SysGitRepositoryMapper sysGitRepositoryMapper;
+
+    @Mock
+    private SysGitRepositoryMemberMapper sysGitRepositoryMemberMapper;
 
     @Mock
     private SysRoleMapper sysRoleMapper;
@@ -170,6 +175,41 @@ public class SysGitRepositoryServiceImplOverviewTest
         {
             // 校验通过异常类型即可，消息由 i18n 提供
         }
+    }
+
+    @Test
+    public void selectProjectGitMembers_noProjectRole_deniedWithForbidden()
+    {
+        when(sysRoleMapper.selectRolePermissionByUserId(eq(null), eq(PROJECT_ID), eq(USER_ID)))
+            .thenReturn(Collections.emptyList());
+
+        try
+        {
+            service.selectProjectGitMembers(PROJECT_ID);
+            fail("expected ServiceException：无 pull 权限");
+        }
+        catch (ServiceException expected)
+        {
+            assertEquals(Integer.valueOf(HttpStatus.FORBIDDEN), expected.getCode());
+        }
+        verify(sysGitRepositoryMemberMapper, never()).selectDistinctMembersByProjectId(any());
+    }
+
+    @Test
+    public void selectProjectGitMembers_authorized_returnsDistinctAclMembers()
+    {
+        allowPull();
+        SysGitRepositoryMember m = new SysGitRepositoryMember();
+        m.setUserId(7L);
+        m.setNickName("alice");
+        when(sysGitRepositoryMemberMapper.selectDistinctMembersByProjectId(PROJECT_ID))
+            .thenReturn(List.of(m));
+
+        List<SysGitRepositoryMember> result = service.selectProjectGitMembers(PROJECT_ID);
+
+        assertEquals(1, result.size());
+        assertEquals(Long.valueOf(7L), result.get(0).getUserId());
+        verify(sysGitRepositoryMemberMapper).selectDistinctMembersByProjectId(PROJECT_ID);
     }
 
     // ---------- 测试夹具 ----------

@@ -99,7 +99,13 @@ export default {
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: center;
+    gap: 10px;
     max-width: 100%;
     white-space: nowrap;
+  }
+
+  /* gap 已承担间距，避免与 margin-left 叠成 20px */
+  .row > .margin-left-10 {
+    margin-left: 0;
   }
 </style>

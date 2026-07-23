@@ -120,9 +120,10 @@ $cat2bug-ep-default-button: ':not(.el-button--primary):not(.el-button--success):
   --sidebar-bg: #ffffff;
   --sidebar-text: rgba(0, 0, 0, 0.7);
   --sidebar-active-text: #409eff;
-  --sidebar-divider-color: #ebeef5;
-  --divider-color: #dcdfe6;
-  --split-button-divider-color: var(--divider-color, #dcdfe6);
+  --sidebar-divider-color: #f0f2f5;
+  /* 浅色主题分割线：比 input 边框更淡，避免白底上过重 */
+  --divider-color: #f0f2f5;
+  --split-button-divider-color: var(--divider-color, #f0f2f5);
   --split-button-divider-on-solid: rgba(255, 255, 255, 0.45);
   --sidebar-tile-bg: #f5f7fa;
   --sidebar-item-hover-bg: rgba(0, 0, 0, 0.04);
@@ -1770,9 +1771,16 @@ html.dark {
       border: none !important;
       box-shadow: none !important;
 
-      &:not(.disabled):hover {
+      &:not(.disabled):not(.is-disabled):hover {
         color: #FFC107 !important;
       }
+    }
+
+    /* Element Plus 使用 .is-active（非旧版 .active）；须压过上方 li 的 !important */
+    .el-pager li.is-active:not(.disabled):not(.is-disabled) {
+      color: #FFC107 !important;
+      font-weight: 700;
+      cursor: default;
     }
 
     &.is-background {
@@ -1785,14 +1793,21 @@ html.dark {
         box-shadow: none !important;
       }
 
-      .el-pager li:not(.disabled).active {
+      .el-pager li.is-active:not(.disabled):not(.is-disabled) {
         background-color: #FFC107 !important;
         color: #141414 !important;
+
+        &:hover {
+          color: #141414 !important;
+        }
       }
 
       .btn-prev.disabled,
       .btn-next.disabled,
-      .el-pager li.disabled {
+      .btn-prev.is-disabled,
+      .btn-next.is-disabled,
+      .el-pager li.disabled,
+      .el-pager li.is-disabled {
         background-color: var(--bg-color-base) !important;
         color: var(--text-color-placeholder) !important;
       }

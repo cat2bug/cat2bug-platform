@@ -2,72 +2,133 @@
   <el-popover
     placement="bottom-start"
     v-model:visible="popoverVisible"
+    :width="360"
     popper-class="project-select-popover"
+    trigger="click"
     @show="popoverShowHandle"
     @hide="popoverHideHandle"
-    trigger="hover">
+  >
     <template #reference>
-      <div :class="triggerClass">
-        <legacy-icon :icon="currentProjectDisplay.collect ? 'el-icon-star-on' : 'el-icon-star-off'" class="yellow start-switch project-select-star" :collect="currentProjectDisplay.collect ? 'true' : 'false'" @click.stop="handleProjectCollect(currentProjectDisplay, $event)"></legacy-icon>
-        <p class="prefix-project-name">{{ currentProjectDisplay.projectName || '' }}</p>
+      <div
+        :class="triggerClass"
+        class="project-select-trigger"
+        role="button"
+        tabindex="0"
+      >
+        <star-switch
+          class="project-select-star"
+          :model-value="!!currentProjectDisplay.collect"
+          @change="onCurrentCollectChange"
+          @click.stop
+        />
+        <span class="project-select-name" :title="displayName">{{ displayName }}</span>
         <legacy-icon icon="el-icon-arrow-down" class="project-select-caret" />
       </div>
     </template>
-    <h3 class="title"><legacy-icon icon="el-icon-refresh" /> {{ $t('project.select') }}</h3>
-    <el-divider></el-divider>
-    <div ref="projectList" class="project-select-list">
-      <div
-        v-for="(item,index) in options"
-        :key="index"
-        class="col click item"
-        :class="{ 'is-keyboard-active': index === activeIndex }"
-        @click="handleProjectChange(item)"
-      >
-        <div class="row">
-          <legacy-icon :icon="item.collect ? 'el-icon-star-on' : 'el-icon-star-off'" class="yellow start-switch" :collect="item.collect?'true':'false'" @click="handleProjectCollect(item, $event)"></legacy-icon>
-<!--        <el-image :src="item.projectIcon" />-->
-          <p class="prefix-project-name">{{item.projectName}}</p>
+
+    <div class="project-select-panel">
+      <h3 class="project-select-title">
+        <img class="project-select-title-icon" src="@/assets/icons/qiehuan.png" alt="" />
+        {{ $t('project.select') }}
+      </h3>
+      <div class="project-select-toolbar">
+        <el-input
+          v-model="keyword"
+          clearable
+          size="small"
+          class="project-select-search"
+          :prefix-icon="Search"
+          :placeholder="$t('project.select-search-placeholder')"
+          @input="onSearchInput"
+          @clear="onSearchInput"
+        />
+        <el-button
+          v-if="canAddProject"
+          class="project-select-add"
+          type="primary"
+          plain
+          size="small"
+          :icon="Plus"
+          :title="$t('project.create-project')"
+          @click.stop="openCreateProject"
+        />
+      </div>
+      <div ref="projectList" v-loading="loading" class="project-select-list">
+        <div
+          v-for="(item, index) in options"
+          :key="item.projectId || index"
+          class="project-select-item"
+          :class="{
+            'is-active': isCurrentProject(item),
+            'is-keyboard-active': index === activeIndex
+          }"
+          @click="handleProjectChange(item)"
+        >
+          <star-switch
+            class="project-select-item-star"
+            :model-value="!!item.collect"
+            @change="(val) => onItemCollectChange(val, item)"
+            @click.stop
+          />
+          <div class="project-select-item-main">
+            <span class="project-select-item-name" :title="item.projectName">{{ item.projectName || '—' }}</span>
+            <span class="project-select-item-remark" :title="itemRemark(item)">{{ itemRemark(item) }}</span>
+          </div>
+        </div>
+        <div v-if="!loading && !options.length" class="project-select-empty">
+          {{ $t('project.select-empty') }}
         </div>
       </div>
+      <template v-if="total > queryParams.pageSize">
+        <el-divider class="project-select-pager-divider" />
+        <el-pagination
+          class="project-select-pager"
+          size="small"
+          layout="prev, next"
+          :hide-on-single-page="true"
+          v-model:current-page="queryParams.pageNum"
+          :page-size="queryParams.pageSize"
+          :total="total"
+          @current-change="getProjectList"
+        />
+      </template>
     </div>
-    <el-divider v-if="total>queryParams.pageSize"></el-divider>
-    <el-pagination
-      style="float: right;"
-      size="small"
-      :hide-on-single-page="true"
-      layout="prev, next"
-      v-model:current-page="queryParams.pageNum"
-      v-model:page-size="queryParams.pageSize"
-      :total="total"
-      @current-change="getProjectList">
-    </el-pagination>
   </el-popover>
 </template>
 
 <script>
-import {collectProject, getProject, listProject} from "@/api/system/project";
-import { myListTeam } from "@/api/system/team";
+import { markRaw } from 'vue'
+import { Plus, Search } from '@element-plus/icons-vue'
+import StarSwitch from '@/components/StarSwitch'
+import { collectProject, getProject, listProject } from '@/api/system/project'
+import { myListTeam } from '@/api/system/team'
 import { useUserStore } from '@/stores/user'
-import Label from "@/components/Cat2BugStatistic/Components/Label";
+import { checkPermi } from '@/utils/permission'
 
 export default {
-  name: "ProjectSelect",
-  components: {Label},
+  name: 'ProjectSelect',
+  components: { StarSwitch, Plus },
   setup() {
     const userStore = useUserStore()
     return { userStore }
   },
   data() {
     return {
+      Search: markRaw(Search),
+      Plus: markRaw(Plus),
       popoverVisible: false,
+      loading: false,
       options: [],
       currentProject: {},
       total: 0,
       activeIndex: -1,
+      keyword: '',
+      searchTimer: null,
       queryParams: {
         teamId: this.teamId,
+        projectName: undefined,
         params: {
-          userId: this.memberId,
+          userId: this.memberId
         },
         pageNum: 1,
         pageSize: 10
@@ -75,33 +136,36 @@ export default {
     }
   },
   props: {
-    teamId : {
+    teamId: {
       type: Number,
       default: 0
     },
-    projectId : {
+    projectId: {
       type: Number,
       default: 0
     },
-    memberId : {
+    memberId: {
       type: Number,
       default: 0
     },
     size: {
       type: String,
       default: 'default'
-    },
+    }
   },
   computed: {
     currentProjectDisplay() {
       return this.currentProject && typeof this.currentProject === 'object' ? this.currentProject : {}
     },
-    /** 与 Vue2 一致：仅 size 后缀类名，不用 select-project-member-input 外框 */
+    displayName() {
+      return this.currentProjectDisplay.projectName || ''
+    },
+    canAddProject() {
+      return checkPermi(['system:project:add'])
+    },
+    /** 与 Vue2 一致：保留键盘提示锚点类名 */
     triggerClass() {
       return [
-        'between-row-1',
-        'click',
-        'project-select-trigger',
         'project-select-kbd-hint-anchor'
       ]
     }
@@ -121,173 +185,210 @@ export default {
       this.queryParams.params.userId = val
       this.getProjectList()
     },
-    projectId(val) {
+    projectId() {
       this.getCurrentProjectInfo()
     }
   },
-  created() {
-  },
   mounted() {
-    this.getCurrentProjectInfo();
-    this.getProjectList();
+    this.getCurrentProjectInfo()
+    this.getProjectList()
   },
-  beforeDestroy() {
-    this.detachProjectSelectKeyboardListener();
+  beforeUnmount() {
+    window.clearTimeout(this.searchTimer)
+    this.detachProjectSelectKeyboardListener()
   },
   methods: {
     /** 快捷键 / 外部调用：打开项目切换浮层 */
     openPopover() {
       return this.getProjectList().then(() => {
-        this.popoverVisible = true;
-      });
+        this.popoverVisible = true
+      })
     },
     attachProjectSelectKeyboardListener() {
-      if (this.$_projectSelectKeydownBound) return;
-      this.$_projectSelectKeydownBound = true;
+      if (this.$_projectSelectKeydownBound) return
+      this.$_projectSelectKeydownBound = true
       this.$_onProjectSelectKeydown = (e) => {
-        if (!this.popoverVisible) return;
-        this.onProjectSelectKeydown(e);
-      };
-      document.addEventListener('keydown', this.$_onProjectSelectKeydown, true);
+        if (!this.popoverVisible) return
+        this.onProjectSelectKeydown(e)
+      }
+      document.addEventListener('keydown', this.$_onProjectSelectKeydown, true)
     },
     detachProjectSelectKeyboardListener() {
-      if (!this.$_projectSelectKeydownBound) return;
-      this.$_projectSelectKeydownBound = false;
-      document.removeEventListener('keydown', this.$_onProjectSelectKeydown, true);
-      this.$_onProjectSelectKeydown = null;
+      if (!this.$_projectSelectKeydownBound) return
+      this.$_projectSelectKeydownBound = false
+      document.removeEventListener('keydown', this.$_onProjectSelectKeydown, true)
+      this.$_onProjectSelectKeydown = null
+    },
+    isTypingInSearch(e) {
+      const t = e && e.target
+      if (!t || typeof t.closest !== 'function') return false
+      return !!t.closest('.project-select-search')
     },
     onProjectSelectKeydown(e) {
-      const key = e.key;
+      const key = e.key
+      if (this.isTypingInSearch(e)) {
+        if (key === 'Escape' || key === 'Esc') {
+          if (e.metaKey || e.ctrlKey) return
+          if (typeof e.getModifierState === 'function' &&
+            (e.getModifierState('Meta') || e.getModifierState('Control'))) return
+          e.preventDefault()
+          e.stopPropagation()
+          this.closePopover()
+        }
+        return
+      }
       if (key === 'ArrowDown' || key === 'Down') {
-        e.preventDefault();
-        e.stopPropagation();
-        this.moveActive(1);
-        return;
+        e.preventDefault()
+        e.stopPropagation()
+        this.moveActive(1)
+        return
       }
       if (key === 'ArrowUp' || key === 'Up') {
-        e.preventDefault();
-        e.stopPropagation();
-        this.moveActive(-1);
-        return;
+        e.preventDefault()
+        e.stopPropagation()
+        this.moveActive(-1)
+        return
       }
       if (key === 'ArrowLeft' || key === 'Left') {
-        e.preventDefault();
-        e.stopPropagation();
-        this.movePage(-1);
-        return;
+        e.preventDefault()
+        e.stopPropagation()
+        this.movePage(-1)
+        return
       }
       if (key === 'ArrowRight' || key === 'Right') {
-        e.preventDefault();
-        e.stopPropagation();
-        this.movePage(1);
-        return;
+        e.preventDefault()
+        e.stopPropagation()
+        this.movePage(1)
+        return
       }
       if (key === 'Enter' || key === ' ' || key === 'Spacebar' || e.code === 'Space') {
-        e.preventDefault();
-        e.stopPropagation();
-        this.selectActive();
-        return;
+        e.preventDefault()
+        e.stopPropagation()
+        this.selectActive()
+        return
       }
       if (key === 'Escape' || key === 'Esc') {
-        if (e.metaKey || e.ctrlKey) return;
+        if (e.metaKey || e.ctrlKey) return
         if (typeof e.getModifierState === 'function' &&
-          (e.getModifierState('Meta') || e.getModifierState('Control'))) return;
-        e.preventDefault();
-        e.stopPropagation();
-        this.closePopover();
+          (e.getModifierState('Meta') || e.getModifierState('Control'))) return
+        e.preventDefault()
+        e.stopPropagation()
+        this.closePopover()
       }
     },
     closePopover() {
-      this.popoverVisible = false;
+      this.popoverVisible = false
     },
     hasPrevPage() {
-      return this.queryParams.pageNum > 1;
+      return this.queryParams.pageNum > 1
     },
     hasNextPage() {
-      const pageSize = this.queryParams.pageSize || 10;
-      return this.queryParams.pageNum * pageSize < this.total;
+      const pageSize = this.queryParams.pageSize || 10
+      return this.queryParams.pageNum * pageSize < this.total
     },
     goPage(pageNum, activePos) {
-      this.queryParams.pageNum = pageNum;
+      this.queryParams.pageNum = pageNum
       return this.getProjectList().then(() => {
         if (activePos === 'last') {
-          this.activeIndex = Math.max(0, this.options.length - 1);
+          this.activeIndex = Math.max(0, this.options.length - 1)
         } else {
-          this.activeIndex = 0;
+          this.activeIndex = 0
         }
-        this.$nextTick(() => this.scrollActiveIntoView());
-      });
+        this.$nextTick(() => this.scrollActiveIntoView())
+      })
     },
     movePage(dir) {
       if (dir < 0 && this.hasPrevPage()) {
-        this.goPage(this.queryParams.pageNum - 1, 'last');
+        this.goPage(this.queryParams.pageNum - 1, 'last')
       } else if (dir > 0 && this.hasNextPage()) {
-        this.goPage(this.queryParams.pageNum + 1, 0);
+        this.goPage(this.queryParams.pageNum + 1, 0)
       }
     },
     moveActive(dir) {
       if (!this.options || !this.options.length) {
         if (dir > 0 && this.hasNextPage()) {
-          this.goPage(this.queryParams.pageNum + 1, 0);
+          this.goPage(this.queryParams.pageNum + 1, 0)
         } else if (dir < 0 && this.hasPrevPage()) {
-          this.goPage(this.queryParams.pageNum - 1, 'last');
+          this.goPage(this.queryParams.pageNum - 1, 'last')
         } else if (dir < 0) {
-          this.closePopover();
+          this.closePopover()
         }
-        return;
+        return
       }
-      let i = this.activeIndex;
-      if (i < 0) i = 0;
-      i += dir;
+      let i = this.activeIndex
+      if (i < 0) i = 0
+      i += dir
       if (i < 0) {
         if (this.hasPrevPage()) {
-          this.goPage(this.queryParams.pageNum - 1, 'last');
+          this.goPage(this.queryParams.pageNum - 1, 'last')
         } else if (this.activeIndex <= 0) {
-          this.closePopover();
+          this.closePopover()
         } else {
-          this.activeIndex = 0;
+          this.activeIndex = 0
         }
-        return;
+        return
       }
       if (i > this.options.length - 1) {
         if (this.hasNextPage()) {
-          this.goPage(this.queryParams.pageNum + 1, 0);
+          this.goPage(this.queryParams.pageNum + 1, 0)
         } else {
-          this.activeIndex = this.options.length - 1;
+          this.activeIndex = this.options.length - 1
         }
-        return;
+        return
       }
-      this.activeIndex = i;
-      this.$nextTick(() => this.scrollActiveIntoView());
+      this.activeIndex = i
+      this.$nextTick(() => this.scrollActiveIntoView())
     },
     scrollActiveIntoView() {
-      const root = this.$refs.projectList;
-      if (!root) return;
-      const items = root.querySelectorAll('.item');
-      const el = items[this.activeIndex];
+      const root = this.$refs.projectList
+      if (!root) return
+      const items = root.querySelectorAll('.project-select-item')
+      const el = items[this.activeIndex]
       if (el && typeof el.scrollIntoView === 'function') {
-        el.scrollIntoView({ block: 'nearest' });
+        el.scrollIntoView({ block: 'nearest' })
       }
     },
     selectActive() {
       if (this.activeIndex >= 0 && this.activeIndex < this.options.length) {
-        this.handleProjectChange(this.options[this.activeIndex]);
+        this.handleProjectChange(this.options[this.activeIndex])
       }
     },
-    /** 弹窗显示事件 */
     popoverShowHandle() {
-      this.activeIndex = 0;
+      this.keyword = ''
+      this.queryParams.projectName = undefined
+      this.queryParams.pageNum = 1
+      this.activeIndex = 0
       this.getProjectList().then(() => {
-        this.$nextTick(() => this.scrollActiveIntoView());
-      });
-      this.attachProjectSelectKeyboardListener();
+        this.$nextTick(() => this.scrollActiveIntoView())
+      })
+      this.attachProjectSelectKeyboardListener()
     },
-    /** 弹窗隐藏事件 */
     popoverHideHandle() {
-      this.activeIndex = -1;
-      this.detachProjectSelectKeyboardListener();
+      this.keyword = ''
+      this.queryParams.projectName = undefined
+      this.activeIndex = -1
+      this.detachProjectSelectKeyboardListener()
     },
-    /** 获取当前项目信息 */
+    onSearchInput() {
+      window.clearTimeout(this.searchTimer)
+      this.searchTimer = window.setTimeout(() => {
+        const kw = (this.keyword || '').trim()
+        this.queryParams.projectName = kw || undefined
+        this.queryParams.pageNum = 1
+        this.getProjectList().then(() => {
+          this.activeIndex = this.options.length ? 0 : -1
+        })
+      }, 200)
+    },
+    itemRemark(item) {
+      const intro = item && item.projectIntroduce != null ? String(item.projectIntroduce).trim() : ''
+      if (intro) return intro
+      const key = item && item.projectKey != null ? String(item.projectKey).trim() : ''
+      return key || this.$t('project.introduction-not-filled')
+    },
+    isCurrentProject(item) {
+      return item && Number(item.projectId) === Number(this.projectId)
+    },
     getCurrentProjectInfo() {
       const projectId = parseInt(this.projectId, 10)
       if (!Number.isFinite(projectId) || projectId <= 0) {
@@ -347,7 +448,6 @@ export default {
       }
       return this.resolveTeamIdFromConfig()
     },
-    /** 查询收藏的项目列表 */
     getProjectList() {
       if (this.memberId) {
         if (!this.queryParams.params) {
@@ -355,27 +455,30 @@ export default {
         }
         this.queryParams.params.userId = this.memberId
       }
+      this.loading = true
       return this.resolveEffectiveTeamId().then((teamId) => {
         if (!teamId) {
           this.options = []
           this.total = 0
+          this.loading = false
           return
         }
         this.queryParams.teamId = teamId
         return listProject(this.queryParams).then((res) => {
           this.applyProjectListResponse(res)
+          this.loading = false
         }).catch(() => {
           this.options = []
           this.total = 0
+          this.loading = false
         })
       })
     },
-    /** 选择项目：切换上下文并按当前 module 重写 URL 前缀 */
     handleProjectChange(project) {
-      this.detachProjectSelectKeyboardListener();
-      if (!project || !project.projectId) return;
+      this.detachProjectSelectKeyboardListener()
+      if (!project || !project.projectId) return
       const currentPath = this.$route && this.$route.path
-      this.popoverVisible = false;
+      this.popoverVisible = false
       this.userStore.SwitchCurrentProject(project.projectId, {
         rewriteUrl: true,
         currentPath
@@ -383,28 +486,35 @@ export default {
         this.currentProject = project
       })
     },
-    /** 设置当前项目是否收藏 */
-    handleProjectCollect(project, event) {
-      if (!project || !project.projectId) {
-        return
-      }
-      project.collect = !project.collect
-      // 保存收藏状态
-      collectProject(project.projectId, project).then(res=>{
-        if(project.projectId == this.currentProject.projectId) {
-          this.currentProject = { ...this.currentProject, collect: project.collect }
+    onCurrentCollectChange(collect) {
+      this.setProjectCollect(this.currentProjectDisplay, collect)
+    },
+    onItemCollectChange(collect, item) {
+      this.setProjectCollect(item, collect)
+    },
+    setProjectCollect(project, collect) {
+      if (!project || !project.projectId) return
+      const next = !!collect
+      const prev = !!project.collect
+      project.collect = next
+      collectProject(project.projectId, project).then(() => {
+        if (Number(project.projectId) === Number(this.currentProject.projectId)) {
+          this.currentProject = { ...this.currentProject, collect: next }
         }
-        if(project.collect) {
-          this.$message.success(this.$i18n.t('collect-success').toString());
+        if (next) {
+          this.$message.success(this.$i18n.t('collect-success').toString())
         } else {
-          this.$message.success(this.$i18n.t('cancel-success').toString());
+          this.$message.success(this.$i18n.t('cancel-success').toString())
         }
-        // 重新获取项目列表
-        this.getProjectList();
-      });
-      if(event) {
-        event.stopPropagation();
-      }
+        this.getProjectList()
+      }).catch(() => {
+        project.collect = prev
+      })
+    },
+    openCreateProject() {
+      if (!this.canAddProject) return
+      this.popoverVisible = false
+      this.$router.push({ name: 'ProjectAdd' })
     }
   }
 }
@@ -418,48 +528,35 @@ export default {
   max-width: 100%;
 }
 
-.el-divider {
-  background-color: var(--border-color-light);
-  margin: 10px 0px;
-}
-.project-select-list {
-  max-height: 280px;
-  overflow-y: auto;
-  width: 100%;
-}
-.between-row-1 {
+.project-select-trigger {
   display: inline-flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-between;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   max-width: 100%;
-  .prefix-project-name {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .start-switch {
-    flex-shrink: 0;
-  }
+  min-width: 0;
+  cursor: pointer;
+  user-select: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: var(--text-color-primary);
 }
 
-.project-select-trigger.between-row-1 {
-  border: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  outline: none !important;
+.project-select-star {
+  flex-shrink: 0;
+  font-size: 16px;
+}
 
-  &:focus,
-  &:focus-within,
-  &:focus-visible {
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-  }
+.project-select-name {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: inherit;
+  font-weight: inherit;
+  color: var(--text-color-primary);
 }
 
 .project-select-caret {
@@ -477,124 +574,145 @@ export default {
     color: inherit;
   }
 }
-  .prefix-project-name {
-    margin: 5px 0px;
-  }
-.row {
+
+.project-select-panel {
+  margin: -4px 0;
+}
+
+.project-select-title {
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
   align-items: center;
-  gap: 5px;
-  width: 100%;
+  gap: 6px;
+  margin: 5px 0 15px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-color-primary);
+}
+
+.project-select-title-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  display: block;
+}
+
+@at-root html.dark .project-select-title-icon {
+  filter: invert(1);
+}
+
+.project-select-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.project-select-search {
+  flex: 1 1 auto;
   min-width: 0;
-  .prefix-project-name {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+
+  :deep(.el-input__wrapper) {
+    height: var(--cat2bug-control-height, 32px) !important;
+    min-height: var(--cat2bug-control-height, 32px) !important;
+    box-sizing: border-box;
   }
 }
-.col {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 2px;
-  width: 100%;
-}
-.item {
-  font-size: 1rem;
-  width: 100%;
+
+.project-select-add {
+  flex-shrink: 0;
+  width: var(--cat2bug-control-height, 32px) !important;
+  height: var(--cat2bug-control-height, 32px) !important;
+  min-height: var(--cat2bug-control-height, 32px) !important;
+  padding: 0 !important;
   box-sizing: border-box;
 }
-.yellow {
-  color: #f7ba2a;
-}
-.block {
-  display: inline-block;
-}
-.click {
-  cursor: pointer;
-  padding: 2px 10px;
-  border-radius: 3px;
+
+.project-select-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  min-height: 48px;
+  max-height: 280px;
+  overflow-y: auto;
 }
 
-.project-select-trigger.click:hover {
-  background-color: #e8f4ff;
-}
-.item.click {
-  padding: 2px 10px;
-  border-radius: 3px;
-}
-.item.click:hover,
-.item.is-keyboard-active {
-  background-color: #e8f4ff;
-}
-.start-switch {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 14px;
-  line-height: 1;
+.project-select-pager-divider {
+  margin: 8px 0 6px;
 
-  :deep(.el-icon) {
-    font-size: inherit;
-    color: inherit;
+  :deep(.el-divider--horizontal),
+  &.el-divider--horizontal {
+    border-top-color: var(--border-color-lighter, #f0f2f5);
   }
 }
 
-.start-switch[collect='true'] {
-  color: var(--star-switch-on-color, rgb(247, 186, 42));
+.project-select-pager {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 2px;
+  clear: both;
 }
 
-.start-switch:not([collect='true']) {
-  color: var(--star-switch-off-stroke, #c0c4cc);
-}
-.title {
-  margin: 5px 5px 15px 10px;
-}
-.el-image {
-  width: 30px;
-  height: 30px;
+.project-select-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover,
+  &.is-active,
+  &.is-keyboard-active {
+    background: var(--table-row-hover-bg, rgba(0, 0, 0, 0.04));
+  }
 }
 
-@at-root html.dark .project-select-trigger.click:hover {
-  background-color: var(--table-row-hover-bg) !important;
+.project-select-item-star {
+  flex-shrink: 0;
+  font-size: 15px;
 }
 
-@at-root html.dark .project-select-list .item.is-keyboard-active {
-  background-color: rgba(255, 193, 7, 0.12);
+.project-select-item-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.project-select-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color-primary);
+}
+
+.project-select-item-remark {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+}
+
+.project-select-empty {
+  padding: 16px 8px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-color-placeholder);
 }
 </style>
 
 <style lang="scss">
-/* popover 挂载到 body，宽度随最长项目名撑开，最多半屏，超出省略 */
+/* popover 挂载到 body：固定宽度，与源码库下拉一致 */
 .project-select-popover.el-popover {
-  width: max-content !important;
-  max-width: 50vw !important;
+  width: 360px !important;
+  max-width: min(360px, 50vw) !important;
   min-width: 0;
   box-sizing: border-box;
-}
-
-.project-select-popover {
-  .title {
-    white-space: nowrap;
-  }
-
-  .start-switch[collect='true'] {
-    color: var(--star-switch-on-color, rgb(247, 186, 42));
-  }
-
-  .start-switch:not([collect='true']) {
-    color: var(--star-switch-off-stroke, #c0c4cc);
-  }
-
-  .project-select-list .item .prefix-project-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 }
 </style>

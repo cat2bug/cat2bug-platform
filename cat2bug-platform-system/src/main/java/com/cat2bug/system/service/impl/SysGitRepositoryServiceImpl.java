@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.cat2bug.system.domain.SysGitRepository;
+import com.cat2bug.system.domain.SysGitRepositoryMember;
 import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.domain.SysUserGitRepository;
 import com.cat2bug.system.domain.git.SysGitRemoteListRequest;
@@ -195,6 +196,25 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
         List<SysGitRepository> visibleRepositories = sysGitRepositoryMapper.selectRepositoriesForOverviewScan(projectId);
         overview.setLanguages(gitRepoLanguageScanner.scan(visibleRepositories));
         return overview;
+    }
+
+    /**
+     * 项目下各仓库 ACL 成员去重预览（源码成员）。鉴权与 {@link #selectProjectOverview} 一致。
+     */
+    @Override
+    public List<SysGitRepositoryMember> selectProjectGitMembers(Long projectId)
+    {
+        if (projectId == null)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.project-id-required"));
+        }
+        if (!hasPullPermission(projectId, currentUserId()))
+        {
+            throw new ServiceException(MessageUtils.message("no-permission"), HttpStatus.FORBIDDEN);
+        }
+        List<SysGitRepositoryMember> members =
+                sysGitRepositoryMemberMapper.selectDistinctMembersByProjectId(projectId);
+        return members != null ? members : Collections.emptyList();
     }
 
     /**

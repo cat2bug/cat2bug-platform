@@ -54,6 +54,36 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where r.project_id = #{projectId} and m.user_id = #{userId}
     </select>
 
+    <!-- 项目侧栏成员预览：跨仓去重，同用户取最高角色（admin > write > read） -->
+    <select id="selectDistinctMembersByProjectId" resultMap="SysGitRepositoryMemberResult">
+        select
+            min(m.member_id) as member_id,
+            null as repository_id,
+            m.user_id as user_id,
+            case min(case m.role when 'admin' then 0 when 'write' then 1 else 2 end)
+                when 0 then 'admin'
+                when 1 then 'write'
+                else 'read'
+            end as role,
+            null as create_by,
+            null as create_time,
+            null as update_by,
+            null as update_time,
+            null as remark,
+            u.user_name as user_name,
+            u.nick_name as nick_name,
+            u.avatar as avatar,
+            u.email as email
+        from sys_git_repository_member m
+        inner join sys_git_repository r on r.repository_id = m.repository_id
+        inner join sys_project p on r.project_id = p.project_id and p.project_state &gt; 0
+        left join sys_user u on u.user_id = m.user_id
+        where r.project_id = #{projectId}
+        group by m.user_id, u.user_name, u.nick_name, u.avatar, u.email
+        order by min(case m.role when 'admin' then 0 when 'write' then 1 else 2 end),
+                 min(m.member_id)
+    </select>
+
     <insert id="insertSysGitRepositoryMember" parameterType="SysGitRepositoryMember"
             useGeneratedKeys="true" keyProperty="memberId">
         insert into sys_git_repository_member (

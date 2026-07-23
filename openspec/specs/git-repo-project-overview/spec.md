@@ -51,7 +51,7 @@ The system SHALL estimate language share by mapping file path extensions on each
 
 ### Requirement: Repo list page overview aside
 
-The system SHALL show a right-hand overview aside on the project source-management repository list page on wide viewports, displaying the three stats (repository count, open PR count, collect count), the language distribution bars, and a project members preview; the aside MUST NOT include a Fork metric.
+The system SHALL show a right-hand overview aside on the project source-management repository list page on wide viewports, displaying the three stats (repository count, open PR count, collect count), the language distribution bars, and a source-repository members preview; the aside MUST NOT include a Fork metric.
 
 #### Scenario: Wide viewport shows aside
 
@@ -68,11 +68,16 @@ The system SHALL show a right-hand overview aside on the project source-manageme
 - **WHEN** the user enables or disables collect on a repository from the list while the aside is visible
 - **THEN** the aside collect count increases or decreases by one without requiring a full page reload
 
-### Requirement: Members preview uses project members
+### Requirement: Members preview uses repository ACL members
 
-The overview aside SHALL display members of the current project (avatar and display name) with a heading that includes the member count; it MUST NOT invent a separate git-only member census for this panel.
+The overview aside SHALL display distinct ACL members across visible git repositories in the current project (avatar and display name) with a heading that includes the member count; it MUST NOT use the project-member census for this panel. When the project has no visible repositories (or no ACL rows), the members section SHALL be empty.
 
-#### Scenario: Project members appear in aside
+#### Scenario: Repository ACL members appear in aside
 
-- **WHEN** the project has two members and the aside is shown
+- **WHEN** two distinct users have ACL rows on visible repositories in the project and the aside is shown
 - **THEN** the members section title reflects count 2 and both members are listed with name (and avatar when available)
+
+#### Scenario: Empty repositories yields empty members
+
+- **WHEN** an authorized user opens the aside for a project with no visible repositories
+- **THEN** the members section shows the empty state and count 0

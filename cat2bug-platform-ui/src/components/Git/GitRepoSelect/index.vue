@@ -16,7 +16,6 @@
           @change="onCurrentCollectChange"
           @click.stop
         />
-        <el-icon class="git-repo-select-folder"><FolderOpened /></el-icon>
         <span class="git-repo-select-name" :title="displayName">{{ displayName }}</span>
         <el-tag
           v-if="visibilityLabel"
@@ -31,7 +30,10 @@
     </template>
 
     <div class="git-repo-select-panel">
-      <h3 class="git-repo-select-title">{{ $t('git.repo.select') }}</h3>
+      <h3 class="git-repo-select-title">
+        <img class="git-repo-select-title-icon" src="@/assets/icons/qiehuan.png" alt="" />
+        {{ $t('git.repo.select') }}
+      </h3>
       <div class="git-repo-select-toolbar">
         <el-input
           v-model="keyword"
@@ -55,7 +57,7 @@
       </div>
       <div v-loading="loading" class="git-repo-select-list">
         <div
-          v-for="item in filteredList"
+          v-for="item in pagedList"
           :key="item.repositoryId"
           class="git-repo-select-item"
           :class="{ 'is-active': isActive(item) }"
@@ -83,6 +85,18 @@
           {{ $t('git.repo.select-empty') }}
         </div>
       </div>
+      <template v-if="filteredTotal > pageSize">
+        <el-divider class="git-repo-select-pager-divider" />
+        <el-pagination
+          class="git-repo-select-pager"
+          size="small"
+          layout="prev, next"
+          :hide-on-single-page="true"
+          v-model:current-page="pageNum"
+          :page-size="pageSize"
+          :total="filteredTotal"
+        />
+      </template>
     </div>
   </el-popover>
 
@@ -97,7 +111,7 @@
 
 <script>
 import { markRaw } from 'vue'
-import { FolderOpened, Plus, Search } from '@element-plus/icons-vue'
+import { Plus, Search } from '@element-plus/icons-vue'
 import StarSwitch from '@/components/StarSwitch'
 import GitRepoCreateDialog from '@/components/Git/GitRepoCreateDialog'
 import { listGitRepo, collectGitRepo, getGitRepo } from '@/api/system/gitRepo'
@@ -110,7 +124,7 @@ function normalizeCollect(item) {
 
 export default {
   name: 'GitRepoSelect',
-  components: { StarSwitch, GitRepoCreateDialog, FolderOpened, Plus },
+  components: { StarSwitch, GitRepoCreateDialog, Plus },
   props: {
     repositoryId: {
       type: [Number, String],
@@ -140,6 +154,8 @@ export default {
       loading: false,
       keyword: '',
       searchTimer: null,
+      pageNum: 1,
+      pageSize: 10,
       repoList: [],
       currentRepo: {},
       createOpen: false,
@@ -188,6 +204,16 @@ export default {
           .toLowerCase()
         return hay.includes(kw)
       })
+    },
+    filteredTotal() {
+      return this.filteredList.length
+    },
+    pagedList() {
+      const size = this.pageSize || 10
+      const maxPage = Math.max(1, Math.ceil(this.filteredTotal / size) || 1)
+      const page = Math.min(Math.max(1, this.pageNum || 1), maxPage)
+      const start = (page - 1) * size
+      return this.filteredList.slice(start, start + size)
     }
   },
   watch: {
@@ -202,6 +228,10 @@ export default {
     },
     resolvedProjectId() {
       this.syncCurrentRepo()
+    },
+    filteredTotal(n) {
+      const maxPage = Math.max(1, Math.ceil((n || 0) / (this.pageSize || 10)) || 1)
+      if (this.pageNum > maxPage) this.pageNum = maxPage
     }
   },
   beforeUnmount() {
@@ -234,14 +264,18 @@ export default {
     },
     onPopoverShow() {
       this.keyword = ''
+      this.pageNum = 1
       this.loadList()
     },
     onPopoverHide() {
       this.keyword = ''
+      this.pageNum = 1
     },
     onSearchInput() {
       window.clearTimeout(this.searchTimer)
-      this.searchTimer = window.setTimeout(() => {}, 0)
+      this.searchTimer = window.setTimeout(() => {
+        this.pageNum = 1
+      }, 0)
     },
     normalizeRepoItem(item) {
       return {
@@ -441,12 +475,6 @@ export default {
   font-size: 16px;
 }
 
-.git-repo-select-folder {
-  flex-shrink: 0;
-  color: var(--text-color-secondary);
-  font-size: 18px;
-}
-
 .git-repo-select-name {
   flex: 0 1 auto;
   min-width: 0;
@@ -472,10 +500,26 @@ export default {
 }
 
 .git-repo-select-title {
-  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 5px 0 15px;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-color-primary);
+}
+
+.git-repo-select-title-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  display: block;
+}
+
+@at-root html.dark .git-repo-select-title-icon {
+  /* 原图为黑色描线，暗色下反相为浅色 */
+  filter: invert(1);
 }
 
 .git-repo-select-toolbar {
@@ -507,9 +551,27 @@ export default {
 }
 
 .git-repo-select-list {
-  max-height: 280px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
   min-height: 48px;
+}
+
+.git-repo-select-pager-divider {
+  margin: 8px 0 6px;
+
+  :deep(.el-divider--horizontal),
+  &.el-divider--horizontal {
+    border-top-color: var(--border-color-lighter, #f0f2f5);
+  }
+}
+
+.git-repo-select-pager {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 2px;
+  clear: both;
 }
 
 .git-repo-select-item {

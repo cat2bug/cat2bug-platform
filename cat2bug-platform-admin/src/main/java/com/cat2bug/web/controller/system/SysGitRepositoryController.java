@@ -158,6 +158,16 @@ public class SysGitRepositoryController extends BaseController
     }
 
     /**
+     * 项目下各仓库 ACL 成员去重预览（源码成员，非项目成员；pull 及以上权限）
+     */
+    @PreAuthorize("@ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/project/{projectId}/members")
+    public AjaxResult projectMembers(@PathVariable Long projectId)
+    {
+        return success(sysGitRepositoryService.selectProjectGitMembers(projectId));
+    }
+
+    /**
      * 关注 / 取消关注仓库（pull 及以上权限）
      */
     @PreAuthorize("@ss.hasPermi('system:git:repo:list') || @ss.hasPermi('system:git:repo:pull')")

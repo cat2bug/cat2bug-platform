@@ -285,6 +285,8 @@
   "project": "مشروع",
   "project.count": "إجمالي المشاريع",
   "project.select": "تبديل المشروع",
+  "project.select-search-placeholder": "البحث في المشاريع بالاسم",
+  "project.select-empty": "لا مشاريع مطابقة",
   "project.is-delete-project": "لا يمكن استعادة المشروع بعد الحذف، إذا كنت متأكدًا من الحذف، الرجاء إدخال كلمة المرور الخاصة بك لتسجيل الدخول، ثم انقر على زر \"حذف\".",
   "project.admin": "مسؤول",
   "project.collect-project": "متابعة المشروع",
