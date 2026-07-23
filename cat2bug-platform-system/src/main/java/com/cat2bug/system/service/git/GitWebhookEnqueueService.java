@@ -124,6 +124,76 @@ public class GitWebhookEnqueueService
         }
     }
 
+    /**
+     * 平台 API 创建 tag 成功后投递 create 事件（与 Smart HTTP push 创建 tag 同订阅与 payload 形状）。
+     */
+    public void onTagCreated(Long repositoryId, Long actorUserId, String tagName, ObjectId after)
+    {
+        try
+        {
+            SysGitRepository repo = repositoryMapper.selectSysGitRepositoryByRepositoryId(repositoryId);
+            if (repo == null || after == null)
+            {
+                return;
+            }
+            SysUser sender = loadUser(actorUserId);
+            List<SysGitRepositoryWebhook> hooks = webhookMapper.selectByRepositoryId(repositoryId);
+            if (hooks.isEmpty())
+            {
+                return;
+            }
+            String ref = tagName != null && tagName.startsWith("refs/tags/")
+                    ? tagName : "refs/tags/" + tagName;
+            String body = payloadBuilder.buildCreateTag(repo, sender, ref, after);
+            for (SysGitRepositoryWebhook hook : hooks)
+            {
+                if (GitWebhookPayloadBuilder.subscribes(hook, GitWebhookEventTypes.SUBSCRIPTION_TAG))
+                {
+                    deliveryService.deliverAsync(hook.getWebhookId(), GitWebhookEventTypes.GITHUB_CREATE, body);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            log.warn("Webhook tag create 入队失败：repositoryId={} {}", repositoryId, e.toString());
+        }
+    }
+
+    /**
+     * 平台 API 删除 tag 成功后投递 delete 事件。
+     */
+    public void onTagDeleted(Long repositoryId, Long actorUserId, String tagName)
+    {
+        try
+        {
+            SysGitRepository repo = repositoryMapper.selectSysGitRepositoryByRepositoryId(repositoryId);
+            if (repo == null)
+            {
+                return;
+            }
+            SysUser sender = loadUser(actorUserId);
+            List<SysGitRepositoryWebhook> hooks = webhookMapper.selectByRepositoryId(repositoryId);
+            if (hooks.isEmpty())
+            {
+                return;
+            }
+            String ref = tagName != null && tagName.startsWith("refs/tags/")
+                    ? tagName : "refs/tags/" + tagName;
+            String body = payloadBuilder.buildDeleteTag(repo, sender, ref);
+            for (SysGitRepositoryWebhook hook : hooks)
+            {
+                if (GitWebhookPayloadBuilder.subscribes(hook, GitWebhookEventTypes.SUBSCRIPTION_TAG))
+                {
+                    deliveryService.deliverAsync(hook.getWebhookId(), GitWebhookEventTypes.GITHUB_DELETE, body);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            log.warn("Webhook tag delete 入队失败：repositoryId={} {}", repositoryId, e.toString());
+        }
+    }
+
     private void dispatchBranchPush(SysGitRepository repo, SysUser sender, Repository git,
             List<SysGitRepositoryWebhook> hooks, String ref, ObjectId oldId, ObjectId newId) throws Exception
     {

@@ -9,6 +9,7 @@ import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.file.FileUtils;
 import com.cat2bug.system.domain.SysGitRepository;
+import com.cat2bug.system.domain.SysGitRelease;
 import com.cat2bug.system.git.browse.domain.GitBlobContent;
 import com.cat2bug.system.git.browse.domain.GitBranchInfo;
 import com.cat2bug.system.git.browse.domain.GitCommitChangeStats;
@@ -17,14 +18,19 @@ import com.cat2bug.system.git.browse.domain.GitCommitFileChange;
 import com.cat2bug.system.git.browse.domain.GitCommitInfo;
 import com.cat2bug.system.git.browse.domain.GitCommitParentRef;
 import com.cat2bug.system.git.browse.domain.GitContributorInfo;
+import com.cat2bug.system.git.browse.domain.GitTagInfo;
 import com.cat2bug.system.git.browse.domain.GitTreeEntryInfo;
 import com.cat2bug.system.git.browse.service.ISysGitBrowseService;
 import com.cat2bug.system.git.browse.support.GitContributorSupport;
 import com.cat2bug.system.git.browse.support.GitPatchHunkContextEnricher;
+import com.cat2bug.system.git.release.service.ISysGitReleaseService;
+import com.cat2bug.system.mapper.SysGitReleaseMapper;
 import com.cat2bug.system.mapper.SysGitRepositoryMapper;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.service.git.GitPathValidator;
 import com.cat2bug.system.service.git.GitRepositoryAccessService;
+import com.cat2bug.system.service.git.GitTagHelper;
+import com.cat2bug.system.service.git.GitWebhookEnqueueService;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.archive.ArchiveFormats;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -134,6 +140,18 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
 
     @Autowired
     private GitPathValidator gitPathValidator;
+
+    @Autowired
+    private GitTagHelper gitTagHelper;
+
+    @Autowired
+    private SysGitReleaseMapper sysGitReleaseMapper;
+
+    @Autowired
+    private ISysGitReleaseService sysGitReleaseService;
+
+    @Autowired
+    private GitWebhookEnqueueService gitWebhookEnqueueService;
 
     @Override
     public List<GitBranchInfo> listBranches(Long repositoryId)
@@ -290,6 +308,129 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
         }
         repo.setDefaultBranch(branchName);
         sysGitRepositoryMapper.updateSysGitRepository(repo);
+    }
+
+    @Override
+    public List<GitTagInfo> listTags(Long repositoryId, String nameFilter)
+    {
+        SysGitRepository repo = requireRepo(repositoryId);
+        assertPull(repo.getRepositoryId());
+        try
+        {
+            List<GitTagInfo> tags = gitTagHelper.listTags(repo.getDiskPath(), nameFilter);
+            List<SysGitRelease> releases =
+                    sysGitReleaseMapper.selectSysGitReleaseListByRepositoryId(repositoryId, false);
+            if (releases != null && !releases.isEmpty())
+            {
+                Map<String, Long> releaseByTag = new LinkedHashMap<>();
+                for (SysGitRelease release : releases)
+                {
+                    if (release != null && StringUtils.isNotBlank(release.getTagName())
+                            && release.getReleaseId() != null)
+                    {
+                        releaseByTag.putIfAbsent(release.getTagName(), release.getReleaseId());
+                    }
+                }
+                for (GitTagInfo tag : tags)
+                {
+                    Long releaseId = releaseByTag.get(tag.getName());
+                    if (releaseId != null)
+                    {
+                        tag.setReleaseId(releaseId);
+                    }
+                }
+            }
+            return tags;
+        }
+        catch (ServiceException e)
+        {
+            throw e;
+        }
+        catch (IOException e)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.browse.read-failed"), HttpStatus.ERROR);
+        }
+    }
+
+    @Override
+    public GitTagInfo createTag(Long repositoryId, String name, String message, String targetRef,
+            String targetCommitId)
+    {
+        SysGitRepository repo = requireRepo(repositoryId);
+        assertManage(repo.getRepositoryId());
+        try
+        {
+            ObjectId commitId = gitTagHelper.resolveTargetCommit(
+                    repo.getDiskPath(), targetCommitId, targetRef, repo.getDefaultBranch());
+            PersonIdent tagger = new PersonIdent(
+                    StringUtils.defaultIfBlank(SecurityUtils.getUsername(), "Cat2Bug"),
+                    "noreply@cat2bug.local");
+            GitTagInfo created = gitTagHelper.createAnnotatedTag(
+                    repo.getDiskPath(), name, message, commitId, tagger);
+            ObjectId tipId = StringUtils.isNotBlank(created.getCommitId())
+                    ? ObjectId.fromString(created.getCommitId()) : commitId;
+            gitWebhookEnqueueService.onTagCreated(
+                    repositoryId, SecurityUtils.getUserId(), created.getName(), tipId);
+            List<SysGitRelease> releases =
+                    sysGitReleaseMapper.selectSysGitReleaseListByRepositoryId(repositoryId, false);
+            if (releases != null)
+            {
+                for (SysGitRelease release : releases)
+                {
+                    if (release != null && created.getName().equals(release.getTagName()))
+                    {
+                        created.setReleaseId(release.getReleaseId());
+                        break;
+                    }
+                }
+            }
+            return created;
+        }
+        catch (ServiceException e)
+        {
+            throw e;
+        }
+        catch (IOException e)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.tag.create-failed"), HttpStatus.ERROR);
+        }
+    }
+
+    @Override
+    public void deleteTag(Long repositoryId, String name, Boolean cascadeRelease)
+    {
+        SysGitRepository repo = requireRepo(repositoryId);
+        assertManage(repo.getRepositoryId());
+        gitTagHelper.validateTagName(name);
+        String tagName = name.trim();
+        try
+        {
+            if (!gitTagHelper.tagExists(repo.getDiskPath(), tagName))
+            {
+                throw new ServiceException(MessageUtils.message("git.repo.tag.not-found"), HttpStatus.NOT_FOUND);
+            }
+            SysGitRelease bound = sysGitReleaseMapper.selectSysGitReleaseByRepositoryIdAndTagName(
+                    repositoryId, tagName);
+            if (bound != null)
+            {
+                if (!Boolean.TRUE.equals(cascadeRelease))
+                {
+                    throw new ServiceException(MessageUtils.message("git.repo.tag.cascade-required"),
+                            HttpStatus.CONFLICT);
+                }
+                sysGitReleaseService.deleteRelease(repositoryId, bound.getReleaseId());
+            }
+            gitTagHelper.deleteTag(repo.getDiskPath(), tagName);
+            gitWebhookEnqueueService.onTagDeleted(repositoryId, SecurityUtils.getUserId(), tagName);
+        }
+        catch (ServiceException e)
+        {
+            throw e;
+        }
+        catch (IOException e)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.tag.delete-failed"), HttpStatus.ERROR);
+        }
     }
 
     @Override

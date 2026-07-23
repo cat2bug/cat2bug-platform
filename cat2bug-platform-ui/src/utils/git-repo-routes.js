@@ -82,6 +82,11 @@ export function gitRepoBranchesRoute(routeOrCtx, query) {
 }
 
 /** @param {object} routeOrCtx @param {Record<string, string>} [query] */
+export function gitRepoTagsRoute(routeOrCtx, query) {
+  return withCtx('GitRepoTags', routeOrCtx, null, query)
+}
+
+/** @param {object} routeOrCtx @param {Record<string, string>} [query] */
 export function gitRepoPullsRoute(routeOrCtx, query) {
   return withCtx('GitRepoPullRequests', routeOrCtx, null, query)
 }

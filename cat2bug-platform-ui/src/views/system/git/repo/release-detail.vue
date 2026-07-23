@@ -45,7 +45,10 @@
       <main class="git-release-detail__main">
         <header class="git-release-detail__header">
           <div class="git-release-detail__header-text">
-            <h1 class="git-release-detail__title">{{ release.title || release.tagName }}</h1>
+            <h1 class="git-release-detail__title">
+              <git-release-icon class="git-release-detail__title-icon" />
+              <span>{{ release.title || release.tagName }}</span>
+            </h1>
             <div class="git-release-detail__publisher">
               <cat2-bug-avatar :member="publisherMember" :size="32" />
               <span>{{ publisherDisplayName }}</span>
@@ -136,6 +139,7 @@
 import { markRaw } from 'vue'
 import { Share, Document, Delete, Edit } from '@element-plus/icons-vue'
 import GitTagIcon from './GitTagIcon.vue'
+import GitReleaseIcon from './GitReleaseIcon.vue'
 import {
   getGitRepoRelease,
   delGitRepoRelease,
@@ -156,6 +160,7 @@ export default {
     Cat2BugAvatar,
     MarkdownRenderer,
     GitTagIcon,
+    GitReleaseIcon,
     Share,
     Document
   },
@@ -447,11 +452,20 @@ export default {
 }
 
 .git-release-detail__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0 0 10px;
   font-size: 28px;
   font-weight: 700;
   line-height: 1.25;
   color: var(--text-color-primary);
+}
+
+.git-release-detail__title-icon {
+  flex-shrink: 0;
+  font-size: 24px;
+  color: var(--text-color-secondary);
 }
 
 .git-release-detail__actions {

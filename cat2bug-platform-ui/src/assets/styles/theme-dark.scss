@@ -1881,13 +1881,41 @@ html.dark {
   .el-message-box {
     background-color: var(--dialog-bg) !important;
     border-color: var(--border-color-light) !important;
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.28),
+      0 16px 40px rgba(0, 0, 0, 0.36) !important;
 
     .el-message-box__title {
       color: var(--text-color-primary) !important;
     }
 
-    .el-message-box__content {
+    .el-message-box__content,
+    .el-message-box__message {
       color: var(--text-color-regular) !important;
+    }
+
+    .el-message-box__headerbtn:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .el-message-box__status {
+      &.el-message-box-icon--warning {
+        background: rgba(230, 162, 60, 0.18) !important;
+      }
+
+      &.el-message-box-icon--error,
+      &.el-message-box-icon--danger {
+        background: rgba(245, 108, 108, 0.18) !important;
+      }
+
+      &.el-message-box-icon--success {
+        background: rgba(103, 194, 58, 0.18) !important;
+      }
+
+      &.el-message-box-icon--info,
+      &.el-message-box-icon--primary {
+        background: rgba(255, 193, 7, 0.16) !important;
+      }
     }
 
     .el-message-box__btns .el-button#{$cat2bug-ep-default-button} {

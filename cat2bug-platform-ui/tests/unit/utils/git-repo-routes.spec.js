@@ -2,12 +2,14 @@ import {
   buildGitRepoClonePath,
   buildGitRepoSpaPath,
   gitRepoBrowseRoute,
+  gitRepoBranchesRoute,
   gitRepoCommitDetailRoute,
   gitRepoSettingsDangerRoute,
   gitRepoSettingsGeneralRoute,
   gitRepoSettingsMembersRoute,
   gitRepoSettingsRoute,
   gitRepoSettingsWebhooksRoute,
+  gitRepoTagsRoute,
   isGitCloneSlugParam,
   resolveBrowseActiveTab,
   resolveShellTabFromRoute,
@@ -36,6 +38,18 @@ describe('git-repo-routes', () => {
     expect(gitRepoCommitDetailRoute(ctx, 'abc123')).toEqual({
       name: 'GitRepoCommitDetail',
       params: { teamKey: 'acme', projectKey: 'demo', slug: 'backend', commitId: 'abc123' }
+    })
+  })
+
+  it('builds branches and tags named routes', () => {
+    const ctx = { teamKey: 'acme', projectKey: 'demo', slug: 'backend' }
+    expect(gitRepoBranchesRoute(ctx)).toEqual({
+      name: 'GitRepoBranches',
+      params: { teamKey: 'acme', projectKey: 'demo', slug: 'backend' }
+    })
+    expect(gitRepoTagsRoute(ctx)).toEqual({
+      name: 'GitRepoTags',
+      params: { teamKey: 'acme', projectKey: 'demo', slug: 'backend' }
     })
   })
 
@@ -81,5 +95,7 @@ describe('git-repo-routes', () => {
     expect(resolveShellTabFromRoute({ name: 'GitRepoPullRequests' })).toBe('pulls')
     expect(resolveShellTabFromRoute({ name: 'GitRepoBrowse', query: { tab: 'releases' } })).toBe('releases')
     expect(resolveShellTabFromRoute({ name: 'GitRepoBrowse', query: {} })).toBe('code')
+    expect(resolveShellTabFromRoute({ name: 'GitRepoBranches' })).toBe('code')
+    expect(resolveShellTabFromRoute({ name: 'GitRepoTags' })).toBe('code')
   })
 })

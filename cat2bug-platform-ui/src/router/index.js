@@ -20,6 +20,7 @@ const projectDashboardView = () => import('@/views/system/dashboard/index')
 const projectModulePlaceholder = () => import('@/views/system/project/module-placeholder')
 const gitRepoBrowseView = () => import('@/views/system/git/repo/browse')
 const gitRepoBranchesView = () => import('@/views/system/git/repo/branches')
+const gitRepoTagsView = () => import('@/views/system/git/repo/tags')
 const gitRepoPullsView = () => import('@/views/system/git/repo/pulls')
 const gitRepoPullNewView = () => import('@/views/system/git/repo/pull-new')
 const gitRepoPullDetailView = () => import('@/views/system/git/repo/pull-detail')
@@ -95,6 +96,18 @@ function buildGitCodeChildren() {
         ...codeMeta,
         title: i18n.global.t('git.repo.branches.title'),
         titleI18nKey: 'git.repo.branches.title',
+        breadcrumbParents: [...breadcrumbBase, browseCrumb]
+      }
+    },
+    {
+      path: 'code/:slug/tags',
+      name: 'GitRepoTags',
+      component: gitRepoTagsView,
+      beforeEnter: attachGitRepoIdFromSlug,
+      meta: {
+        ...codeMeta,
+        title: i18n.global.t('git.repo.tags.title'),
+        titleI18nKey: 'git.repo.tags.title',
         breadcrumbParents: [...breadcrumbBase, browseCrumb]
       }
     },
@@ -565,6 +578,19 @@ export const constantRoutes = [
         path: '',
         name: 'GitRepoBranchesLegacy',
         beforeEnter: createLegacyGitBrowseRedirect(() => '/branches'),
+        component: legacyGitRedirectStub
+      }
+    ]
+  },
+  {
+    path: '/project/git-repo/browse/:repositoryId(\\d+)/tags',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '',
+        name: 'GitRepoTagsLegacy',
+        beforeEnter: createLegacyGitBrowseRedirect(() => '/tags'),
         component: legacyGitRedirectStub
       }
     ]

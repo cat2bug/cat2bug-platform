@@ -45,7 +45,7 @@
       <el-tab-pane name="releases">
         <template #label>
           <span class="git-repo-shell__tab-label">
-            <git-tag-icon class="git-repo-shell__tab-tag" />
+            <git-release-icon class="git-repo-shell__tab-icon" />
             {{ $t('git.repo.aside.releases') }}
           </span>
         </template>
@@ -77,7 +77,7 @@ import {
   gitRepoSettingsGeneralRoute
 } from '@/utils/git-repo-routes'
 import { checkPermi } from '@/utils/permission'
-import GitTagIcon from './GitTagIcon.vue'
+import GitReleaseIcon from './GitReleaseIcon.vue'
 import GitRepoSelect from '@/components/Git/GitRepoSelect'
 
 /** 与 browse 页分支按钮同源图标 */
@@ -113,7 +113,7 @@ const SHELL_TABS = new Set(['code', 'pulls', 'releases', 'settings'])
 
 export default {
   name: 'GitRepoShell',
-  components: { GitBranchIcon, GitTagIcon, GitRepoSelect, Setting },
+  components: { GitBranchIcon, GitReleaseIcon, GitRepoSelect, Setting },
   emits: ['tab-click'],
   props: {
     repositoryId: {
@@ -158,7 +158,7 @@ export default {
       // API still loading or failed before resolve: keep permission-word compat
       return checkPermi(['system:git:repo:manage'])
     },
-    /** Map non-shell pages (branches / commits) onto the nearest primary tab */
+    /** Map non-shell pages (branches / tags / commits) onto the nearest primary tab */
     shellTab() {
       return SHELL_TABS.has(this.activeTab) ? this.activeTab : 'code'
     },
@@ -342,10 +342,6 @@ export default {
   width: 1em;
   height: 1em;
   flex-shrink: 0;
-}
-
-.git-repo-shell__tab-tag {
-  font-size: 14px;
 }
 
 .git-repo-shell__tab-count {

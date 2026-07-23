@@ -33,7 +33,7 @@
         <div v-if="defaultBranchInfo" class="git-branch-card git-branch-card--default">
           <div class="git-branch-card__main">
             <div class="git-branch-card__name">
-              <el-icon><ForkSpoon /></el-icon>
+              <git-branch-icon class="git-branch-card__icon" />
               <a
                 href="javascript:;"
                 class="git-branch-card__link"
@@ -44,6 +44,12 @@
             </div>
             <div class="git-branch-card__update" :title="lastUpdateTitle(defaultBranchInfo)">
               {{ lastUpdate(defaultBranchInfo) }}
+              <a
+                v-if="defaultBranchInfo.shortId"
+                href="javascript:;"
+                class="git-branch-card__sha is-link"
+                @click.prevent="openCommitDetail(defaultBranchInfo)"
+              >{{ defaultBranchInfo.shortId }}</a>
             </div>
           </div>
         </div>
@@ -61,7 +67,7 @@
           <div v-for="branch in branches" :key="branch.name" class="git-branch-card">
             <div class="git-branch-card__main">
               <div class="git-branch-card__name">
-                <el-icon><ForkSpoon /></el-icon>
+                <git-branch-icon class="git-branch-card__icon" />
                 <a
                   href="javascript:;"
                   class="git-branch-card__link"
@@ -74,7 +80,12 @@
               </div>
               <div class="git-branch-card__update" :title="lastUpdateTitle(branch)">
                 {{ lastUpdate(branch) }}
-                <span v-if="branch.shortId" class="git-branch-card__sha">{{ branch.shortId }}</span>
+                <a
+                  v-if="branch.shortId"
+                  href="javascript:;"
+                  class="git-branch-card__sha is-link"
+                  @click.prevent="openCommitDetail(branch)"
+                >{{ branch.shortId }}</a>
               </div>
             </div>
             <div class="git-branch-card__meta">
@@ -155,7 +166,8 @@
 </template>
 
 <script>
-import { ForkSpoon, MoreFilled, Plus, Search } from '@element-plus/icons-vue'
+import { h } from 'vue'
+import { MoreFilled, Plus, Search } from '@element-plus/icons-vue'
 import {
   createGitRepoBranch,
   delGitRepoBranch,
@@ -166,12 +178,41 @@ import {
 import { checkPermi } from '@/utils/permission'
 import { formatTime } from '@/utils/index'
 import { parseTime } from '@/utils/ruoyi'
-import { gitRepoBrowseRoute, gitRepoPullNewRoute } from '@/utils/git-repo-routes'
+import { gitRepoBrowseRoute, gitRepoCommitDetailRoute, gitRepoPullNewRoute } from '@/utils/git-repo-routes'
 import GitRepoShell from './GitRepoShell.vue'
+
+/** 与 browse / Shell 同源分支图标（render，避免 runtime template 空白） */
+const GitBranchIcon = {
+  name: 'GitBranchIcon',
+  render() {
+    return h(
+      'svg',
+      {
+        viewBox: '0 0 24 24',
+        width: '1em',
+        height: '1em',
+        fill: 'none',
+        stroke: 'currentColor',
+        'stroke-width': '2',
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+        'aria-hidden': 'true',
+        class: this.$attrs.class
+      },
+      [
+        h('circle', { cx: '6', cy: '5', r: '2.5' }),
+        h('circle', { cx: '6', cy: '19', r: '2.5' }),
+        h('circle', { cx: '18', cy: '7', r: '2.5' }),
+        h('path', { d: 'M6 7.5v9' }),
+        h('path', { d: 'M8.5 5.5h2a5 5 0 0 1 5 5' })
+      ]
+    )
+  }
+}
 
 export default {
   name: 'GitRepoBranches',
-  components: { ForkSpoon, MoreFilled, Plus, Search, GitRepoShell },
+  components: { GitBranchIcon, MoreFilled, Plus, Search, GitRepoShell },
   data() {
     return {
       repositoryId: null,
@@ -247,6 +288,15 @@ export default {
         ...gitRepoBrowseRoute(this.$route),
         query: { ref: branch.name }
       }).catch(() => {})
+    },
+    openCommitDetail(branch) {
+      if (!branch || !branch.shortId || !this.repositoryId) return
+      const route = gitRepoCommitDetailRoute(
+        this.$route,
+        branch.shortId,
+        branch.name ? { branch: branch.name } : undefined
+      )
+      this.$router.push(route).catch(() => {})
     },
     scheduleSearch() {
       window.clearTimeout(this.searchTimer)
@@ -425,14 +475,14 @@ export default {
 }
 
 .git-branch-list,
-.git-branch-card {
+.git-branch-card--default {
   border: 1px solid var(--border-color-light);
+  border-radius: 6px;
   background: var(--card-bg);
 }
 
 .git-branch-list {
   overflow: hidden;
-  border-radius: 6px;
 }
 
 .git-branch-card {
@@ -441,15 +491,14 @@ export default {
   justify-content: space-between;
   gap: 16px;
   padding: 14px 16px;
-  border-width: 0 0 1px;
+  background: var(--card-bg);
+}
+
+.git-branch-list .git-branch-card {
+  border-bottom: 1px solid var(--border-color-light);
 
   &:last-child {
     border-bottom: 0;
-  }
-
-  &--default {
-    border-width: 1px;
-    border-radius: 6px;
   }
 }
 
@@ -462,10 +511,12 @@ export default {
   gap: 7px;
   color: var(--text-color-primary);
   font-weight: 600;
+}
 
-  .el-icon {
-    color: var(--text-color-secondary);
-  }
+.git-branch-card__icon {
+  flex-shrink: 0;
+  color: var(--text-color-secondary);
+  font-size: 16px;
 }
 
 .git-branch-card__link {
@@ -491,7 +542,16 @@ export default {
 .git-branch-card__sha {
   margin-left: 8px;
   font-family: Menlo, Consolas, monospace;
-  color: var(--text-color-regular);
+  color: var(--el-color-primary);
+
+  &.is-link {
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
 .git-branch-card__meta {

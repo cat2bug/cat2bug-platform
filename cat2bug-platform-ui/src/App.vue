@@ -1,5 +1,9 @@
 <template>
-  <el-config-provider :locale="elementPlusLocale" :size="elementPlusSize">
+  <el-config-provider
+    :locale="elementPlusLocale"
+    :size="elementPlusSize"
+    :message="elementPlusMessage"
+  >
     <div id="app">
       <router-view />
       <theme-picker ghost />
@@ -15,6 +19,7 @@ import ThemePicker from '@/components/ThemePicker'
 import { pinia } from '@/store/pinia'
 import { useSettingsStore } from '@/stores/settings'
 import { useUserStore } from '@/stores/user'
+import { APP_MESSAGE_DEFAULTS } from '@/utils/app-message'
 
 export default {
   name: 'App',
@@ -22,7 +27,14 @@ export default {
   data() {
     return {
       wsUrl: null,
-      taskId: null
+      taskId: null,
+      elementPlusMessage: {
+        placement: APP_MESSAGE_DEFAULTS.placement,
+        showClose: APP_MESSAGE_DEFAULTS.showClose,
+        duration: APP_MESSAGE_DEFAULTS.duration,
+        offset: APP_MESSAGE_DEFAULTS.offset,
+        grouping: APP_MESSAGE_DEFAULTS.grouping
+      }
     }
   },
   computed: {

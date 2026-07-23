@@ -322,6 +322,33 @@ export function setGitRepoDefaultBranch(repositoryId, name) {
   })
 }
 
+// 查询仓库标签列表（pull 权限）；q 按名称子串过滤
+export function listGitRepoTags(repositoryId, q) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/tags',
+    method: 'get',
+    params: { q }
+  })
+}
+
+// 创建仓库标签（manage 权限）；body: { name, message?, targetRef?, targetCommitId? }
+export function createGitRepoTag(repositoryId, data) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/tags',
+    method: 'post',
+    data
+  })
+}
+
+// 删除仓库标签（manage 权限）；cascadeRelease 为 true 时级联删除同名发行版
+export function delGitRepoTag(repositoryId, name, cascadeRelease) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/tags/' + encodeURIComponent(name),
+    method: 'delete',
+    params: { cascadeRelease: !!cascadeRelease }
+  })
+}
+
 // 查询目录内容（pull 权限）
 export function listGitRepoTree(repositoryId, ref, path) {
   return request({

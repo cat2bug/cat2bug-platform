@@ -58,7 +58,8 @@ import DatePickerKbdPlugin from '@/plugins/date-picker-kbd'
 import DefectDrawerShortcutsPlugin from '@/plugins/defect-drawer-shortcuts'
 import WebSocketPlugin from '@/plugins/websocket'
 import VueExcelEditor from '@/vendor/vue-excel-editor'
-import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
+import { appNotify, showAppMessage, appMessageError, appMessageSuccess, appMessageWarning, appMessageInfo } from '@/utils/app-message'
 import { resolveLegacyIcon } from '@/utils/element-icon'
 import { bootstrapAuthenticatedRoutes } from '@/router/bootstrap'
 import { installKeyboardMixinBridges } from '@/composables/keyboard/installKeyboardMixinBridges'
@@ -143,8 +144,16 @@ async function mountApp() {
   app.config.globalProperties.download = download
   app.config.globalProperties.handleTree = handleTree
   app.config.globalProperties.$confirm = ElMessageBox.confirm
-  app.config.globalProperties.$notify = ElNotification
-  app.config.globalProperties.$message = ElMessage
+  app.config.globalProperties.$notify = appNotify
+  app.config.globalProperties.$message = Object.assign(
+    (content, options) => showAppMessage(content, options),
+    {
+      success: appMessageSuccess,
+      warning: appMessageWarning,
+      info: appMessageInfo,
+      error: appMessageError
+    }
+  )
   app.config.globalProperties.$legacyIcon = resolveLegacyIcon
   app.provide('elSize', Cookies.get('size') || 'medium')
 

@@ -6,6 +6,7 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.system.git.browse.domain.GitBranchCreateRequest;
 import com.cat2bug.system.git.browse.domain.GitBranchNameRequest;
+import com.cat2bug.system.git.browse.domain.GitTagCreateRequest;
 import com.cat2bug.system.git.browse.service.ISysGitBrowseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -70,6 +71,42 @@ public class SysGitBrowseController extends BaseController
             @RequestBody GitBranchNameRequest body)
     {
         gitBrowseService.setDefaultBranch(repositoryId, body.getName());
+        return success();
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/system/git/repo/{repositoryId}/tags")
+    public AjaxResult tags(
+            @PathVariable Long repositoryId,
+            @RequestParam(required = false) String q)
+    {
+        return success(gitBrowseService.listTags(repositoryId, q));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage')")
+    @Log(title = "Git标签", businessType = BusinessType.INSERT)
+    @PostMapping("/system/git/repo/{repositoryId}/tags")
+    public AjaxResult createTag(
+            @PathVariable Long repositoryId,
+            @RequestBody GitTagCreateRequest body)
+    {
+        return success(gitBrowseService.createTag(
+                repositoryId,
+                body.getName(),
+                body.getMessage(),
+                body.getTargetRef(),
+                body.getTargetCommitId()));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:manage')")
+    @Log(title = "Git标签", businessType = BusinessType.DELETE)
+    @DeleteMapping("/system/git/repo/{repositoryId}/tags/{name:.+}")
+    public AjaxResult deleteTag(
+            @PathVariable Long repositoryId,
+            @PathVariable String name,
+            @RequestParam(required = false) Boolean cascadeRelease)
+    {
+        gitBrowseService.deleteTag(repositoryId, name, cascadeRelease);
         return success();
     }
 

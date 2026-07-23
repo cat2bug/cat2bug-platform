@@ -31,6 +31,7 @@ describe('git-repo-route-guards', () => {
     it('matches browse and nested slug routes', () => {
       expect(routeNeedsGitRepoId({ name: 'GitRepoBrowse' })).toBe(true)
       expect(routeNeedsGitRepoId({ name: 'GitRepoBranches' })).toBe(true)
+      expect(routeNeedsGitRepoId({ name: 'GitRepoTags' })).toBe(true)
       expect(routeNeedsGitRepoId({ name: 'GitRepoCommitDetail' })).toBe(true)
       expect(routeNeedsGitRepoId({ name: 'GitRepoSettings' })).toBe(true)
       expect(routeNeedsGitRepoId({ name: 'GitRepoSettingsGeneral' })).toBe(true)
@@ -43,6 +44,7 @@ describe('git-repo-route-guards', () => {
 
     it('lists all slug route names', () => {
       expect(GIT_REPO_SLUG_ROUTE_NAMES.has('GitRepoBrowse')).toBe(true)
+      expect(GIT_REPO_SLUG_ROUTE_NAMES.has('GitRepoTags')).toBe(true)
       expect(GIT_REPO_SLUG_ROUTE_NAMES.has('GitRepoSettingsGeneral')).toBe(true)
       expect(GIT_REPO_SLUG_ROUTE_NAMES.has('GitRepoSettingsMembers')).toBe(true)
       expect(GIT_REPO_SLUG_ROUTE_NAMES.has('GitRepoSettingsWebhooks')).toBe(true)

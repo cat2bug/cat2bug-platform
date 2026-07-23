@@ -7,6 +7,7 @@ import { gitRepoBrowseRoute, isGitCloneSlugParam } from '@/utils/git-repo-routes
 export const GIT_REPO_SLUG_ROUTE_NAMES = new Set([
   'GitRepoBrowse',
   'GitRepoBranches',
+  'GitRepoTags',
   'GitRepoPullRequests',
   'GitRepoPullRequestNew',
   'GitRepoPullRequestDetail',

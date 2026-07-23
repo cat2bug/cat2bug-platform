@@ -287,7 +287,11 @@
                 <el-icon class="git-browse-meta-chip-icon">
                   <git-branch-icon />
                 </el-icon>
-                {{ $t('git.repo.branch-count', { n: branches.length }) }}
+                <span>{{ $t('git.repo.branch') }}</span>
+              </el-button>
+              <el-button plain size="small" class="git-browse-meta-chip" @click="openTagsPage">
+                <git-tag-icon class="git-browse-meta-chip-icon" />
+                <span>{{ $t('git.repo.tags.title') }}</span>
               </el-button>
             </template>
           </div>
@@ -647,7 +651,10 @@
                 class="git-aside-release-title"
                 :title="r.title"
                 @click.prevent="openReleaseDetail(r)"
-              >{{ r.title || r.tagName }}</a>
+              >
+                <git-release-icon class="git-aside-release-icon" />
+                <span class="git-aside-release-title-text">{{ r.title || r.tagName }}</span>
+              </a>
               <div class="git-aside-release-meta">
                 <span class="git-aside-release-tag">{{ r.tagName }}</span>
                 <span class="git-aside-release-sep">·</span>
@@ -711,7 +718,10 @@
 
     <div v-show="!selectedCommitId && activeTab === 'releases'" class="git-browse-releases">
       <div class="git-browse-releases__toolbar">
-        <h2 class="git-browse-releases__heading">{{ $t('git.repo.aside.releases') }}</h2>
+        <h2 class="git-browse-releases__heading">
+          <git-release-icon class="git-browse-releases__heading-icon" />
+          {{ $t('git.repo.aside.releases') }}
+        </h2>
         <el-button
           v-if="canManageGitRepo"
           type="primary"
@@ -884,6 +894,7 @@ import {
   gitRepoBrowseRoute,
   gitRepoBranchesRoute,
   gitRepoReleaseDetailRoute,
+  gitRepoTagsRoute,
   resolveBrowseActiveTab
 } from '@/utils/git-repo-routes'
 import { listMemberOfProject } from '@/api/system/project'
@@ -893,6 +904,8 @@ import GitRepoMarkdown from './GitRepoMarkdown.vue'
 import GitRepoReleaseDetailPanel from './release-detail.vue'
 import GitRepoCommitDetailPanel from './commit-detail.vue'
 import GitRepoShell from './GitRepoShell.vue'
+import GitTagIcon from './GitTagIcon.vue'
+import GitReleaseIcon from './GitReleaseIcon.vue'
 import { extractHeadings } from '@/components/Report/annotation/report-toc'
 import { useUserStore } from '@/stores/user'
 import { checkPermi } from '@/utils/permission'
@@ -961,7 +974,9 @@ export default {
     GitRepoReleaseDetailPanel,
     GitRepoCommitDetailPanel,
     GitRepoShell,
-    GitBranchIcon
+    GitBranchIcon,
+    GitTagIcon,
+    GitReleaseIcon
   },
   data() {
     return {
@@ -1360,6 +1375,10 @@ export default {
       if (!this.repositoryId) return
       this.$router.push(gitRepoBranchesRoute(this.$route)).catch(() => {})
     },
+    openTagsPage() {
+      if (!this.repositoryId) return
+      this.$router.push(gitRepoTagsRoute(this.$route)).catch(() => {})
+    },
     /** Remembered / displayed branch (never silently snap to default) */
     currentBrowseBranch() {
       return resolveBrowseBranchName([
@@ -1425,6 +1444,63 @@ export default {
         this.loadCommitFilterContributors()
         this.loadCommits()
       }
+      this.maybeOpenCreateReleaseFromQuery()
+    },
+    /**
+     * Tags page → browse with ?createRelease=1&tagName=… opens release create dialog prefilled.
+     */
+    maybeOpenCreateReleaseFromQuery() {
+      if (this.$route.name !== 'GitRepoBrowse') return
+      const q = this.$route.query || {}
+      const createFlag = q.createRelease === '1' || q.createRelease === 'true'
+      const tagName = q.tagName ? String(q.tagName).trim() : ''
+      if (!createFlag || !tagName) return
+      if (!this.canManageGitRepo) return
+
+      const openDialog = () => {
+        this.editingReleaseId = null
+        this.createReleaseForm = {
+          tagName,
+          title: tagName,
+          body: '',
+          // Must be a real branch (dropdown options), never the tag name
+          targetRef: this.resolveReleaseTargetBranch(),
+          draft: 0
+        }
+        this.createReleaseAssetList = []
+        this.createReleaseVisible = true
+        const nextQuery = { ...this.$route.query }
+        delete nextQuery.createRelease
+        delete nextQuery.tagName
+        if (!nextQuery.tab) nextQuery.tab = 'releases'
+        this.$router.replace(gitRepoBrowseRoute(this.$route, nextQuery)).catch(() => {})
+      }
+
+      if ((this.branches || []).length) {
+        openDialog()
+        return
+      }
+      listGitRepoBranches(this.repositoryId).then(response => {
+        this.branches = response.data || []
+      }).catch(() => {
+        this.branches = []
+      }).finally(() => {
+        openDialog()
+      })
+    },
+    /** Prefer current/default branch when it exists in branch list; else first branch. */
+    resolveReleaseTargetBranch() {
+      const list = this.branches || []
+      const names = list.map(b => b && b.name).filter(Boolean)
+      const preferred = [this.currentRef, this.defaultBranch]
+        .map(v => (v == null ? '' : String(v).trim()))
+        .filter(Boolean)
+      for (const name of preferred) {
+        if (names.includes(name)) return name
+      }
+      const liveDefault = list.find(b => b && b.default)
+      if (liveDefault && liveDefault.name) return liveDefault.name
+      return names[0] || ''
     },
     syncReleaseRouteFromParams() {
       const releaseId = this.$route.params.releaseId
@@ -1611,7 +1687,7 @@ export default {
     openCreateRelease() {
       if (!this.canManageGitRepo) return
       this.editingReleaseId = null
-      this.createReleaseForm.targetRef = this.currentRef || this.defaultBranch || ''
+      this.createReleaseForm.targetRef = this.resolveReleaseTargetBranch()
       this.createReleaseAssetList = []
       this.createReleaseVisible = true
     },
@@ -1622,7 +1698,7 @@ export default {
         tagName: release.tagName || '',
         title: release.title || '',
         body: release.body || '',
-        targetRef: this.currentRef || this.defaultBranch || '',
+        targetRef: this.resolveReleaseTargetBranch(),
         draft: release.draft === 1 ? 1 : 0
       }
       this.createReleaseAssetList = []
@@ -1634,7 +1710,7 @@ export default {
         tagName: '',
         title: '',
         body: '',
-        targetRef: this.currentRef || this.defaultBranch || '',
+        targetRef: this.resolveReleaseTargetBranch(),
         draft: 0
       }
       this.createReleaseAssetList = []
@@ -2577,6 +2653,11 @@ export default {
   align-items: center;
   gap: var(--cat2bug-toolbar-item-gap, 10px);
   flex-wrap: wrap;
+
+  /* EP/Element 默认 .el-button+.el-button margin 会叠在 flex gap 上，导致两按钮间距偏大 */
+  .el-button + .el-button {
+    margin-left: 0;
+  }
 }
 
 .git-browse-branch-select {
@@ -2679,7 +2760,7 @@ export default {
 .git-browse-meta-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   height: var(--cat2bug-toolbar-control-height, 32px);
   padding: 0 12px;
   font-size: 13px;
@@ -2688,6 +2769,25 @@ export default {
   &:hover {
     color: var(--el-color-primary);
     border-color: var(--el-color-primary);
+  }
+
+  /* 外描边会被 browse 页 overflow:hidden 裁掉上边；改用 inset */
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
+    border-color: var(--border-color-base, #dcdfe6) !important;
+    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, var(--el-color-primary, #409eff)) inset !important;
+  }
+
+  /* 自定义图标（非 el-icon 包裹）也走统一间距，避免与 EP margin 叠加倍增 */
+  .git-browse-meta-chip-icon,
+  > .el-icon {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  [class*=el-icon] + span {
+    margin-left: 0 !important;
   }
 }
 
@@ -3551,11 +3651,10 @@ export default {
 }
 
 .git-aside-release-title {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: 14px;
   font-weight: 600;
   color: var(--el-color-primary, #ffc107);
@@ -3564,6 +3663,19 @@ export default {
   &:hover {
     text-decoration: underline;
   }
+}
+
+.git-aside-release-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--text-color-secondary);
+}
+
+.git-aside-release-title-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .git-aside-release-meta {
@@ -3773,10 +3885,18 @@ export default {
 }
 
 .git-browse-releases__heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   font-size: 20px;
   font-weight: 600;
   color: var(--text-color-primary);
+}
+
+.git-browse-releases__heading-icon {
+  font-size: 20px;
+  color: var(--text-color-secondary);
 }
 
 .git-browse-releases__timeline {

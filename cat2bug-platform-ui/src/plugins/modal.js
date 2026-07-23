@@ -1,5 +1,12 @@
-import { Message, MessageBox, Notification, Loading } from '@/shims/element-ui'
+import { MessageBox, Loading } from '@/shims/element-ui'
 import i18n from '@/utils/i18n/i18n'
+import {
+  appMessageInfo,
+  appMessageError,
+  appMessageSuccess,
+  appMessageWarning,
+  appNotify
+} from '@/utils/app-message'
 
 const t = (key) => i18n.global.t(key)
 
@@ -8,16 +15,16 @@ let loadingCount = 0
 
 export default {
   msg(content) {
-    Message.info(content)
+    appMessageInfo(content)
   },
   msgError(content) {
-    Message.error(content)
+    appMessageError(content)
   },
   msgSuccess(content) {
-    Message.success(content)
+    appMessageSuccess(content)
   },
   msgWarning(content) {
-    Message.warning(content)
+    appMessageWarning(content)
   },
   alert(content) {
     MessageBox.alert(content, t('prompted').toString())
@@ -32,16 +39,16 @@ export default {
     MessageBox.alert(content, t('prompted').toString(), { type: 'warning' })
   },
   notify(content) {
-    Notification.info(content)
+    appNotify(typeof content === 'string' ? content : { ...content, type: content.type || 'info' })
   },
   notifyError(content) {
-    Notification.error(content)
+    appNotify.error(content)
   },
   notifySuccess(content) {
-    Notification.success(content)
+    appNotify.success(content)
   },
   notifyWarning(content) {
-    Notification.warning(content)
+    appNotify.warning(content)
   },
   confirm(content, title, options) {
     return MessageBox.confirm(content, title || t('prompted').toString(), options || {

@@ -5,6 +5,7 @@ import com.cat2bug.system.git.browse.domain.GitBranchInfo;
 import com.cat2bug.system.git.browse.domain.GitCommitDetail;
 import com.cat2bug.system.git.browse.domain.GitCommitInfo;
 import com.cat2bug.system.git.browse.domain.GitContributorInfo;
+import com.cat2bug.system.git.browse.domain.GitTagInfo;
 import com.cat2bug.system.git.browse.domain.GitTreeEntryInfo;
 
 import java.util.List;
@@ -31,6 +32,28 @@ public interface ISysGitBrowseService
     void deleteBranch(Long repositoryId, String name);
 
     void setDefaultBranch(Long repositoryId, String name);
+
+    /**
+     * 列出仓库 Git 标签（pull）。
+     *
+     * @param nameFilter 按标签名包含匹配（不区分大小写），为空时返回全部
+     */
+    List<GitTagInfo> listTags(Long repositoryId, String nameFilter);
+
+    /**
+     * 创建 annotated 标签（manage）。
+     *
+     * @param message         描述，允许 null/空串
+     * @param targetRef       分支或其他可解析 ref
+     * @param targetCommitId  显式 commit id（优先于 targetRef）
+     */
+    GitTagInfo createTag(Long repositoryId, String name, String message, String targetRef, String targetCommitId);
+
+    /**
+     * 删除标签（manage）。若存在同名发行版且 {@code cascadeRelease} 不为 true，则 409；
+     * 为 true 时先按发行版删除路径清理附件与 DB，再删 tag。
+     */
+    void deleteTag(Long repositoryId, String name, Boolean cascadeRelease);
 
     /**
      * @param ref  分支/tag/commit-ish，为空时使用仓库默认分支

@@ -1,10 +1,10 @@
 import axios from 'axios'
-import { Message } from '@/shims/element-ui'
 import { saveAs } from 'file-saver'
 import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
 import { blobValidate } from "@/utils/ruoyi";
 import {setHeader} from "@/utils/request";
+import { appMessageError } from '@/utils/app-message'
 
 const baseURL = process.env.VUE_APP_BASE_API
 
@@ -73,7 +73,7 @@ export default {
     const resText = await data.text();
     const rspObj = JSON.parse(resText);
     const errMsg = errorCode[rspObj.code] || rspObj.msg || errorCode['default']
-    Message.error(errMsg);
+    appMessageError(errMsg);
   }
 }
 

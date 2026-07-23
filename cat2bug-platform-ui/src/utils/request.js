@@ -1,6 +1,7 @@
 import axios from 'axios'
 import {md5} from 'js-md5'
-import { ElNotification, ElMessageBox, ElMessage, ElLoading } from 'element-plus'
+import { ElMessageBox, ElLoading } from 'element-plus'
+import { appMessageError, appMessageWarning } from '@/utils/app-message'
 import { pinia } from '@/store/pinia.js'
 import { useUserStore } from '@/stores/user'
 import { getToken } from '@/utils/auth'
@@ -153,11 +154,11 @@ service.interceptors.response.use(res => {
       }
       const silent = res.config.silentError === true
       if (!silent) {
-        ElMessage({ message: msg, type: 'error' })
+        appMessageError(msg)
       }
       return silent ? Promise.reject(res.data) : Promise.reject(new Error(msg))
     } else if (code === 601) {
-      ElMessage({ message: msg, type: 'warning' })
+      appMessageWarning(msg)
       return Promise.reject('error')
     } else if (code !== 200) {
       const rawMsg = (res.data && res.data.msg) || msg
@@ -167,7 +168,7 @@ service.interceptors.response.use(res => {
       }
       const silent = res.config.silentError === true
       if (!silent) {
-        ElNotification.error({ title: msg })
+        appMessageError(msg)
       }
       return Promise.reject(silent ? res.data : 'error')
     } else {
@@ -186,7 +187,7 @@ service.interceptors.response.use(res => {
     }
     const silent = error.config && error.config.silentError === true
     if (!silent) {
-      ElMessage({ message: message, type: 'error', duration: 5 * 1000 })
+      appMessageError(message, { duration: 5 * 1000 })
     }
     return Promise.reject(silent ? { msg: message } : error)
   }
@@ -235,12 +236,12 @@ export function download(url, params, filename, config) {
       const resText = await data.text();
       const rspObj = JSON.parse(resText);
       const errMsg = errorCode[rspObj.code] || rspObj.msg || errorCode['default']
-      ElMessage.error(errMsg);
+      appMessageError(errMsg);
     }
     downloadLoadingInstance.close();
   }).catch((r) => {
     console.error(r)
-    ElMessage.error(i18n.global.t('http.download-fail').toString())
+    appMessageError(i18n.global.t('http.download-fail').toString())
     downloadLoadingInstance.close();
   })
 }
