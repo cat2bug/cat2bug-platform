@@ -1849,6 +1849,7 @@
   "git.repo.resize-toc": "اسحب لتغيير عرض المحتويات",
   "git.repo.select": "اختر مستودعاً",
   "git.repo.select-branch": "اختر فرعاً",
+  "git.repo.browsing-commit": "تصفح الالتزام {id}",
   "git.repo.select-empty": "لا مستودعات مطابقة",
   "git.repo.select-search-placeholder": "البحث في المستودعات بالاسم",
   "git.repo.settings": "الإعدادات",

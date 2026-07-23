@@ -25,6 +25,26 @@
       >
         <el-icon :size="18"><ArrowLeft /></el-icon>
       </el-button>
+      <span v-if="displayBranch" class="git-commit-detail__branch" :title="displayBranch">
+        <svg
+          class="git-commit-detail__branch-icon"
+          viewBox="0 0 24 24"
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="6" y1="3" x2="6" y2="15" />
+          <circle cx="18" cy="6" r="3" />
+          <circle cx="6" cy="18" r="3" />
+          <path d="M18 9a9 9 0 0 1-9 9" />
+        </svg>
+        <span class="git-commit-detail__branch-name">{{ displayBranch }}</span>
+      </span>
       <code v-if="commit" class="git-commit-detail__short-id">{{ commit.shortId || shortId(commit.id) }}</code>
       <span class="git-commit-detail__embed-hint">{{ $t('git.repo.commit.detail-title') }}</span>
     </div>
@@ -46,8 +66,10 @@
             <cat2-bug-avatar :member="authorMember" :size="32" />
             <span class="git-commit-detail__author">{{ commit.authorName || '-' }}</span>
             <span v-if="commit.authorEmail" class="git-commit-detail__email">&lt;{{ commit.authorEmail }}&gt;</span>
-            <span class="git-commit-detail__time">{{ absoluteTime(commit.commitTime) }}</span>
-            <span class="git-commit-detail__rel">{{ relativeTime(commit.commitTime) }}</span>
+            <span
+              class="git-commit-detail__time"
+              :title="relativeTime(commit.commitTime) || undefined"
+            >{{ absoluteTime(commit.commitTime) }}</span>
           </div>
           <div
             v-if="showCommitter"
@@ -110,13 +132,35 @@
               <ArrowRight v-if="!expandedFiles[idx]" />
               <ArrowDown v-else />
             </el-icon>
-            <span class="git-commit-detail__file-type">{{ file.changeType }}</span>
-            <span class="git-commit-detail__file-path" :title="file.path">{{ file.path }}</span>
-            <span v-if="file.oldPath" class="git-commit-detail__file-old">{{ file.oldPath }}</span>
             <span class="git-commit-detail__file-stats">
-              <span v-if="file.additions" class="git-commit-detail__stat-add">+{{ file.additions }}</span>
-              <span v-if="file.deletions" class="git-commit-detail__stat-del">-{{ file.deletions }}</span>
+              <span
+                v-if="file.additions"
+                class="git-commit-detail__stat-add"
+              >+{{ file.additions }}</span>
+              <span
+                v-if="file.deletions"
+                class="git-commit-detail__stat-del"
+              >-{{ file.deletions }}</span>
+              <span
+                v-if="!file.additions && !file.deletions"
+                class="git-commit-detail__file-type"
+              >{{ file.changeType }}</span>
             </span>
+            <span class="git-commit-detail__file-path" :title="fileDisplayPath(file)">
+              <template v-if="file.oldPath && file.oldPath !== file.path">
+                <span class="git-commit-detail__file-old">{{ file.oldPath }}</span>
+                <span class="git-commit-detail__file-arrow">→</span>
+              </template>
+              {{ file.path }}
+            </span>
+            <el-button
+              class="git-commit-detail__file-copy"
+              size="small"
+              link
+              :icon="CopyDocument"
+              :title="$t('git.repo.copy-path')"
+              @click.stop="copyFilePath(file.path)"
+            />
           </div>
           <div v-show="expandedFiles[idx]" class="git-commit-detail__file-body">
             <div v-if="file.binary" class="git-commit-detail__placeholder">
@@ -151,7 +195,8 @@
 </template>
 
 <script>
-import { Share, ArrowDown, ArrowRight, ArrowLeft } from '@element-plus/icons-vue'
+import { Share, ArrowDown, ArrowRight, ArrowLeft, CopyDocument } from '@element-plus/icons-vue'
+import { markRaw } from 'vue'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import { getGitRepo, getGitRepoCommit, gitRepoCommitDetailRoute } from '@/api/system/gitRepo'
 import { gitRepoBrowseRoute } from '@/utils/git-repo-routes'
@@ -167,9 +212,10 @@ export default {
     Share,
     ArrowDown,
     ArrowRight,
-    ArrowLeft
+    ArrowLeft,
+    CopyDocument
   },
-  emits: ['back'],
+  emits: ['back', 'browse-files'],
   props: {
     embedded: {
       type: Boolean,
@@ -190,10 +236,16 @@ export default {
     projectMembers: {
       type: Array,
       default: null
+    },
+    /** Branch context when opening from history (also read from ?branch=) */
+    branch: {
+      type: String,
+      default: ''
     }
   },
   data() {
     return {
+      CopyDocument: markRaw(CopyDocument),
       loading: false,
       loadError: '',
       localRepoName: '',
@@ -205,6 +257,12 @@ export default {
     }
   },
   computed: {
+    displayBranch() {
+      const fromProp = this.branch != null ? String(this.branch).trim() : ''
+      if (fromProp) return fromProp
+      const q = this.$route.query && this.$route.query.branch
+      return q != null && String(q).trim() !== '' ? String(q).trim() : ''
+    },
     resolvedRepositoryId() {
       if (this.repositoryId != null && this.repositoryId !== '') {
         return this.repositoryId
@@ -312,21 +370,33 @@ export default {
         email: email || undefined
       }
     },
+    rememberedBranch() {
+      return this.displayBranch
+    },
     parentRoute(parentId) {
-      return gitRepoCommitDetailRoute(this.$route, parentId)
+      const branch = this.rememberedBranch()
+      return gitRepoCommitDetailRoute(this.$route, parentId, branch ? { branch } : undefined)
     },
     goBackToCommits() {
       if (this.embedded) {
         this.$emit('back')
       }
-      this.$router.push(gitRepoBrowseRoute(this.$route, { tab: 'commits' })).catch(() => {})
+      const query = { tab: 'commits' }
+      const branch = this.rememberedBranch()
+      if (branch) query.branch = branch
+      this.$router.push(gitRepoBrowseRoute(this.$route, query)).catch(() => {})
     },
     browseFilesAtCommit() {
       const ref = (this.commit && this.commit.id) || this.resolvedCommitId
-      this.$router.push(gitRepoBrowseRoute(this.$route, {
-        ref,
-        tab: 'code'
-      })).catch(() => {})
+      if (!ref) return
+      if (this.embedded) {
+        this.$emit('browse-files', ref)
+        return
+      }
+      const query = { ref: String(ref), tab: 'code' }
+      const branch = this.rememberedBranch()
+      if (branch) query.branch = branch
+      this.$router.push(gitRepoBrowseRoute(this.$route, query)).catch(() => {})
     },
     loadProjectMembers(projectId) {
       if (!projectId) {
@@ -393,6 +463,47 @@ export default {
       const next = !this.expandedFiles[idx]
       this.expandedFiles = { ...this.expandedFiles, [idx]: next }
     },
+    fileDisplayPath(file) {
+      if (!file) return ''
+      if (file.oldPath && file.path && file.oldPath !== file.path) {
+        return `${file.oldPath} → ${file.path}`
+      }
+      return file.path || file.oldPath || ''
+    },
+    copyFilePath(path) {
+      const text = path != null ? String(path).trim() : ''
+      if (!text) {
+        this.$modal.msgWarning(this.$t('git.repo.copy-path-empty'))
+        return
+      }
+      const onOk = () => this.$modal.msgSuccess(this.$t('git.repo.copy-success'))
+      const onFail = () => this.$modal.msgError(this.$t('git.repo.copy-failed'))
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(onOk).catch(() => {
+          if (this.copyTextFallback(text)) onOk()
+          else onFail()
+        })
+        return
+      }
+      if (this.copyTextFallback(text)) onOk()
+      else onFail()
+    },
+    copyTextFallback(text) {
+      try {
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.setAttribute('readonly', '')
+        ta.style.position = 'fixed'
+        ta.style.left = '-9999px'
+        document.body.appendChild(ta)
+        ta.select()
+        const ok = document.execCommand('copy')
+        document.body.removeChild(ta)
+        return ok
+      } catch (e) {
+        return false
+      }
+    },
     buildPatchRows(patch) {
       if (!patch) return []
       const text = String(patch)
@@ -418,8 +529,8 @@ export default {
           rows.push({ text: line, cls, oldNo: '', newNo: '' })
           continue
         }
+        // Skip raw git headers (diff --git / index / --- +++ / mode …)
         if (cls === 'is-meta' || !inHunk) {
-          rows.push({ text: line, cls, oldNo: '', newNo: '' })
           continue
         }
         if (cls === 'is-add') {
@@ -444,11 +555,29 @@ export default {
       return rows
     },
     patchLineClass(line) {
-      if (!line) return 'is-context'
-      if (line.startsWith('+++') || line.startsWith('---')) return 'is-meta'
+      if (line == null) return 'is-context'
       if (line.startsWith('@@')) return 'is-hunk'
-      if (line.startsWith('+')) return 'is-add'
-      if (line.startsWith('-')) return 'is-del'
+      if (line.startsWith('+') && !line.startsWith('+++')) return 'is-add'
+      if (line.startsWith('-') && !line.startsWith('---')) return 'is-del'
+      if (
+        line.startsWith('diff --git') ||
+        line.startsWith('index ') ||
+        line.startsWith('---') ||
+        line.startsWith('+++') ||
+        line.startsWith('new file mode') ||
+        line.startsWith('deleted file mode') ||
+        line.startsWith('old mode') ||
+        line.startsWith('new mode') ||
+        line.startsWith('similarity index') ||
+        line.startsWith('rename from') ||
+        line.startsWith('rename to') ||
+        line.startsWith('copy from') ||
+        line.startsWith('copy to') ||
+        line.startsWith('Binary files') ||
+        line.startsWith('\\')
+      ) {
+        return 'is-meta'
+      }
       return 'is-context'
     }
   }
@@ -480,6 +609,33 @@ export default {
   align-items: center;
   gap: 10px;
   margin-bottom: 12px;
+  min-width: 0;
+}
+
+.git-commit-detail__branch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 220px;
+  min-width: 0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text-color-regular);
+  background: var(--el-fill-color-light, rgba(144, 147, 153, 0.12));
+  border: 1px solid var(--border-color-lighter, var(--border-color-light));
+  box-sizing: border-box;
+}
+
+.git-commit-detail__branch-icon {
+  flex-shrink: 0;
+  color: var(--text-color-secondary);
+}
+
+.git-commit-detail__branch-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .git-commit-detail__back-list {
@@ -589,7 +745,6 @@ export default {
 
 .git-commit-detail__email,
 .git-commit-detail__time,
-.git-commit-detail__rel,
 .git-commit-detail__committer {
   color: var(--text-color-secondary);
   font-size: 13px;
@@ -681,17 +836,29 @@ export default {
   color: var(--text-color-secondary);
 }
 
+.git-commit-detail__file-stats {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 4.5em;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 600;
+}
+
 .git-commit-detail__file-type {
   flex-shrink: 0;
   font-size: 12px;
   text-transform: uppercase;
   color: var(--text-color-secondary);
+  font-weight: 500;
 }
 
 .git-commit-detail__file-path {
   flex: 1;
   min-width: 0;
-  font-family: ui-monospace, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 13px;
   color: var(--text-color-primary);
   overflow: hidden;
@@ -700,16 +867,23 @@ export default {
 }
 
 .git-commit-detail__file-old {
-  font-size: 12px;
   color: var(--text-color-placeholder);
+  text-decoration: line-through;
 }
 
-.git-commit-detail__file-stats {
+.git-commit-detail__file-arrow {
+  margin: 0 4px;
+  color: var(--text-color-secondary);
+}
+
+.git-commit-detail__file-copy {
   flex-shrink: 0;
-  display: flex;
-  gap: 6px;
-  font-size: 12px;
-  font-family: ui-monospace, monospace;
+  margin-left: auto;
+  color: var(--text-color-secondary);
+
+  &:hover {
+    color: var(--el-color-primary);
+  }
 }
 
 .git-commit-detail__file-body {
@@ -736,9 +910,57 @@ export default {
   display: grid;
   grid-template-columns: 48px 48px minmax(0, 1fr);
   align-items: stretch;
-  min-width: max-content;
-  width: 100%;
+  box-sizing: border-box;
+  /* 短行铺满容器宽度；长行随内容变宽以便横向滚动 */
+  min-width: 100%;
+  width: max-content;
 
+  &.is-add {
+    background: rgba(103, 194, 58, 0.22);
+
+    .git-commit-detail__ln {
+      background: transparent;
+    }
+
+    .git-commit-detail__patch-code {
+      /* 浅色主题：深绿，避免浅绿字看不清 */
+      color: #1f6b2a;
+    }
+  }
+
+  &.is-del {
+    background: rgba(245, 108, 108, 0.2);
+
+    .git-commit-detail__ln {
+      background: transparent;
+    }
+
+    .git-commit-detail__patch-code {
+      color: #a61d24;
+    }
+  }
+
+  &.is-hunk {
+    background: rgba(64, 158, 255, 0.14);
+
+    .git-commit-detail__ln {
+      background: transparent;
+      border-right-color: transparent;
+    }
+
+    .git-commit-detail__patch-code {
+      color: var(--el-color-primary, #409eff);
+    }
+  }
+
+  &.is-meta {
+    .git-commit-detail__patch-code {
+      color: var(--text-color-secondary);
+    }
+  }
+}
+
+html.dark .git-commit-detail__patch-row {
   &.is-add {
     background: rgba(103, 194, 58, 0.32);
 
@@ -752,13 +974,6 @@ export default {
 
     .git-commit-detail__patch-code {
       color: #f09898;
-    }
-  }
-
-  &.is-hunk,
-  &.is-meta {
-    .git-commit-detail__patch-code {
-      color: var(--text-color-secondary);
     }
   }
 }
@@ -778,6 +993,8 @@ export default {
 
 .git-commit-detail__patch-code {
   display: block;
+  min-width: 0;
+  width: 100%;
   padding: 0 12px;
   margin: 0;
   white-space: pre;

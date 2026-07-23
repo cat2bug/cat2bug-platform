@@ -1945,6 +1945,7 @@
   "git.repo.empty": "No code repository in this project yet",
   "git.repo.branch": "Branch",
   "git.repo.select-branch": "Select a branch",
+  "git.repo.browsing-commit": "Browsing commit {id}",
   "git.repo.files": "Files",
   "git.repo.files-add": "New or upload",
   "git.repo.new-file": "New file",

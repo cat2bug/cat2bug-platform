@@ -1946,6 +1946,7 @@
   "git.repo.empty": "该项目下暂无代码仓库",
   "git.repo.branch": "分支",
   "git.repo.select-branch": "选择分支",
+  "git.repo.browsing-commit": "正在浏览提交 {id}",
   "git.repo.files": "文件",
   "git.repo.files-add": "新建或上传",
   "git.repo.new-file": "新建文件",

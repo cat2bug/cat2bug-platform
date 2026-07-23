@@ -19,12 +19,6 @@
               type="info"
               effect="plain"
             >{{ $t('git.repo.release.form.draft') }}</el-tag>
-            <el-tag
-              v-else-if="release.prerelease === 1"
-              size="small"
-              type="warning"
-              effect="plain"
-            >{{ $t('git.repo.release.form.prerelease') }}</el-tag>
           </div>
           <div class="git-release-detail__side-right">
             <el-tag
@@ -338,7 +332,8 @@ export default {
 .git-release-detail {
   width: 100%;
   max-width: none;
-  padding: 20px 0;
+  /* 默认与列表页节奏一致；列表内由 browse timeline 再微调首条 */
+  padding: 12px 0;
 
   &.is-highlighted {
     background: var(--bg-color-block, rgba(127, 127, 127, 0.06));

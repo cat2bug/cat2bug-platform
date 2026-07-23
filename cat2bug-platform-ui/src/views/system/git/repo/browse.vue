@@ -16,7 +16,9 @@
         :commit-id="String(selectedCommitId)"
         :repo-name="repoName"
         :project-members="projectMembers"
+        :branch="currentBrowseBranch() || selectedBranchName || ''"
         @back="clearCommitFocus"
+        @browse-files="browseFilesAtCommit"
       />
     </div>
 
@@ -165,11 +167,12 @@
         </div>
         <div class="git-browse-file-tree__branch">
           <el-select
-            v-model="currentRef"
+            :key="'side-branch-' + (branchSelectValue || '') + '-' + branches.length"
+            :model-value="branchSelectValue"
             class="git-browse-branch-select git-browse-branch-select--side"
             :placeholder="$t('git.repo.select-branch')"
             :loading="branchesLoading"
-            @change="onRefChange"
+            @change="onBranchSelect"
           >
             <template #prefix>
               <el-icon class="git-browse-branch-icon">
@@ -253,12 +256,13 @@
             </template>
             <template v-else>
               <el-select
-                v-model="currentRef"
+                :key="'toolbar-branch-' + (branchSelectValue || '') + '-' + branches.length"
+                :model-value="branchSelectValue"
                 size="small"
                 class="git-browse-branch-select"
                 :placeholder="$t('git.repo.select-branch')"
                 :loading="branchesLoading"
-                @change="onRefChange"
+                @change="onBranchSelect"
               >
                 <template #prefix>
                   <el-icon class="git-browse-branch-icon">
@@ -405,7 +409,7 @@
             <span class="git-browse-commit-time">{{ relativeTime(latestCommit.commitTime) }}</span>
           </div>
           <a class="git-browse-commit-total" href="javascript:;" @click.prevent="openCommitsList">
-            {{ $t('git.repo.commit-count', { n: commits.length }) }}
+            {{ $t('git.repo.commit-count', { n: commitTotal }) }}
             <el-icon><component :is="ArrowRightIcon" /></el-icon>
           </a>
         </div>
@@ -649,7 +653,6 @@
                 <span class="git-aside-release-sep">·</span>
                 <span class="git-aside-release-time">{{ releaseRelativeTime(r) }}</span>
                 <el-tag v-if="r.draft === 1" size="small" type="info" effect="plain">Draft</el-tag>
-                <el-tag v-else-if="r.prerelease === 1" size="small" type="warning" effect="plain">Pre</el-tag>
               </div>
             </li>
           </ul>
@@ -842,9 +845,6 @@
         <el-form-item :label="$t('git.repo.release.form.draft')">
           <el-switch v-model="createReleaseForm.draft" :active-value="1" :inactive-value="0" />
         </el-form-item>
-        <el-form-item :label="$t('git.repo.release.form.prerelease')">
-          <el-switch v-model="createReleaseForm.prerelease" :active-value="1" :inactive-value="0" />
-        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="createReleaseVisible = false">{{ $t('cancel') }}</el-button>
@@ -865,6 +865,7 @@ import {
   listGitRepoTree,
   getGitRepoBlob,
   listGitRepoCommits,
+  getGitRepoCommitCount,
   gitRepoCommitDetailRoute,
   listGitRepoContributors,
   listGitRepoReleases,
@@ -878,6 +879,7 @@ import {
 import { saveAs } from 'file-saver'
 import { getCurrentProjectId } from '@/utils/store-context'
 import { groupCommitsByDate } from '@/utils/git-commits-by-date'
+import { applyBrowseRefState, detachedBrowseRefOption, resolveBrowseBranchName } from '@/utils/git-browse-ref'
 import {
   gitRepoBrowseRoute,
   gitRepoBranchesRoute,
@@ -983,6 +985,8 @@ export default {
       branches: [],
       branchesLoading: false,
       currentRef: null,
+      /** Branch shown in select while currentRef may be a commit SHA */
+      selectedBranchName: null,
       activeTab: resolveBrowseActiveTab(this.$route),
       selectedReleaseId: (this.$route && this.$route.params.releaseId) || null,
       selectedCommitId: (this.$route && this.$route.params.commitId) || null,
@@ -995,6 +999,8 @@ export default {
       blobDownloading: false,
       commits: [],
       commitsLoading: false,
+      /** Full reachable commit count for currentRef (not capped by list limit) */
+      commitTotal: 0,
       commitFilter: {
         author: '',
         dateRange: null
@@ -1036,8 +1042,7 @@ export default {
         title: '',
         body: '',
         targetRef: '',
-        draft: 0,
-        prerelease: 0
+        draft: 0
       },
       CREATE_RELEASE_MAX_ASSETS
     }
@@ -1161,6 +1166,21 @@ export default {
     archiveRef() {
       return this.currentRef || this.defaultBranch || ''
     },
+    /** Commit/tag ref not in branch list */
+    detachedRefOption() {
+      return detachedBrowseRefOption(this.currentRef, this.branches)
+    },
+    /** Branch select: real branch name even when tree is pinned to a commit */
+    branchSelectValue() {
+      if (!this.detachedRefOption) {
+        return this.currentRef || undefined
+      }
+      return resolveBrowseBranchName([
+        this.selectedBranchName,
+        this.$route.query && this.$route.query.branch,
+        this.defaultBranch
+      ], this.branches) || undefined
+    },
     gitCloneCommand() {
       return this.fullCloneUrl ? `git clone ${this.fullCloneUrl}` : ''
     },
@@ -1234,9 +1254,19 @@ export default {
     },
     '$route.query.ref'(ref) {
       if (this.$route.name !== 'GitRepoBrowse') return
+      if (!this.parseRepositoryId(this.repositoryId)) return
       const next = ref ? String(ref) : null
       if (!next || next === this.currentRef) return
       this.currentRef = next
+      const qBranch = this.$route.query.branch ? String(this.$route.query.branch) : ''
+      if (qBranch) {
+        this.selectedBranchName = qBranch
+      } else if (this.branches && this.branches.length) {
+        this.selectedBranchName = resolveBrowseBranchName(
+          [this.selectedBranchName, this.defaultBranch],
+          this.branches
+        )
+      }
       this.onRefChange()
     }
   },
@@ -1280,7 +1310,10 @@ export default {
       if (slug) this.repoName = slug
       this.syncReleaseRouteFromParams()
       this.syncCommitRouteFromParams()
-      this.syncBrowseQueryFromRoute()
+      const qBranchEarly = this.$route.query.branch ? String(this.$route.query.branch) : ''
+      if (qBranchEarly) {
+        this.selectedBranchName = qBranchEarly
+      }
 
       let nextId = this.parseRepositoryId(this.$route.params.repositoryId)
       // Same-route slug switches skip route beforeEnter; resolve from slug if needed
@@ -1304,7 +1337,10 @@ export default {
       }
       const changed = Number(this.repositoryId) !== nextId
       this.repositoryId = nextId
-      if (reload || changed) {
+      // After repositoryId is ready: apply tab/ref. Avoid onRefChange here when init() will load.
+      const willInit = reload || changed
+      this.syncBrowseQueryFromRoute({ skipLoad: willInit })
+      if (willInit) {
         this.init()
       }
     },
@@ -1312,6 +1348,7 @@ export default {
       this.currentPath = ''
       this.viewMode = 'tree'
       this.currentRef = null
+      this.selectedBranchName = null
       this.branches = []
       this.treeEntries = []
       this.blob = null
@@ -1323,12 +1360,28 @@ export default {
       if (!this.repositoryId) return
       this.$router.push(gitRepoBranchesRoute(this.$route)).catch(() => {})
     },
+    /** Remembered / displayed branch (never silently snap to default) */
+    currentBrowseBranch() {
+      return resolveBrowseBranchName([
+        this.selectedBranchName,
+        this.$route.query && this.$route.query.branch,
+        !this.detachedRefOption ? this.currentRef : null,
+        this.defaultBranch
+      ], this.branches)
+    },
     /** 代码页「N 次提交」→ 提交列表（顶部无提交记录 Tab） */
     openCommitsList() {
       this.selectedCommitId = null
       this.activeTab = 'commits'
       this.resetCommitFilterDraft()
-      this.$router.replace(gitRepoBrowseRoute(this.$route, { tab: 'commits' })).catch(() => {})
+      const branch = this.currentBrowseBranch()
+      if (branch) {
+        this.selectedBranchName = branch
+        this.currentRef = branch
+      }
+      const query = { tab: 'commits' }
+      if (branch) query.branch = branch
+      this.$router.replace(gitRepoBrowseRoute(this.$route, query)).catch(() => {})
       this.loadCommitFilterContributors()
       this.loadCommits()
     },
@@ -1336,14 +1389,38 @@ export default {
     openCommitDetail(commitId) {
       if (!commitId || !this.repositoryId) return
       this.selectedCommitId = commitId
-      this.$router.push(gitRepoCommitDetailRoute(this.$route, commitId)).catch(() => {})
+      const branch = this.currentBrowseBranch()
+      if (branch) {
+        this.selectedBranchName = branch
+      }
+      const route = gitRepoCommitDetailRoute(this.$route, commitId, branch ? { branch } : undefined)
+      this.$router.push(route).catch(() => {})
     },
-    syncBrowseQueryFromRoute() {
+    /**
+     * Sync browse tab + optional ?ref= / ?branch= from the route.
+     * @param {{ skipLoad?: boolean }} [opts] skipLoad: only update state (init/loadBranches will fetch)
+     */
+    syncBrowseQueryFromRoute(opts) {
       if (this.$route.name !== 'GitRepoBrowse') return
+      const skipLoad = !!(opts && opts.skipLoad)
       const nextTab = resolveBrowseActiveTab(this.$route)
       const enteringCommits = nextTab === 'commits' && this.activeTab !== 'commits'
       this.activeTab = nextTab
-      if (enteringCommits) {
+      const qBranch = this.$route.query.branch ? String(this.$route.query.branch) : ''
+      if (qBranch) {
+        this.selectedBranchName = qBranch
+      }
+      const qRef = this.$route.query.ref ? String(this.$route.query.ref) : ''
+      if (qRef && qRef !== this.currentRef) {
+        this.currentRef = qRef
+        if (!skipLoad && this.parseRepositoryId(this.repositoryId)) {
+          this.onRefChange()
+        }
+      } else if (!qRef && qBranch && qBranch !== this.currentRef) {
+        // History / commits list: keep API ref on the selected branch, not the default
+        this.currentRef = qBranch
+      }
+      if (enteringCommits && !skipLoad && this.parseRepositoryId(this.repositoryId)) {
         this.resetCommitFilterDraft()
         this.loadCommitFilterContributors()
         this.loadCommits()
@@ -1405,7 +1482,10 @@ export default {
     clearCommitFocus() {
       this.selectedCommitId = null
       if (this.$route.name === 'GitRepoCommitDetail') {
-        this.$router.replace(gitRepoBrowseRoute(this.$route, { tab: 'commits' })).catch(() => {})
+        const query = { tab: 'commits' }
+        const branch = this.currentBrowseBranch()
+        if (branch) query.branch = branch
+        this.$router.replace(gitRepoBrowseRoute(this.$route, query)).catch(() => {})
         this.activeTab = 'commits'
       }
     },
@@ -1512,7 +1592,7 @@ export default {
       })
     },
     loadContributors() {
-      if (!this.repositoryId || !this.currentRef) {
+      if (!this.parseRepositoryId(this.repositoryId) || !this.currentRef) {
         this.contributors = []
         return
       }
@@ -1543,8 +1623,7 @@ export default {
         title: release.title || '',
         body: release.body || '',
         targetRef: this.currentRef || this.defaultBranch || '',
-        draft: release.draft === 1 ? 1 : 0,
-        prerelease: release.prerelease === 1 ? 1 : 0
+        draft: release.draft === 1 ? 1 : 0
       }
       this.createReleaseAssetList = []
       this.createReleaseVisible = true
@@ -1556,8 +1635,7 @@ export default {
         title: '',
         body: '',
         targetRef: this.currentRef || this.defaultBranch || '',
-        draft: 0,
-        prerelease: 0
+        draft: 0
       }
       this.createReleaseAssetList = []
     },
@@ -1595,7 +1673,7 @@ export default {
             title,
             body: this.createReleaseForm.body || '',
             draft: this.createReleaseForm.draft,
-            prerelease: this.createReleaseForm.prerelease
+            prerelease: 0
           })
           this.$modal.msgSuccess(this.$t('git.repo.release.update-success'))
           this.createReleaseVisible = false
@@ -1608,7 +1686,7 @@ export default {
           body: this.createReleaseForm.body || '',
           targetRef: this.createReleaseForm.targetRef,
           draft: this.createReleaseForm.draft,
-          prerelease: this.createReleaseForm.prerelease
+          prerelease: 0
         }
         const pendingFiles = (this.createReleaseAssetList || [])
           .map(f => f.raw)
@@ -1769,14 +1847,13 @@ export default {
         if (loadSeq !== this.loadSeq) return
         this.branches = response.data || []
         this.branchesLoading = false
-        const names = this.branches.map(b => b && b.name).filter(Boolean)
-        const qRef = this.$route.query.ref ? String(this.$route.query.ref) : ''
-        if (qRef && names.includes(qRef)) {
-          this.currentRef = qRef
-        } else {
-          const current = this.branches.find(b => b.default) || this.branches[0]
-          this.currentRef = current ? current.name : null
-        }
+        const applied = applyBrowseRefState(
+          this.$route.query,
+          this.branches,
+          this.selectedBranchName || this.defaultBranch
+        )
+        this.currentRef = applied.currentRef
+        this.selectedBranchName = applied.selectedBranchName
         this.loadTree('')
         this.loadCommits()
         this.loadContributors()
@@ -1788,11 +1865,63 @@ export default {
         this.branchesLoading = false
         this.branches = []
         this.currentRef = null
+        this.selectedBranchName = null
         this.treeEntries = []
         this.clearRootDocs()
       })
     },
+    /** From commit detail: browse tree at commit, keep the branch that was selected */
+    browseFilesAtCommit(commitId) {
+      const ref = commitId || (this.$route.params && this.$route.params.commitId)
+      if (!ref) return
+      const branch = this.currentBrowseBranch()
+      const query = { ref: String(ref), tab: 'code' }
+      if (branch) {
+        query.branch = branch
+        this.selectedBranchName = branch
+      }
+      this.selectedCommitId = null
+      this.$router.push(gitRepoBrowseRoute(this.$route, query)).catch(() => {})
+    },
+    onBranchSelect(name) {
+      const next = name != null && String(name).trim() !== '' ? String(name) : null
+      if (!next) return
+      this.selectedBranchName = next
+      if (next === this.currentRef && !this.$route.query.ref) return
+      this.currentRef = next
+      this.onRefChange()
+      // Leave tip-of-branch browse without sticky ?ref=; keep ?branch= for history continuity
+      const q = { ...(this.$route.query || {}) }
+      delete q.ref
+      if (this.activeTab === 'commits' || q.tab === 'commits') {
+        q.tab = 'commits'
+        q.branch = next
+      } else {
+        delete q.branch
+        delete q.tab
+      }
+      this.$router.replace({
+        name: 'GitRepoBrowse',
+        params: { ...this.$route.params },
+        query: q
+      }).catch(() => {})
+    },
+    /** @deprecated kept for call sites that only need to drop commit pin */
+    clearBrowseQueryRef() {
+      const q = this.$route.query || {}
+      if (q.ref == null || q.ref === '') return
+      const query = { ...q }
+      delete query.ref
+      this.$router.replace({
+        name: 'GitRepoBrowse',
+        params: { ...this.$route.params },
+        query
+      }).catch(() => {})
+    },
     onRefChange() {
+      if (!this.parseRepositoryId(this.repositoryId) || !this.currentRef) {
+        return
+      }
       this.currentPath = ''
       this.viewMode = 'tree'
       this.commitFilter.author = ''
@@ -1827,7 +1956,7 @@ export default {
       }))
     },
     loadSideTreeNode(node, resolve) {
-      if (!this.currentRef) {
+      if (!this.parseRepositoryId(this.repositoryId) || !this.currentRef) {
         resolve([])
         return
       }
@@ -1881,7 +2010,7 @@ export default {
       })
     },
     loadTree(path) {
-      if (!this.currentRef) {
+      if (!this.parseRepositoryId(this.repositoryId) || !this.currentRef) {
         this.treeEntries = []
         this.clearRootDocs()
         return
@@ -2097,8 +2226,9 @@ export default {
       })
     },
     loadCommits() {
-      if (!this.currentRef) {
+      if (!this.parseRepositoryId(this.repositoryId) || !this.currentRef) {
         this.commits = []
+        this.commitTotal = 0
         return
       }
       this.commitsLoading = true
@@ -2115,12 +2245,28 @@ export default {
           if (range[1]) params.until = range[1]
         }
       }
+      this.loadCommitTotal()
       listGitRepoCommits(this.repositoryId, params).then(response => {
         this.commits = response.data || []
         this.commitsLoading = false
       }).catch(() => {
         this.commits = []
         this.commitsLoading = false
+      })
+    },
+    loadCommitTotal() {
+      if (!this.parseRepositoryId(this.repositoryId) || !this.currentRef) {
+        this.commitTotal = 0
+        return
+      }
+      const ref = this.currentRef
+      getGitRepoCommitCount(this.repositoryId, ref).then(response => {
+        if (this.currentRef !== ref) return
+        const n = Number(response && response.data)
+        this.commitTotal = Number.isFinite(n) && n >= 0 ? n : 0
+      }).catch(() => {
+        if (this.currentRef !== ref) return
+        this.commitTotal = 0
       })
     },
     resetCommitFilterDraft() {
@@ -2134,7 +2280,16 @@ export default {
       return (c.displayName || '').trim()
     },
     onCommitFilterRefChange() {
+      const branch = this.currentRef
+      if (branch) {
+        this.selectedBranchName = branch
+      }
       this.commitFilter.author = ''
+      const query = { ...this.$route.query, tab: 'commits' }
+      if (branch) query.branch = branch
+      else delete query.branch
+      delete query.ref
+      this.$router.replace(gitRepoBrowseRoute(this.$route, query)).catch(() => {})
       this.loadCommitFilterContributors()
       this.loadCommits()
     },
@@ -2142,7 +2297,7 @@ export default {
       this.loadCommits()
     },
     loadCommitFilterContributors() {
-      if (!this.repositoryId || !this.currentRef) {
+      if (!this.parseRepositoryId(this.repositoryId) || !this.currentRef) {
         this.commitFilterContributors = []
         return
       }
@@ -2173,20 +2328,52 @@ export default {
   min-height: 0;
   width: 100%;
   overflow: hidden;
+
+  /*
+   * 提交列表/详情、代码概览：滚动条贴主内容区最右侧。
+   * 去掉页级右侧 padding，改由顶栏/Tab 与滚动容器自己留白。
+   */
+  &:has(.git-browse-commits-pane),
+  &:has(.git-browse-layout) {
+    padding-right: 0;
+
+    :deep(.git-repo-shell__top),
+    :deep(.git-repo-shell__tabs) {
+      padding-right: 20px;
+      box-sizing: border-box;
+    }
+  }
 }
 
 .git-browse-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
   gap: 16px;
-  align-items: stretch;
+  /* 根目录：两列随内容增高，由 layout 统一纵向滚动 */
+  align-items: start;
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 20px;
+  box-sizing: border-box;
 
   &.has-side-tree {
-    /* 左树 + 内容；右侧简介栏已隐藏，不再预留第三列 */
+    /* 左树 + 内容：列等高，各自内部滚动（右侧简介栏已隐藏） */
     grid-template-columns: 280px minmax(0, 1fr);
+    align-items: stretch;
+    overflow: hidden;
+
+    .git-browse-main {
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    .git-browse-main--blob {
+      overflow: hidden;
+    }
   }
 }
 
@@ -2356,9 +2543,8 @@ export default {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+  height: auto;
+  overflow: visible;
 }
 
 .git-browse-main--blob {
@@ -2370,6 +2556,9 @@ export default {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+  /* 内容右内边距；滚动条在 pane 外缘（即主内容区最右） */
+  padding-right: 20px;
+  box-sizing: border-box;
 }
 
 .git-browse-toolbar {
@@ -3301,14 +3490,13 @@ export default {
 
 .git-browse-aside {
   min-height: 0;
-  height: 100%;
+  height: auto;
   padding: 14px 16px;
   border: 1px solid var(--border-color-light);
   border-radius: 6px;
   background: var(--card-bg);
   color: var(--text-color-regular);
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
   box-sizing: border-box;
 }
 
@@ -3550,6 +3738,8 @@ export default {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+  padding-right: 20px;
+  box-sizing: border-box;
 }
 
 .git-releases-empty {
@@ -3577,7 +3767,8 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 20px;
+  /* 与 Pull Request 页工具栏一致：紧贴 Shell tabs 下沿，下方 12px */
+  margin-top: 0;
   margin-bottom: 12px;
 }
 
@@ -3591,6 +3782,16 @@ export default {
 .git-browse-releases__timeline {
   width: 100%;
   position: relative;
+
+  /* 与 PR 列表节奏接近：条目间距收紧，首条不再额外顶空 */
+  :deep(.git-release-detail) {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  :deep(.git-release-detail:first-child) {
+    padding-top: 0;
+  }
 
   /* 左右栏共用一条连续竖线（避免每条发行版各自 border 断开） */
   &:has(.git-release-detail)::before {
@@ -3661,6 +3862,11 @@ export default {
     box-sizing: border-box;
   }
 
+  :deep(.el-date-editor.el-range-editor.is-active),
+  :deep(.el-date-editor.el-range-editor.is-focus) {
+    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, var(--el-color-primary, #409eff)) inset !important;
+  }
+
   /* 与分支/贡献者下拉选中文字同色 */
   :deep(.el-date-editor .el-range-input) {
     color: var(--input-color, var(--text-color-regular)) !important;
@@ -3680,7 +3886,12 @@ export default {
 }
 
 .git-browse-commit-group-title {
-  padding: 10px 16px 6px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  min-height: 36px;
+  line-height: 1.25;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-color-secondary);
@@ -3810,6 +4021,10 @@ export default {
       .el-menu--horizontal > .el-menu-item,
       .el-menu--horizontal > .el-sub-menu .el-sub-menu__title {
         border-bottom: none !important;
+      }
+
+      .el-sub-menu__icon-arrow {
+        display: none !important;
       }
     }
 

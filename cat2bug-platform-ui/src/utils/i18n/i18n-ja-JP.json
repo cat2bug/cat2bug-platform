@@ -1849,6 +1849,7 @@
   "git.repo.resize-toc": "ドラッグして目次の幅を調整",
   "git.repo.select": "リポジトリを選択",
   "git.repo.select-branch": "ブランチを選択",
+  "git.repo.browsing-commit": "コミット {id} を閲覧中",
   "git.repo.select-empty": "一致するリポジトリがありません",
   "git.repo.select-search-placeholder": "名前でリポジトリを検索",
   "git.repo.settings": "設定",

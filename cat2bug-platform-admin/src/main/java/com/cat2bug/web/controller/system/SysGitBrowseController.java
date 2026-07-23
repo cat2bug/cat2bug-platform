@@ -105,6 +105,15 @@ public class SysGitBrowseController extends BaseController
     }
 
     @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")
+    @GetMapping("/system/git/repo/{repositoryId}/commit-count")
+    public AjaxResult commitCount(
+            @PathVariable Long repositoryId,
+            @RequestParam(required = false) String ref)
+    {
+        return success(gitBrowseService.countCommits(repositoryId, ref));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:git:repo:pull')")
     @GetMapping("/system/git/repo/{repositoryId}/commits/{commitId}")
     public AjaxResult commitDetail(
             @PathVariable Long repositoryId,

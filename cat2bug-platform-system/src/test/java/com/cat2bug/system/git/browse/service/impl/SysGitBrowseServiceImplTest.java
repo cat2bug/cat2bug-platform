@@ -325,6 +325,18 @@ public class SysGitBrowseServiceImplTest
     }
 
     @Test
+    public void countCommits_returnsFullReachableCountIndependentOfListLimit() throws Exception
+    {
+        initRepoWithMultiAuthorCommits();
+        allowPull();
+
+        List<GitCommitInfo> limited = service.listCommits(REPOSITORY_ID, "main", 2);
+        assertEquals(2, limited.size());
+        assertEquals(3, service.countCommits(REPOSITORY_ID, "main"));
+        assertEquals(3, service.countCommits(REPOSITORY_ID, null));
+    }
+
+    @Test
     public void listCommits_emptyRepository_returnsEmptyList() throws Exception
     {
         initEmptyRepo();

@@ -56,6 +56,13 @@ public interface ISysGitBrowseService
             String until);
 
     /**
+     * 统计指定 ref 可达的提交总数（不受 listCommits 的 limit 截断影响）。
+     *
+     * @param ref 分支/tag/commit-ish，为空时使用仓库默认分支
+     */
+    int countCommits(Long repositoryId, String ref);
+
+    /**
      * 单条提交详情（全文消息 + 相对 first parent 的文件 diff，含 patch 大小限制）。
      *
      * @param commitId 完整或仓库内可解析的缩写 commit id

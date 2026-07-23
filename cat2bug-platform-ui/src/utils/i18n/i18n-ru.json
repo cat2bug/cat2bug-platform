@@ -1849,6 +1849,7 @@
   "git.repo.resize-toc": "Перетащите, чтобы изменить ширину содержания",
   "git.repo.select": "Выбрать репозиторий",
   "git.repo.select-branch": "Выберите ветку",
+  "git.repo.browsing-commit": "Просмотр коммита {id}",
   "git.repo.select-empty": "Нет подходящих репозиториев",
   "git.repo.select-search-placeholder": "Поиск репозиториев по имени",
   "git.repo.settings": "Настройки",

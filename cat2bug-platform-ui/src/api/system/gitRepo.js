@@ -39,9 +39,10 @@ export function resolveGitRepoByProjectAndSlug(projectId, slug) {
  * Commit detail route under namespaced `code/{slug}`.
  * @param {object} routeOrCtx route or { teamKey, projectKey, slug }
  * @param {string} commitId
+ * @param {Record<string, string>} [query] e.g. { branch } to keep history context
  */
-export function gitRepoCommitDetailRoute(routeOrCtx, commitId) {
-  return namespacedCommitDetailRoute(routeOrCtx, commitId)
+export function gitRepoCommitDetailRoute(routeOrCtx, commitId, query) {
+  return namespacedCommitDetailRoute(routeOrCtx, commitId, query)
 }
 
 // 查询代码仓库列表（按项目）
@@ -389,6 +390,15 @@ export function listGitRepoCommits(repositoryId, refOrQuery, limit) {
     url: '/system/git/repo/' + repositoryId + '/commits',
     method: 'get',
     params
+  })
+}
+
+/** 指定 ref 可达的提交总数（不受 list 的 limit 截断） */
+export function getGitRepoCommitCount(repositoryId, ref) {
+  return request({
+    url: '/system/git/repo/' + repositoryId + '/commit-count',
+    method: 'get',
+    params: { ref }
   })
 }
 

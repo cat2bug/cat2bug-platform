@@ -20,6 +20,7 @@ import com.cat2bug.system.git.browse.domain.GitContributorInfo;
 import com.cat2bug.system.git.browse.domain.GitTreeEntryInfo;
 import com.cat2bug.system.git.browse.service.ISysGitBrowseService;
 import com.cat2bug.system.git.browse.support.GitContributorSupport;
+import com.cat2bug.system.git.browse.support.GitPatchHunkContextEnricher;
 import com.cat2bug.system.mapper.SysGitRepositoryMapper;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.service.git.GitPathValidator;
@@ -30,6 +31,9 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
 import org.eclipse.jgit.diff.EditList;
+import org.eclipse.jgit.diff.RawText;
+import org.eclipse.jgit.errors.BinaryBlobException;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
@@ -400,6 +404,35 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
             throw new ServiceException(MessageUtils.message("git.repo.browse.read-failed"), HttpStatus.ERROR);
         }
         return result;
+    }
+
+    @Override
+    public int countCommits(Long repositoryId, String ref)
+    {
+        SysGitRepository repo = requireRepo(repositoryId);
+        assertPull(repo.getRepositoryId());
+        try (Repository repository = openRepository(repo.getDiskPath()))
+        {
+            ObjectId startId = resolveCommitish(repository, ref, repo.getDefaultBranch());
+            if (startId == null)
+            {
+                return 0;
+            }
+            try (RevWalk revWalk = new RevWalk(repository))
+            {
+                revWalk.markStart(revWalk.parseCommit(startId));
+                int count = 0;
+                for (RevCommit ignored : revWalk)
+                {
+                    count++;
+                }
+                return count;
+            }
+        }
+        catch (IOException e)
+        {
+            throw new ServiceException(MessageUtils.message("git.repo.browse.read-failed"), HttpStatus.ERROR);
+        }
     }
 
     @Override
@@ -1322,7 +1355,10 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
                 }
                 else
                 {
-                    fileChange.setPatch(new String(patchBytes, StandardCharsets.UTF_8));
+                    String patchText = new String(patchBytes, StandardCharsets.UTF_8);
+                    RawText oldText = loadDiffSideRawText(repository, entry, true);
+                    RawText newText = loadDiffSideRawText(repository, entry, false);
+                    fileChange.setPatch(GitPatchHunkContextEnricher.enrich(patchText, oldText, newText));
                     cumulativePatchBytes += patchBytes.length;
                     patchesAttached++;
                 }
@@ -1423,6 +1459,33 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
             return path.substring(1);
         }
         return path;
+    }
+
+    /**
+     * Load old/new blob as {@link RawText} for hunk context enrichment; empty on missing/binary.
+     */
+    private static RawText loadDiffSideRawText(Repository repository, DiffEntry entry, boolean oldSide)
+    {
+        try
+        {
+            ObjectId objectId = oldSide
+                    ? (entry.getOldId() != null ? entry.getOldId().toObjectId() : null)
+                    : (entry.getNewId() != null ? entry.getNewId().toObjectId() : null);
+            if (objectId == null || ObjectId.zeroId().equals(objectId))
+            {
+                return RawText.EMPTY_TEXT;
+            }
+            ObjectLoader loader = repository.open(objectId);
+            return RawText.load(loader, MAX_COMMIT_PATCH_PER_FILE_BYTES);
+        }
+        catch (MissingObjectException | BinaryBlobException e)
+        {
+            return RawText.EMPTY_TEXT;
+        }
+        catch (IOException e)
+        {
+            return RawText.EMPTY_TEXT;
+        }
     }
 
     private static boolean isValidUtf8(byte[] bytes)

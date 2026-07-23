@@ -1849,6 +1849,7 @@
   "git.repo.resize-toc": "드래그하여 목차 너비 조절",
   "git.repo.select": "저장소 선택",
   "git.repo.select-branch": "브랜치 선택",
+  "git.repo.browsing-commit": "커밋 {id} 탐색 중",
   "git.repo.select-empty": "일치하는 저장소 없음",
   "git.repo.select-search-placeholder": "이름으로 저장소 검색",
   "git.repo.settings": "설정",

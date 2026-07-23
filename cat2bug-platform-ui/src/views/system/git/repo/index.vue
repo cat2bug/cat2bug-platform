@@ -13,7 +13,10 @@
           @click="handleBrowse(item)"
         >
           <div class="git-featured-card__head">
-            <el-icon class="git-repo-icon"><FolderOpened /></el-icon>
+            <span class="git-visibility-icon" :title="visibilityTitle(item)">
+              <git-open-source-icon v-if="item.visibility === 'public'" />
+              <el-icon v-else><Lock /></el-icon>
+            </span>
             <a class="git-repo-name" href="javascript:;" @click.stop="handleBrowse(item)">{{ item.name }}</a>
             <star-switch
               class="git-featured-star"
@@ -95,10 +98,10 @@
           <div v-for="item in displayList" :key="item.repositoryId" class="git-repo-item">
             <div class="git-repo-item__main">
               <div class="git-repo-item__title-row">
-                <el-icon class="git-visibility-icon" :title="visibilityTitle(item)">
-                  <Unlock v-if="item.visibility === 'public'" />
-                  <Lock v-else />
-                </el-icon>
+                <span class="git-visibility-icon" :title="visibilityTitle(item)">
+                  <git-open-source-icon v-if="item.visibility === 'public'" />
+                  <el-icon v-else><Lock /></el-icon>
+                </span>
                 <a class="git-repo-name" href="javascript:;" @click="handleBrowse(item)">{{ item.name }}</a>
                 <span class="git-repo-metrics git-repo-metrics--inline">
                   <span class="git-repo-metric" :title="$t('git.repo.metric-collect')">
@@ -169,13 +172,14 @@
 </template>
 
 <script>
-import { FolderOpened, View, CopyDocument, Setting, Lock, Unlock, Star } from '@element-plus/icons-vue'
+import { View, CopyDocument, Setting, Lock, Star } from '@element-plus/icons-vue'
 import { listGitRepo, delGitRepo, collectGitRepo } from '@/api/system/gitRepo'
 import { getProject } from '@/api/system/project'
 import ProjectLabel from '@/components/Project/ProjectLabel'
 import StarSwitch from '@/components/StarSwitch'
 import GitRepoCreateDialog from '@/components/Git/GitRepoCreateDialog'
 import GitRepoOverviewAside from './GitRepoOverviewAside'
+import GitOpenSourceIcon from './GitOpenSourceIcon'
 import { getCurrentProjectId } from '@/utils/store-context'
 import { formatTime } from '@/utils/index'
 import { parseTime } from '@/utils/ruoyi'
@@ -188,12 +192,11 @@ export default {
     StarSwitch,
     GitRepoCreateDialog,
     GitRepoOverviewAside,
-    FolderOpened,
+    GitOpenSourceIcon,
     View,
     CopyDocument,
     Setting,
     Lock,
-    Unlock,
     Star
   },
   data() {
@@ -590,11 +593,6 @@ export default {
   }
 }
 
-.git-repo-icon {
-  font-size: 18px;
-  color: var(--text-color-secondary);
-}
-
 .git-repo-name {
   font-size: 15px;
   font-weight: 600;
@@ -708,7 +706,11 @@ export default {
 }
 
 .git-visibility-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 14px;
+  line-height: 1;
   color: var(--text-color-secondary);
 }
 

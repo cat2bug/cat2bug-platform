@@ -132,6 +132,11 @@ export default {
   .el-submenu :deep(.el-submenu__title:hover){
     background-color: #00000000;
   }
+  /* 图标按钮不展示下拉三角（如标题 H），悬停/点击仍可展开子菜单 */
+  .el-sub-menu :deep(.el-sub-menu__icon-arrow),
+  .el-submenu :deep(.el-submenu__icon-arrow) {
+    display: none !important;
+  }
 }
 .row {
   display: inline-flex;

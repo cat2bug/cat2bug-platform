@@ -513,9 +513,20 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 .el-date-editor.el-input__inner:focus,
 .el-range-editor.el-input__inner:focus,
 .el-range-editor.el-input__inner:focus-within,
-.el-range-editor.is-active {
+.el-range-editor.is-active,
+.el-date-editor.el-range-editor.is-active,
+.el-range-editor.el-input__wrapper.is-active,
+.el-range-editor.el-input__wrapper.is-focus {
   @include cat2bug-unified-focus-border;
-  @include cat2bug-unified-focus-ring;
+  /* 内侧描边：避免外 box-shadow 被工具栏/overflow 父级裁掉上边 */
+  outline: none !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #1890ff) inset !important;
+}
+
+/* Element Plus 日期范围：默认也用 inset，与 input wrapper 同源，避免选中时上下描边不一致 */
+.el-date-editor.el-range-editor.el-input__wrapper,
+.el-range-editor.el-input__wrapper {
+  box-shadow: 0 0 0 1px var(--input-border, var(--border-color-base, var(--el-input-border-color, #dcdfe6))) inset !important;
 }
 
 /* textarea 无 wrapper：用向内 outline，避免外描边被 overflow 裁切，四边焦点框都清晰可见 */
