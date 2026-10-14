@@ -1,6 +1,9 @@
 # report-template-variable-preview Specification
 
-## ADDED Requirements
+## Purpose
+TBD - 早期归档时 delta 头被原样带入主规范，2026-10-14 修正为主规范结构。
+
+## Requirements
 
 ### Requirement: Default variable display matches production markdown
 

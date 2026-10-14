@@ -36,10 +36,11 @@ The build system SHALL support all existing npm build modes with correct output 
 - **WHEN** the developer runs `npm run build:prod` or `npm run build:cloud`
 - **THEN** artifacts MUST be written to `dist/` with `publicPath` `/`
 
-#### Scenario: Embedded Spring Boot build
+#### Scenario: Embedded backend build
 
 - **WHEN** the developer runs `npm run build:embedded`
-- **THEN** artifacts MUST be written to `cat2bug-platform-admin/src/main/resources/static/`
+- **THEN** artifacts MUST be written to `cat2bug-platform-admin/src/main/resources/META-INF/resources/`
+- **AND** no separate `build:embedded-quarkus` script or `vue.config.js` exists
 
 #### Scenario: Static assets directory
 

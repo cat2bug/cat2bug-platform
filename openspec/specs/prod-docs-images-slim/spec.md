@@ -1,4 +1,9 @@
-## ADDED Requirements
+# prod-docs-images-slim Specification
+
+## Purpose
+TBD - 早期归档时 delta 头被原样带入主规范，2026-10-14 修正为主规范结构。
+
+## Requirements
 
 ### Requirement: 文档截图宽度上限
 

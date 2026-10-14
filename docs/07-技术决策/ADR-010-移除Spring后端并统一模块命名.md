@@ -7,7 +7,7 @@
 
 ## 背景
 
-[[ADR-003-恢复Quarkus为默认后端-Spring保留为回滚线]] 落地后，Quarkus 已是默认后端并与 Spring 全量对等，且 Quarkus 模块不依赖任何 Spring artifact。但仓库仍并存两套后端：9 个 Spring 模块 + 4 个 `cat2bug-platform-quarkus-*` 模块 + 废弃的 `quarkus-spike`。默认 `mvn package` 构建的却是 Spring，产品构建反而要加 `-Pquarkus`。新功能和修复只在 Quarkus 做，Spring 线持续腐化（例如 [[系统管理员在Git模块无权限]]、`defect_ids` LIKE 精确匹配都没同步过去），维护和认知成本都很高。依据：`openspec/changes/retire-spring-and-unify-modules/proposal.md`、`design.md`。
+[[ADR-003-恢复Quarkus为默认后端-Spring保留为回滚线]] 落地后，Quarkus 已是默认后端并与 Spring 全量对等，且 Quarkus 模块不依赖任何 Spring artifact。但仓库仍并存两套后端：9 个 Spring 模块 + 4 个 `cat2bug-platform-quarkus-*` 模块 + 废弃的 `quarkus-spike`。默认 `mvn package` 构建的却是 Spring，产品构建反而要加 `-Pquarkus`。新功能和修复只在 Quarkus 做，Spring 线持续腐化（例如 [[系统管理员在Git模块无权限]]、`defect_ids` LIKE 精确匹配都没同步过去），维护和认知成本都很高。依据：`openspec/changes/archive/2026-10-14-retire-spring-and-unify-modules/proposal.md`、`design.md`。
 
 ## 候选方案
 

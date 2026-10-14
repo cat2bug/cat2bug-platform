@@ -70,6 +70,10 @@
 
 ## 相关规格
 
-- `openspec/changes/restore-im-external-push/`（归档后在 `openspec/changes/archive/` 下）
+- `openspec/changes/archive/2026-10-14-restore-im-external-push/`
+
+## 验证状态
+
+钉钉、飞书、企业微信与邮件只用本地 HTTP 桩和 Mailer 替身做过自动化测试，**尚未用真实平台账号验证**（2026-10-14 决定以后再做）。真实验证后在此更新结果。
 
 返回 [[03-技术方案/说明|03-技术方案]]

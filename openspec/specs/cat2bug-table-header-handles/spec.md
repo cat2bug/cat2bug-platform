@@ -1,6 +1,9 @@
 # Spec: Cat2BugTable 表头拖序与调宽手柄
 
-## ADDED Requirements
+## Purpose
+TBD - 早期归档时 delta 头被原样带入主规范，2026-10-14 修正为主规范结构。
+
+## Requirements
 
 ### Requirement: 表头 hover 显示拖序与调宽手柄
 
