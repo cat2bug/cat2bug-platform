@@ -44,10 +44,14 @@
 
 ## 6. 验证
 
-- [ ] 6.1 `unset QUARKUS_CONFIG_LOCATIONS CAT2BUG_INSTALL_CONFIG_PATH && mvn install` 全量测试通过
-- [ ] 6.2 JVM 单 JAR 冒烟：未配置邮件时修改缺陷、发送通知、新建报告均成功，站内通知到达，日志无异常堆栈
+- [x] 6.1 `unset QUARKUS_CONFIG_LOCATIONS CAT2BUG_INSTALL_CONFIG_PATH && mvn install` 全量测试通过
+  - 为避免写 `~/.m2`，实际执行 `mvn -o verify -Dquarkus.http.test-port=0`：191 个测试，失败 0，跳过 2，BUILD SUCCESS
+- [x] 6.2 JVM 单 JAR 冒烟：未配置邮件时修改缺陷、发送通知、新建报告均成功，站内通知到达，日志无异常堆栈
+  - fast-jar（`quarkus-app/quarkus-run.jar`）在临时目录以 2032 端口启动，经安装向导装新 H2 库后自重启；新建缺陷、指派、发送通知、新建报告均返回 200，三组站内通知都到达；邮件「未配置」INFO 仅启动时一次，钉钉个人因项目无应用配置 WARN 跳过，无异常堆栈；用后已关闭
 - [ ] 6.3 用测试账号手动验证：钉钉 / 飞书 / 企业微信群与个人各收到一条缺陷通知；配置测试 SMTP 后收到邮件（无测试账号的渠道在 tasks 中注明未验证）
+  - 未验证：需用户提供测试账号（钉钉 / 飞书 / 企业微信应用与群机器人、测试 SMTP）。自动化部分已用本地 HTTP 桩与 Mailer 替身覆盖
 - [ ] 6.4 `deploy/build-native.sh` 重建，记录 UPX 前后体积；`smoke-native-docker.sh arm64` 与 `FRESH=true` 通过
+  - 未执行：合并后由主 agent 执行（`ImReflectionConfig` 已为项目应用配置类注册反射）
 
 ## 7. 文档与回写长期知识
 
