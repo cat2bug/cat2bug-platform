@@ -32,4 +32,4 @@ Docker 镜像已按此方式构建（`deploy/docker/build.sh` + `after-dockerfil
 
 - 同一个 JVM 包不要指望「运行期切数据库类型」；H2 包和 MySQL 包是两个产物，发布说明里写清楚。
 - 改 `quarkus.datasource.*` 配置前先查 Quarkus 文档里该属性是否标为 build time（锁形图标）。
-- Native 包是否同时内置 H2 与 MySQL 仍待确认，见 [[数据库]]。
+- Native 包同理：`deploy/build-native.sh` 不带 `-Dquarkus.profile=mysql`，业务池 `runtime-mysql` 的 db-kind 为 h2；启动日志虽列出 `jdbc-mysql`，业务库仍只能用 H2（2026-10-14 核实），见 [[数据库]]。
