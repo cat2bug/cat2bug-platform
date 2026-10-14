@@ -37,7 +37,7 @@
 
 - [x] 6.1 `unset QUARKUS_CONFIG_LOCATIONS CAT2BUG_INSTALL_CONFIG_PATH && mvn install` 全量测试通过（worktree 内改用 `mvn verify -Dquarkus.http.test-port=0`，避免写 `~/.m2`：181 个测试，0 失败，2 个跳过）
 - [x] 6.2 重新运行 `/tmp/c2b-parity.py` 接口比对，除有意删除项外缺失为 0（以本 worktree 为根运行：`/system/CasePrompt/export` 已不再缺失；剩余 33 条均为有意删除的 `/tool/gen`、`/test/user`、若依 `/index`，或脚本解析误报：`ApiDefectController` 类级路径为常量、Git Smart HTTP 的 `produces/consumes` 被当成路径、`/cat2ai/**` 的 ANY 方法，Quarkus 均有对应资源）
-- [ ] 6.3 `deploy/build-native.sh` 重建并跑 `smoke-native-docker.sh arm64` 与 `FRESH=true`，记录体积（合并后由主 agent 执行）
+- [x] 6.3 `deploy/build-native.sh` 重建并跑 `smoke-native-docker.sh arm64` 与 `FRESH=true`，记录体积（合并后由主 agent 执行：arm64 UPX 前 180,954,096 字节 / 后 41,496,140 字节；两种冒烟通过；Native 下用户列表忽略外部 `params[dataScope]`、`POST /system/CasePrompt/export` 返回 xlsx）
 
 ## 7. 文档与回写长期知识
 
