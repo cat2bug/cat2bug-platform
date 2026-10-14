@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.OpenApiDefectMapper">
+<mapper namespace="com.cat2bug.system.mapper.OpenApiDefectMapper">
 
-    <resultMap id="ApiDefectResult" type="com.cat2bug.quarkus.common.domain.open.ApiDefect">
+    <resultMap id="ApiDefectResult" type="com.cat2bug.common.domain.open.ApiDefect">
         <result property="defectId" column="defect_id"/>
         <result property="defectNum" column="project_num"/>
         <result property="defectType" column="defect_type"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.open.ApiDefectTypeEnumTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.open.ApiDefectTypeEnumTypeHandler"/>
         <result property="defectName" column="defect_name"/>
         <result property="defectDescribe" column="defect_describe"/>
         <result property="annexUrlList" column="annex_urls"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.open.CommaArrayTypeHandler"/>
         <result property="imgUrlList" column="img_urls"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.open.CommaArrayTypeHandler"/>
         <result property="deliverableId" column="module_id"/>
         <result property="deliverableName" column="module_name"/>
         <result property="version" column="module_version"/>
         <result property="updateTime" column="update_time"/>
         <result property="defectState" column="defect_state"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.open.ApiDefectStateEnumTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.open.ApiDefectStateEnumTypeHandler"/>
         <result property="handlerList" column="handle_by_list"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.open.ApiMemberBaseInfoArrayTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.open.ApiMemberBaseInfoArrayTypeHandler"/>
         <result property="handleTime" column="handle_time"/>
         <result property="defectLevel" column="defect_level"/>
         <result property="creator" column="creator"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.open.ApiMemberBaseInfoTypeHandler"/>
-        <association property="currentLog" javaType="com.cat2bug.quarkus.common.domain.open.ApiDefectLog"
+                typeHandler="com.cat2bug.system.mybatis.open.ApiMemberBaseInfoTypeHandler"/>
+        <association property="currentLog" javaType="com.cat2bug.common.domain.open.ApiDefectLog"
                      resultMap="defectLogResult"/>
     </resultMap>
 
-    <resultMap id="defectLogResult" type="com.cat2bug.quarkus.common.domain.open.ApiDefectLog">
+    <resultMap id="defectLogResult" type="com.cat2bug.common.domain.open.ApiDefectLog">
         <id property="defectLogId" column="defect_log_id"/>
         <result property="defectLogState" column="defect_log_type"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.open.ApiDefectLogStateEnumTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.open.ApiDefectLogStateEnumTypeHandler"/>
         <result property="defectLogDescribe" column="defect_log_describe"/>
         <result property="createTime" column="defect_log_create_time"/>
     </resultMap>
@@ -145,10 +145,10 @@
             d.project_id = #{projectId}
             and d.del_flag = '0'
             <if test="defect.defectNum != null">and d.project_num = #{defect.defectNum}</if>
-            <if test="defect.defectType != null">and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectTypeEnumTypeHandler}</if>
+            <if test="defect.defectType != null">and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.system.mybatis.open.ApiDefectTypeEnumTypeHandler}</if>
             <if test="defect.defectName != null and defect.defectName != ''">and d.defect_name like concat('%', #{defect.defectName}, '%')</if>
             <if test="defect.version != null and defect.version != ''">and d.module_version like concat('%', #{defect.version}, '%')</if>
-            <if test="defect.defectState != null">and d.defect_state = #{defect.defectState, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectStateEnumTypeHandler}</if>
+            <if test="defect.defectState != null">and d.defect_state = #{defect.defectState, typeHandler=com.cat2bug.system.mybatis.open.ApiDefectStateEnumTypeHandler}</if>
             <if test="defect.handlerAccountList != null and defect.handlerAccountList.size > 0">and
                 <foreach collection="defect.handlerAccountList" item="b" separator=" or " open="(" close=")">
                     FIND_IN_SET(#{b}, un.user_names)
@@ -211,11 +211,11 @@
         ) values
         <foreach collection="defectList" item="defect" separator=",">
             (
-            #{defect.defectType, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectTypeEnumTypeHandler},
+            #{defect.defectType, typeHandler=com.cat2bug.system.mybatis.open.ApiDefectTypeEnumTypeHandler},
             #{defect.defectName},
             #{defect.defectDescribe},
-            #{defect.annexUrlList, typeHandler=com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler},
-            #{defect.imgUrlList, typeHandler=com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler},
+            #{defect.annexUrlList, typeHandler=com.cat2bug.system.mybatis.open.CommaArrayTypeHandler},
+            #{defect.imgUrlList, typeHandler=com.cat2bug.system.mybatis.open.CommaArrayTypeHandler},
             #{projectId},
             #{defect.deliverableId},
             #{defect.version},
@@ -225,8 +225,8 @@
             #{defect.createTime},
             #{defect.updateBy},
             #{defect.updateById},
-            #{defect.defectState, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectStateEnumTypeHandler},
-            #{defect.handleBy, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},
+            #{defect.defectState, typeHandler=com.cat2bug.system.mybatis.open.ApiDefectStateEnumTypeHandler},
+            #{defect.handleBy, typeHandler=com.cat2bug.system.mybatis.LongListJsonTypeHandler},
             #{defect.defectLevel},
             '0'
             )
@@ -258,11 +258,11 @@
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="defect.defectNum != null">#{defect.defectNum},</if>
-            <if test="defect.defectType != null">#{defect.defectType, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectTypeEnumTypeHandler},</if>
+            <if test="defect.defectType != null">#{defect.defectType, typeHandler=com.cat2bug.system.mybatis.open.ApiDefectTypeEnumTypeHandler},</if>
             <if test="defect.defectName != null and defect.defectName != ''">#{defect.defectName},</if>
             <if test="defect.defectDescribe != null and defect.defectDescribe != ''">#{defect.defectDescribe},</if>
-            <if test="defect.annexUrlList != null">#{defect.annexUrlList, typeHandler=com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler},</if>
-            <if test="defect.imgUrlList != null">#{defect.imgUrlList, typeHandler=com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler},</if>
+            <if test="defect.annexUrlList != null">#{defect.annexUrlList, typeHandler=com.cat2bug.system.mybatis.open.CommaArrayTypeHandler},</if>
+            <if test="defect.imgUrlList != null">#{defect.imgUrlList, typeHandler=com.cat2bug.system.mybatis.open.CommaArrayTypeHandler},</if>
             <if test="projectId != null">#{projectId},</if>
             <if test="defect.deliverableId != null">#{defect.deliverableId},</if>
             <if test="defect.version != null">#{defect.version},</if>
@@ -272,8 +272,8 @@
             <if test="defect.createTime != null">#{defect.createTime},</if>
             <if test="defect.updateBy != null">#{defect.updateBy},</if>
             <if test="defect.updateById != null">#{defect.updateById},</if>
-            <if test="defect.defectState != null">#{defect.defectState, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectStateEnumTypeHandler},</if>
-            <if test="defect.handleBy != null">#{defect.handleBy, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="defect.defectState != null">#{defect.defectState, typeHandler=com.cat2bug.system.mybatis.open.ApiDefectStateEnumTypeHandler},</if>
+            <if test="defect.handleBy != null">#{defect.handleBy, typeHandler=com.cat2bug.system.mybatis.LongListJsonTypeHandler},</if>
             <if test="defect.defectLevel != null">#{defect.defectLevel},</if>
             '0',
         </trim>
@@ -282,18 +282,18 @@
     <update id="updateApiDefect">
         update sys_defect
         <trim prefix="SET" suffixOverrides=",">
-            <if test="defectType != null">defect_type = #{defectType, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectTypeEnumTypeHandler},</if>
+            <if test="defectType != null">defect_type = #{defectType, typeHandler=com.cat2bug.system.mybatis.open.ApiDefectTypeEnumTypeHandler},</if>
             <if test="defectName != null and defectName != ''">defect_name = #{defectName},</if>
             <if test="defectDescribe != null and defectDescribe != ''">defect_describe = #{defectDescribe},</if>
-            <if test="annexUrlList != null">annex_urls = #{annexUrlList, typeHandler=com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler},</if>
-            <if test="imgUrlList != null">img_urls = #{imgUrlList, typeHandler=com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler},</if>
+            <if test="annexUrlList != null">annex_urls = #{annexUrlList, typeHandler=com.cat2bug.system.mybatis.open.CommaArrayTypeHandler},</if>
+            <if test="imgUrlList != null">img_urls = #{imgUrlList, typeHandler=com.cat2bug.system.mybatis.open.CommaArrayTypeHandler},</if>
             <if test="projectId != null">project_id = #{projectId},</if>
             <if test="deliverableId != null">module_id = #{deliverableId},</if>
             <if test="version != null">module_version = #{version},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
-            <if test="defectState != null">defect_state = #{defectState, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectStateEnumTypeHandler},</if>
-            <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="defectState != null">defect_state = #{defectState, typeHandler=com.cat2bug.system.mybatis.open.ApiDefectStateEnumTypeHandler},</if>
+            <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.system.mybatis.LongListJsonTypeHandler},</if>
             <if test="defectLevel != null">defect_level = #{defectLevel},</if>
         </trim>
         where defect_id = #{defectId}

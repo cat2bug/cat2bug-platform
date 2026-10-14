@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.OpenApiCaseMapper">
+<mapper namespace="com.cat2bug.system.mapper.OpenApiCaseMapper">
 
-    <resultMap id="ApiCaseResult" type="com.cat2bug.quarkus.common.domain.open.ApiCase">
+    <resultMap id="ApiCaseResult" type="com.cat2bug.common.domain.open.ApiCase">
         <result property="caseNum" column="case_num"/>
         <result property="caseName" column="case_name"/>
         <result property="caseExpect" column="case_expect"/>
         <result property="caseStep" column="case_step"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.OpenApiCaseStepListJsonTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.OpenApiCaseStepListJsonTypeHandler"/>
         <result property="casePreconditions" column="case_preconditions"/>
         <result property="caseData" column="case_data"/>
         <result property="deliverableId" column="module_id"/>
@@ -16,7 +16,7 @@
         <result property="caseLevel" column="case_level"/>
         <result property="remark" column="remark"/>
         <result property="imgUrlList" column="img_urls"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.CommaArrayTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.CommaArrayTypeHandler"/>
     </resultMap>
 
     <sql id="selectApiCaseVo">

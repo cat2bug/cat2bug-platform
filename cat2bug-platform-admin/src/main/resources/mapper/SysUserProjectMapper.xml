@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysUserProjectMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysUserProjectMapper">
 
-    <resultMap id="SysUserMemberResult" type="com.cat2bug.quarkus.common.domain.SysUser">
+    <resultMap id="SysUserMemberResult" type="com.cat2bug.common.domain.SysUser">
         <id property="userId" column="user_id"/>
         <result property="deptId" column="dept_id"/>
         <result property="userName" column="user_name"/>
@@ -13,7 +13,7 @@
         <result property="sex" column="sex"/>
         <result property="avatar" column="avatar"/>
         <result property="status" column="status"/>
-        <collection property="roles" ofType="com.cat2bug.quarkus.common.domain.SysRole">
+        <collection property="roles" ofType="com.cat2bug.common.domain.SysRole">
             <id property="roleId" column="role_id"/>
             <result property="roleName" column="role_name"/>
             <result property="roleKey" column="role_key"/>
@@ -118,7 +118,7 @@
         where project_id = #{projectId} and user_id = #{userId}
     </delete>
 
-    <resultMap id="SysUserProjectResult" type="com.cat2bug.quarkus.common.domain.SysUserProject">
+    <resultMap id="SysUserProjectResult" type="com.cat2bug.common.domain.SysUserProject">
         <result property="userProjectId" column="user_project_id"/>
         <result property="userId" column="user_id"/>
         <result property="projectId" column="project_id"/>

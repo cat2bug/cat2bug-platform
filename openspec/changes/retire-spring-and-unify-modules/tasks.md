@@ -22,11 +22,11 @@
 
 ## 4. Java 包名改名
 
-- [ ] 4.1 各模块 `src/{main,test}/java/com/cat2bug/quarkus/*` 用 `git mv` 上移到 `com/cat2bug/*`
-- [ ] 4.2 已跟踪文本文件中 `com.cat2bug.quarkus.` → `com.cat2bug.`、`com/cat2bug/quarkus/` → `com/cat2bug/`（含 mapper XML、`application*.properties`、`META-INF/services`、`NativeRuntimeInitFeature` 前缀、操作日志规则表）
-- [ ] 4.3 grep 断言：`openspec/changes/archive/**` 以外不再出现 `com.cat2bug.quarkus`、`cat2bug-platform-quarkus-`、`cat2bug-quarkus-`
-- [ ] 4.4 `unset QUARKUS_CONFIG_LOCATIONS CAT2BUG_INSTALL_CONFIG_PATH` 后 `mvn -o install`（含测试）全部通过
-- [ ] 4.5 提交「Java 包名去 quarkus」
+- [x] 4.1 各模块 `src/{main,test}/java/com/cat2bug/quarkus/*` 用 `git mv` 上移到 `com/cat2bug/*`
+- [x] 4.2 已跟踪文本文件中 `com.cat2bug.quarkus.` → `com.cat2bug.`、`com/cat2bug/quarkus/` → `com/cat2bug/`（含 mapper XML、`application*.properties`、`META-INF/services`、`NativeRuntimeInitFeature` 前缀、操作日志规则表）
+- [x] 4.3 grep 断言：`openspec/changes/archive/**` 以外不再出现 `com.cat2bug.quarkus`、`cat2bug-platform-quarkus-`、`cat2bug-quarkus-`
+- [x] 4.4 `unset QUARKUS_CONFIG_LOCATIONS CAT2BUG_INSTALL_CONFIG_PATH` 后 `mvn -o install`（含测试）全部通过
+- [x] 4.5 提交「Java 包名去 quarkus」
 
 ## 5. 交付链修正
 

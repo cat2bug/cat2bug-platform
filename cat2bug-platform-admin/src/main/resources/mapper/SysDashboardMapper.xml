@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysDashboardMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysDashboardMapper">
 
-    <resultMap id="SysCaseStatisticsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysCaseStatistics">
+    <resultMap id="SysCaseStatisticsResult" type="com.cat2bug.common.domain.dashboard.SysCaseStatistics">
         <result property="total" column="total"/>
     </resultMap>
 
-    <resultMap id="SysDefectStatisticsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysDefectStatistics">
+    <resultMap id="SysDefectStatisticsResult" type="com.cat2bug.common.domain.dashboard.SysDefectStatistics">
         <result property="total" column="total"/>
         <result property="pendingCount" column="pending_count"/>
         <result property="verifyCount" column="verify_count"/>
         <result property="closedCount" column="closed_count"/>
     </resultMap>
 
-    <resultMap id="SysModuleStatisticsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysModuleStatistics">
+    <resultMap id="SysModuleStatisticsResult" type="com.cat2bug.common.domain.dashboard.SysModuleStatistics">
         <result property="total" column="total"/>
     </resultMap>
 
-    <resultMap id="SysReportStatisticsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysReportStatistics">
+    <resultMap id="SysReportStatisticsResult" type="com.cat2bug.common.domain.dashboard.SysReportStatistics">
         <result property="total" column="total"/>
     </resultMap>
 
-    <resultMap id="SysDocumentStatisticsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysDocumentStatistics">
+    <resultMap id="SysDocumentStatisticsResult" type="com.cat2bug.common.domain.dashboard.SysDocumentStatistics">
         <result property="total" column="total"/>
     </resultMap>
 
-    <resultMap id="SysMemberStatisticsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysMemberStatistics">
+    <resultMap id="SysMemberStatisticsResult" type="com.cat2bug.common.domain.dashboard.SysMemberStatistics">
         <result property="total" column="total"/>
         <result property="adminCount" column="admin_count"/>
         <result property="testCount" column="test_count"/>
@@ -34,13 +34,13 @@
         <result property="outsideCount" column="outside_count"/>
     </resultMap>
 
-    <resultMap id="SysDefectLineResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysDefectLine">
+    <resultMap id="SysDefectLineResult" type="com.cat2bug.common.domain.dashboard.SysDefectLine">
         <result property="defectCount" column="defect_count"/>
         <result property="defectTime" column="defect_time"/>
         <result property="defectState" column="defect_state"/>
     </resultMap>
 
-    <resultMap id="SysPlanResult" type="com.cat2bug.quarkus.common.domain.SysPlan">
+    <resultMap id="SysPlanResult" type="com.cat2bug.common.domain.SysPlan">
         <result property="planId" column="plan_id"/>
         <result property="planNumber" column="plan_number"/>
         <result property="planName" column="plan_name"/>
@@ -77,7 +77,7 @@
         <result property="remark" column="remark"/>
     </resultMap>
 
-    <resultMap id="SysActionResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysAction">
+    <resultMap id="SysActionResult" type="com.cat2bug.common.domain.dashboard.SysAction">
         <result property="id" column="id"/>
         <result property="title" column="title"/>
         <result property="state" column="state"/>
@@ -88,12 +88,12 @@
         <result property="avatar" column="avatar"/>
     </resultMap>
 
-    <resultMap id="SysColumnsInChartResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysColumnsInChart">
+    <resultMap id="SysColumnsInChartResult" type="com.cat2bug.common.domain.dashboard.SysColumnsInChart">
         <result property="key" column="handle_time"/>
         <result property="value" column="pass_count"/>
     </resultMap>
 
-    <resultMap id="SysMemberRankOfDefectsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysMemberRankOfDefects">
+    <resultMap id="SysMemberRankOfDefectsResult" type="com.cat2bug.common.domain.dashboard.SysMemberRankOfDefects">
         <result property="userId" column="user_id"/>
         <result property="nickName" column="nick_name"/>
         <result property="userName" column="user_name"/>
@@ -102,7 +102,7 @@
         <result property="defectTodayCount" column="defect_today_count"/>
     </resultMap>
 
-    <resultMap id="SysMemberOfDefectsLineResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysMemberOfDefectsLine">
+    <resultMap id="SysMemberOfDefectsLineResult" type="com.cat2bug.common.domain.dashboard.SysMemberOfDefectsLine">
         <result property="nickName" column="nick_name"/>
         <result property="userName" column="user_name"/>
         <result property="avatar" column="avatar"/>

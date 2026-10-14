@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysProjectApiMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysProjectApiMapper">
 
-    <resultMap id="SysProjectApiResult" type="com.cat2bug.quarkus.common.domain.SysProjectApi">
+    <resultMap id="SysProjectApiResult" type="com.cat2bug.common.domain.SysProjectApi">
         <result property="apiId" column="api_id"/>
         <result property="projectId" column="project_id"/>
         <result property="userId" column="user_id"/>
         <result property="whiteList" column="white_list"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.StringListJsonTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.StringListJsonTypeHandler"/>
         <result property="expireTime" column="expire_time"/>
         <result property="remark" column="remark"/>
         <result property="apiName" column="api_name"/>
@@ -77,7 +77,7 @@
             <if test="projectId != null">#{projectId},</if>
             <if test="userId != null">#{userId},</if>
             <if test="whiteList != null">
-                #{whiteList, typeHandler=com.cat2bug.quarkus.system.mybatis.StringListJsonTypeHandler},
+                #{whiteList, typeHandler=com.cat2bug.system.mybatis.StringListJsonTypeHandler},
             </if>
             <if test="expireTime != null">#{expireTime},</if>
             <if test="remark != null">#{remark},</if>
@@ -92,7 +92,7 @@
             <if test="projectId != null">project_id = #{projectId},</if>
             <if test="userId != null">user_id = #{userId},</if>
             <if test="whiteList != null">
-                white_list = #{whiteList, typeHandler=com.cat2bug.quarkus.system.mybatis.StringListJsonTypeHandler},
+                white_list = #{whiteList, typeHandler=com.cat2bug.system.mybatis.StringListJsonTypeHandler},
             </if>
             <if test="expireTime != null">expire_time = #{expireTime},</if>
             <if test="remark != null">remark = #{remark},</if>

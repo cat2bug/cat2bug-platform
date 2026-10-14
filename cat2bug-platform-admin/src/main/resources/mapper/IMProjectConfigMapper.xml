@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.IMProjectConfigMapper">
+<mapper namespace="com.cat2bug.system.mapper.IMProjectConfigMapper">
 
-    <resultMap type="com.cat2bug.quarkus.common.domain.im.IMProjectConfig" id="ImProjectConfigResult">
+    <resultMap type="com.cat2bug.common.domain.im.IMProjectConfig" id="ImProjectConfigResult">
         <result property="configId" column="config_id"/>
         <result property="projectId" column="project_id"/>
         <result property="systemCode" column="system_code"/>
         <result property="configParams" column="config_params"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.IMJSONStringConfigTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.IMJSONStringConfigTypeHandler"/>
     </resultMap>
 
     <sql id="selectImProjectConfigVo">
         select config_id, project_id, system_code, config_params from im_project_config
     </sql>
 
-    <select id="selectImProjectConfigList" parameterType="com.cat2bug.quarkus.common.domain.im.IMProjectConfig"
+    <select id="selectImProjectConfigList" parameterType="com.cat2bug.common.domain.im.IMProjectConfig"
             resultMap="ImProjectConfigResult">
         <include refid="selectImProjectConfigVo"/>
         <where>
@@ -33,7 +33,7 @@
         where project_id = #{projectId} and system_code = #{systemCode}
     </select>
 
-    <insert id="insertImProjectConfig" parameterType="com.cat2bug.quarkus.common.domain.im.IMProjectConfig"
+    <insert id="insertImProjectConfig" parameterType="com.cat2bug.common.domain.im.IMProjectConfig"
             useGeneratedKeys="true" keyProperty="configId">
         insert into im_project_config
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -48,7 +48,7 @@
         </trim>
     </insert>
 
-    <update id="updateImProjectConfig" parameterType="com.cat2bug.quarkus.common.domain.im.IMProjectConfig">
+    <update id="updateImProjectConfig" parameterType="com.cat2bug.common.domain.im.IMProjectConfig">
         update im_project_config
         <trim prefix="SET" suffixOverrides=",">
             <if test="projectId != null">project_id = #{projectId},</if>

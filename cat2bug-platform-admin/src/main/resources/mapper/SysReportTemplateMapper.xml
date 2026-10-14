@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysReportTemplateMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysReportTemplateMapper">
 
-    <resultMap id="SysReportTemplateResult" type="com.cat2bug.quarkus.common.domain.SysReportTemplate">
+    <resultMap id="SysReportTemplateResult" type="com.cat2bug.common.domain.SysReportTemplate">
         <result property="templateId" column="template_id"/>
         <result property="moduleType" column="module_type"/>
         <result property="templateContent" column="template_content"/>

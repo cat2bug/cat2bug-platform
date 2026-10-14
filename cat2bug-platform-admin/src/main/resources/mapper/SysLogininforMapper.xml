@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysLogininforMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysLogininforMapper">
 
-    <resultMap id="SysLogininforResult" type="com.cat2bug.quarkus.common.domain.SysLogininfor">
+    <resultMap id="SysLogininforResult" type="com.cat2bug.common.domain.SysLogininfor">
         <id property="infoId" column="info_id"/>
         <result property="userName" column="user_name"/>
         <result property="status" column="status"/>
@@ -48,7 +48,7 @@
     <select id="selectLogininforList" resultMap="SysLogininforResult">
         select info_id, user_name, ipaddr, login_location, browser, os, status, msg, login_time
         <include refid="selectLogininforListWhere"/>
-        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <bind name="_pageOrder" value="@com.cat2bug.framework.web.PageOrder@current()"/>
         <choose>
             <when test="_pageOrder != null">order by ${_pageOrder}</when>
             <otherwise>order by info_id desc</otherwise>

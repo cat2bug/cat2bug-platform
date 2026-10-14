@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysDefectMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysDefectMapper">
 
-    <resultMap id="SysDefectResult" type="com.cat2bug.quarkus.common.domain.SysDefect">
+    <resultMap id="SysDefectResult" type="com.cat2bug.common.domain.SysDefect">
         <id property="defectId" column="defect_id"/>
         <result property="projectNum" column="project_num"/>
         <result property="defectType" column="defect_type"/>
@@ -25,7 +25,7 @@
         <result property="updateById" column="update_by_id"/>
         <result property="updateTime" column="update_time"/>
         <result property="handleBy" column="handle_by"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.LongListJsonTypeHandler"/>
         <result property="handleTime" column="handle_time"/>
         <result property="imgUrls" column="img_urls"/>
         <result property="annexUrls" column="annex_urls"/>
@@ -33,7 +33,7 @@
         <result property="planEndTime" column="plan_end_time"/>
         <result property="delFlag" column="del_flag"/>
         <result property="customFields" column="custom_fields"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.JsonMapTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.JsonMapTypeHandler"/>
     </resultMap>
 
     <sql id="selectSysDefectColumns">
@@ -80,7 +80,7 @@
         <include refid="selectSysDefectColumns"/>
         <include refid="selectSysDefectFrom"/>
         <include refid="selectSysDefectWhere"/>
-        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current('create_member=d.create_by_id')"/>
+        <bind name="_pageOrder" value="@com.cat2bug.framework.web.PageOrder@current('create_member=d.create_by_id')"/>
         <choose>
             <when test="_pageOrder != null">ORDER BY ${_pageOrder}</when>
             <otherwise>ORDER BY d.defect_id DESC</otherwise>
@@ -119,7 +119,7 @@
         WHERE project_id = #{projectId} AND del_flag = '0'
     </select>
 
-    <insert id="insertSysDefect" parameterType="com.cat2bug.quarkus.common.domain.SysDefect"
+    <insert id="insertSysDefect" parameterType="com.cat2bug.common.domain.SysDefect"
             useGeneratedKeys="true" keyProperty="defectId">
         INSERT INTO sys_defect
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -169,14 +169,14 @@
             <if test="updateBy != null">#{updateBy},</if>
             <if test="updateById != null">#{updateById},</if>
             <if test="updateTime != null">#{updateTime},</if>
-            <if test="handleBy != null">#{handleBy,typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="handleBy != null">#{handleBy,typeHandler=com.cat2bug.system.mybatis.LongListJsonTypeHandler},</if>
             <if test="handleTime != null">#{handleTime},</if>
             <if test="imgUrls != null">#{imgUrls},</if>
             <if test="annexUrls != null">#{annexUrls},</if>
             <if test="planStartTime != null">#{planStartTime},</if>
             <if test="planEndTime != null">#{planEndTime},</if>
             <if test="delFlag != null">#{delFlag},</if>
-            <if test="customFields != null">#{customFields,typeHandler=com.cat2bug.quarkus.system.mybatis.JsonMapTypeHandler},</if>
+            <if test="customFields != null">#{customFields,typeHandler=com.cat2bug.system.mybatis.JsonMapTypeHandler},</if>
         </trim>
     </insert>
 
@@ -203,15 +203,15 @@
             #{defect.updateBy},
             #{defect.updateById},
             #{defect.defectState},
-            #{defect.handleBy,typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},
+            #{defect.handleBy,typeHandler=com.cat2bug.system.mybatis.LongListJsonTypeHandler},
             #{defect.defectLevel},
             #{defect.delFlag},
-            #{defect.customFields,typeHandler=com.cat2bug.quarkus.system.mybatis.JsonMapTypeHandler}
+            #{defect.customFields,typeHandler=com.cat2bug.system.mybatis.JsonMapTypeHandler}
             )
         </foreach>
     </insert>
 
-    <update id="updateSysDefect" parameterType="com.cat2bug.quarkus.common.domain.SysDefect">
+    <update id="updateSysDefect" parameterType="com.cat2bug.common.domain.SysDefect">
         UPDATE sys_defect
         <trim prefix="SET" suffixOverrides=",">
             <if test="defectType != null">defect_type = #{defectType},</if>
@@ -228,13 +228,13 @@
             <if test="updateBy != null">update_by = #{updateBy},</if>
             <if test="updateById != null">update_by_id = #{updateById},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
-            <if test="handleBy != null">handle_by = #{handleBy,typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="handleBy != null">handle_by = #{handleBy,typeHandler=com.cat2bug.system.mybatis.LongListJsonTypeHandler},</if>
             <if test="handleTime != null">handle_time = #{handleTime},</if>
             <if test="imgUrls != null">img_urls = #{imgUrls},</if>
             <if test="annexUrls != null">annex_urls = #{annexUrls},</if>
             <if test="planStartTime != null">plan_start_time = #{planStartTime},</if>
             <if test="planEndTime != null">plan_end_time = #{planEndTime},</if>
-            <if test="customFields != null">custom_fields = #{customFields,typeHandler=com.cat2bug.quarkus.system.mybatis.JsonMapTypeHandler},</if>
+            <if test="customFields != null">custom_fields = #{customFields,typeHandler=com.cat2bug.system.mybatis.JsonMapTypeHandler},</if>
         </trim>
         WHERE defect_id = #{defectId} AND del_flag = '0'
     </update>
@@ -244,7 +244,7 @@
         WHERE defect_id = #{defectId} AND del_flag = '0'
     </update>
 
-    <update id="restoreSysDefectByDefectId" parameterType="com.cat2bug.quarkus.common.domain.SysDefect">
+    <update id="restoreSysDefectByDefectId" parameterType="com.cat2bug.common.domain.SysDefect">
         UPDATE sys_defect
         SET del_flag = '0',
             update_by = #{updateBy},
@@ -253,7 +253,7 @@
         WHERE defect_id = #{defectId} AND del_flag = '2'
     </update>
 
-    <resultMap id="SysVersionResult" type="com.cat2bug.quarkus.common.domain.SysVersion">
+    <resultMap id="SysVersionResult" type="com.cat2bug.common.domain.SysVersion">
         <result property="version" column="version"/>
         <result property="createTime" column="create_time"/>
     </resultMap>

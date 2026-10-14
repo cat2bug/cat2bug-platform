@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysGitPullRequestCommentMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysGitPullRequestCommentMapper">
 
-    <resultMap type="com.cat2bug.quarkus.common.domain.SysGitPullRequestComment" id="SysGitPullRequestCommentResult">
+    <resultMap type="com.cat2bug.common.domain.SysGitPullRequestComment" id="SysGitPullRequestCommentResult">
         <result property="commentId"     column="comment_id"/>
         <result property="pullRequestId" column="pull_request_id"/>
         <result property="userId"        column="user_id"/>
@@ -19,7 +19,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         from sys_git_pull_request_comment
     </sql>
 
-    <insert id="insert" parameterType="com.cat2bug.quarkus.common.domain.SysGitPullRequestComment" useGeneratedKeys="true" keyProperty="commentId">
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysGitPullRequestComment" useGeneratedKeys="true" keyProperty="commentId">
         insert into sys_git_pull_request_comment
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="pullRequestId != null">pull_request_id,</if>

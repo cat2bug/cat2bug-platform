@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysUserStatisticTemplateMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysUserStatisticTemplateMapper">
 
-    <resultMap id="SysUserStatisticTemplateResult" type="com.cat2bug.quarkus.common.domain.SysUserStatisticTemplate">
+    <resultMap id="SysUserStatisticTemplateResult" type="com.cat2bug.common.domain.SysUserStatisticTemplate">
         <id property="statisticTemplateId" column="statistic_template_id"/>
         <result property="statisticTemplatCode" column="statistic_templat_code"/>
         <result property="moduleType" column="module_type"/>

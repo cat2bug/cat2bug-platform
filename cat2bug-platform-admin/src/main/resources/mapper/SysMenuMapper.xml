@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysMenuMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysMenuMapper">
 
-    <resultMap type="com.cat2bug.quarkus.common.domain.SysMenu" id="SysMenuResult">
+    <resultMap type="com.cat2bug.common.domain.SysMenu" id="SysMenuResult">
         <id property="menuId" column="menu_id"/>
         <result property="menuName" column="menu_name"/>
         <result property="menuNameI18nKey" column="menu_name_i18n_key"/>
@@ -147,7 +147,7 @@
         limit 1
     </select>
 
-    <insert id="insertMenu" parameterType="com.cat2bug.quarkus.common.domain.SysMenu" useGeneratedKeys="true" keyProperty="menuId">
+    <insert id="insertMenu" parameterType="com.cat2bug.common.domain.SysMenu" useGeneratedKeys="true" keyProperty="menuId">
         insert into sys_menu(
             <if test="parentId != null">parent_id,</if>
             <if test="menuName != null and menuName != ''">menu_name,</if>
@@ -185,7 +185,7 @@
         )
     </insert>
 
-    <update id="updateMenu" parameterType="com.cat2bug.quarkus.common.domain.SysMenu">
+    <update id="updateMenu" parameterType="com.cat2bug.common.domain.SysMenu">
         update sys_menu
         <set>
             <if test="menuName != null and menuName != ''">menu_name = #{menuName},</if>

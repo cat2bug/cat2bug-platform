@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysGitReleaseAssetMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysGitReleaseAssetMapper">
 
-    <resultMap type="com.cat2bug.quarkus.common.domain.SysGitReleaseAsset" id="SysGitReleaseAssetResult">
+    <resultMap type="com.cat2bug.common.domain.SysGitReleaseAsset" id="SysGitReleaseAssetResult">
         <result property="assetId"       column="asset_id"       />
         <result property="releaseId"     column="release_id"     />
         <result property="repositoryId"  column="repository_id"  />
@@ -39,7 +39,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select count(*) from sys_git_release_asset where release_id = #{releaseId}
     </select>
 
-    <insert id="insertSysGitReleaseAsset" parameterType="com.cat2bug.quarkus.common.domain.SysGitReleaseAsset" useGeneratedKeys="true" keyProperty="assetId">
+    <insert id="insertSysGitReleaseAsset" parameterType="com.cat2bug.common.domain.SysGitReleaseAsset" useGeneratedKeys="true" keyProperty="assetId">
         insert into sys_git_release_asset
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="releaseId != null">release_id,</if>

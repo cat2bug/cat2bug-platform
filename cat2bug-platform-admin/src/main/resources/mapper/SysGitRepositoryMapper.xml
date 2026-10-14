@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysGitRepositoryMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysGitRepositoryMapper">
 
-    <resultMap type="com.cat2bug.quarkus.common.domain.SysGitRepository" id="SysGitRepositoryResult">
+    <resultMap type="com.cat2bug.common.domain.SysGitRepository" id="SysGitRepositoryResult">
         <result property="repositoryId"    column="repository_id"    />
         <result property="projectId"       column="project_id"       />
         <result property="name"            column="name"             />
@@ -19,7 +19,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="remark"          column="remark"           />
     </resultMap>
 
-    <resultMap type="com.cat2bug.quarkus.common.domain.SysGitRepository" id="SysGitRepositoryWithKeysResult" extends="SysGitRepositoryResult">
+    <resultMap type="com.cat2bug.common.domain.SysGitRepository" id="SysGitRepositoryWithKeysResult" extends="SysGitRepositoryResult">
         <result property="teamKey"       column="team_key"       />
         <result property="projectKey"    column="project_key"    />
         <result property="collect"       column="collect"        />
@@ -71,7 +71,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where t.team_key = #{teamKey} and p.project_key = #{projectKey} and r.slug = #{slug}
     </select>
 
-    <select id="selectSysGitRepositoryList" parameterType="com.cat2bug.quarkus.common.domain.SysGitRepository" resultMap="SysGitRepositoryWithKeysResult">
+    <select id="selectSysGitRepositoryList" parameterType="com.cat2bug.common.domain.SysGitRepository" resultMap="SysGitRepositoryWithKeysResult">
         <include refid="selectSysGitRepositoryWithKeysVo"/>
         <where>
             <if test="projectId != null "> and r.project_id = #{projectId}</if>
@@ -81,7 +81,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         order by r.create_time asc
     </select>
 
-    <insert id="insertSysGitRepository" parameterType="com.cat2bug.quarkus.common.domain.SysGitRepository" useGeneratedKeys="true" keyProperty="repositoryId">
+    <insert id="insertSysGitRepository" parameterType="com.cat2bug.common.domain.SysGitRepository" useGeneratedKeys="true" keyProperty="repositoryId">
         insert into sys_git_repository
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="projectId != null">project_id,</if>
@@ -111,7 +111,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </trim>
     </insert>
 
-    <update id="updateSysGitRepository" parameterType="com.cat2bug.quarkus.common.domain.SysGitRepository">
+    <update id="updateSysGitRepository" parameterType="com.cat2bug.common.domain.SysGitRepository">
         update sys_git_repository
         <trim prefix="SET" suffixOverrides=",">
             <if test="name != null">name = #{name},</if>
@@ -137,7 +137,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </foreach>
     </delete>
 
-    <resultMap type="com.cat2bug.quarkus.system.git.browse.domain.GitProjectOverview" id="GitProjectOverviewCountsResult">
+    <resultMap type="com.cat2bug.system.git.browse.domain.GitProjectOverview" id="GitProjectOverviewCountsResult">
         <result property="repoCount"    column="repo_count"    />
         <result property="openPrCount"  column="open_pr_count"  />
         <result property="collectCount" column="collect_count" />

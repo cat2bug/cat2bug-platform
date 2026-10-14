@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.OpenApiDeliverableMapper">
+<mapper namespace="com.cat2bug.system.mapper.OpenApiDeliverableMapper">
 
-    <resultMap id="ApiDeliverableResult" type="com.cat2bug.quarkus.common.domain.open.ApiDeliverable">
+    <resultMap id="ApiDeliverableResult" type="com.cat2bug.common.domain.open.ApiDeliverable">
         <result property="deliverableId" column="module_id"/>
         <result property="deliverablePid" column="module_pid"/>
         <result property="deliverableName" column="module_name"/>

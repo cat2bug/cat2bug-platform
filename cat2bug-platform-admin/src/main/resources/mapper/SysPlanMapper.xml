@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysPlanMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysPlanMapper">
 
-    <resultMap id="SysPlanResult" type="com.cat2bug.quarkus.common.domain.SysPlan">
+    <resultMap id="SysPlanResult" type="com.cat2bug.common.domain.SysPlan">
         <result property="planId" column="plan_id"/>
         <result property="planNumber" column="plan_number"/>
         <result property="planName" column="plan_name"/>
@@ -40,12 +40,12 @@
         <result property="remark" column="remark"/>
     </resultMap>
 
-    <resultMap id="SysPlanSysPlanItemResult" type="com.cat2bug.quarkus.common.domain.SysPlan" extends="SysPlanResult">
+    <resultMap id="SysPlanSysPlanItemResult" type="com.cat2bug.common.domain.SysPlan" extends="SysPlanResult">
         <collection property="sysPlanItemList" notNullColumn="sub_plan_item_id"
                     javaType="java.util.List" resultMap="SysPlanItemResult"/>
     </resultMap>
 
-    <resultMap id="SysPlanItemResult" type="com.cat2bug.quarkus.common.domain.SysPlanItem">
+    <resultMap id="SysPlanItemResult" type="com.cat2bug.common.domain.SysPlanItem">
         <result property="planItemId" column="sub_plan_item_id"/>
         <result property="planId" column="sub_plan_id"/>
         <result property="moduleId" column="sub_module_id"/>
@@ -54,10 +54,10 @@
         <result property="updateById" column="sub_update_by_id"/>
         <result property="updateTime" column="sub_update_time"/>
         <result property="defectIds" column="sub_defect_ids"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.LongCsvTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.LongCsvTypeHandler"/>
     </resultMap>
 
-    <resultMap id="SysPlanItemSimpleResult" type="com.cat2bug.quarkus.common.domain.SysPlanItem">
+    <resultMap id="SysPlanItemSimpleResult" type="com.cat2bug.common.domain.SysPlanItem">
         <result property="planItemId" column="plan_item_id"/>
         <result property="planId" column="plan_id"/>
         <result property="moduleId" column="module_id"/>
@@ -66,7 +66,7 @@
         <result property="updateById" column="update_by_id"/>
         <result property="updateTime" column="update_time"/>
         <result property="defectIds" column="defect_ids"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.LongCsvTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.LongCsvTypeHandler"/>
     </resultMap>
 
     <sql id="planItemDefectIdMatch">
@@ -246,7 +246,7 @@
     <select id="selectSysPlanList" resultMap="SysPlanResult">
         <include refid="selectSysPlanVo"/>
         <include refid="selectSysPlanWhere"/>
-        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <bind name="_pageOrder" value="@com.cat2bug.framework.web.PageOrder@current()"/>
         <choose>
             <when test="_pageOrder != null">ORDER BY ${_pageOrder}</when>
             <otherwise>ORDER BY p.create_time DESC</otherwise>
@@ -279,7 +279,7 @@
         WHERE plan_id = #{planId}
     </select>
 
-    <insert id="insertSysPlan" parameterType="com.cat2bug.quarkus.common.domain.SysPlan">
+    <insert id="insertSysPlan" parameterType="com.cat2bug.common.domain.SysPlan">
         INSERT INTO sys_plan
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="planId != null">plan_id,</if>
@@ -313,7 +313,7 @@
         </trim>
     </insert>
 
-    <update id="updateSysPlan" parameterType="com.cat2bug.quarkus.common.domain.SysPlan">
+    <update id="updateSysPlan" parameterType="com.cat2bug.common.domain.SysPlan">
         UPDATE sys_plan
         <trim prefix="SET" suffixOverrides=",">
             <if test="planNumber != null">plan_number = #{planNumber},</if>
@@ -332,7 +332,7 @@
         WHERE plan_id = #{planId}
     </update>
 
-    <update id="updateUpdateTimeOfSysPlan" parameterType="com.cat2bug.quarkus.common.domain.SysPlan">
+    <update id="updateUpdateTimeOfSysPlan" parameterType="com.cat2bug.common.domain.SysPlan">
         UPDATE sys_plan
         <trim prefix="SET" suffixOverrides=",">
             <if test="updateById != null">update_by_id = #{updateById},</if>
@@ -376,7 +376,7 @@
         <foreach item="item" collection="list" separator=",">
             (#{item.planItemId}, #{item.planId}, #{item.moduleId}, #{item.caseId}, #{item.planItemState},
              #{item.updateById}, #{item.updateTime},
-             #{item.defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongCsvTypeHandler})
+             #{item.defectIds, typeHandler=com.cat2bug.system.mybatis.LongCsvTypeHandler})
         </foreach>
     </insert>
 
@@ -490,7 +490,7 @@
     </select>
 
     <select id="selectSysDefectListByPlanId"
-            resultMap="com.cat2bug.quarkus.system.mapper.SysDefectMapper.SysDefectResult">
+            resultMap="com.cat2bug.system.mapper.SysDefectMapper.SysDefectResult">
         SELECT DISTINCT
             d.defect_id, d.project_num, d.defect_type, d.defect_name, d.defect_describe,
             d.defect_level, d.defect_state, d.module_id, m.module_name, d.module_version,
@@ -500,7 +500,7 @@
             d.plan_start_time, d.plan_end_time, d.del_flag
         <include refid="selectSysDefectOfPlanFrom"/>
         <include refid="selectPlanDefectWhere"/>
-        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <bind name="_pageOrder" value="@com.cat2bug.framework.web.PageOrder@current()"/>
         <choose>
             <when test="_pageOrder != null">ORDER BY ${_pageOrder}</when>
             <otherwise>ORDER BY d.defect_id DESC</otherwise>

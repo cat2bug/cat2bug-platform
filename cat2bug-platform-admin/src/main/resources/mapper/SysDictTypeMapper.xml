@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysDictTypeMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysDictTypeMapper">
 
-    <resultMap id="SysDictTypeResult" type="com.cat2bug.quarkus.common.domain.SysDictType">
+    <resultMap id="SysDictTypeResult" type="com.cat2bug.common.domain.SysDictType">
         <id property="dictId" column="dict_id"/>
         <result property="dictName" column="dict_name"/>
         <result property="dictType" column="dict_type"/>

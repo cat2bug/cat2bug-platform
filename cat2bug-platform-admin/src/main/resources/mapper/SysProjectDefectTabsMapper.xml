@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysProjectDefectTabsMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysProjectDefectTabsMapper">
 
-    <resultMap id="SysProjectDefectTabsResult" type="com.cat2bug.quarkus.common.domain.SysProjectDefectTabs">
+    <resultMap id="SysProjectDefectTabsResult" type="com.cat2bug.common.domain.SysProjectDefectTabs">
         <result property="tabId" column="tab_id"/>
         <result property="tabName" column="tab_name"/>
         <result property="projectId" column="project_id"/>
         <result property="userId" column="user_id"/>
         <result property="config" column="config"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.SysDefectJsonTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.SysDefectJsonTypeHandler"/>
         <result property="tabSort" column="tab_sort"/>
         <result property="createTime" column="create_time"/>
     </resultMap>
@@ -57,7 +57,7 @@
         where tab_id = #{tabId}
     </select>
 
-    <insert id="insertSysProjectDefectTabs" parameterType="com.cat2bug.quarkus.common.domain.SysProjectDefectTabs"
+    <insert id="insertSysProjectDefectTabs" parameterType="com.cat2bug.common.domain.SysProjectDefectTabs"
             useGeneratedKeys="true" keyProperty="tabId" keyColumn="tab_id">
         insert into sys_project_defect_tabs
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -75,21 +75,21 @@
             <if test="projectId != null">#{projectId},</if>
             <if test="userId != null">#{userId},</if>
             <if test="config != null">
-                #{config, typeHandler=com.cat2bug.quarkus.system.mybatis.SysDefectJsonTypeHandler},
+                #{config, typeHandler=com.cat2bug.system.mybatis.SysDefectJsonTypeHandler},
             </if>
             <if test="tabSort != null">#{tabSort},</if>
             <if test="createTime != null">#{createTime},</if>
         </trim>
     </insert>
 
-    <update id="updateSysProjectDefectTabs" parameterType="com.cat2bug.quarkus.common.domain.SysProjectDefectTabs">
+    <update id="updateSysProjectDefectTabs" parameterType="com.cat2bug.common.domain.SysProjectDefectTabs">
         update sys_project_defect_tabs
         <trim prefix="SET" suffixOverrides=",">
             <if test="tabName != null and tabName != ''">tab_name = #{tabName},</if>
             <if test="projectId != null">project_id = #{projectId},</if>
             <if test="userId != null">user_id = #{userId},</if>
             <if test="config != null">
-                config = #{config, typeHandler=com.cat2bug.quarkus.system.mybatis.SysDefectJsonTypeHandler},
+                config = #{config, typeHandler=com.cat2bug.system.mybatis.SysDefectJsonTypeHandler},
             </if>
             <if test="tabSort != null">tab_sort = #{tabSort},</if>
             <if test="createTime != null">create_time = #{createTime},</if>

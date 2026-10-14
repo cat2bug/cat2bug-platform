@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysDefectStatisticMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysDefectStatisticMapper">
 
     <select id="typeStatistic" resultType="java.util.Map">
         SELECT d.defect_type AS k, COUNT(d.defect_type) AS v
@@ -75,7 +75,7 @@
         ORDER BY s.f / s.a ASC, s.a DESC
     </select>
 
-    <resultMap id="SysDefectOpenWorkloadResult" type="com.cat2bug.quarkus.common.domain.SysDefectOpenWorkload">
+    <resultMap id="SysDefectOpenWorkloadResult" type="com.cat2bug.common.domain.SysDefectOpenWorkload">
         <id property="userId" column="user_id"/>
         <result property="nickName" column="nick_name"/>
         <result property="avatar" column="avatar"/>
@@ -85,7 +85,7 @@
         <result property="rejected" column="rejected"/>
     </resultMap>
 
-    <resultMap id="SysDefectOpenWorkloadSummaryResult" type="com.cat2bug.quarkus.common.domain.SysDefectOpenWorkloadSummary">
+    <resultMap id="SysDefectOpenWorkloadSummaryResult" type="com.cat2bug.common.domain.SysDefectOpenWorkloadSummary">
         <result property="total" column="total"/>
         <result property="processing" column="processing"/>
         <result property="audit" column="audit"/>
@@ -164,7 +164,7 @@
             )
     </select>
 
-    <resultMap id="SysDefectParticipationDayResult" type="com.cat2bug.quarkus.common.domain.SysDefectParticipationDay">
+    <resultMap id="SysDefectParticipationDayResult" type="com.cat2bug.common.domain.SysDefectParticipationDay">
         <result property="date" column="participation_day"/>
         <result property="count" column="cnt"/>
     </resultMap>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysDocumentMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysDocumentMapper">
 
-    <resultMap id="SysDocumentResult" type="com.cat2bug.quarkus.common.domain.SysDocument">
+    <resultMap id="SysDocumentResult" type="com.cat2bug.common.domain.SysDocument">
         <result property="docId" column="doc_id"/>
         <result property="projectId" column="project_id"/>
         <result property="docName" column="doc_name"/>
@@ -83,7 +83,7 @@
     <select id="selectSysDocumentList" resultMap="SysDocumentResult">
         <include refid="selectSysDocumentVo"/>
         <include refid="selectSysDocumentWhere"/>
-        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current('update_by_name=u.nick_name')"/>
+        <bind name="_pageOrder" value="@com.cat2bug.framework.web.PageOrder@current('update_by_name=u.nick_name')"/>
         <choose>
             <when test="_pageOrder != null">order by ${_pageOrder}</when>
             <otherwise>order by d.doc_type asc, d.create_time desc</otherwise>

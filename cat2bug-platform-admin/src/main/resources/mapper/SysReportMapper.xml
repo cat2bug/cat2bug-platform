@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysReportMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysReportMapper">
 
-    <resultMap id="SysReportResult" type="com.cat2bug.quarkus.common.domain.SysReport">
+    <resultMap id="SysReportResult" type="com.cat2bug.common.domain.SysReport">
         <result property="reportId" column="report_id"/>
         <result property="reportTitle" column="report_title"/>
         <result property="reportTime" column="report_time"/>
         <result property="reportDescription" column="report_description"/>
         <result property="reportDataCoder" column="report_data_coder"/>
         <result property="reportData" column="report_data"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.JsonValueTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.JsonValueTypeHandler"/>
         <result property="createById" column="create_by_id"/>
         <result property="createBy" column="create_by"/>
         <result property="createByAvatar" column="create_by_avatar"/>
@@ -59,7 +59,7 @@
     <select id="selectSysReportList" resultMap="SysReportResult">
         <include refid="selectSysReportVo"/>
         <include refid="selectSysReportWhere"/>
-        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <bind name="_pageOrder" value="@com.cat2bug.framework.web.PageOrder@current()"/>
         <choose>
             <when test="_pageOrder != null">order by ${_pageOrder}</when>
             <otherwise>order by r.report_time desc</otherwise>
@@ -92,7 +92,7 @@
             <if test="reportTime != null">#{reportTime},</if>
             <if test="reportDescription != null">#{reportDescription},</if>
             <if test="reportDataCoder != null">#{reportDataCoder},</if>
-            <if test="reportData != null">#{reportData, typeHandler=com.cat2bug.quarkus.system.mybatis.JsonValueTypeHandler},</if>
+            <if test="reportData != null">#{reportData, typeHandler=com.cat2bug.system.mybatis.JsonValueTypeHandler},</if>
             <if test="reportSource != null">#{reportSource},</if>
             <if test="createById != null">#{createById},</if>
             <if test="projectId != null">#{projectId},</if>
@@ -107,7 +107,7 @@
             <if test="reportTime != null">report_time = #{reportTime},</if>
             <if test="reportDescription != null">report_description = #{reportDescription},</if>
             <if test="reportDataCoder != null">report_data_coder = #{reportDataCoder},</if>
-            <if test="reportData != null">report_data = #{reportData, typeHandler=com.cat2bug.quarkus.system.mybatis.JsonValueTypeHandler},</if>
+            <if test="reportData != null">report_data = #{reportData, typeHandler=com.cat2bug.system.mybatis.JsonValueTypeHandler},</if>
             <if test="reportSource != null">report_source = #{reportSource},</if>
         </trim>
         where report_id = #{reportId}

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysCommentMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysCommentMapper">
 
-    <resultMap id="SysCommentResult" type="com.cat2bug.quarkus.common.domain.SysComment">
+    <resultMap id="SysCommentResult" type="com.cat2bug.common.domain.SysComment">
         <result property="commentId" column="comment_id"/>
         <result property="commentContent" column="comment_content"/>
         <result property="createById" column="create_by_id"/>
@@ -16,11 +16,11 @@
         <result property="contextBefore" column="context_before"/>
         <result property="contextAfter" column="context_after"/>
         <result property="anchorHint" column="anchor_hint"/>
-        <association property="createMember" javaType="com.cat2bug.quarkus.common.domain.SysUser"
+        <association property="createMember" javaType="com.cat2bug.common.domain.SysUser"
                      resultMap="memberResult"/>
     </resultMap>
 
-    <resultMap id="memberResult" type="com.cat2bug.quarkus.common.domain.SysUser">
+    <resultMap id="memberResult" type="com.cat2bug.common.domain.SysUser">
         <id property="userId" column="member_user_id"/>
         <result property="userName" column="member_user_name"/>
         <result property="nickName" column="member_nick_name"/>

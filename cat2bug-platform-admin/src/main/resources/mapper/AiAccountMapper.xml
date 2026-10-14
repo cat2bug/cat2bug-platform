@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.AiAccountMapper">
+<mapper namespace="com.cat2bug.system.mapper.AiAccountMapper">
 
-    <resultMap id="AiAccountResult" type="com.cat2bug.quarkus.common.domain.AiAccount">
+    <resultMap id="AiAccountResult" type="com.cat2bug.common.domain.AiAccount">
         <result property="accountId" column="account_id"/>
         <result property="aiUrl" column="ai_url"/>
         <result property="modelName" column="model_name"/>

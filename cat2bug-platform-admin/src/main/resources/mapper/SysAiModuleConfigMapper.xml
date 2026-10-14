@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysAiModuleConfigMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysAiModuleConfigMapper">
 
-    <resultMap id="SysAiModuleConfigResult" type="com.cat2bug.quarkus.common.domain.SysAiModuleConfig">
+    <resultMap id="SysAiModuleConfigResult" type="com.cat2bug.common.domain.SysAiModuleConfig">
         <id property="aiId" column="ai_id"/>
         <result property="projectId" column="project_id"/>
         <result property="createTime" column="create_time"/>
@@ -17,7 +17,7 @@
         from sys_ai_module_config
     </sql>
 
-    <select id="selectSysAiModuleConfigList" parameterType="com.cat2bug.quarkus.common.domain.SysAiModuleConfig"
+    <select id="selectSysAiModuleConfigList" parameterType="com.cat2bug.common.domain.SysAiModuleConfig"
             resultMap="SysAiModuleConfigResult">
         <include refid="selectSysAiModuleConfigVo"/>
         <where>
@@ -36,7 +36,7 @@
         where project_id = #{projectId}
     </select>
 
-    <insert id="insertSysAiModuleConfig" parameterType="com.cat2bug.quarkus.common.domain.SysAiModuleConfig"
+    <insert id="insertSysAiModuleConfig" parameterType="com.cat2bug.common.domain.SysAiModuleConfig"
             useGeneratedKeys="true" keyProperty="aiId">
         insert into sys_ai_module_config
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -55,7 +55,7 @@
         </trim>
     </insert>
 
-    <update id="updateSysAiModuleConfig" parameterType="com.cat2bug.quarkus.common.domain.SysAiModuleConfig">
+    <update id="updateSysAiModuleConfig" parameterType="com.cat2bug.common.domain.SysAiModuleConfig">
         update sys_ai_module_config
         <trim prefix="SET" suffixOverrides=",">
             <if test="projectId != null">project_id = #{projectId},</if>

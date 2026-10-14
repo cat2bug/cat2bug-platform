@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysRoleMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysRoleMapper">
 
-    <resultMap id="SysRoleResult" type="com.cat2bug.quarkus.common.domain.SysRole">
+    <resultMap id="SysRoleResult" type="com.cat2bug.common.domain.SysRole">
         <id property="roleId" column="role_id"/>
         <result property="roleName" column="role_name"/>
         <result property="roleKey" column="role_key"/>

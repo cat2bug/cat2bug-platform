@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysPostMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysPostMapper">
 
-    <resultMap id="SysPostResult" type="com.cat2bug.quarkus.common.domain.SysPost">
+    <resultMap id="SysPostResult" type="com.cat2bug.common.domain.SysPost">
         <id property="postId" column="post_id"/>
         <result property="postCode" column="post_code"/>
         <result property="postName" column="post_name"/>

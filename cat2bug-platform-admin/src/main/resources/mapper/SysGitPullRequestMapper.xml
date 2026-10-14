@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysGitPullRequestMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysGitPullRequestMapper">
 
-    <resultMap type="com.cat2bug.quarkus.common.domain.SysGitPullRequest" id="SysGitPullRequestResult">
+    <resultMap type="com.cat2bug.common.domain.SysGitPullRequest" id="SysGitPullRequestResult">
         <result property="pullRequestId" column="pull_request_id"/>
         <result property="repositoryId"  column="repository_id"/>
         <result property="number"        column="number"/>
@@ -33,7 +33,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         from sys_git_pull_request
     </sql>
 
-    <insert id="insert" parameterType="com.cat2bug.quarkus.common.domain.SysGitPullRequest" useGeneratedKeys="true" keyProperty="pullRequestId">
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysGitPullRequest" useGeneratedKeys="true" keyProperty="pullRequestId">
         insert into sys_git_pull_request
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="repositoryId != null">repository_id,</if>
@@ -104,7 +104,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
           and state = 'open'
     </select>
 
-    <update id="updateStateFields" parameterType="com.cat2bug.quarkus.common.domain.SysGitPullRequest">
+    <update id="updateStateFields" parameterType="com.cat2bug.common.domain.SysGitPullRequest">
         update sys_git_pull_request
         <trim prefix="SET" suffixOverrides=",">
             <if test="state != null">state = #{state},</if>

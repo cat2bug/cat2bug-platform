@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysScreenSizeMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysScreenSizeMapper">
 
-    <resultMap id="SysScreenSizeResult" type="com.cat2bug.quarkus.common.domain.SysScreenSize">
+    <resultMap id="SysScreenSizeResult" type="com.cat2bug.common.domain.SysScreenSize">
         <id property="screenSizeId" column="screen_size_id"/>
         <result property="name" column="name"/>
         <result property="width" column="width"/>

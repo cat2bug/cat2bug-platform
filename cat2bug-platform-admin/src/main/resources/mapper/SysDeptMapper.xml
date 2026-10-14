@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysDeptMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysDeptMapper">
 
-    <resultMap id="SysDeptResult" type="com.cat2bug.quarkus.common.domain.SysDept">
+    <resultMap id="SysDeptResult" type="com.cat2bug.common.domain.SysDept">
         <id property="deptId" column="dept_id"/>
         <result property="parentId" column="parent_id"/>
         <result property="ancestors" column="ancestors"/>

@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysGitRepositoryWebhookMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysGitRepositoryWebhookMapper">
 
-    <resultMap type="com.cat2bug.quarkus.common.domain.SysGitRepositoryWebhook" id="SysGitRepositoryWebhookResult">
+    <resultMap type="com.cat2bug.common.domain.SysGitRepositoryWebhook" id="SysGitRepositoryWebhookResult">
         <result property="webhookId"      column="webhook_id" />
         <result property="repositoryId"   column="repository_id" />
         <result property="url"            column="url" />
@@ -41,7 +41,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where repository_id = #{repositoryId} and webhook_id = #{webhookId}
     </select>
 
-    <insert id="insert" parameterType="com.cat2bug.quarkus.common.domain.SysGitRepositoryWebhook" useGeneratedKeys="true" keyProperty="webhookId">
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysGitRepositoryWebhook" useGeneratedKeys="true" keyProperty="webhookId">
         insert into sys_git_repository_webhook (
             repository_id, url, alias, secret_cipher, events, active,
             create_by, create_time, update_by, update_time, remark
@@ -51,7 +51,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         )
     </insert>
 
-    <update id="update" parameterType="com.cat2bug.quarkus.common.domain.SysGitRepositoryWebhook">
+    <update id="update" parameterType="com.cat2bug.common.domain.SysGitRepositoryWebhook">
         update sys_git_repository_webhook
         set url = #{url},
             alias = #{alias},

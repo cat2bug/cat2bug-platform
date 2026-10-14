@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysGitWebhookDeliveryMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysGitWebhookDeliveryMapper">
 
-    <resultMap type="com.cat2bug.quarkus.common.domain.SysGitWebhookDelivery" id="SysGitWebhookDeliveryResult">
+    <resultMap type="com.cat2bug.common.domain.SysGitWebhookDelivery" id="SysGitWebhookDeliveryResult">
         <result property="deliveryId"              column="delivery_id" />
         <result property="webhookId"               column="webhook_id" />
         <result property="repositoryId"            column="repository_id" />
@@ -20,7 +20,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createTime"              column="create_time" />
     </resultMap>
 
-    <insert id="insert" parameterType="com.cat2bug.quarkus.common.domain.SysGitWebhookDelivery" useGeneratedKeys="true" keyProperty="deliveryId">
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysGitWebhookDelivery" useGeneratedKeys="true" keyProperty="deliveryId">
         insert into sys_git_webhook_delivery (
             webhook_id, repository_id, event, delivery_guid, request_headers_summary, request_body,
             response_status, response_body_truncated, duration_ms, success, error_message, create_time

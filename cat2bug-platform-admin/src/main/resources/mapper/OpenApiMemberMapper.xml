@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.OpenApiMemberMapper">
+<mapper namespace="com.cat2bug.system.mapper.OpenApiMemberMapper">
 
-    <resultMap id="ApiMemberResult" type="com.cat2bug.quarkus.common.domain.open.ApiMember">
+    <resultMap id="ApiMemberResult" type="com.cat2bug.common.domain.open.ApiMember">
         <id property="memberId" column="user_id"/>
         <result property="memberAccount" column="user_name"/>
         <result property="memberName" column="nick_name"/>

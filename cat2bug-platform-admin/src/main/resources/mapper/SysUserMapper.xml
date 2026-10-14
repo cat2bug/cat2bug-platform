@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysUserMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysUserMapper">
 
-    <resultMap id="SysUserResult" type="com.cat2bug.quarkus.common.domain.SysUser">
+    <resultMap id="SysUserResult" type="com.cat2bug.common.domain.SysUser">
         <id property="userId" column="user_id"/>
         <result property="deptId" column="dept_id"/>
         <result property="userName" column="user_name"/>
@@ -14,12 +14,12 @@
         <result property="phoneNumber" column="phonenumber"/>
         <result property="email" column="email"/>
         <result property="sex" column="sex"/>
-        <association property="dept" javaType="com.cat2bug.quarkus.common.domain.SysDept">
+        <association property="dept" javaType="com.cat2bug.common.domain.SysDept">
             <id property="deptId" column="dept_id"/>
             <result property="deptName" column="dept_name"/>
             <result property="leader" column="leader"/>
         </association>
-        <collection property="roles" ofType="com.cat2bug.quarkus.common.domain.SysRole">
+        <collection property="roles" ofType="com.cat2bug.common.domain.SysRole">
             <id property="roleId" column="role_id"/>
             <result property="roleName" column="role_name"/>
             <result property="roleKey" column="role_key"/>

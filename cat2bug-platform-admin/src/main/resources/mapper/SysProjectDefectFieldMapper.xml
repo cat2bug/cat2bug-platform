@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysProjectDefectFieldMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysProjectDefectFieldMapper">
 
-    <resultMap type="com.cat2bug.quarkus.common.domain.SysProjectDefectField" id="SysProjectDefectFieldResult">
+    <resultMap type="com.cat2bug.common.domain.SysProjectDefectField" id="SysProjectDefectFieldResult">
         <result property="fieldId" column="field_id"/>
         <result property="projectId" column="project_id"/>
         <result property="fieldKey" column="field_key"/>
@@ -16,8 +16,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="enabled" column="enabled"/>
         <result property="isSystem" column="is_system"/>
         <result property="sortOrder" column="sort_order"/>
-        <result property="typeConfig" column="type_config" typeHandler="com.cat2bug.quarkus.system.mybatis.JsonMapTypeHandler"/>
-        <result property="defaultValue" column="default_value" typeHandler="com.cat2bug.quarkus.system.mybatis.JsonValueTypeHandler"/>
+        <result property="typeConfig" column="type_config" typeHandler="com.cat2bug.system.mybatis.JsonMapTypeHandler"/>
+        <result property="defaultValue" column="default_value" typeHandler="com.cat2bug.system.mybatis.JsonValueTypeHandler"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
     </resultMap>
@@ -79,7 +79,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
           and trim(JSON_UNQUOTE(JSON_EXTRACT(d.custom_fields, CONCAT('$.', #{fieldKey})))) not in ('', 'null', '[]', '{}')
     </select>
 
-    <insert id="insert" parameterType="com.cat2bug.quarkus.common.domain.SysProjectDefectField" useGeneratedKeys="true" keyProperty="fieldId" keyColumn="field_id">
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysProjectDefectField" useGeneratedKeys="true" keyProperty="fieldId" keyColumn="field_id">
         insert into sys_project_defect_field
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="projectId != null">project_id,</if>
@@ -108,14 +108,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="enabled != null">#{enabled},</if>
             <if test="isSystem != null">#{isSystem},</if>
             <if test="sortOrder != null">#{sortOrder},</if>
-            <if test="typeConfig != null">#{typeConfig, typeHandler=com.cat2bug.quarkus.system.mybatis.JsonMapTypeHandler},</if>
-            #{defaultValue, typeHandler=com.cat2bug.quarkus.system.mybatis.JsonValueTypeHandler},
+            <if test="typeConfig != null">#{typeConfig, typeHandler=com.cat2bug.system.mybatis.JsonMapTypeHandler},</if>
+            #{defaultValue, typeHandler=com.cat2bug.system.mybatis.JsonValueTypeHandler},
             <if test="createTime != null">#{createTime},</if>
             <if test="updateTime != null">#{updateTime},</if>
         </trim>
     </insert>
 
-    <update id="update" parameterType="com.cat2bug.quarkus.common.domain.SysProjectDefectField">
+    <update id="update" parameterType="com.cat2bug.common.domain.SysProjectDefectField">
         update sys_project_defect_field
         <trim prefix="SET" suffixOverrides=",">
             <if test="fieldLabel != null">field_label = #{fieldLabel},</if>
@@ -125,8 +125,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="nullable != null">nullable = #{nullable},</if>
             <if test="enabled != null">enabled = #{enabled},</if>
             <if test="sortOrder != null">sort_order = #{sortOrder},</if>
-            <if test="typeConfig != null">type_config = #{typeConfig, typeHandler=com.cat2bug.quarkus.system.mybatis.JsonMapTypeHandler},</if>
-            default_value = #{defaultValue, typeHandler=com.cat2bug.quarkus.system.mybatis.JsonValueTypeHandler},
+            <if test="typeConfig != null">type_config = #{typeConfig, typeHandler=com.cat2bug.system.mybatis.JsonMapTypeHandler},</if>
+            default_value = #{defaultValue, typeHandler=com.cat2bug.system.mybatis.JsonValueTypeHandler},
             <if test="updateTime != null">update_time = #{updateTime},</if>
         </trim>
         where field_id = #{fieldId} and project_id = #{projectId}

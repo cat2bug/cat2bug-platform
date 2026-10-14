@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysUserConfigMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysUserConfigMapper">
 
-    <resultMap type="com.cat2bug.quarkus.common.domain.SysUserConfig" id="SysUserConfigResult">
+    <resultMap type="com.cat2bug.common.domain.SysUserConfig" id="SysUserConfigResult">
         <result property="userConfigId" column="user_config_id"/>
         <result property="currentTeamId" column="current_team_id"/>
         <result property="currentProjectId" column="current_project_id"/>
@@ -48,7 +48,7 @@
         where suc.user_config_id = #{userConfigId}
     </select>
 
-    <insert id="insertSysUserConfig" parameterType="com.cat2bug.quarkus.common.domain.SysUserConfig"
+    <insert id="insertSysUserConfig" parameterType="com.cat2bug.common.domain.SysUserConfig"
             useGeneratedKeys="true" keyProperty="userConfigId">
         insert into sys_user_config
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -65,7 +65,7 @@
         </trim>
     </insert>
 
-    <update id="updateSysUserConfig" parameterType="com.cat2bug.quarkus.common.domain.SysUserConfig">
+    <update id="updateSysUserConfig" parameterType="com.cat2bug.common.domain.SysUserConfig">
         update sys_user_config
         <trim prefix="SET" suffixOverrides=",">
             <if test="currentTeamId != null">current_team_id = #{currentTeamId},</if>

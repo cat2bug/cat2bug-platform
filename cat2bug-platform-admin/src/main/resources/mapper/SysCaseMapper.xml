@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.quarkus.system.mapper.SysCaseMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysCaseMapper">
 
-    <resultMap id="SysCaseResult" type="com.cat2bug.quarkus.common.domain.SysCase">
+    <resultMap id="SysCaseResult" type="com.cat2bug.common.domain.SysCase">
         <id property="caseId" column="case_id"/>
         <result property="caseName" column="case_name"/>
         <result property="moduleId" column="module_id"/>
@@ -11,7 +11,7 @@
         <result property="caseType" column="case_type"/>
         <result property="caseExpect" column="case_expect"/>
         <result property="caseStep" column="case_step"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.CaseStepListJsonTypeHandler"/>
+                typeHandler="com.cat2bug.system.mybatis.CaseStepListJsonTypeHandler"/>
         <result property="caseLevel" column="case_level"/>
         <result property="caseLevelName" column="case_level_name"/>
         <result property="casePreconditions" column="case_preconditions"/>
@@ -91,7 +91,7 @@
     <sql id="selectSysCasesOrdered">
         <include refid="selectSysCaseVo"/>
         <include refid="selectSysCaseWhere"/>
-        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <bind name="_pageOrder" value="@com.cat2bug.framework.web.PageOrder@current()"/>
         <choose>
             <when test="_pageOrder != null">ORDER BY ${_pageOrder}</when>
             <otherwise>ORDER BY c.case_num DESC</otherwise>
@@ -126,7 +126,7 @@
     <select id="selectSysCaseList" resultMap="SysCaseResult">
         <include refid="selectSysCaseVo"/>
         <include refid="selectSysCaseWhere"/>
-        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <bind name="_pageOrder" value="@com.cat2bug.framework.web.PageOrder@current()"/>
         <choose>
             <when test="_pageOrder != null">ORDER BY ${_pageOrder}</when>
             <otherwise>ORDER BY c.case_num DESC</otherwise>
@@ -149,7 +149,7 @@
         SELECT IFNULL(MAX(case_num), 0) FROM sys_case WHERE project_id = #{projectId}
     </select>
 
-    <insert id="insertSysCase" parameterType="com.cat2bug.quarkus.common.domain.SysCase"
+    <insert id="insertSysCase" parameterType="com.cat2bug.common.domain.SysCase"
             useGeneratedKeys="true" keyProperty="caseId">
         INSERT INTO sys_case
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -176,7 +176,7 @@
             <if test="moduleId != null">#{moduleId},</if>
             <if test="caseType != null">#{caseType},</if>
             <if test="caseExpect != null">#{caseExpect},</if>
-            <if test="caseStep != null">#{caseStep,typeHandler=com.cat2bug.quarkus.system.mybatis.CaseStepListJsonTypeHandler},</if>
+            <if test="caseStep != null">#{caseStep,typeHandler=com.cat2bug.system.mybatis.CaseStepListJsonTypeHandler},</if>
             <if test="caseLevel != null">#{caseLevel},</if>
             <if test="casePreconditions != null">#{casePreconditions},</if>
             <if test="createBy != null">#{createBy},</if>
@@ -192,14 +192,14 @@
         </trim>
     </insert>
 
-    <update id="updateSysCase" parameterType="com.cat2bug.quarkus.common.domain.SysCase">
+    <update id="updateSysCase" parameterType="com.cat2bug.common.domain.SysCase">
         UPDATE sys_case
         <trim prefix="SET" suffixOverrides=",">
             <if test="caseName != null">case_name = #{caseName},</if>
             <if test="moduleId != null">module_id = #{moduleId},</if>
             <if test="caseType != null">case_type = #{caseType},</if>
             <if test="caseExpect != null">case_expect = #{caseExpect},</if>
-            <if test="caseStep != null">case_step = #{caseStep,typeHandler=com.cat2bug.quarkus.system.mybatis.CaseStepListJsonTypeHandler},</if>
+            <if test="caseStep != null">case_step = #{caseStep,typeHandler=com.cat2bug.system.mybatis.CaseStepListJsonTypeHandler},</if>
             <if test="caseLevel != null">case_level = #{caseLevel},</if>
             <if test="casePreconditions != null">case_preconditions = #{casePreconditions},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
