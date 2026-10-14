@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysPlanMapper">
+
+    <resultMap id="SysPlanResult" type="com.cat2bug.quarkus.common.domain.SysPlan">
+        <result property="planId" column="plan_id"/>
+        <result property="planNumber" column="plan_number"/>
+        <result property="planName" column="plan_name"/>
+        <result property="planVersion" column="plan_version"/>
+        <result property="planStartTime" column="plan_start_time"/>
+        <result property="planEndTime" column="plan_end_time"/>
+        <result property="createById" column="create_by_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateById" column="update_by_id"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateByAvatar" column="update_by_avatar"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="projectId" column="project_id"/>
+        <result property="reportId" column="report_id"/>
+        <result property="passCount" column="pass_count"/>
+        <result property="failCount" column="fail_count"/>
+        <result property="defectLevelUrgentCount" column="defect_level_urgent_count"/>
+        <result property="defectLevelHeightCount" column="defect_level_height_count"/>
+        <result property="defectLevelMiddleCount" column="defect_level_middle_count"/>
+        <result property="defectLevelLowCount" column="defect_level_low_count"/>
+        <result property="unexecutedCount" column="unexecuted_count"/>
+        <result property="itemTotal" column="item_total"/>
+        <result property="defectRestartCount" column="reopen_count"/>
+        <result property="defectHistoryPassCount" column="history_closed_count"/>
+        <result property="defectUseHourTime" column="defect_use_hour_time"/>
+        <result property="defectProcessingStateCount" column="processing_state_count"/>
+        <result property="defectAuditStateCount" column="audit_state_count"/>
+        <result property="defectRejectedStateCount" column="rejected_state_count"/>
+        <result property="defectCloseStateCount" column="close_state_count"/>
+        <result property="defectCount" column="defect_count"/>
+        <result property="moduleCount" column="module_count"/>
+        <result property="createDefectCountByTester" column="create_defect_count_by_tester"/>
+        <result property="createDefectCountByOutsider" column="create_defect_count_by_outsider"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <resultMap id="SysPlanSysPlanItemResult" type="com.cat2bug.quarkus.common.domain.SysPlan" extends="SysPlanResult">
+        <collection property="sysPlanItemList" notNullColumn="sub_plan_item_id"
+                    javaType="java.util.List" resultMap="SysPlanItemResult"/>
+    </resultMap>
+
+    <resultMap id="SysPlanItemResult" type="com.cat2bug.quarkus.common.domain.SysPlanItem">
+        <result property="planItemId" column="sub_plan_item_id"/>
+        <result property="planId" column="sub_plan_id"/>
+        <result property="moduleId" column="sub_module_id"/>
+        <result property="caseId" column="sub_case_id"/>
+        <result property="planItemState" column="sub_plan_item_state"/>
+        <result property="updateById" column="sub_update_by_id"/>
+        <result property="updateTime" column="sub_update_time"/>
+        <result property="defectIds" column="sub_defect_ids"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler"/>
+    </resultMap>
+
+    <resultMap id="SysPlanItemSimpleResult" type="com.cat2bug.quarkus.common.domain.SysPlanItem">
+        <result property="planItemId" column="plan_item_id"/>
+        <result property="planId" column="plan_id"/>
+        <result property="moduleId" column="module_id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="planItemState" column="plan_item_state"/>
+        <result property="updateById" column="update_by_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="defectIds" column="defect_ids"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler"/>
+    </resultMap>
+
+    <sql id="planItemDefectIdMatch">
+        CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%,', CAST(${defectIdExpr} AS CHAR(255)), ',%')
+        or CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%', CAST(${defectIdExpr} AS CHAR(255)), ',%')
+        or CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%,', CAST(${defectIdExpr} AS CHAR(255)), '%')
+    </sql>
+
+    <sql id="defectLogReceiveByMatchUser">
+        (
+            CAST(${logAlias}.receive_by AS CHAR(3000)) = CAST(${userIdExpr} AS CHAR(255))
+            OR CAST(${logAlias}.receive_by AS CHAR(3000)) LIKE concat('%,', CAST(${userIdExpr} AS CHAR(255)), ',%')
+            OR CAST(${logAlias}.receive_by AS CHAR(3000)) LIKE concat(CAST(${userIdExpr} AS CHAR(255)), ',%')
+            OR CAST(${logAlias}.receive_by AS CHAR(3000)) LIKE concat('%,', CAST(${userIdExpr} AS CHAR(255)))
+        )
+    </sql>
+
+    <sql id="selectSysPlanVo">
+        SELECT
+            p.plan_id,
+            p.plan_number,
+            p.plan_name,
+            p.plan_version,
+            p.plan_start_time,
+            p.plan_end_time,
+            p.create_by_id,
+            p.create_time,
+            p.update_by_id,
+            p.update_time,
+            p.project_id,
+            p.report_id,
+            p.remark,
+            u.nick_name AS update_by,
+            u.avatar AS update_by_avatar,
+            s.pass_count,
+            s.fail_count,
+            s.unexecuted_count,
+            s.item_total,
+            s.processing_state_count,
+            s.audit_state_count,
+            s.rejected_state_count,
+            s.close_state_count,
+            s.defect_level_urgent_count,
+            s.defect_level_height_count,
+            s.defect_level_middle_count,
+            s.defect_level_low_count,
+            s.reopen_count,
+            s.closed_count as history_closed_count,
+            s.defect_use_hour_time,
+            s.defect_count,
+            s.module_count,
+            s.create_defect_count_by_tester,
+            s.create_defect_count_by_outsider
+        FROM
+            sys_plan p
+                LEFT JOIN sys_user u ON u.user_id = p.update_by_id
+                LEFT JOIN (
+                SELECT
+                    pi2.plan_id,
+                    sum( CASE WHEN pi2.plan_item_state = 'pass' THEN 1 ELSE 0 END ) AS pass_count,
+                    sum( CASE WHEN pi2.plan_item_state = 'not_pass' THEN 1 ELSE 0 END ) AS fail_count,
+                    sum( CASE WHEN pi2.plan_item_state = 'unexecuted' THEN 1 ELSE 0 END ) AS unexecuted_count,
+                    count( pi2.plan_item_id ) AS item_total,
+                    IFNULL( sum( ds2.processing_state_count ), 0 ) processing_state_count,
+                    IFNULL( sum( ds2.audit_state_count ), 0 ) audit_state_count,
+                    IFNULL( sum( ds2.rejected_state_count ), 0 ) rejected_state_count,
+                    IFNULL( sum( ds2.close_state_count ), 0 ) close_state_count,
+                    IFNULL( sum( ds2.defect_level_urgent_count ), 0 ) defect_level_urgent_count,
+                    IFNULL( sum( ds2.defect_level_height_count ), 0 ) defect_level_height_count,
+                    IFNULL( sum( ds2.defect_level_middle_count ), 0 ) defect_level_middle_count,
+                    IFNULL( sum( ds2.defect_level_low_count ), 0 ) defect_level_low_count,
+                    IFNULL( sum( ds2.reopen_count ), 0 ) reopen_count,
+                    IFNULL( sum( ds2.closed_count ), 0 ) closed_count,
+                    IFNULL( sum( ds2.defect_count ), 0 ) defect_count,
+                    IFNULL( MAX( ms2.module_count ), 0 ) module_count,
+                    IFNULL( sum( rs2.create_defect_count_by_tester ), 0 ) create_defect_count_by_tester,
+                    IFNULL( sum( rs2.create_defect_count_by_outsider ), 0 ) create_defect_count_by_outsider,
+                    IFNULL( sum( ds2.defect_use_hour_time ), 0 ) defect_use_hour_time
+                FROM
+                    ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id JOIN sys_module m ON m.module_id = c.module_id ) pi2
+                        LEFT JOIN (
+                        SELECT
+                            pi3.plan_item_id,
+                            SUM( CASE WHEN d3.defect_state = 0 THEN 1 ELSE 0 END ) AS processing_state_count,
+                            SUM( CASE WHEN d3.defect_state = 1 THEN 1 ELSE 0 END ) AS audit_state_count,
+                            SUM( CASE WHEN d3.defect_state = 3 THEN 1 ELSE 0 END ) AS rejected_state_count,
+                            SUM( CASE WHEN d3.defect_state = 4 THEN 1 ELSE 0 END ) AS close_state_count,
+                            SUM( CASE WHEN d3.defect_level = 'urgent' THEN 1 ELSE 0 END ) AS defect_level_urgent_count,
+                            SUM( CASE WHEN d3.defect_level = 'height' THEN 1 ELSE 0 END ) AS defect_level_height_count,
+                            SUM( CASE WHEN d3.defect_level = 'middle' THEN 1 ELSE 0 END ) AS defect_level_middle_count,
+                            SUM( CASE WHEN d3.defect_level = 'low' THEN 1 ELSE 0 END ) AS defect_level_low_count,
+                            SUM( dl3.reopen_count ) AS reopen_count,
+                            SUM( dl3.closed_count ) AS closed_count,
+                            SUM( dl3.defect_use_time ) AS defect_use_hour_time,
+                            count(distinct d3.defect_id ) AS defect_count
+                        FROM
+                            ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id JOIN sys_module m ON m.module_id = c.module_id ) pi3
+                                JOIN sys_defect d3 ON <include refid="planItemDefectIdMatch"><property name="planItemAlias" value="pi3"/><property name="defectIdExpr" value="d3.defect_id"/></include>
+                                JOIN (
+                                SELECT
+                                    defect_id,
+                                    max( CASE WHEN defect_log_type = 7 or defect_log_type = 4 THEN 1 ELSE 0 END ) AS reopen_count,
+                                    sum( CASE WHEN defect_log_type = 6 THEN 1 ELSE 0 END ) AS closed_count,
+                                    ABS(
+                                            TIMESTAMPDIFF(
+                                                HOUR,
+                                                    MIN( create_time ),
+                                                    MAX( create_time ))) AS defect_use_time
+                                FROM
+                                    sys_defect_log
+                                GROUP BY
+                                    defect_id
+                            ) dl3 ON dl3.defect_id = d3.defect_id
+                        GROUP BY
+                            pi3.plan_item_id
+                    ) ds2 ON ds2.plan_item_id = pi2.plan_item_id
+                        LEFT JOIN (
+                        SELECT
+                            pi4.plan_id,
+                            COUNT(distinct c4.module_id) AS module_count
+                        FROM
+                            sys_plan_item pi4
+                                JOIN sys_case c4 ON pi4.case_id = c4.case_id
+                        GROUP BY
+                            pi4.plan_id
+                    ) ms2 ON ms2.plan_id = pi2.plan_id
+                        LEFT JOIN (
+                        SELECT
+                            pi5.plan_item_id,
+                            SUM( CASE WHEN upr5.role_id = 8 THEN 1 ELSE 0 END ) AS create_defect_count_by_tester,
+                            SUM( CASE WHEN upr5.role_id = 9 THEN 1 ELSE 0 END ) AS create_defect_count_by_outsider
+                        FROM
+                            ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id ) pi5
+                                JOIN sys_plan p5 ON p5.plan_id = pi5.plan_id
+                                JOIN sys_defect_log l5 ON l5.defect_log_type = 0
+                                AND (<include refid="planItemDefectIdMatch"><property name="planItemAlias" value="pi5"/><property name="defectIdExpr" value="l5.defect_id"/></include>)
+                                JOIN sys_user_project up5 ON up5.project_id = p5.project_id AND <include refid="defectLogReceiveByMatchUser"><property name="logAlias" value="l5"/><property name="userIdExpr" value="up5.user_id"/></include>
+                                JOIN sys_user_project_role upr5 ON up5.user_project_id = upr5.user_project_id
+                        GROUP BY
+                            pi5.plan_item_id
+                    ) rs2 ON rs2.plan_item_id = pi2.plan_item_id
+                GROUP BY
+                    pi2.plan_id
+            ) s ON s.plan_id = p.plan_id
+    </sql>
+
+    <sql id="selectSysPlanWhere">
+        <where>
+            <if test="query != null and query.planNumber != null">
+                AND p.plan_number = #{query.planNumber}
+            </if>
+            <if test="query != null and query.planName != null and query.planName != ''">
+                AND p.plan_name LIKE CONCAT('%', #{query.planName}, '%')
+            </if>
+            <if test="query != null and query.planVersion != null and query.planVersion != ''">
+                AND p.plan_version LIKE CONCAT('%', #{query.planVersion}, '%')
+            </if>
+            <if test="query != null and query.createById != null">
+                AND p.create_by_id = #{query.createById}
+            </if>
+            <if test="query != null and query.updateById != null">
+                AND p.update_by_id = #{query.updateById}
+            </if>
+            <if test="query != null and query.projectId != null">
+                AND p.project_id = #{query.projectId}
+            </if>
+            <if test="query != null and query.reportId != null">
+                AND p.report_id = #{query.reportId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="countSysPlanList" resultType="long">
+        SELECT COUNT(*)
+        FROM sys_plan p
+        <include refid="selectSysPlanWhere"/>
+    </select>
+
+    <select id="selectSysPlanList" resultMap="SysPlanResult">
+        <include refid="selectSysPlanVo"/>
+        <include refid="selectSysPlanWhere"/>
+        ORDER BY p.create_time DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectSysPlanByPlanId" resultMap="SysPlanSysPlanItemResult">
+        SELECT a.*,
+               b.plan_item_id AS sub_plan_item_id,
+               b.plan_id AS sub_plan_id,
+               b.module_id AS sub_module_id,
+               b.case_id AS sub_case_id,
+               b.plan_item_state AS sub_plan_item_state,
+               b.update_by_id AS sub_update_by_id,
+               b.update_time AS sub_update_time,
+               b.defect_ids AS sub_defect_ids
+        FROM (<include refid="selectSysPlanVo"/>) a
+        LEFT JOIN sys_plan_item b ON b.plan_id = a.plan_id
+        WHERE a.plan_id = #{planId}
+    </select>
+
+    <select id="getProjectPlanMaxNum" resultType="long">
+        SELECT IFNULL(MAX(plan_number), 0) FROM sys_plan WHERE project_id = #{projectId}
+    </select>
+
+    <select id="selectSysPlanItemListByPlanId" resultMap="SysPlanItemSimpleResult">
+        SELECT plan_item_id, plan_id, module_id, case_id, plan_item_state, update_by_id, update_time, defect_ids
+        FROM sys_plan_item
+        WHERE plan_id = #{planId}
+    </select>
+
+    <insert id="insertSysPlan" parameterType="com.cat2bug.quarkus.common.domain.SysPlan">
+        INSERT INTO sys_plan
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="planId != null">plan_id,</if>
+            <if test="planNumber != null">plan_number,</if>
+            <if test="planName != null and planName != ''">plan_name,</if>
+            <if test="planVersion != null">plan_version,</if>
+            <if test="planStartTime != null">plan_start_time,</if>
+            <if test="planEndTime != null">plan_end_time,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateById != null">update_by_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="reportId != null">report_id,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="planId != null">#{planId},</if>
+            <if test="planNumber != null">#{planNumber},</if>
+            <if test="planName != null and planName != ''">#{planName},</if>
+            <if test="planVersion != null">#{planVersion},</if>
+            <if test="planStartTime != null">#{planStartTime},</if>
+            <if test="planEndTime != null">#{planEndTime},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateById != null">#{updateById},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="reportId != null">#{reportId},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysPlan" parameterType="com.cat2bug.quarkus.common.domain.SysPlan">
+        UPDATE sys_plan
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="planNumber != null">plan_number = #{planNumber},</if>
+            <if test="planName != null and planName != ''">plan_name = #{planName},</if>
+            <if test="planVersion != null">plan_version = #{planVersion},</if>
+            <if test="planStartTime != null">plan_start_time = #{planStartTime},</if>
+            <if test="planEndTime != null">plan_end_time = #{planEndTime},</if>
+            <if test="createById != null">create_by_id = #{createById},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateById != null">update_by_id = #{updateById},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="reportId != null">report_id = #{reportId},</if>
+            <if test="remark != null and remark != ''">remark = #{remark},</if>
+        </trim>
+        WHERE plan_id = #{planId}
+    </update>
+
+    <update id="updateUpdateTimeOfSysPlan" parameterType="com.cat2bug.quarkus.common.domain.SysPlan">
+        UPDATE sys_plan
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="updateById != null">update_by_id = #{updateById},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        WHERE plan_id = #{planId}
+    </update>
+
+    <delete id="deleteSysPlanByPlanId">
+        DELETE FROM sys_plan WHERE plan_id = #{planId}
+    </delete>
+
+    <delete id="deleteSysPlanByPlanIds">
+        DELETE FROM sys_plan WHERE plan_id IN
+        <foreach item="planId" collection="array" open="(" separator="," close=")">
+            #{planId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSysPlanItemByPlanIds">
+        DELETE FROM sys_plan_item WHERE plan_id IN
+        <foreach item="planId" collection="array" open="(" separator="," close=")">
+            #{planId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSysPlanItemByPlanId">
+        DELETE FROM sys_plan_item WHERE plan_id = #{planId}
+    </delete>
+
+    <delete id="deleteSysPlanItemByPlanItemIds">
+        DELETE FROM sys_plan_item WHERE plan_item_id IN
+        <foreach item="planItemId" collection="array" open="(" separator="," close=")">
+            #{planItemId}
+        </foreach>
+    </delete>
+
+    <insert id="batchSysPlanItem">
+        INSERT INTO sys_plan_item(plan_item_id, plan_id, module_id, case_id, plan_item_state, update_by_id, update_time, defect_ids)
+        VALUES
+        <foreach item="item" collection="list" separator=",">
+            (#{item.planItemId}, #{item.planId}, #{item.moduleId}, #{item.caseId}, #{item.planItemState},
+             #{item.updateById}, #{item.updateTime},
+             #{item.defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler})
+        </foreach>
+    </insert>
+
+    <sql id="selectSysDefectOfPlanFrom">
+        FROM sys_defect d
+        LEFT JOIN sys_module m ON m.module_id = d.module_id
+        LEFT JOIN sys_plan_item spi ON spi.defect_ids IS NOT NULL
+            AND CAST(spi.defect_ids AS CHAR(3000)) LIKE CONCAT('%,', CAST(d.defect_id AS CHAR(255)))
+        LEFT JOIN sys_case c ON c.case_id = d.case_id
+    </sql>
+
+    <sql id="selectPlanDefectWhere">
+        <where>
+            spi.plan_id = #{planId}
+            <if test="defect != null and defect.params != null and defect.params.moduleIdsOfProject != null and defect.params.moduleIdsOfProject.size() > 0">
+                AND
+                <foreach collection="defect.params.moduleIdsOfProject" item="mId" separator="OR" open="(" close=")">
+                    d.module_id = #{mId}
+                </foreach>
+            </if>
+            <if test="defect != null and defect.projectNum != null">AND d.project_num = #{defect.projectNum}</if>
+            <if test="defect != null and defect.defectType != null">AND d.defect_type = #{defect.defectType}</if>
+            <choose>
+                <when test="defect != null and defect.nameVersionKeyword != null and defect.nameVersionKeyword != ''">
+                    AND (
+                        d.defect_name LIKE CONCAT('%', #{defect.nameVersionKeyword}, '%')
+                        OR d.defect_name = #{defect.nameVersionKeyword}
+                        OR CONCAT(d.project_num, '') LIKE CONCAT('%', #{defect.nameVersionKeyword}, '%')
+                        OR (d.module_version IS NOT NULL AND d.module_version LIKE CONCAT('%', #{defect.nameVersionKeyword}, '%'))
+                        OR (m.module_name IS NOT NULL AND m.module_name LIKE CONCAT('%', #{defect.nameVersionKeyword}, '%'))
+                        <if test="defect.params != null and defect.params.nameVersionKeywordHandleBy != null and defect.params.nameVersionKeywordHandleBy.size() > 0">
+                            OR (
+                            <foreach collection="defect.params.nameVersionKeywordHandleBy" item="b" separator=" OR " open="(" close=")">
+                                d.handle_by REGEXP CONCAT('\b', #{b}, '\b') OR d.handle_by REGEXP CONCAT('\\b', #{b}, '\\b')
+                            </foreach>
+                            )
+                        </if>
+                    )
+                </when>
+                <when test="defect != null and defect.params != null and defect.params.nameVersionKeyword != null and defect.params.nameVersionKeyword != ''">
+                    AND (
+                        d.defect_name LIKE CONCAT('%', #{defect.params.nameVersionKeyword}, '%')
+                        OR d.defect_name = #{defect.params.nameVersionKeyword}
+                        OR CONCAT(d.project_num, '') LIKE CONCAT('%', #{defect.params.nameVersionKeyword}, '%')
+                        OR (d.module_version IS NOT NULL AND d.module_version LIKE CONCAT('%', #{defect.params.nameVersionKeyword}, '%'))
+                        OR (m.module_name IS NOT NULL AND m.module_name LIKE CONCAT('%', #{defect.params.nameVersionKeyword}, '%'))
+                        <if test="defect.params.nameVersionKeywordHandleBy != null and defect.params.nameVersionKeywordHandleBy.size() > 0">
+                            OR (
+                            <foreach collection="defect.params.nameVersionKeywordHandleBy" item="b" separator=" OR " open="(" close=")">
+                                d.handle_by REGEXP CONCAT('\b', #{b}, '\b') OR d.handle_by REGEXP CONCAT('\\b', #{b}, '\\b')
+                            </foreach>
+                            )
+                        </if>
+                    )
+                </when>
+                <otherwise>
+                    <if test="defect != null and defect.defectName != null and defect.defectName != ''">
+                        AND (d.defect_name LIKE CONCAT('%', #{defect.defectName}, '%') OR d.defect_name = #{defect.defectName})
+                    </if>
+                    <if test="defect != null and defect.moduleVersion != null and defect.moduleVersion != ''">
+                        AND d.module_version LIKE CONCAT('%', #{defect.moduleVersion}, '%')
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="defect != null and defect.projectId != null">AND d.project_id = #{defect.projectId}</if>
+            <if test="defect != null and defect.testPlanId != null">AND d.test_plan_id = #{defect.testPlanId}</if>
+            <if test="defect != null and defect.caseId != null">AND d.case_id = #{defect.caseId}</if>
+            <if test="defect != null and defect.createBy != null and defect.createBy != ''">AND d.create_by = #{defect.createBy}</if>
+            <if test="defect != null and defect.updateBy != null and defect.updateBy != ''">AND d.update_by = #{defect.updateBy}</if>
+            <if test="defect != null and defect.defectState != null">AND d.defect_state = #{defect.defectState}</if>
+            <if test="defect != null and defect.params != null and defect.params.defectStates != null and defect.params.defectStates != ''">
+                AND
+                <foreach collection="defect.params.defectStates.split(',')" item="state" separator=" OR " open="(" close=")">
+                    d.defect_state = #{state}
+                </foreach>
+            </if>
+            <if test="defect != null and defect.handleBy != null and defect.handleBy.size() > 0">
+                AND
+                <foreach collection="defect.handleBy" item="b" separator=" OR " open="(" close=")">
+                    d.handle_by REGEXP CONCAT('\b', #{b}, '\b') OR d.handle_by REGEXP CONCAT('\\b', #{b}, '\\b')
+                </foreach>
+            </if>
+            <if test="defect != null and defect.params != null and defect.params.defectIds != null and defect.params.defectIds != ''">
+                AND
+                <foreach collection="defect.params.defectIds.split(',')" item="defectId" separator=" OR " open="(" close=")">
+                    d.defect_id = #{defectId}
+                </foreach>
+            </if>
+            <if test="defect != null and defect.params != null and defect.params.userId != null">
+                AND (
+                    d.handle_by REGEXP CONCAT('\b', #{defect.params.userId}, '\b')
+                    OR d.handle_by REGEXP CONCAT('\\b', #{defect.params.userId}, '\\b')
+                    OR d.create_by_id = #{defect.params.userId}
+                    OR d.update_by_id = #{defect.params.userId}
+                )
+            </if>
+            <if test="defect != null and defect.defectLevel != null and defect.defectLevel != ''">
+                AND d.defect_level = #{defect.defectLevel}
+            </if>
+            <if test="defect != null and defect.params != null and defect.params.caseLevel != null">
+                AND c.case_level = #{defect.params.caseLevel}
+            </if>
+            AND d.del_flag = '0'
+        </where>
+    </sql>
+
+    <select id="countSysDefectListByPlanId" resultType="long">
+        SELECT COUNT(DISTINCT d.defect_id)
+        <include refid="selectSysDefectOfPlanFrom"/>
+        <include refid="selectPlanDefectWhere"/>
+    </select>
+
+    <select id="selectSysDefectListByPlanId"
+            resultMap="com.cat2bug.quarkus.system.mapper.SysDefectMapper.SysDefectResult">
+        SELECT DISTINCT
+            d.defect_id, d.project_num, d.defect_type, d.defect_name, d.defect_describe,
+            d.defect_level, d.defect_state, d.module_id, m.module_name, d.module_version,
+            d.project_id, d.case_id, d.test_plan_id, d.case_step_id,
+            d.create_by, d.create_by_id, d.create_time, d.update_by, d.update_by_id, d.update_time,
+            d.handle_by, d.handle_time, d.img_urls, d.annex_urls,
+            d.plan_start_time, d.plan_end_time, d.del_flag
+        <include refid="selectSysDefectOfPlanFrom"/>
+        <include refid="selectPlanDefectWhere"/>
+        ORDER BY d.defect_id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+</mapper>

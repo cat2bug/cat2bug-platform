@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysTeamMapper">
+
+    <resultMap id="SysTeamResult" type="com.cat2bug.quarkus.common.domain.SysTeam">
+        <result property="teamId" column="team_id"/>
+        <result property="teamName" column="team_name"/>
+        <result property="teamKey" column="team_key"/>
+        <result property="teamIcon" column="team_icon"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="introduce" column="introduce"/>
+        <result property="del" column="is_del"/>
+        <result property="projectCount" column="project_count"/>
+        <result property="memberCount" column="member_count"/>
+        <result property="lock" column="is_lock"/>
+        <result property="lockRemark" column="lock_remark"/>
+    </resultMap>
+
+    <sql id="selectSysTeamVo">
+        select t.team_id, t.team_name, t.team_key, t.team_icon, t.create_by, t.create_time, t.update_by, t.update_time,
+               t.introduce, t.is_del, t.is_lock, t.lock_remark,
+               IFNULL(p.project_count, 0) as project_count,
+               IFNULL(m.member_count, 0) as member_count
+        from sys_team t
+        LEFT JOIN (
+            select count(team_id) as project_count, team_id
+            from sys_project group by team_id
+        ) p ON p.team_id = t.team_id
+        LEFT JOIN (
+            select count(team_id) as member_count, team_id
+            from sys_user_team where team_lock = 0 group by team_id
+        ) m ON m.team_id = t.team_id
+    </sql>
+
+    <sql id="selectSysTeamListWhere">
+        from sys_team t
+        <where>
+            <if test="teamName != null and teamName != ''">
+                and t.team_name like concat('%', #{teamName}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="countSysTeamList" resultType="long">
+        select count(*)
+        <include refid="selectSysTeamListWhere"/>
+    </select>
+
+    <select id="selectSysTeamList" resultMap="SysTeamResult">
+        select t.team_id, t.team_name, t.team_key, t.team_icon, t.create_by, t.create_time, t.update_by, t.update_time,
+               t.introduce, t.is_del, t.is_lock, t.lock_remark,
+               IFNULL(p.project_count, 0) as project_count,
+               IFNULL(m.member_count, 0) as member_count
+        from sys_team t
+        LEFT JOIN (
+            select count(team_id) as project_count, team_id
+            from sys_project group by team_id
+        ) p ON p.team_id = t.team_id
+        LEFT JOIN (
+            select count(team_id) as member_count, team_id
+            from sys_user_team where team_lock = 0 group by team_id
+        ) m ON m.team_id = t.team_id
+        <where>
+            <if test="teamName != null and teamName != ''">
+                and t.team_name like concat('%', #{teamName}, '%')
+            </if>
+        </where>
+        order by t.team_id
+        limit #{limit} offset #{offset}
+    </select>
+
+    <sql id="selectSysTeamByUserWhere">
+        from sys_team t, sys_user_team utr
+        where (t.is_del != 1 OR t.is_del IS NULL)
+          and utr.team_id = t.team_id
+          and utr.user_id = #{userId}
+    </sql>
+
+    <select id="countSysTeamListByUserId" resultType="long">
+        select count(*)
+        <include refid="selectSysTeamByUserWhere"/>
+    </select>
+
+    <select id="selectSysTeamListByUserId" resultMap="SysTeamResult">
+        select t.team_id, t.team_name, t.team_key, t.team_icon, t.create_by, t.create_time, t.update_by, t.update_time,
+               t.introduce, t.is_del, t.is_lock, t.lock_remark
+        <include refid="selectSysTeamByUserWhere"/>
+        order by t.team_id
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectSysTeamByTeamId" resultMap="SysTeamResult">
+        <include refid="selectSysTeamVo"/>
+        where t.team_id = #{teamId}
+    </select>
+
+    <select id="selectSysTeamByTeamName" resultMap="SysTeamResult">
+        <include refid="selectSysTeamVo"/>
+        where t.team_name = #{teamName}
+    </select>
+
+    <select id="selectSysTeamByTeamKey" resultMap="SysTeamResult">
+        <include refid="selectSysTeamVo"/>
+        where t.team_key = #{teamKey}
+    </select>
+
+    <insert id="insertSysTeam" useGeneratedKeys="true" keyProperty="teamId">
+        insert into sys_team
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="teamName != null">team_name,</if>
+            <if test="teamKey != null">team_key,</if>
+            <if test="teamIcon != null">team_icon,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="introduce != null">introduce,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="teamName != null">#{teamName},</if>
+            <if test="teamKey != null">#{teamKey},</if>
+            <if test="teamIcon != null">#{teamIcon},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="introduce != null">#{introduce},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysTeam">
+        update sys_team
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="teamName != null">team_name = #{teamName},</if>
+            <if test="teamKey != null">team_key = #{teamKey},</if>
+            <if test="teamIcon != null">team_icon = #{teamIcon},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="introduce != null">introduce = #{introduce},</if>
+            <if test="lock != null">is_lock = #{lock},</if>
+            <if test="lockRemark != null">lock_remark = #{lockRemark},</if>
+        </trim>
+        where team_id = #{teamId}
+    </update>
+
+    <delete id="deleteSysTeamByTeamIds">
+        delete from sys_team where team_id in
+        <foreach item="teamId" collection="teamIds" open="(" separator="," close=")">
+            #{teamId}
+        </foreach>
+    </delete>
+
+    <insert id="insertSysUserTeam">
+        insert into sys_user_team (user_id, team_id, create_by, create_time)
+        values (#{userId}, #{teamId}, #{createBy}, CURRENT_TIMESTAMP)
+    </insert>
+
+    <select id="selectLastUserTeamId" resultType="long">
+        select user_team_id
+        from sys_user_team
+        where user_id = #{userId}
+          and team_id = #{teamId}
+        order by user_team_id desc
+        limit 1
+    </select>
+
+    <insert id="insertSysUserTeamRole">
+        insert into sys_user_team_role (user_team_id, role_id)
+        values (#{userTeamId}, #{roleId})
+    </insert>
+</mapper>

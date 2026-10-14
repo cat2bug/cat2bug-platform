@@ -115,6 +115,28 @@ function vuedraggableLegacyShimPlugin() {
   }
 }
 
+/** KaTeX 字体只保留 woff2（目标浏览器均支持），去掉同一字体的 woff/ttf 冗余副本 */
+function katexWoff2OnlyPlugin() {
+  const legacySrc = /,\s*url\(([^)]*KaTeX_[^)]*\.(?:woff|ttf))\)\s*format\(["']?(?:woff|truetype)["']?\)/g
+  const legacyFile = /KaTeX_[^/]*\.(?:woff|ttf)$/
+  return {
+    name: 'katex-woff2-only',
+    apply: 'build',
+    generateBundle(_options, bundle) {
+      for (const asset of Object.values(bundle)) {
+        if (asset.type === 'asset' && asset.fileName.endsWith('.css') && typeof asset.source === 'string') {
+          asset.source = asset.source.replace(legacySrc, '')
+        }
+      }
+      for (const fileName of Object.keys(bundle)) {
+        if (legacyFile.test(fileName)) {
+          delete bundle[fileName]
+        }
+      }
+    }
+  }
+}
+
 function buildProcessEnvDefine(env) {
   const define = {}
   Object.entries(env).forEach(([key, value]) => {
@@ -128,11 +150,14 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), ['VUE_APP', 'VITE', 'ENV', 'NODE'])
   const mergedEnv = {
     ...env,
-    NODE_ENV: mode === 'embedded' ? 'embedded' : (mode === 'development' ? 'development' : 'production')
+    NODE_ENV: (mode === 'embedded' || mode === 'embedded-quarkus')
+      ? 'embedded'
+      : (mode === 'development' ? 'development' : 'production')
   }
 
   const isDev = mode === 'development'
-  const isEmbedded = mode === 'embedded'
+  const isEmbeddedQuarkus = mode === 'embedded-quarkus'
+  const isEmbedded = mode === 'embedded' || isEmbeddedQuarkus
   const isAnalyze = process.env.ANALYZE === 'true'
   const devToolsEnabled = mergedEnv.VUE_APP_ENABLE_DEV_TOOLS === 'true'
   const port = Number(process.env.port || process.env.npm_config_port || 2222)
@@ -143,11 +168,9 @@ export default defineConfig(({ mode }) => {
 
   const outDir = isAnalyze
     ? 'analyze'
-    : (isEmbedded ? '../cat2bug-platform-admin/src/main/resources/static' : 'dist')
-
-  const docsCopyTarget = isEmbedded
-    ? '../cat2bug-platform-admin/src/main/resources/static/docs'
-    : 'dist/docs'
+    : (isEmbeddedQuarkus
+      ? '../cat2bug-platform-quarkus-admin/src/main/resources/META-INF/resources'
+      : (mode === 'embedded' ? '../cat2bug-platform-admin/src/main/resources/static' : 'dist'))
 
   return {
     base: mergedEnv.VUE_PUBLIC_PATH || '/',
@@ -157,6 +180,7 @@ export default defineConfig(({ mode }) => {
       include: /src\/.*\.[jt]sx?$|src\/.*\.js$/
     },
     plugins: [
+      katexWoff2OnlyPlugin(),
       vue2DatepickerShimPlugin(),
       vuedraggableLegacyShimPlugin(),
       vue(),
@@ -179,21 +203,24 @@ export default defineConfig(({ mode }) => {
       ...(!isDev ? [
         viteCompression({
           verbose: false,
-          disable: false,
+          // Quarkus 静态资源不使用预压缩 .gz，嵌入只会增大 Native 体积
+          disable: isEmbeddedQuarkus,
           threshold: 0,
           algorithm: 'gzip',
           ext: '.gz',
           deleteOriginFile: false
         }),
-        viteStaticCopy({
+        // 帮助文档已迁至官网；Quarkus 嵌入包不再携带 /docs
+        ...(isEmbeddedQuarkus ? [] : [viteStaticCopy({
           targets: [
             {
               src: docsStaticDir,
-              dest: isEmbedded ? '../cat2bug-platform-admin/src/main/resources/static' : 'dist',
+              // dest 相对 build.outDir：统一输出到 {outDir}/docs
+              dest: '.',
               rename: 'docs'
             }
           ]
-        })
+        })])
       ] : [])
     ],
     resolve: {
@@ -314,21 +341,30 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir,
+      // Quarkus 嵌入目录为专用产物目录（已 gitignore），每次清空避免旧 hash 文件/残留 .gz 进入 Native
+      ...(isEmbeddedQuarkus ? { emptyOutDir: true } : {}),
       assetsDir: mergedEnv.VUE_APP_STATIC_PATH || 'static',
       sourcemap: false,
       rollupOptions: {
         output: {
-          manualChunks(id) {
-            if (id.includes('node_modules')) {
-              if (id.includes('element-plus')) {
-                return 'chunk-element-plus'
+          // 只固定框架层分包；编辑器、导出、图表等重依赖随路由/动态 import 懒加载。
+          // 框架层的传递依赖（lodash-es、@floating-ui 等）必须同包，否则与入口 chunk 循环引用导致 TDZ 白屏。
+          manualChunks: (() => {
+            const vendorRoot = /[\\/]node_modules[\\/](element-plus|@element-plus|@vue|vue|vue-router|pinia|vue-i18n|@intlify)[\\/]/
+            const memo = new Map()
+            const isVendor = (id, getModuleInfo) => {
+              if (memo.has(id)) return memo.get(id)
+              memo.set(id, false)
+              let result = false
+              if (id.includes('node_modules')) {
+                result = vendorRoot.test(id)
+                  || (getModuleInfo(id)?.importers || []).some((imp) => isVendor(imp, getModuleInfo))
               }
-              return 'chunk-libs'
+              memo.set(id, result)
+              return result
             }
-            if (id.includes('/src/components/')) {
-              return 'chunk-commons'
-            }
-          }
+            return (id, { getModuleInfo }) => (isVendor(id, getModuleInfo) ? 'chunk-vendor' : undefined)
+          })()
         }
       }
     }

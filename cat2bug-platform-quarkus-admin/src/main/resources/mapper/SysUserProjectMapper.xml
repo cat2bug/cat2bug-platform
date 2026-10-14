@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysUserProjectMapper">
+
+    <resultMap id="SysUserMemberResult" type="com.cat2bug.quarkus.common.domain.SysUser">
+        <id property="userId" column="user_id"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="email" column="email"/>
+        <result property="phoneNumber" column="phonenumber"/>
+        <result property="sex" column="sex"/>
+        <result property="avatar" column="avatar"/>
+        <result property="status" column="status"/>
+        <collection property="roles" ofType="com.cat2bug.quarkus.common.domain.SysRole">
+            <id property="roleId" column="role_id"/>
+            <result property="roleName" column="role_name"/>
+            <result property="roleKey" column="role_key"/>
+            <result property="roleSort" column="role_sort"/>
+            <result property="dataScope" column="data_scope"/>
+            <result property="status" column="role_status"/>
+        </collection>
+    </resultMap>
+
+    <sql id="projectMemberWhere">
+        <where>
+            up.project_id = #{projectId} and u.del_flag = '0'
+            <if test="search != null and search != ''">
+                AND u.nick_name like concat('%', #{search}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="countSysUserListByProjectId" resultType="long">
+        select count(distinct u.user_id)
+        from sys_user u
+        left join sys_user_project up on u.user_id = up.user_id
+        <include refid="projectMemberWhere"/>
+    </select>
+
+    <select id="selectSysUserListByProjectId" resultMap="SysUserMemberResult">
+        select u.user_id, u.dept_id, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.sex, u.status,
+               upr.role_id, r.role_name, r.role_key, r.role_sort, r.data_scope, r.status as role_status
+        from sys_user u
+        left join sys_user_project up on u.user_id = up.user_id
+        left join sys_user_project_role upr on up.user_project_id = upr.user_project_id
+        left join sys_role r on r.role_id = upr.role_id
+        <include refid="projectMemberWhere"/>
+        order by u.user_id
+        limit #{limit} offset #{offset}
+    </select>
+
+    <sql id="notProjectMemberWhere">
+        <where>
+            l2.user_id IS NULL AND u.del_flag = '0'
+            <if test="search != null and search != ''">
+                AND u.nick_name like concat('%', #{search}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="countNotSysUserListByProjectId" resultType="long">
+        select count(distinct u.user_id)
+        from (
+            select ut.user_id, p.project_id
+            from sys_project p, sys_user_team ut
+            where p.team_id = ut.team_id and ut.team_lock != 1 and p.project_id = #{projectId}
+            group by ut.user_id, p.project_id
+        ) l1
+        left join sys_user_project l2 on l1.user_id = l2.user_id and l2.project_lock != 1 and l2.project_id = #{projectId}
+        left join sys_user u on u.user_id = l1.user_id
+        <include refid="notProjectMemberWhere"/>
+    </select>
+
+    <select id="selectNotSysUserListByProjectId" resultMap="SysUserMemberResult">
+        select distinct u.user_id, u.dept_id, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.sex, u.status
+        from (
+            select ut.user_id, p.project_id
+            from sys_project p, sys_user_team ut
+            where p.team_id = ut.team_id and ut.team_lock != 1 and p.project_id = #{projectId}
+            group by ut.user_id, p.project_id
+        ) l1
+        left join sys_user_project l2 on l1.user_id = l2.user_id and l2.project_lock != 1 and l2.project_id = #{projectId}
+        left join sys_user u on u.user_id = l1.user_id
+        <include refid="notProjectMemberWhere"/>
+        order by u.user_id
+        limit #{limit} offset #{offset}
+    </select>
+
+    <insert id="insertSysUserProject" useGeneratedKeys="true" keyProperty="userProjectId">
+        insert into sys_user_project
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="projectLock != null">project_lock,</if>
+            <if test="collect != null">collect,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="projectLock != null">#{projectLock},</if>
+            <if test="collect != null">#{collect},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysUserProjectByUserIdAndProjectId">
+        update sys_user_project
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="projectLock != null">project_lock = #{projectLock},</if>
+            <if test="collect != null">collect = #{collect},</if>
+        </trim>
+        where user_id = #{userId} and project_id = #{projectId}
+    </update>
+
+    <delete id="deleteSysUserProjectByProjectIdAndUserId">
+        delete from sys_user_project
+        where project_id = #{projectId} and user_id = #{userId}
+    </delete>
+
+    <resultMap id="SysUserProjectResult" type="com.cat2bug.quarkus.common.domain.SysUserProject">
+        <result property="userProjectId" column="user_project_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="collect" column="collect"/>
+        <result property="projectLock" column="project_lock"/>
+    </resultMap>
+
+    <select id="selectSysUserProjectList" resultMap="SysUserProjectResult">
+        select user_project_id, user_id, project_id, collect, project_lock
+        from sys_user_project
+        <where>
+            <if test="userId != null">and user_id = #{userId}</if>
+            <if test="projectId != null">and project_id = #{projectId}</if>
+        </where>
+    </select>
+</mapper>

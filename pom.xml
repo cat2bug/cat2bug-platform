@@ -401,6 +401,29 @@
                 <maven.main.skip.jvm.excel>true</maven.main.skip.jvm.excel>
             </properties>
         </profile>
+        <profile>
+            <id>quarkus</id>
+            <properties>
+                <quarkus.platform.version>3.15.7</quarkus.platform.version>
+            </properties>
+            <modules>
+                <module>cat2bug-platform-quarkus-common</module>
+                <module>cat2bug-platform-quarkus-framework</module>
+                <module>cat2bug-platform-quarkus-system</module>
+                <module>cat2bug-platform-quarkus-admin</module>
+            </modules>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>io.quarkus.platform</groupId>
+                            <artifactId>quarkus-maven-plugin</artifactId>
+                            <version>${quarkus.platform.version}</version>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
     </profiles>
 
     <repositories>

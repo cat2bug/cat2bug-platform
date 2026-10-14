@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysLogininforMapper">
+
+    <resultMap id="SysLogininforResult" type="com.cat2bug.quarkus.common.domain.SysLogininfor">
+        <id property="infoId" column="info_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="status" column="status"/>
+        <result property="ipaddr" column="ipaddr"/>
+        <result property="loginLocation" column="login_location"/>
+        <result property="browser" column="browser"/>
+        <result property="os" column="os"/>
+        <result property="msg" column="msg"/>
+        <result property="loginTime" column="login_time"/>
+    </resultMap>
+
+    <sql id="selectLogininforListWhere">
+        from sys_logininfor
+        <where>
+            <if test="query.ipaddr != null and query.ipaddr != ''">
+                AND ipaddr like concat('%', #{query.ipaddr}, '%')
+            </if>
+            <if test="query.status != null and query.status != ''">
+                AND status = #{query.status}
+            </if>
+            <if test="query.userName != null and query.userName != ''">
+                AND user_name like concat('%', #{query.userName}, '%')
+            </if>
+            <if test="query.params != null and query.params.beginTime != null and query.params.beginTime != ''">
+                AND login_time &gt;= #{query.params.beginTime}
+            </if>
+            <if test="query.params != null and query.params.endTime != null and query.params.endTime != ''">
+                AND login_time &lt;= #{query.params.endTime}
+            </if>
+        </where>
+    </sql>
+
+    <insert id="insertLogininfor">
+        insert into sys_logininfor (user_name, status, ipaddr, login_location, browser, os, msg, login_time)
+        values (#{userName}, #{status}, #{ipaddr}, #{loginLocation}, #{browser}, #{os}, #{msg}, NOW())
+    </insert>
+
+    <select id="countLogininforList" resultType="long">
+        select count(*) <include refid="selectLogininforListWhere"/>
+    </select>
+
+    <select id="selectLogininforList" resultMap="SysLogininforResult">
+        select info_id, user_name, ipaddr, login_location, browser, os, status, msg, login_time
+        <include refid="selectLogininforListWhere"/>
+        order by info_id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectLogininforListAll" resultMap="SysLogininforResult">
+        select info_id, user_name, ipaddr, login_location, browser, os, status, msg, login_time
+        <include refid="selectLogininforListWhere"/>
+        order by info_id desc
+    </select>
+
+    <delete id="deleteLogininforByIds">
+        delete from sys_logininfor where info_id in
+        <foreach collection="array" item="infoId" open="(" separator="," close=")">
+            #{infoId}
+        </foreach>
+    </delete>
+
+    <update id="cleanLogininfor">
+        truncate table sys_logininfor
+    </update>
+</mapper>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysProjectMapper">
+
+    <resultMap id="SysProjectResult" type="com.cat2bug.quarkus.common.domain.SysProject">
+        <result property="projectId" column="project_id"/>
+        <result property="projectState" column="project_state"/>
+        <result property="teamId" column="team_id"/>
+        <result property="teamName" column="team_name"/>
+        <result property="teamKey" column="team_key"/>
+        <result property="teamIcon" column="team_icon"/>
+        <result property="projectName" column="project_name"/>
+        <result property="projectKey" column="project_key"/>
+        <result property="projectIcon" column="project_icon"/>
+        <result property="projectIntroduce" column="project_introduce"/>
+        <result property="collect" column="collect"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="lock" column="is_lock"/>
+        <result property="lockRemark" column="lock_remark"/>
+    </resultMap>
+
+    <sql id="selectSysProjectFrom">
+        from sys_project p
+        LEFT JOIN sys_user_project up on p.project_id = up.project_id and up.user_id = #{userId}
+        LEFT JOIN sys_team t on p.team_id = t.team_id
+    </sql>
+
+    <sql id="selectSysProjectWhere">
+        <where>
+            p.project_state > 0
+            <if test="sysProject != null and sysProject.teamId != null">
+                and p.team_id = #{sysProject.teamId}
+            </if>
+            <if test="sysProject != null and sysProject.projectName != null and sysProject.projectName != ''">
+                and p.project_name like concat('%', #{sysProject.projectName}, '%')
+            </if>
+            <if test="sysProject != null and sysProject.collect">
+                and up.collect = 1
+            </if>
+        </where>
+    </sql>
+
+    <select id="countSysProjectList" resultType="long">
+        select count(distinct p.project_id)
+        <include refid="selectSysProjectFrom"/>
+        <include refid="selectSysProjectWhere"/>
+    </select>
+
+    <select id="selectSysProjectList" resultMap="SysProjectResult">
+        select distinct p.project_id, p.team_id, p.project_state, p.project_name, p.project_key, p.project_icon, p.project_introduce,
+               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark,
+               IFNULL(up.collect, 0) as collect, t.team_name, t.team_key, t.team_icon
+        <include refid="selectSysProjectFrom"/>
+        <include refid="selectSysProjectWhere"/>
+        order by collect desc, p.create_time desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <sql id="selectAdminSysProjectWhere">
+        <where>
+            p.project_state > 0
+            <if test="sysProject != null and sysProject.teamId != null">
+                and p.team_id = #{sysProject.teamId}
+            </if>
+            <if test="sysProject != null and sysProject.projectName != null and sysProject.projectName != ''">
+                and p.project_name like concat('%', #{sysProject.projectName}, '%')
+            </if>
+            <if test="sysProject != null and sysProject.createBy != null and sysProject.createBy != ''">
+                and p.create_by like concat('%', #{sysProject.createBy}, '%')
+            </if>
+            <if test="sysProject != null and sysProject.teamName != null and sysProject.teamName != ''">
+                and t.team_name like concat('%', #{sysProject.teamName}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="countAdminSysProjectList" resultType="long">
+        select count(distinct p.project_id)
+        from sys_project p
+        LEFT JOIN sys_team t on p.team_id = t.team_id
+        <include refid="selectAdminSysProjectWhere"/>
+    </select>
+
+    <select id="selectAdminSysProjectList" resultMap="SysProjectResult">
+        select distinct p.project_id, p.team_id, p.project_state, p.project_name, p.project_key, p.project_icon, p.project_introduce,
+               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark,
+               0 as collect, t.team_name, t.team_key, t.team_icon
+        from sys_project p
+        LEFT JOIN sys_team t on p.team_id = t.team_id
+        <include refid="selectAdminSysProjectWhere"/>
+        order by p.create_time desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectSysProjectByProjectId" resultMap="SysProjectResult">
+        select distinct p.project_id, p.team_id, p.project_state, p.project_name, p.project_key, p.project_icon, p.project_introduce,
+               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark,
+               IFNULL(up.collect, 0) as collect, t.team_name, t.team_key, t.team_icon
+        <include refid="selectSysProjectFrom"/>
+        where p.project_id = #{projectId}
+    </select>
+
+    <select id="selectSysProjectByTeamAndProjectKey" resultMap="SysProjectResult">
+        select p.project_id, p.team_id, p.project_state, p.project_name, p.project_key, p.project_icon, p.project_introduce,
+               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark,
+               t.team_name, t.team_key, t.team_icon
+        from sys_project p
+        INNER JOIN sys_team t ON p.team_id = t.team_id
+        where t.team_key = #{teamKey} AND p.project_key = #{projectKey} AND p.project_state > 0
+    </select>
+
+    <select id="countByTeamIdAndProjectKey" resultType="int">
+        select count(1) from sys_project
+        where team_id = #{teamId} AND project_key = #{projectKey} AND project_state > 0
+        <if test="excludeProjectId != null"> AND project_id != #{excludeProjectId}</if>
+    </select>
+
+    <insert id="insertSysProject" useGeneratedKeys="true" keyProperty="projectId">
+        insert into sys_project
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="teamId != null">team_id,</if>
+            <if test="projectName != null and projectName != ''">project_name,</if>
+            <if test="projectKey != null and projectKey != ''">project_key,</if>
+            <if test="projectIcon != null">project_icon,</if>
+            <if test="projectIntroduce != null">project_introduce,</if>
+            <if test="projectState != null">project_state,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="teamId != null">#{teamId},</if>
+            <if test="projectName != null and projectName != ''">#{projectName},</if>
+            <if test="projectKey != null and projectKey != ''">#{projectKey},</if>
+            <if test="projectIcon != null">#{projectIcon},</if>
+            <if test="projectIntroduce != null">#{projectIntroduce},</if>
+            <if test="projectState != null">#{projectState},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysProject">
+        update sys_project
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="projectName != null and projectName != ''">project_name = #{projectName},</if>
+            <if test="projectKey != null and projectKey != ''">project_key = #{projectKey},</if>
+            <if test="teamId != null">team_id = #{teamId},</if>
+            <if test="projectIcon != null">project_icon = #{projectIcon},</if>
+            <if test="projectIntroduce != null">project_introduce = #{projectIntroduce},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="lock != null">is_lock = #{lock},</if>
+            <if test="lockRemark != null">lock_remark = #{lockRemark},</if>
+        </trim>
+        where project_id = #{projectId}
+    </update>
+
+    <update id="deleteSysProjectByProjectId">
+        update sys_project set project_state = 0 where project_id = #{projectId}
+    </update>
+</mapper>

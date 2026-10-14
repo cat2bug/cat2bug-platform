@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysCaseMapper">
+
+    <resultMap id="SysCaseResult" type="com.cat2bug.quarkus.common.domain.SysCase">
+        <id property="caseId" column="case_id"/>
+        <result property="caseName" column="case_name"/>
+        <result property="moduleId" column="module_id"/>
+        <result property="moduleName" column="module_name"/>
+        <result property="caseType" column="case_type"/>
+        <result property="caseExpect" column="case_expect"/>
+        <result property="caseStep" column="case_step"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.CaseStepListJsonTypeHandler"/>
+        <result property="caseLevel" column="case_level"/>
+        <result property="caseLevelName" column="case_level_name"/>
+        <result property="casePreconditions" column="case_preconditions"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="caseNum" column="case_num"/>
+        <result property="projectId" column="project_id"/>
+        <result property="remark" column="remark"/>
+        <result property="imgUrls" column="img_urls"/>
+        <result property="annexUrls" column="annex_urls"/>
+        <result property="caseData" column="case_data"/>
+        <result property="defectProcessingCount" column="defect_processing_count"/>
+        <result property="defectAuditCount" column="defect_audit_count"/>
+        <result property="defectCloseCount" column="defect_close_count"/>
+    </resultMap>
+
+    <sql id="selectSysCaseVo">
+        SELECT c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect,
+               c.case_step, c.case_level,
+               CASE WHEN c.case_level IS NOT NULL THEN CONCAT('P', c.case_level - 1) END AS case_level_name,
+               c.case_preconditions, c.create_by, c.create_time, c.update_by, c.update_time,
+               c.case_num, c.project_id, c.remark, c.img_urls, c.annex_urls, c.case_data,
+               IFNULL(d.defect_processing_count, 0) AS defect_processing_count,
+               IFNULL(d.defect_audit_count, 0) AS defect_audit_count,
+               IFNULL(d.defect_close_count, 0) AS defect_close_count
+        FROM sys_case c
+        LEFT JOIN sys_module m ON m.module_id = c.module_id
+        LEFT JOIN (
+            SELECT case_id,
+                   IFNULL(SUM(CASE WHEN defect_state = 0 OR defect_state = 3 THEN 1 END), 0) AS defect_processing_count,
+                   IFNULL(SUM(CASE WHEN defect_state = 1 THEN 1 END), 0) AS defect_audit_count,
+                   IFNULL(SUM(CASE WHEN defect_state = 4 THEN 1 END), 0) AS defect_close_count
+            FROM sys_defect
+            WHERE del_flag = '0'
+            GROUP BY case_id
+        ) d ON d.case_id = c.case_id
+    </sql>
+
+    <sql id="selectSysCaseWhere">
+        <where>
+            <if test="query != null and query.caseName != null and query.caseName != ''">
+                AND c.case_name LIKE CONCAT('%', #{query.caseName}, '%')
+            </if>
+            <if test="query != null and query.moduleId != null">
+                AND c.module_id = #{query.moduleId}
+            </if>
+            <if test="query != null and query.caseType != null">
+                AND c.case_type = #{query.caseType}
+            </if>
+            <if test="query != null and query.caseLevel != null">
+                AND c.case_level = #{query.caseLevel}
+            </if>
+            <if test="query != null and query.projectId != null">
+                AND c.project_id = #{query.projectId}
+            </if>
+            <if test="query != null and query.caseNum != null">
+                AND c.case_num = #{query.caseNum}
+            </if>
+            <if test="query != null and query.params != null and query.params.moduleIds != null">
+                AND c.module_id IN
+                <foreach collection="query.params.moduleIds" item="moduleId" open="(" separator="," close=")">
+                    #{moduleId}
+                </foreach>
+            </if>
+            <if test="query != null and query.params != null and query.params.search != null and query.params.search != ''">
+                AND (
+                    c.case_name LIKE CONCAT('%', #{query.params.search}, '%')
+                    OR c.case_num = #{query.params.search}
+                    OR m.module_name LIKE CONCAT('%', #{query.params.search}, '%')
+                )
+            </if>
+        </where>
+    </sql>
+
+    <sql id="selectSysCasesOrdered">
+        <include refid="selectSysCaseVo"/>
+        <include refid="selectSysCaseWhere"/>
+        ORDER BY c.case_num DESC
+    </sql>
+
+    <select id="selectPrevSysCase" resultMap="SysCaseResult">
+        SELECT c.* FROM (
+            <include refid="selectSysCasesOrdered"/>
+        ) c
+        WHERE c.case_id &lt; #{query.params.prevCaseId}
+        ORDER BY c.case_id DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectNextSysCase" resultMap="SysCaseResult">
+        SELECT c.* FROM (
+            <include refid="selectSysCasesOrdered"/>
+        ) c
+        WHERE c.case_id &gt; #{query.params.nextCaseId}
+        ORDER BY c.case_id
+        LIMIT 1
+    </select>
+
+    <select id="countSysCaseList" resultType="long">
+        SELECT COUNT(*)
+        FROM sys_case c
+        LEFT JOIN sys_module m ON m.module_id = c.module_id
+        <include refid="selectSysCaseWhere"/>
+    </select>
+
+    <select id="selectSysCaseList" resultMap="SysCaseResult">
+        <include refid="selectSysCaseVo"/>
+        <include refid="selectSysCaseWhere"/>
+        ORDER BY c.case_num DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectSysCaseListAll" resultMap="SysCaseResult">
+        <include refid="selectSysCaseVo"/>
+        <include refid="selectSysCaseWhere"/>
+        ORDER BY c.case_num DESC
+    </select>
+
+    <select id="selectSysCaseByCaseId" resultMap="SysCaseResult">
+        <include refid="selectSysCaseVo"/>
+        WHERE c.case_id = #{caseId}
+    </select>
+
+    <select id="getCaseMaxNumOfProject" resultType="long">
+        SELECT IFNULL(MAX(case_num), 0) FROM sys_case WHERE project_id = #{projectId}
+    </select>
+
+    <insert id="insertSysCase" parameterType="com.cat2bug.quarkus.common.domain.SysCase"
+            useGeneratedKeys="true" keyProperty="caseId">
+        INSERT INTO sys_case
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="caseName != null">case_name,</if>
+            <if test="moduleId != null">module_id,</if>
+            <if test="caseType != null">case_type,</if>
+            <if test="caseExpect != null">case_expect,</if>
+            <if test="caseStep != null">case_step,</if>
+            <if test="caseLevel != null">case_level,</if>
+            <if test="casePreconditions != null">case_preconditions,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="caseNum != null">case_num,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="remark != null">remark,</if>
+            <if test="imgUrls != null">img_urls,</if>
+            <if test="annexUrls != null">annex_urls,</if>
+            <if test="caseData != null">case_data,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="caseName != null">#{caseName},</if>
+            <if test="moduleId != null">#{moduleId},</if>
+            <if test="caseType != null">#{caseType},</if>
+            <if test="caseExpect != null">#{caseExpect},</if>
+            <if test="caseStep != null">#{caseStep,typeHandler=com.cat2bug.quarkus.system.mybatis.CaseStepListJsonTypeHandler},</if>
+            <if test="caseLevel != null">#{caseLevel},</if>
+            <if test="casePreconditions != null">#{casePreconditions},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="caseNum != null">#{caseNum},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="imgUrls != null">#{imgUrls},</if>
+            <if test="annexUrls != null">#{annexUrls},</if>
+            <if test="caseData != null">#{caseData},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysCase" parameterType="com.cat2bug.quarkus.common.domain.SysCase">
+        UPDATE sys_case
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="caseName != null">case_name = #{caseName},</if>
+            <if test="moduleId != null">module_id = #{moduleId},</if>
+            <if test="caseType != null">case_type = #{caseType},</if>
+            <if test="caseExpect != null">case_expect = #{caseExpect},</if>
+            <if test="caseStep != null">case_step = #{caseStep,typeHandler=com.cat2bug.quarkus.system.mybatis.CaseStepListJsonTypeHandler},</if>
+            <if test="caseLevel != null">case_level = #{caseLevel},</if>
+            <if test="casePreconditions != null">case_preconditions = #{casePreconditions},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="caseNum != null">case_num = #{caseNum},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="imgUrls != null">img_urls = #{imgUrls},</if>
+            <if test="annexUrls != null">annex_urls = #{annexUrls},</if>
+            <if test="caseData != null">case_data = #{caseData},</if>
+        </trim>
+        WHERE case_id = #{caseId}
+    </update>
+
+    <delete id="deleteSysCaseByCaseId">
+        DELETE FROM sys_case WHERE case_id = #{caseId}
+    </delete>
+
+    <select id="selectSysCaseByCaseNum" resultMap="SysCaseResult">
+        <include refid="selectSysCaseVo"/>
+        WHERE c.case_num = #{caseNum} AND c.project_id = #{projectId}
+    </select>
+
+    <delete id="deleteSysCaseByCaseNumAndProjectId">
+        DELETE FROM sys_case WHERE case_num = #{caseNum} AND project_id = #{projectId}
+    </delete>
+
+    <select id="selectSysCaseIdList" resultType="long">
+        SELECT c.case_id
+        FROM sys_case c
+        <where>
+            <choose>
+                <when test="moduleIds != null and moduleIds.size() > 0">
+                    <foreach collection="moduleIds" item="mId" separator="OR" open="(" close=")">
+                        c.module_id = #{mId}
+                    </foreach>
+                </when>
+                <otherwise>1 = 2</otherwise>
+            </choose>
+        </where>
+        ORDER BY c.case_num DESC
+    </select>
+
+    <select id="selectSysCaseIdListByLevel" resultType="long">
+        SELECT c.case_id
+        FROM sys_case c
+        WHERE c.project_id = #{projectId}
+          AND c.case_level = #{level}
+        ORDER BY c.case_num DESC
+    </select>
+</mapper>

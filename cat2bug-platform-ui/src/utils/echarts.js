@@ -1,12 +1,51 @@
 /**
- * Vite/ESM shim for vendored UMD echarts.min.js (side-effect assigns globalThis.echarts).
+ * ECharts 按需注册入口；新增图表类型或组件时需在此补充 use()，否则 setOption 静默不渲染对应部分。
  */
-import '@/assets/js/echarts.min.js'
+import * as echarts from 'echarts/core'
+import { BarChart, GaugeChart, LineChart, PieChart, RadarChart, ScatterChart } from 'echarts/charts'
+import {
+  AxisPointerComponent,
+  DataZoomComponent,
+  DatasetComponent,
+  GraphicComponent,
+  GridComponent,
+  LegendComponent,
+  MarkAreaComponent,
+  MarkLineComponent,
+  MarkPointComponent,
+  RadarComponent,
+  TitleComponent,
+  ToolboxComponent,
+  TooltipComponent,
+  VisualMapComponent
+} from 'echarts/components'
+import { LabelLayout, UniversalTransition } from 'echarts/features'
+import { CanvasRenderer } from 'echarts/renderers'
 
-const echarts = globalThis.echarts
-
-if (!echarts || typeof echarts.init !== 'function') {
-  throw new Error('[echarts] failed to load from echarts.min.js')
-}
+echarts.use([
+  BarChart,
+  GaugeChart,
+  LineChart,
+  PieChart,
+  RadarChart,
+  ScatterChart,
+  AxisPointerComponent,
+  DataZoomComponent,
+  DatasetComponent,
+  GraphicComponent,
+  GridComponent,
+  LegendComponent,
+  MarkAreaComponent,
+  MarkLineComponent,
+  MarkPointComponent,
+  RadarComponent,
+  TitleComponent,
+  ToolboxComponent,
+  TooltipComponent,
+  VisualMapComponent,
+  LabelLayout,
+  UniversalTransition,
+  CanvasRenderer
+])
 
 export default echarts

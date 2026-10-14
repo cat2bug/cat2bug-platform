@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysOperLogMapper">
+
+    <resultMap id="SysOperLogResult" type="com.cat2bug.quarkus.common.domain.SysOperLog">
+        <id property="operId" column="oper_id"/>
+        <result property="title" column="title"/>
+        <result property="businessType" column="business_type"/>
+        <result property="method" column="method"/>
+        <result property="requestMethod" column="request_method"/>
+        <result property="operatorType" column="operator_type"/>
+        <result property="operName" column="oper_name"/>
+        <result property="deptName" column="dept_name"/>
+        <result property="operUrl" column="oper_url"/>
+        <result property="operIp" column="oper_ip"/>
+        <result property="operLocation" column="oper_location"/>
+        <result property="operParam" column="oper_param"/>
+        <result property="jsonResult" column="json_result"/>
+        <result property="status" column="status"/>
+        <result property="errorMsg" column="error_msg"/>
+        <result property="operTime" column="oper_time"/>
+        <result property="costTime" column="cost_time"/>
+    </resultMap>
+
+    <sql id="selectOperLogVo">
+        select oper_id, title, business_type, method, request_method, operator_type, oper_name, dept_name,
+               oper_url, oper_ip, oper_location, oper_param, json_result, status, error_msg, oper_time, cost_time
+        from sys_oper_log
+    </sql>
+
+    <sql id="selectOperLogListWhere">
+        <where>
+            <if test="query.operIp != null and query.operIp != ''">
+                AND oper_ip like concat('%', #{query.operIp}, '%')
+            </if>
+            <if test="query.title != null and query.title != ''">
+                AND title like concat('%', #{query.title}, '%')
+            </if>
+            <if test="query.businessType != null">
+                AND business_type = #{query.businessType}
+            </if>
+            <if test="query.businessTypes != null and query.businessTypes.length > 0">
+                AND business_type in
+                <foreach collection="query.businessTypes" item="businessType" open="(" separator="," close=")">
+                    #{businessType}
+                </foreach>
+            </if>
+            <if test="query.status != null">
+                AND status = #{query.status}
+            </if>
+            <if test="query.operName != null and query.operName != ''">
+                AND oper_name like concat('%', #{query.operName}, '%')
+            </if>
+            <if test="query.params != null and query.params.beginTime != null and query.params.beginTime != ''">
+                AND oper_time &gt;= #{query.params.beginTime}
+            </if>
+            <if test="query.params != null and query.params.endTime != null and query.params.endTime != ''">
+                AND oper_time &lt;= #{query.params.endTime}
+            </if>
+        </where>
+    </sql>
+
+    <insert id="insertOperlog">
+        insert into sys_oper_log(title, business_type, method, request_method, operator_type, oper_name, dept_name,
+                                 oper_url, oper_ip, oper_location, oper_param, json_result, status, error_msg, cost_time, oper_time)
+        values (#{title}, #{businessType}, #{method}, #{requestMethod}, #{operatorType}, #{operName}, #{deptName},
+                #{operUrl}, #{operIp}, #{operLocation}, #{operParam}, #{jsonResult}, #{status}, #{errorMsg}, #{costTime}, NOW())
+    </insert>
+
+    <select id="countOperLogList" resultType="long">
+        select count(*) from sys_oper_log <include refid="selectOperLogListWhere"/>
+    </select>
+
+    <select id="selectOperLogList" resultMap="SysOperLogResult">
+        <include refid="selectOperLogVo"/>
+        <include refid="selectOperLogListWhere"/>
+        order by oper_id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectOperLogListAll" resultMap="SysOperLogResult">
+        <include refid="selectOperLogVo"/>
+        <include refid="selectOperLogListWhere"/>
+        order by oper_id desc
+    </select>
+
+    <select id="selectOperLogById" resultMap="SysOperLogResult">
+        <include refid="selectOperLogVo"/>
+        where oper_id = #{operId}
+    </select>
+
+    <delete id="deleteOperLogByIds">
+        delete from sys_oper_log where oper_id in
+        <foreach collection="array" item="operId" open="(" separator="," close=")">
+            #{operId}
+        </foreach>
+    </delete>
+
+    <update id="cleanOperLog">
+        truncate table sys_oper_log
+    </update>
+</mapper>

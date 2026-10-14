@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysCasePromptMapper">
+
+    <resultMap id="SysCasePromptResult" type="com.cat2bug.quarkus.common.domain.SysCasePrompt">
+        <result property="casePromptId" column="case_prompt_id"/>
+        <result property="casePromptContent" column="case_prompt_content"/>
+        <result property="projectId" column="project_id"/>
+        <result property="createById" column="create_by_id"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="selectSysCasePromptVo">
+        select case_prompt_id, case_prompt_content, project_id, create_by_id, create_time
+    </sql>
+
+    <sql id="selectSysCasePromptWhere">
+        from sys_case_prompt
+        <where>
+            <if test="query != null and query.casePromptContent != null and query.casePromptContent != ''">
+                and case_prompt_content like concat('%', #{query.casePromptContent}, '%')
+            </if>
+            <if test="query != null and query.projectId != null">
+                and project_id = #{query.projectId}
+            </if>
+            <if test="query != null and query.createById != null">
+                and create_by_id = #{query.createById}
+            </if>
+        </where>
+    </sql>
+
+    <select id="countSysCasePromptList" resultType="long">
+        select count(*)
+        <include refid="selectSysCasePromptWhere"/>
+    </select>
+
+    <select id="selectSysCasePromptList" resultMap="SysCasePromptResult">
+        <include refid="selectSysCasePromptVo"/>
+        <include refid="selectSysCasePromptWhere"/>
+        order by create_time desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectSysCasePromptByCasePromptId" resultMap="SysCasePromptResult">
+        <include refid="selectSysCasePromptVo"/>
+        from sys_case_prompt
+        where case_prompt_id = #{casePromptId}
+    </select>
+
+    <insert id="insertSysCasePrompt">
+        insert into sys_case_prompt
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="casePromptId != null">case_prompt_id,</if>
+            <if test="casePromptContent != null and casePromptContent != ''">case_prompt_content,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="casePromptId != null">#{casePromptId},</if>
+            <if test="casePromptContent != null and casePromptContent != ''">#{casePromptContent},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysCasePrompt">
+        update sys_case_prompt
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="casePromptContent != null and casePromptContent != ''">case_prompt_content = #{casePromptContent},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="createById != null">create_by_id = #{createById},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where case_prompt_id = #{casePromptId}
+    </update>
+
+    <delete id="deleteSysCasePromptByCasePromptId">
+        delete from sys_case_prompt where case_prompt_id = #{casePromptId}
+    </delete>
+
+    <delete id="deleteSysCasePromptByCasePromptIds">
+        delete from sys_case_prompt where case_prompt_id in
+        <foreach item="casePromptId" collection="casePromptIds" open="(" separator="," close=")">
+            #{casePromptId}
+        </foreach>
+    </delete>
+</mapper>

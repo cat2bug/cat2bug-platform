@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.OpenApiProjectMapper">
+
+    <resultMap id="SysProjectResult" type="com.cat2bug.quarkus.common.domain.SysProject">
+        <id property="projectId" column="project_id"/>
+        <result property="projectName" column="project_name"/>
+        <result property="projectIntroduce" column="project_introduce"/>
+        <result property="createTime" column="create_time"/>
+        <result property="createBy" column="create_by"/>
+    </resultMap>
+
+    <resultMap id="ApiMemberResult" type="com.cat2bug.quarkus.common.domain.open.ApiMember">
+        <id property="memberId" column="user_id"/>
+        <result property="memberAccount" column="user_name"/>
+        <result property="memberName" column="nick_name"/>
+        <result property="email" column="email"/>
+        <result property="phoneNumber" column="phonenumber"/>
+    </resultMap>
+
+    <select id="selectProjectById" resultMap="SysProjectResult">
+        select project_id, project_name, project_introduce, create_time, create_by
+        from sys_project
+        where project_id = #{projectId}
+    </select>
+
+    <select id="selectCreatorByProjectId" resultMap="ApiMemberResult">
+        select u.user_id, u.user_name, u.nick_name, u.email, u.phonenumber
+        from sys_user u
+        inner join sys_project p on p.create_by = u.user_name
+        where p.project_id = #{projectId} and u.del_flag = '0'
+    </select>
+
+    <select id="getProjectStatistics" resultType="map">
+        select
+            (select count(*) from sys_defect where project_id = #{projectId} and del_flag = '0') as "defectCount",
+            (select count(*) from sys_case where project_id = #{projectId}) as "caseCount",
+            (select count(*) from sys_user_project where project_id = #{projectId}) as "memberCount",
+            (select count(*) from sys_module where project_id = #{projectId}) as "deliverableCount"
+    </select>
+</mapper>

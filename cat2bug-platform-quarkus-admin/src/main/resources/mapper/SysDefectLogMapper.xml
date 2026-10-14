@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysDefectLogMapper">
+
+    <resultMap id="SysDefectLogResult" type="com.cat2bug.quarkus.common.domain.SysDefectLog">
+        <id property="defectLogId" column="defect_log_id"/>
+        <result property="defectLogDescribe" column="defect_log_describe"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createByName" column="create_by_name"/>
+        <result property="createByAvatar" column="create_by_avatar"/>
+        <result property="createTime" column="create_time"/>
+        <result property="defectLogType" column="defect_log_type"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.DefectLogStateTypeHandler"/>
+        <result property="receiveBy" column="receive_by"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler"/>
+        <result property="annexUrls" column="annex_urls"/>
+        <result property="defectId" column="defect_id"/>
+    </resultMap>
+
+    <sql id="selectSysDefectLogVo">
+        SELECT
+            dl.defect_log_id,
+            dl.defect_log_describe,
+            dl.create_by,
+            u1.nick_name AS create_by_name,
+            u1.avatar AS create_by_avatar,
+            dl.create_time,
+            dl.defect_log_type,
+            dl.receive_by,
+            dl.annex_urls,
+            dl.defect_id
+        FROM sys_defect_log dl
+        LEFT JOIN sys_user u1 ON u1.user_id = dl.create_by
+    </sql>
+
+    <sql id="selectSysDefectLogWhere">
+        <where>
+            <if test="log.defectLogType != null">
+                and dl.defect_log_type = #{log.defectLogType,typeHandler=com.cat2bug.quarkus.system.mybatis.DefectLogStateTypeHandler}
+            </if>
+            <if test="log.defectId != null">
+                and dl.defect_id = #{log.defectId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="countSysDefectLogList" resultType="long">
+        select count(*)
+        from sys_defect_log dl
+        <include refid="selectSysDefectLogWhere"/>
+    </select>
+
+    <select id="selectSysDefectLogList" resultMap="SysDefectLogResult">
+        <include refid="selectSysDefectLogVo"/>
+        <include refid="selectSysDefectLogWhere"/>
+        order by dl.create_time desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectSysDefectLogByDefectLogId" resultMap="SysDefectLogResult">
+        <include refid="selectSysDefectLogVo"/>
+        WHERE dl.defect_log_id = #{defectLogId}
+    </select>
+
+    <insert id="insertSysDefectLog" parameterType="com.cat2bug.quarkus.common.domain.SysDefectLog"
+            useGeneratedKeys="true" keyProperty="defectLogId">
+        INSERT INTO sys_defect_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="defectLogId != null">defect_log_id,</if>
+            <if test="defectLogDescribe != null">defect_log_describe,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="defectLogType != null">defect_log_type,</if>
+            <if test="receiveBy != null">receive_by,</if>
+            <if test="annexUrls != null">annex_urls,</if>
+            <if test="defectId != null">defect_id,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="defectLogId != null">#{defectLogId},</if>
+            <if test="defectLogDescribe != null">#{defectLogDescribe},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="defectLogType != null">#{defectLogType,typeHandler=com.cat2bug.quarkus.system.mybatis.DefectLogStateTypeHandler},</if>
+            <if test="receiveBy != null">#{receiveBy,typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="annexUrls != null">#{annexUrls},</if>
+            <if test="defectId != null">#{defectId},</if>
+        </trim>
+    </insert>
+
+    <insert id="batchInsertSysDefectLog" useGeneratedKeys="true" keyProperty="defectLogId" keyColumn="defect_log_id">
+        INSERT INTO sys_defect_log (
+            defect_log_describe, create_by, create_time, defect_log_type, receive_by, annex_urls, defect_id
+        ) VALUES
+        <foreach collection="logList" item="log" separator=",">
+            (
+            #{log.defectLogDescribe},
+            #{log.createBy},
+            #{log.createTime},
+            #{log.defectLogType,typeHandler=com.cat2bug.quarkus.system.mybatis.DefectLogStateTypeHandler},
+            #{log.receiveBy,typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},
+            #{log.annexUrls},
+            #{log.defectId}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateSysDefectLog" parameterType="com.cat2bug.quarkus.common.domain.SysDefectLog">
+        UPDATE sys_defect_log
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="defectLogDescribe != null">defect_log_describe = #{defectLogDescribe},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="defectLogType != null">defect_log_type = #{defectLogType,typeHandler=com.cat2bug.quarkus.system.mybatis.DefectLogStateTypeHandler},</if>
+            <if test="receiveBy != null">receive_by = #{receiveBy,typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="annexUrls != null">annex_urls = #{annexUrls},</if>
+            <if test="defectId != null">defect_id = #{defectId},</if>
+        </trim>
+        WHERE defect_log_id = #{defectLogId}
+    </update>
+
+    <delete id="deleteSysDefectLogByDefectLogIds">
+        DELETE FROM sys_defect_log WHERE defect_log_id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">#{id}</foreach>
+    </delete>
+</mapper>

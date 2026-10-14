@@ -44,7 +44,7 @@ import SvgIcon from '@/components/SvgIcon'
 import LegacyIcon from '@/components/LegacyIcon'
 import CommandPalette from '@/components/Shortcut/CommandPalette.vue'
 
-import i18n from './utils/i18n/i18n.js'
+import i18n, { loadLocaleMessages } from './utils/i18n/i18n.js'
 
 import ShortcutPlugin from '@/plugins/shortcut'
 import TabDirectionPlugin from '@/plugins/tab-direction'
@@ -92,6 +92,12 @@ async function mountApp() {
     await bootstrapAuthenticatedRoutes()
   } catch (_err) {
     // 登录失效等由 permission 守卫处理
+  }
+
+  try {
+    await loadLocaleMessages(localStorage.getItem('i18n-locale'))
+  } catch (_err) {
+    // 语言包加载失败不阻塞启动
   }
 
   // app.use(router) 会立即同步当前 hash，须在动态路由注入之后执行

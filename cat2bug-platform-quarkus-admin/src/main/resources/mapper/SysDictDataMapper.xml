@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysDictDataMapper">
+
+    <resultMap id="SysDictDataResult" type="com.cat2bug.quarkus.common.domain.SysDictData">
+        <id property="dictCode" column="dict_code"/>
+        <result property="dictSort" column="dict_sort"/>
+        <result property="dictLabel" column="dict_label"/>
+        <result property="dictValue" column="dict_value"/>
+        <result property="dictType" column="dict_type"/>
+        <result property="cssClass" column="css_class"/>
+        <result property="listClass" column="list_class"/>
+        <result property="isDefault" column="is_default"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="selectDictDataVo">
+        SELECT dict_code, dict_sort, dict_label, dict_value, dict_type,
+               css_class, list_class, is_default, status, create_by, create_time, remark
+        FROM sys_dict_data
+    </sql>
+
+    <select id="selectDictDataList" resultMap="SysDictDataResult">
+        <include refid="selectDictDataVo"/>
+        <where>
+            <if test="query != null and query.dictType != null and query.dictType != ''">
+                AND dict_type = #{query.dictType}
+            </if>
+            <if test="query != null and query.dictLabel != null and query.dictLabel != ''">
+                AND dict_label LIKE CONCAT('%', #{query.dictLabel}, '%')
+            </if>
+            <if test="query != null and query.status != null and query.status != ''">
+                AND status = #{query.status}
+            </if>
+        </where>
+        ORDER BY dict_sort ASC
+    </select>
+
+    <select id="countDictDataList" resultType="long">
+        SELECT COUNT(*) FROM sys_dict_data
+        <where>
+            <if test="query != null and query.dictType != null and query.dictType != ''">
+                AND dict_type = #{query.dictType}
+            </if>
+            <if test="query != null and query.dictLabel != null and query.dictLabel != ''">
+                AND dict_label LIKE CONCAT('%', #{query.dictLabel}, '%')
+            </if>
+            <if test="query != null and query.status != null and query.status != ''">
+                AND status = #{query.status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectDictDataByType" resultMap="SysDictDataResult">
+        <include refid="selectDictDataVo"/>
+        WHERE status = '0' AND dict_type = #{dictType}
+        ORDER BY dict_sort ASC
+    </select>
+
+    <select id="selectDictDataById" resultMap="SysDictDataResult">
+        <include refid="selectDictDataVo"/>
+        WHERE dict_code = #{dictCode}
+    </select>
+
+    <select id="countDictDataByType" resultType="int">
+        SELECT COUNT(1) FROM sys_dict_data WHERE dict_type = #{dictType}
+    </select>
+
+    <update id="updateDictDataType">
+        UPDATE sys_dict_data SET dict_type = #{newDictType} WHERE dict_type = #{oldDictType}
+    </update>
+
+    <delete id="deleteDictDataById">
+        DELETE FROM sys_dict_data WHERE dict_code = #{dictCode}
+    </delete>
+
+    <update id="updateDictData">
+        UPDATE sys_dict_data
+        <set>
+            <if test="dictSort != null">dict_sort = #{dictSort},</if>
+            <if test="dictLabel != null and dictLabel != ''">dict_label = #{dictLabel},</if>
+            <if test="dictValue != null and dictValue != ''">dict_value = #{dictValue},</if>
+            <if test="dictType != null and dictType != ''">dict_type = #{dictType},</if>
+            <if test="cssClass != null">css_class = #{cssClass},</if>
+            <if test="listClass != null">list_class = #{listClass},</if>
+            <if test="isDefault != null and isDefault != ''">is_default = #{isDefault},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = NOW()
+        </set>
+        WHERE dict_code = #{dictCode}
+    </update>
+
+    <insert id="insertDictData">
+        INSERT INTO sys_dict_data(
+            <if test="dictSort != null">dict_sort,</if>
+            <if test="dictLabel != null and dictLabel != ''">dict_label,</if>
+            <if test="dictValue != null and dictValue != ''">dict_value,</if>
+            <if test="dictType != null and dictType != ''">dict_type,</if>
+            <if test="cssClass != null and cssClass != ''">css_class,</if>
+            <if test="listClass != null and listClass != ''">list_class,</if>
+            <if test="isDefault != null and isDefault != ''">is_default,</if>
+            <if test="status != null">status,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            create_time
+        ) VALUES (
+            <if test="dictSort != null">#{dictSort},</if>
+            <if test="dictLabel != null and dictLabel != ''">#{dictLabel},</if>
+            <if test="dictValue != null and dictValue != ''">#{dictValue},</if>
+            <if test="dictType != null and dictType != ''">#{dictType},</if>
+            <if test="cssClass != null and cssClass != ''">#{cssClass},</if>
+            <if test="listClass != null and listClass != ''">#{listClass},</if>
+            <if test="isDefault != null and isDefault != ''">#{isDefault},</if>
+            <if test="status != null">#{status},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            NOW()
+        )
+    </insert>
+</mapper>

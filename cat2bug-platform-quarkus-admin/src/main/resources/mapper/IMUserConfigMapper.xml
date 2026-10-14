@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.IMUserConfigMapper">
+
+    <resultMap type="com.cat2bug.quarkus.common.domain.im.IMUserConfig" id="ImUserConfigResult">
+        <result property="imConfigId" column="im_config_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="groupName" column="group_name"/>
+        <result property="config" column="config"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.IMConfigTypeHandler"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectImUserConfigVo">
+        select im_config_id, user_id, project_id, group_name, config, update_time from im_user_config
+    </sql>
+
+    <select id="selectImUserConfigList" parameterType="com.cat2bug.quarkus.common.domain.im.IMUserConfig"
+            resultMap="ImUserConfigResult">
+        <include refid="selectImUserConfigVo"/>
+        <where>
+            <if test="userId != null">and user_id = #{userId}</if>
+            <if test="projectId != null">and project_id = #{projectId}</if>
+            <if test="groupName != null and groupName != ''">and group_name like concat('%', #{groupName}, '%')</if>
+        </where>
+    </select>
+
+    <select id="selectImUserConfigByProjectAndMember" resultMap="ImUserConfigResult">
+        <include refid="selectImUserConfigVo"/>
+        where project_id = #{projectId} and user_id = #{memberId}
+    </select>
+
+    <insert id="insertImUserConfig" parameterType="com.cat2bug.quarkus.common.domain.im.IMUserConfig"
+            useGeneratedKeys="true" keyProperty="imConfigId">
+        insert into im_user_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="groupName != null">group_name,</if>
+            <if test="config != null">config,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="groupName != null">#{groupName},</if>
+            <if test="config != null">#{config, typeHandler=com.cat2bug.quarkus.system.mybatis.IMConfigTypeHandler},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateImUserConfig" parameterType="com.cat2bug.quarkus.common.domain.im.IMUserConfig">
+        update im_user_config
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="groupName != null">group_name = #{groupName},</if>
+            <if test="config != null">config = #{config, typeHandler=com.cat2bug.quarkus.system.mybatis.IMConfigTypeHandler},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where im_config_id = #{imConfigId}
+    </update>
+
+    <delete id="deleteImUserConfigByImConfigId" parameterType="Long">
+        delete from im_user_config where im_config_id = #{imConfigId}
+    </delete>
+</mapper>

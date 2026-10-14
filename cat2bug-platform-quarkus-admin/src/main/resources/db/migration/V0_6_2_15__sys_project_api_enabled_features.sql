@@ -1,0 +1,3 @@
+-- 项目 API：启用状态与权限配置
+ALTER TABLE sys_project_api ADD COLUMN IF NOT EXISTS enabled TINYINT NOT NULL DEFAULT 1 COMMENT '启用状态';
+ALTER TABLE sys_project_api ADD COLUMN IF NOT EXISTS features JSON COMMENT '权限配置 JSON';

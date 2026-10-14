@@ -187,7 +187,8 @@ export default {
   computed: {
     tabName: function () {
       return function (name) {
-        return this.$i18n.t(name)+this.$i18n.t('char-span')+this.$i18n.t('notice');
+        // vue-i18n 9 对空 key 抛 Invalid argument；「全部」分组 groupName 为空串
+        return (name ? this.$i18n.t(name) : '')+this.$i18n.t('char-span')+this.$i18n.t('notice');
       }
     }
   },

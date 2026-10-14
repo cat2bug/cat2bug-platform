@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysPlanItemMapper">
+
+    <resultMap id="SysPlanItemResult" type="com.cat2bug.quarkus.common.domain.SysPlanItem">
+        <result property="planItemId" column="plan_item_id"/>
+        <result property="planId" column="plan_id"/>
+        <result property="moduleId" column="module_id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="planItemState" column="plan_item_state"/>
+        <result property="updateById" column="update_by_id"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="defectIds" column="defect_ids"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler"/>
+        <result property="caseName" column="case_name"/>
+        <result property="moduleName" column="module_name"/>
+        <result property="caseType" column="case_type"/>
+        <result property="caseExpect" column="case_expect"/>
+        <result property="caseStep" column="case_step"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.CaseStepListJsonTypeHandler"/>
+        <result property="caseLevel" column="case_level"/>
+        <result property="casePreconditions" column="case_preconditions"/>
+        <result property="caseNum" column="case_num"/>
+        <result property="projectId" column="project_id"/>
+        <result property="remark" column="remark"/>
+        <result property="imgUrls" column="img_urls"/>
+        <result property="annexUrls" column="annex_urls"/>
+        <result property="caseData" column="case_data"/>
+    </resultMap>
+
+    <resultMap id="SysCaseResult" type="com.cat2bug.quarkus.common.domain.SysCase">
+        <result property="caseId" column="case_id"/>
+        <result property="caseName" column="case_name"/>
+        <result property="moduleId" column="module_id"/>
+        <result property="moduleName" column="module_name"/>
+        <result property="caseType" column="case_type"/>
+        <result property="caseExpect" column="case_expect"/>
+        <result property="caseStep" column="case_step"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.CaseStepListJsonTypeHandler"/>
+        <result property="caseLevel" column="case_level"/>
+        <result property="casePreconditions" column="case_preconditions"/>
+        <result property="createBy" column="create_by"/>
+        <result property="caseNum" column="case_num"/>
+        <result property="projectId" column="project_id"/>
+        <result property="remark" column="remark"/>
+        <result property="imgUrls" column="img_urls"/>
+        <result property="annexUrls" column="annex_urls"/>
+        <result property="caseData" column="case_data"/>
+        <association property="planItem" javaType="com.cat2bug.quarkus.common.domain.SysPlanItem" resultMap="SysPlanItemResult"/>
+    </resultMap>
+
+    <resultMap id="SysModuleResult" type="com.cat2bug.quarkus.common.domain.SysPlanItemModule">
+        <result property="moduleId" column="module_id"/>
+        <result property="modulePid" column="module_pid"/>
+        <result property="moduleName" column="module_name"/>
+        <result property="remark" column="remark"/>
+        <result property="projectId" column="project_id"/>
+        <result property="childrenCount" column="children_count"/>
+    </resultMap>
+
+    <sql id="selectSysPlanItemVo">
+        select pi.plan_item_id, pi.plan_id, c.module_id, pi.case_id, pi.plan_item_state, pi.update_by_id, pi.update_time, pi.defect_ids,
+               u.nick_name as update_by,
+               c.case_name, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.case_num, c.project_id, c.remark, c.img_urls, c.annex_urls, c.case_data
+        from sys_plan_item pi
+                 JOIN sys_case c on pi.case_id = c.case_id
+                 LEFT JOIN sys_user u on u.user_id = pi.update_by_id
+                 LEFT JOIN sys_module m on m.module_id = c.module_id
+    </sql>
+
+    <sql id="selectSysCaseVo">
+        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.case_num, c.project_id, c.remark, c.img_urls, c.annex_urls, c.case_data,
+               pi.plan_item_id, pi.plan_id, pi.case_id as pi_case_id, pi.plan_item_state, pi.update_by_id, pi.update_time, pi.defect_ids
+        from sys_case c
+                 LEFT JOIN sys_module m on m.module_id = c.module_id
+                 LEFT JOIN sys_plan_item pi ON c.case_id = pi.case_id
+        <if test="query.params != null and query.params.planId != null and query.params.planId != ''"> and (pi.plan_id = #{query.params.planId})</if>
+    </sql>
+
+    <sql id="selectSysModuleVo">
+        SELECT m.module_id, m.module_pid, m.module_name, m.remark, m.project_id, mg.children_count
+        FROM sys_module m
+    </sql>
+
+    <sql id="planItemList">
+        <include refid="selectSysPlanItemVo"/>
+        <where>
+            <if test="query.params != null and query.params.moduleIdsOfProject != null and query.params.moduleIdsOfProject.size() > 0">
+                <foreach collection="query.params.moduleIdsOfProject" item="mId" separator="or" open="(" close=")">
+                    c.module_id = #{mId}
+                </foreach>
+            </if>
+            <if test="query.planId != null and query.planId != ''"> and pi.plan_id = #{query.planId}</if>
+            <if test="query.caseId != null"> and pi.case_id = #{query.caseId}</if>
+            <if test="query.caseLevel != null"> and c.case_level = #{query.caseLevel}</if>
+            <if test="query.planItemState != null and query.planItemState != ''"> and pi.plan_item_state = #{query.planItemState}</if>
+            <if test="query.updateById != null"> and pi.update_by_id = #{query.updateById}</if>
+            <if test="query.params != null and query.params.beginUpdateTime != null and query.params.beginUpdateTime != '' and query.params.endUpdateTime != null and query.params.endUpdateTime != ''">
+                and pi.update_time between #{query.params.beginUpdateTime} and #{query.params.endUpdateTime}
+            </if>
+            <if test="query.params != null and query.params.caseName != null and query.params.caseName != ''">
+                and c.case_name like concat('%', #{query.params.caseName}, '%')
+            </if>
+            <if test="query.defectIds != null and query.defectIds.size() > 0"> and pi.defect_ids in
+                <foreach collection="query.defectIds" item="defectId" open="(" close=")" separator=",">
+                    #{defectId}
+                </foreach>
+            </if>
+        </where>
+        order by c.case_num DESC
+    </sql>
+
+    <select id="countSysPlanItemList" resultType="long">
+        select count(*) from (
+        <include refid="planItemList"/>
+        ) t
+    </select>
+
+    <select id="selectSysPlanItemList" resultMap="SysPlanItemResult">
+        <include refid="planItemList"/>
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectAllSysPlanItemList" resultMap="SysPlanItemResult">
+        <include refid="planItemList"/>
+    </select>
+
+    <select id="selectSysModuleList" resultMap="SysModuleResult">
+        <include refid="selectSysModuleVo"/>
+        left join (select count(*) children_count, module_pid from sys_module group by module_pid) mg on mg.module_pid = m.module_id
+        <where>
+            <if test="modulePid != null"> and m.module_pid = #{modulePid}</if>
+            <if test="moduleName != null and moduleName != ''"> and m.module_name like concat('%', #{moduleName}, '%')</if>
+            <if test="projectId != null"> and m.project_id = #{projectId}</if>
+        </where>
+    </select>
+
+    <select id="selectPrevSysPlanItem" resultMap="SysPlanItemResult">
+        select c.* from (<include refid="planItemList"/>) c,
+        (SELECT c2.case_num FROM sys_plan_item spi left join sys_case c2 ON c2.case_id=spi.case_id WHERE spi.plan_item_id = #{query.params.prevPlanItemId}) m
+        where c.case_num &lt; m.case_num
+        ORDER BY c.case_num DESC limit 1
+    </select>
+
+    <select id="selectNextSysPlanItem" resultMap="SysPlanItemResult">
+        select c.* from (<include refid="planItemList"/>) c,
+        (SELECT c2.case_num FROM sys_plan_item spi left join sys_case c2 ON c2.case_id=spi.case_id WHERE spi.plan_item_id = #{query.params.nextPlanItemId}) m
+        where c.case_num &gt; m.case_num
+        ORDER BY c.case_num limit 1
+    </select>
+
+    <sql id="caseListWhere">
+        <where>
+            <if test="query.params != null and query.params.moduleIdsOfProject != null and query.params.moduleIdsOfProject.size() > 0">
+                <foreach collection="query.params.moduleIdsOfProject" item="mId" separator="or" open="(" close=")">
+                    c.module_id = #{mId}
+                </foreach>
+            </if>
+            <if test="query.caseName != null and query.caseName != ''"> and c.case_name like concat('%', #{query.caseName}, '%')</if>
+            <if test="query.caseType != null"> and c.case_type = #{query.caseType}</if>
+            <if test="query.caseExpect != null and query.caseExpect != ''"> and c.case_expect = #{query.caseExpect}</if>
+            <if test="query.caseLevel != null"> and c.case_level = #{query.caseLevel}</if>
+            <if test="query.casePreconditions != null and query.casePreconditions != ''"> and c.case_preconditions = #{query.casePreconditions}</if>
+            <if test="query.caseNum != null"> and c.case_num = #{query.caseNum}</if>
+            <if test="query.projectId != null"> and c.project_id = #{query.projectId}</if>
+            <if test="query.params != null and query.params.moduleIds != null">
+                and c.module_id in
+                <foreach collection="query.params.moduleIds" item="moduleId" separator="," open="(" close=")">
+                    #{moduleId}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <select id="countCaseList" resultType="long">
+        select count(*) from (
+        <include refid="selectSysCaseVo"/>
+        <include refid="caseListWhere"/>
+        ) t
+    </select>
+
+    <select id="selectCaseList" resultMap="SysCaseResult">
+        <include refid="selectSysCaseVo"/>
+        <include refid="caseListWhere"/>
+        ORDER BY c.case_num DESC
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectSysPlanItemByPlanItemId" resultMap="SysPlanItemResult">
+        <include refid="selectSysPlanItemVo"/>
+        where pi.plan_item_id = #{planItemId}
+    </select>
+
+    <insert id="insertSysPlanItem">
+        insert into sys_plan_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="planItemId != null">plan_item_id,</if>
+            <if test="planId != null">plan_id,</if>
+            <if test="moduleId != null">module_id,</if>
+            <if test="caseId != null">case_id,</if>
+            <if test="planItemState != null">plan_item_state,</if>
+            <if test="updateById != null">update_by_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="defectIds != null">defect_ids,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="planItemId != null">#{planItemId},</if>
+            <if test="planId != null">#{planId},</if>
+            <if test="moduleId != null">#{moduleId},</if>
+            <if test="caseId != null">#{caseId},</if>
+            <if test="planItemState != null">#{planItemState},</if>
+            <if test="updateById != null">#{updateById},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="defectIds != null">#{defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysPlanItem">
+        update sys_plan_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="moduleId != null">module_id = #{moduleId},</if>
+            <if test="caseId != null">case_id = #{caseId},</if>
+            <if test="planItemState != null">plan_item_state = #{planItemState},</if>
+            <if test="updateById != null">update_by_id = #{updateById},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="defectIds != null">defect_ids = #{defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="params != null and params.defectId != null and params.defectId != ''">
+                defect_ids = CONCAT(REPLACE(IFNULL(defect_ids, ''), CONCAT(',', #{params.defectId}), ''), ',', #{params.defectId})
+            </if>
+            <if test="params != null and params.deleteDefectId != null and params.deleteDefectId != ''">
+                defect_ids = REPLACE(defect_ids, CONCAT(',', #{params.deleteDefectId}), '')
+            </if>
+        </trim>
+        where plan_item_id = #{planItemId}
+    </update>
+
+    <update id="batchUpdateSysPlanItem">
+        update sys_plan_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="moduleId != null">module_id = #{moduleId},</if>
+            <if test="caseId != null">case_id = #{caseId},</if>
+            <if test="planItemState != null">plan_item_state = #{planItemState},</if>
+            <if test="updateById != null">update_by_id = #{updateById},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="defectIds != null">defect_ids = #{defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="params != null and params.defectId != null and params.defectId != ''">
+                defect_ids = CONCAT(REPLACE(IFNULL(defect_ids, ''), CONCAT(',', #{params.defectId}), ''), ',', #{params.defectId})
+            </if>
+            <if test="params != null and params.deleteDefectId != null and params.deleteDefectId != ''">
+                defect_ids = REPLACE(defect_ids, CONCAT(',', #{params.deleteDefectId}), '')
+            </if>
+        </trim>
+        where
+        <foreach collection="params.planItemIds" item="planItemId" open="(" close=")" separator="or">
+            plan_item_id = #{planItemId}
+        </foreach>
+    </update>
+
+    <delete id="deleteSysPlanItemByPlanItemId">
+        delete from sys_plan_item where plan_item_id = #{planItemId}
+    </delete>
+
+    <delete id="deleteSysPlanItemByPlanItemIds">
+        delete from sys_plan_item where plan_item_id in
+        <foreach item="planItemId" collection="array" open="(" separator="," close=")">
+            #{planItemId}
+        </foreach>
+    </delete>
+</mapper>

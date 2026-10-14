@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysReportHistoryMapper">
+
+    <resultMap id="SysReportHistoryResult" type="com.cat2bug.quarkus.common.domain.SysReportHistory">
+        <result property="historyId" column="history_id"/>
+        <result property="reportId" column="report_id"/>
+        <result property="reportDescription" column="report_description"/>
+        <result property="createById" column="create_by_id"/>
+        <result property="createTime" column="create_time"/>
+        <association property="createMember" javaType="com.cat2bug.quarkus.common.domain.SysUser"
+                     resultMap="memberResult"/>
+    </resultMap>
+
+    <resultMap id="memberResult" type="com.cat2bug.quarkus.common.domain.SysUser">
+        <id property="userId" column="member_user_id"/>
+        <result property="userName" column="member_user_name"/>
+        <result property="nickName" column="member_nick_name"/>
+        <result property="email" column="member_email"/>
+        <result property="phoneNumber" column="member_phone_number"/>
+        <result property="avatar" column="member_avatar"/>
+    </resultMap>
+
+    <sql id="selectSysReportHistoryVo">
+        select h.history_id, h.report_id, h.report_description, h.create_by_id, h.create_time,
+               u.user_id as member_user_id, u.user_name as member_user_name, u.nick_name as member_nick_name,
+               u.email as member_email, u.phonenumber as member_phone_number, u.avatar as member_avatar
+        from sys_report_history h
+                 left join sys_user u on u.user_id = h.create_by_id
+    </sql>
+
+    <select id="selectSysReportHistoryListByReportId" resultMap="SysReportHistoryResult">
+        <include refid="selectSysReportHistoryVo"/>
+        where h.report_id = #{reportId}
+        order by h.create_time desc, h.history_id desc
+    </select>
+
+    <select id="selectSysReportHistoryByHistoryId" resultMap="SysReportHistoryResult">
+        <include refid="selectSysReportHistoryVo"/>
+        where h.history_id = #{historyId}
+    </select>
+
+    <insert id="insertSysReportHistory" useGeneratedKeys="true" keyProperty="historyId">
+        insert into sys_report_history
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="reportId != null">report_id,</if>
+            <if test="reportDescription != null">report_description,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="reportId != null">#{reportId},</if>
+            <if test="reportDescription != null">#{reportDescription},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+    <delete id="deleteSysReportHistoryByHistoryId">
+        delete from sys_report_history where history_id = #{historyId}
+    </delete>
+
+    <delete id="deleteSysReportHistoryByReportId">
+        delete from sys_report_history where report_id = #{reportId}
+    </delete>
+
+    <delete id="deleteSysReportHistoryByReportIds">
+        delete from sys_report_history where report_id in
+        <foreach item="reportId" collection="reportIds" open="(" separator="," close=")">
+            #{reportId}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysDashboardMapper">
+
+    <resultMap id="SysCaseStatisticsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysCaseStatistics">
+        <result property="total" column="total"/>
+    </resultMap>
+
+    <resultMap id="SysDefectStatisticsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysDefectStatistics">
+        <result property="total" column="total"/>
+        <result property="pendingCount" column="pending_count"/>
+        <result property="verifyCount" column="verify_count"/>
+        <result property="closedCount" column="closed_count"/>
+    </resultMap>
+
+    <resultMap id="SysModuleStatisticsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysModuleStatistics">
+        <result property="total" column="total"/>
+    </resultMap>
+
+    <resultMap id="SysReportStatisticsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysReportStatistics">
+        <result property="total" column="total"/>
+    </resultMap>
+
+    <resultMap id="SysDocumentStatisticsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysDocumentStatistics">
+        <result property="total" column="total"/>
+    </resultMap>
+
+    <resultMap id="SysMemberStatisticsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysMemberStatistics">
+        <result property="total" column="total"/>
+        <result property="adminCount" column="admin_count"/>
+        <result property="testCount" column="test_count"/>
+        <result property="developmentCount" column="development_count"/>
+        <result property="outsideCount" column="outside_count"/>
+    </resultMap>
+
+    <resultMap id="SysDefectLineResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysDefectLine">
+        <result property="defectCount" column="defect_count"/>
+        <result property="defectTime" column="defect_time"/>
+        <result property="defectState" column="defect_state"/>
+    </resultMap>
+
+    <resultMap id="SysPlanResult" type="com.cat2bug.quarkus.common.domain.SysPlan">
+        <result property="planId" column="plan_id"/>
+        <result property="planNumber" column="plan_number"/>
+        <result property="planName" column="plan_name"/>
+        <result property="planVersion" column="plan_version"/>
+        <result property="planStartTime" column="plan_start_time"/>
+        <result property="planEndTime" column="plan_end_time"/>
+        <result property="createById" column="create_by_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateById" column="update_by_id"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateByAvatar" column="update_by_avatar"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="projectId" column="project_id"/>
+        <result property="reportId" column="report_id"/>
+        <result property="passCount" column="pass_count"/>
+        <result property="failCount" column="fail_count"/>
+        <result property="defectLevelUrgentCount" column="defect_level_urgent_count"/>
+        <result property="defectLevelHeightCount" column="defect_level_height_count"/>
+        <result property="defectLevelMiddleCount" column="defect_level_middle_count"/>
+        <result property="defectLevelLowCount" column="defect_level_low_count"/>
+        <result property="unexecutedCount" column="unexecuted_count"/>
+        <result property="itemTotal" column="item_total"/>
+        <result property="defectRestartCount" column="reopen_count"/>
+        <result property="defectHistoryPassCount" column="history_closed_count"/>
+        <result property="defectUseHourTime" column="defect_use_hour_time"/>
+        <result property="defectProcessingStateCount" column="processing_state_count"/>
+        <result property="defectAuditStateCount" column="audit_state_count"/>
+        <result property="defectRejectedStateCount" column="rejected_state_count"/>
+        <result property="defectCloseStateCount" column="close_state_count"/>
+        <result property="defectCount" column="defect_count"/>
+        <result property="moduleCount" column="module_count"/>
+        <result property="createDefectCountByTester" column="create_defect_count_by_tester"/>
+        <result property="createDefectCountByOutsider" column="create_defect_count_by_outsider"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <resultMap id="SysActionResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysAction">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="state" column="state"/>
+        <result property="type" column="type"/>
+        <result property="time" column="time"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="userName" column="user_name"/>
+        <result property="avatar" column="avatar"/>
+    </resultMap>
+
+    <resultMap id="SysColumnsInChartResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysColumnsInChart">
+        <result property="key" column="handle_time"/>
+        <result property="value" column="pass_count"/>
+    </resultMap>
+
+    <resultMap id="SysMemberRankOfDefectsResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysMemberRankOfDefects">
+        <result property="userId" column="user_id"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="userName" column="user_name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="defectTotal" column="defect_total"/>
+        <result property="defectTodayCount" column="defect_today_count"/>
+    </resultMap>
+
+    <resultMap id="SysMemberOfDefectsLineResult" type="com.cat2bug.quarkus.common.domain.dashboard.SysMemberOfDefectsLine">
+        <result property="nickName" column="nick_name"/>
+        <result property="userName" column="user_name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="userId" column="user_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="defectTodayCount" column="defect_today_count"/>
+    </resultMap>
+
+    <!-- H2 可能将 defect_ids 推断为 JSON，与 BIGINT 直接 LIKE 比较会报错 -->
+    <sql id="planItemDefectIdMatch">
+        CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%,', CAST(${defectIdExpr} AS CHAR(255)), ',%')
+        or CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%', CAST(${defectIdExpr} AS CHAR(255)), ',%')
+        or CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%,', CAST(${defectIdExpr} AS CHAR(255)), '%')
+    </sql>
+
+    <!-- H2 中 receive_by 为 JSON，不能与 BIGINT 的 user_id 直接比较 -->
+    <sql id="defectLogReceiveByMatchUser">
+        (
+            CAST(${logAlias}.receive_by AS CHAR(3000)) = CAST(${userIdExpr} AS CHAR(255))
+            OR CAST(${logAlias}.receive_by AS CHAR(3000)) LIKE concat('%,', CAST(${userIdExpr} AS CHAR(255)), ',%')
+            OR CAST(${logAlias}.receive_by AS CHAR(3000)) LIKE concat(CAST(${userIdExpr} AS CHAR(255)), ',%')
+            OR CAST(${logAlias}.receive_by AS CHAR(3000)) LIKE concat('%,', CAST(${userIdExpr} AS CHAR(255)))
+        )
+    </sql>
+
+    <sql id="selectSysPlanVo">
+        SELECT
+            p.plan_id,
+            p.plan_number,
+            p.plan_name,
+            p.plan_version,
+            p.plan_start_time,
+            p.plan_end_time,
+            p.create_by_id,
+            p.create_time,
+            p.update_by_id,
+            p.update_time,
+            p.project_id,
+            p.report_id,
+            p.remark,
+            u.nick_name AS update_by,
+            u.avatar AS update_by_avatar,
+            s.pass_count,
+            s.fail_count,
+            s.unexecuted_count,
+            s.item_total,
+            s.processing_state_count,
+            s.audit_state_count,
+            s.rejected_state_count,
+            s.close_state_count,
+            s.defect_level_urgent_count,
+            s.defect_level_height_count,
+            s.defect_level_middle_count,
+            s.defect_level_low_count,
+            s.reopen_count,
+            s.closed_count as history_closed_count,
+            s.defect_use_hour_time,
+            s.defect_count,
+            s.module_count,
+            s.create_defect_count_by_tester,
+            s.create_defect_count_by_outsider
+        FROM
+            sys_plan p
+                LEFT JOIN sys_user u ON u.user_id = p.update_by_id
+                LEFT JOIN (
+                SELECT
+                    pi2.plan_id,
+                    sum( CASE WHEN pi2.plan_item_state = 'pass' THEN 1 ELSE 0 END ) AS pass_count,
+                    sum( CASE WHEN pi2.plan_item_state = 'not_pass' THEN 1 ELSE 0 END ) AS fail_count,
+                    sum( CASE WHEN pi2.plan_item_state = 'unexecuted' THEN 1 ELSE 0 END ) AS unexecuted_count,
+                    count( pi2.plan_item_id ) AS item_total,
+                    IFNULL( sum( ds2.processing_state_count ), 0 ) processing_state_count,
+                    IFNULL( sum( ds2.audit_state_count ), 0 ) audit_state_count,
+                    IFNULL( sum( ds2.rejected_state_count ), 0 ) rejected_state_count,
+                    IFNULL( sum( ds2.close_state_count ), 0 ) close_state_count,
+                    IFNULL( sum( ds2.defect_level_urgent_count ), 0 ) defect_level_urgent_count,
+                    IFNULL( sum( ds2.defect_level_height_count ), 0 ) defect_level_height_count,
+                    IFNULL( sum( ds2.defect_level_middle_count ), 0 ) defect_level_middle_count,
+                    IFNULL( sum( ds2.defect_level_low_count ), 0 ) defect_level_low_count,
+                    IFNULL( sum( ds2.reopen_count ), 0 ) reopen_count,
+                    IFNULL( sum( ds2.closed_count ), 0 ) closed_count,
+                    IFNULL( sum( ds2.defect_count ), 0 ) defect_count,
+                    IFNULL( MAX( ms2.module_count ), 0 ) module_count,
+                    IFNULL( sum( rs2.create_defect_count_by_tester ), 0 ) create_defect_count_by_tester,
+                    IFNULL( sum( rs2.create_defect_count_by_outsider ), 0 ) create_defect_count_by_outsider,
+                    IFNULL( sum( ds2.defect_use_hour_time ), 0 ) defect_use_hour_time
+                FROM
+                    ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id JOIN sys_module m ON m.module_id = c.module_id ) pi2
+                        LEFT JOIN (
+                        SELECT
+                            pi3.plan_item_id,
+                            SUM( CASE WHEN d3.defect_state = 0 THEN 1 ELSE 0 END ) AS processing_state_count,
+                            SUM( CASE WHEN d3.defect_state = 1 THEN 1 ELSE 0 END ) AS audit_state_count,
+                            SUM( CASE WHEN d3.defect_state = 3 THEN 1 ELSE 0 END ) AS rejected_state_count,
+                            SUM( CASE WHEN d3.defect_state = 4 THEN 1 ELSE 0 END ) AS close_state_count,
+                            SUM( CASE WHEN d3.defect_level = 'urgent' THEN 1 ELSE 0 END ) AS defect_level_urgent_count,
+                            SUM( CASE WHEN d3.defect_level = 'height' THEN 1 ELSE 0 END ) AS defect_level_height_count,
+                            SUM( CASE WHEN d3.defect_level = 'middle' THEN 1 ELSE 0 END ) AS defect_level_middle_count,
+                            SUM( CASE WHEN d3.defect_level = 'low' THEN 1 ELSE 0 END ) AS defect_level_low_count,
+                            SUM( dl3.reopen_count ) AS reopen_count,
+                            SUM( dl3.closed_count ) AS closed_count,
+                            SUM( dl3.defect_use_time ) AS defect_use_hour_time,
+                            count(distinct d3.defect_id ) AS defect_count
+                        FROM
+                            ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id JOIN sys_module m ON m.module_id = c.module_id ) pi3
+                                JOIN sys_defect d3 ON <include refid="planItemDefectIdMatch"><property name="planItemAlias" value="pi3"/><property name="defectIdExpr" value="d3.defect_id"/></include>
+                                JOIN (
+                                SELECT
+                                    defect_id,
+                                    max( CASE WHEN defect_log_type = 7 or defect_log_type = 4 THEN 1 ELSE 0 END ) AS reopen_count,
+                                    sum( CASE WHEN defect_log_type = 6 THEN 1 ELSE 0 END ) AS closed_count,
+                                    ABS(
+                                            TIMESTAMPDIFF(
+                                                HOUR,
+                                                    MIN( create_time ),
+                                                    MAX( create_time ))) AS defect_use_time
+                                FROM
+                                    sys_defect_log
+                                GROUP BY
+                                    defect_id
+                            ) dl3 ON dl3.defect_id = d3.defect_id
+                        GROUP BY
+                            pi3.plan_item_id
+                    ) ds2 ON ds2.plan_item_id = pi2.plan_item_id
+                        LEFT JOIN (
+                        SELECT
+                            pi4.plan_id,
+                            COUNT(distinct c4.module_id) AS module_count
+                        FROM
+                            sys_plan_item pi4
+                                JOIN sys_case c4 ON pi4.case_id = c4.case_id
+                        GROUP BY
+                            pi4.plan_id
+                    ) ms2 ON ms2.plan_id = pi2.plan_id
+                        LEFT JOIN (
+                        SELECT
+                            pi5.plan_item_id,
+                            SUM( CASE WHEN upr5.role_id = 8 THEN 1 ELSE 0 END ) AS create_defect_count_by_tester,
+                            SUM( CASE WHEN upr5.role_id = 9 THEN 1 ELSE 0 END ) AS create_defect_count_by_outsider
+                        FROM
+                            ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id ) pi5
+                                JOIN sys_plan p5 ON p5.plan_id = pi5.plan_id
+                                JOIN sys_defect_log l5 ON l5.defect_log_type = 0
+                                AND (<include refid="planItemDefectIdMatch"><property name="planItemAlias" value="pi5"/><property name="defectIdExpr" value="l5.defect_id"/></include>)
+                                JOIN sys_user_project up5 ON up5.project_id = p5.project_id AND <include refid="defectLogReceiveByMatchUser"><property name="logAlias" value="l5"/><property name="userIdExpr" value="up5.user_id"/></include>
+                                JOIN sys_user_project_role upr5 ON up5.user_project_id = upr5.user_project_id
+                        GROUP BY
+                            pi5.plan_item_id
+                    ) rs2 ON rs2.plan_item_id = pi2.plan_item_id
+                GROUP BY
+                    pi2.plan_id
+            ) s ON s.plan_id = p.plan_id
+    </sql>
+
+    <select id="planList" resultMap="SysPlanResult">
+        <include refid="selectSysPlanVo"/>
+        WHERE p.project_id = #{projectId}
+        ORDER BY p.create_time DESC
+    </select>
+
+    <select id="selectPlanByPlanId" resultMap="SysPlanResult">
+        <include refid="selectSysPlanVo"/>
+        WHERE p.plan_id = #{planId}
+    </select>
+
+    <select id="caseStatistics" resultMap="SysCaseStatisticsResult">
+        SELECT COUNT(case_id) AS total
+        FROM sys_case
+        WHERE project_id = #{projectId}
+    </select>
+
+    <select id="defectStatistics" resultMap="SysDefectStatisticsResult">
+        SELECT COUNT(defect_id) AS total,
+               SUM(CASE WHEN defect_state = 0 OR defect_state = 3 THEN 1 ELSE 0 END) AS pending_count,
+               SUM(CASE WHEN defect_state = 1 THEN 1 ELSE 0 END) AS verify_count,
+               SUM(CASE WHEN defect_state = 2 OR defect_state = 4 THEN 1 ELSE 0 END) AS closed_count
+        FROM sys_defect
+        WHERE project_id = #{projectId} AND del_flag = '0'
+    </select>
+
+    <select id="moduleStatistics" resultMap="SysModuleStatisticsResult">
+        SELECT COUNT(module_id) AS total
+        FROM sys_module
+        WHERE project_id = #{projectId}
+    </select>
+
+    <select id="reportStatistics" resultMap="SysReportStatisticsResult">
+        SELECT COUNT(report_id) AS total
+        FROM sys_report
+        WHERE project_id = #{projectId}
+    </select>
+
+    <select id="documentStatistics" resultMap="SysDocumentStatisticsResult">
+        SELECT COUNT(doc_id) AS total
+        FROM sys_document
+        WHERE doc_type = 1 AND project_id = #{projectId}
+    </select>
+
+    <select id="memberStatistics" resultMap="SysMemberStatisticsResult">
+        SELECT COUNT(up.user_id) AS total,
+               SUM(CASE WHEN upr.role_id = 6 THEN 1 ELSE 0 END) AS admin_count,
+               SUM(CASE WHEN upr.role_id = 7 THEN 1 ELSE 0 END) AS development_count,
+               SUM(CASE WHEN upr.role_id = 8 THEN 1 ELSE 0 END) AS test_count,
+               SUM(CASE WHEN upr.role_id = 9 THEN 1 ELSE 0 END) AS outside_count
+        FROM sys_user_project up
+        LEFT JOIN sys_user_project_role upr ON up.user_project_id = upr.user_project_id
+        WHERE up.project_id = #{projectId}
+    </select>
+
+    <select id="defectLine" resultMap="SysDefectLineResult">
+        SELECT COUNT(*) AS defect_count,
+        <choose>
+            <when test="timeType == 'month'">
+                date_format(update_time, '%Y-%m') AS defect_time,
+            </when>
+            <otherwise>
+                date_format(update_time, '%Y-%m-%d') AS defect_time,
+            </otherwise>
+        </choose>
+        defect_state
+        FROM sys_defect
+        WHERE project_id = #{projectId} AND del_flag = '0'
+        GROUP BY defect_time, defect_state
+        ORDER BY defect_time, defect_state
+    </select>
+
+    <select id="defectLine" resultMap="SysDefectLineResult" databaseId="h2">
+        SELECT COUNT(*) AS defect_count,
+        <choose>
+            <when test="timeType == 'month'">
+                FORMATDATETIME(update_time, 'yyyy-MM') AS defect_time,
+            </when>
+            <otherwise>
+                FORMATDATETIME(update_time, 'yyyy-MM-dd') AS defect_time,
+            </otherwise>
+        </choose>
+        defect_state
+        FROM sys_defect
+        WHERE project_id = #{projectId} AND del_flag = '0'
+        GROUP BY defect_time, defect_state
+        ORDER BY defect_time, defect_state
+    </select>
+
+    <select id="actonList" resultMap="SysActionResult">
+        SELECT s.*, u.nick_name, u.user_name, u.avatar
+        FROM (
+            SELECT CAST(defect_id AS CHAR) AS id,
+                   CONCAT('#', project_num, ' ', defect_name) AS title,
+                   'defect' AS type,
+                   CAST(defect_state AS CHAR) AS state,
+                   IFNULL(update_time, create_time) AS time,
+                   update_by_id
+            FROM sys_defect
+            WHERE project_id = #{projectId} AND del_flag = '0'
+            UNION
+            SELECT CAST(case_id AS CHAR) AS id,
+                   case_name AS title,
+                   'case' AS type,
+                   NULL AS state,
+                   IFNULL(update_time, create_time) AS time,
+                   (SELECT u2.user_id FROM sys_user u2 WHERE CAST(u2.user_name AS CHAR) = CAST(c.update_by AS CHAR) LIMIT 1) AS update_by_id
+            FROM sys_case c
+            WHERE project_id = #{projectId}
+            UNION
+            SELECT CAST(plan_id AS CHAR) AS id,
+                   plan_name AS title,
+                   'plan' AS type,
+                   NULL AS state,
+                   IFNULL(update_time, create_time) AS time,
+                   update_by_id
+            FROM sys_plan
+            WHERE project_id = #{projectId}
+            UNION
+            SELECT CAST(report_id AS CHAR) AS id,
+                   report_title AS title,
+                   'report' AS type,
+                   NULL AS state,
+                   report_time AS time,
+                   create_by_id AS update_by_id
+            FROM sys_report
+            WHERE project_id = #{projectId}
+            UNION
+            SELECT CAST(doc_id AS CHAR) AS id,
+                   file_url AS title,
+                   'document' AS type,
+                   NULL AS state,
+                   IFNULL(update_time, create_time) AS time,
+                   update_by_id
+            FROM sys_document
+            WHERE project_id = #{projectId}
+        ) s
+        LEFT JOIN sys_user u ON u.user_id = s.update_by_id
+        ORDER BY s.time DESC
+        LIMIT 50
+    </select>
+
+    <select id="actonList" resultMap="SysActionResult" databaseId="h2">
+        SELECT s.*, u.nick_name, u.user_name, u.avatar
+        FROM (
+            SELECT CAST(defect_id AS VARCHAR) AS id,
+                   CONCAT('#', project_num, ' ', defect_name) AS title,
+                   'defect' AS type,
+                   CAST(defect_state AS VARCHAR) AS state,
+                   COALESCE(update_time, create_time) AS time,
+                   update_by_id
+            FROM sys_defect
+            WHERE project_id = #{projectId} AND del_flag = '0'
+            UNION
+            SELECT CAST(case_id AS VARCHAR) AS id,
+                   case_name AS title,
+                   'case' AS type,
+                   NULL AS state,
+                   COALESCE(update_time, create_time) AS time,
+                   (SELECT u2.user_id FROM sys_user u2 WHERE u2.user_name = c.update_by LIMIT 1) AS update_by_id
+            FROM sys_case c
+            WHERE project_id = #{projectId}
+            UNION
+            SELECT CAST(plan_id AS VARCHAR) AS id,
+                   plan_name AS title,
+                   'plan' AS type,
+                   NULL AS state,
+                   COALESCE(update_time, create_time) AS time,
+                   update_by_id
+            FROM sys_plan
+            WHERE project_id = #{projectId}
+            UNION
+            SELECT CAST(report_id AS VARCHAR) AS id,
+                   report_title AS title,
+                   'report' AS type,
+                   NULL AS state,
+                   report_time AS time,
+                   create_by_id AS update_by_id
+            FROM sys_report
+            WHERE project_id = #{projectId}
+            UNION
+            SELECT CAST(doc_id AS VARCHAR) AS id,
+                   file_url AS title,
+                   'document' AS type,
+                   NULL AS state,
+                   COALESCE(update_time, create_time) AS time,
+                   update_by_id
+            FROM sys_document
+            WHERE project_id = #{projectId}
+        ) s
+        LEFT JOIN sys_user u ON u.user_id = s.update_by_id
+        ORDER BY s.time DESC
+        LIMIT 50
+    </select>
+
+    <select id="planBurndown" resultMap="SysColumnsInChartResult">
+        SELECT date_format(update_time, '%Y-%m-%d') AS handle_time,
+               SUM(CASE WHEN plan_item_state = 'pass' THEN 1 ELSE 0 END) AS pass_count
+        FROM sys_plan_item
+        WHERE plan_id = #{planId}
+        GROUP BY plan_id, handle_time
+        ORDER BY handle_time
+    </select>
+
+    <select id="planBurndown" resultMap="SysColumnsInChartResult" databaseId="h2">
+        SELECT FORMATDATETIME(update_time, 'yyyy-MM-dd') AS handle_time,
+               SUM(CASE WHEN plan_item_state = 'pass' THEN 1 ELSE 0 END) AS pass_count
+        FROM sys_plan_item
+        WHERE plan_id = #{planId}
+        GROUP BY plan_id, handle_time
+        ORDER BY handle_time
+    </select>
+
+    <select id="memberRankOfDefects" resultMap="SysMemberRankOfDefectsResult">
+        SELECT u.user_id,
+               u.nick_name,
+               u.user_name,
+               u.avatar,
+               d.defect_total,
+               d.defect_today_count
+        FROM (
+            SELECT update_by_id,
+                   SUM(defect_total) AS defect_total,
+                   SUM(defect_today_count) AS defect_today_count
+            FROM (
+                SELECT l.create_by AS update_by_id,
+                       count(DISTINCT l.defect_id) AS defect_total,
+                       count(DISTINCT CASE WHEN date_format(l.create_time, '%Y-%m-%d') = date_format(NOW(), '%Y-%m-%d')
+                           THEN l.defect_id ELSE NULL END) AS defect_today_count
+                FROM sys_defect_log l
+                JOIN sys_defect e ON e.defect_id = l.defect_id
+                WHERE e.project_id = #{projectId}
+                GROUP BY e.project_id, l.create_by
+                UNION
+                SELECT create_by AS update_by_id,
+                       0 AS defect_total,
+                       0 AS defect_today_count
+                FROM sys_project
+                WHERE project_id = #{projectId}
+            ) a
+            GROUP BY update_by_id
+        ) d
+        LEFT JOIN sys_user u ON d.update_by_id = u.user_id
+    </select>
+
+    <select id="memberRankOfDefects" resultMap="SysMemberRankOfDefectsResult" databaseId="h2">
+        SELECT u.user_id,
+               u.nick_name,
+               u.user_name,
+               u.avatar,
+               d.defect_total,
+               d.defect_today_count
+        FROM (
+            SELECT l.create_by AS update_by_id,
+                   count(DISTINCT l.defect_id) AS defect_total,
+                   count(DISTINCT CASE WHEN FORMATDATETIME(l.create_time, 'yyyy-MM-dd') = FORMATDATETIME(NOW(), 'yyyy-MM-dd')
+                       THEN l.defect_id ELSE NULL END) AS defect_today_count
+            FROM sys_defect_log l
+            JOIN sys_defect e ON e.defect_id = l.defect_id
+            WHERE e.project_id = #{projectId}
+            GROUP BY e.project_id, l.create_by
+            ORDER BY defect_total DESC
+        ) d
+        LEFT JOIN sys_user u ON d.update_by_id = u.user_id
+    </select>
+
+    <select id="memberOfDefectsLine" resultMap="SysMemberOfDefectsLineResult">
+        SELECT u.nick_name,
+               u.user_name,
+               u.avatar,
+               d.update_by_id AS user_id,
+               d.create_time,
+               d.defect_today_count
+        FROM (
+            SELECT e.project_id,
+            <choose>
+                <when test="timeType == 'month'">
+                    date_format(l.create_time, '%Y-%m') AS create_time,
+                </when>
+                <otherwise>
+                    date_format(l.create_time, '%Y-%m-%d') AS create_time,
+                </otherwise>
+            </choose>
+            l.create_by AS update_by_id,
+            count(DISTINCT l.defect_id) AS defect_today_count
+            FROM sys_defect_log l
+            JOIN sys_defect e ON e.defect_id = l.defect_id
+            WHERE e.project_id = #{projectId}
+            GROUP BY e.project_id, create_time, l.create_by
+            ORDER BY create_time DESC
+        ) d
+        LEFT JOIN sys_user u ON d.update_by_id = u.user_id
+    </select>
+
+    <select id="memberOfDefectsLine" resultMap="SysMemberOfDefectsLineResult" databaseId="h2">
+        SELECT u.nick_name,
+               u.user_name,
+               u.avatar,
+               d.update_by_id AS user_id,
+               d.create_time,
+               d.defect_today_count
+        FROM (
+            SELECT e.project_id,
+            <choose>
+                <when test="timeType == 'month'">
+                    FORMATDATETIME(l.create_time, 'yyyy-MM') AS create_time,
+                </when>
+                <otherwise>
+                    FORMATDATETIME(l.create_time, 'yyyy-MM-dd') AS create_time,
+                </otherwise>
+            </choose>
+            l.create_by AS update_by_id,
+            count(DISTINCT l.defect_id) AS defect_today_count
+            FROM sys_defect_log l
+            JOIN sys_defect e ON e.defect_id = l.defect_id
+            WHERE e.project_id = #{projectId}
+            GROUP BY e.project_id, create_time, l.create_by
+            ORDER BY create_time DESC
+        ) d
+        LEFT JOIN sys_user u ON d.update_by_id = u.user_id
+    </select>
+</mapper>

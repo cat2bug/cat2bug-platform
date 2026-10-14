@@ -28,7 +28,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 当前最新版本是1.1.0
 
-**运行时要求（1.1.0 后端）**：构建与运行后端需 **JDK 17+**、**Spring Boot 3.3.x**；Maven 版本号为 1.1.0。详见 [docs/backend-spring-boot-3.md](docs/backend-spring-boot-3.md) 与 [CHANGELOG.md](CHANGELOG.md)。
+**运行时要求（1.1.0 后端）**：构建与运行需 **JDK 17+**。**产品默认后端为 Quarkus**（Maven `-Pquarkus`）；Spring Boot admin 仅作对照 / 紧急回滚。Maven 版本号为 1.1.0。详见 [CHANGELOG.md](CHANGELOG.md)；Spring 栈说明见 [docs/backend-spring-boot-3.md](docs/backend-spring-boot-3.md)。
 
 * 添加系统快捷键体系
 * 缺陷 Excel 暗色主题与 Safari 行号列滚动体验优化
@@ -114,48 +114,60 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 ## 部署
 
-### 默认 Release（Spring Native，推荐）
+### 默认后端（Quarkus，推荐）
 
-无需 JRE，单文件 Native ELF（含 embedded Vue SPA）。构建与冒烟见 [readme/spring-native-delivery/README.md](readme/spring-native-delivery/README.md)。
+需 **Java 17+**。日常开发与 JVM 发布以 Quarkus admin 为准（`-Pquarkus`）。模块说明见 [cat2bug-platform-quarkus-admin/README.md](cat2bug-platform-quarkus-admin/README.md)；本地配置见 `openspec/changes/restore-quarkus-full-delivery/LOCAL-RUN.md`。
 
 ```bash
-# 构建（linux/amd64 或 arm64）
-./deploy/build-native-spring.sh x86_64
+# 开发（推荐）
+./cat2bug-platform-quarkus-admin/dev.sh
+# 或
+mvn -Pquarkus -pl cat2bug-platform-quarkus-admin -am quarkus:dev
 
-# Docker 运行 + 冒烟
+# 打包 / 运行 JVM JAR
+mvn -Pquarkus -pl cat2bug-platform-quarkus-admin -am package -DskipTests
+./deploy/run-quarkus-jar.sh
+
+# 嵌入式前端 + Quarkus JAR
+./deploy/build-embedded-quarkus.sh
+./deploy/run-quarkus-jar.sh
+```
+
+前端独立开发仍可：`cd cat2bug-platform-ui && npm run dev`（代理到 `:2020`）。
+
+Quarkus Native（约 20MB，默认按 UPX 后计）为 **Gate B**，须在 JVM 功能验收（Gate A）通过后再做；门禁说明见 `openspec/changes/restore-quarkus-full-delivery/GATE-NOTES.md`。
+
+### Spring Boot admin（对照 / 紧急回滚，非推荐）
+
+以下命令**保留但不作为产品默认路径**，仅用于对照现网行为或紧急回滚。
+
+**JVM：**
+
+```bash
+# 开发
+mvn spring-boot:run -pl cat2bug-platform-admin
+# 使用 MySQL
+mvn spring-boot:run -pl cat2bug-platform-admin -Dspring-boot.run.profiles=mysql
+
+# 打包运行
+mvn -pl cat2bug-platform-admin -am package -DskipTests
+java -jar cat2bug-platform-admin/target/cat2bug-admin.jar
+```
+
+**Spring Native（对照，非推荐默认 Release）：** 无需 JRE，单文件 Native ELF（含 embedded Vue SPA）。见 [readme/spring-native-delivery/README.md](readme/spring-native-delivery/README.md)。
+
+```bash
+./deploy/build-native-spring.sh x86_64
 PORT=2020 ./deploy/docker/run-native-spring-minimal.sh run-bg debian
 ./deploy/test/native-api-smoke.sh http://127.0.0.1:2020
 ```
 
-### JVM 开发 / 回滚
-
-需 **Java 17+**。日常开发：`mvn spring-boot:run`（admin）+ `npm run dev`（ui）。
-
-```bash
-mvn -pl cat2bug-platform-admin -am package -DskipTests
-nohup java -jar cat2bug-platform-admin/target/cat2bug-admin.jar >/dev/null 2>&1 &
-```
-
-### 手动通过批处理命令部署（JVM）
-
-将deploy目录中的cat2bug-service.sh或cat2bug-service.bat文件与cat2bug-admin.jar文件拷贝到一个目录下，执行以下命令：
-
-* 启动服务
+**手动批处理（Spring JVM JAR）：** 将 `deploy` 目录中的 `cat2bug-service.sh` / `cat2bug-service.bat` 与 `cat2bug-admin.jar` 拷到同一目录后执行：
 
 ```shell
-cat2bug-service.sh start
-```
-
-* 停止服务
-
-```shell
-cat2bug-service.sh stop
-```
-
-* 查看服务状态
-
-```shell
-cat2bug-service.sh status
+cat2bug-service.sh start   # 启动
+cat2bug-service.sh stop    # 停止
+cat2bug-service.sh status  # 状态
 ```
 
 ### Docker单容器部署

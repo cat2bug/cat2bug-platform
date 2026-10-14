@@ -126,6 +126,7 @@ Temporary Items
 *.trace.db
 
 /cat2bug-platform-admin/src/main/resources/static/
+/cat2bug-platform-quarkus-admin/src/main/resources/META-INF/resources/
 
 ### Java template
 # Compiled class file
@@ -182,3 +183,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+
+# Quarkus 本机安装配置（含密码）与测试运行时上传文件
+/cat2bug-platform-quarkus-admin/config/install/
+/cat2bug-platform-quarkus-admin/upload/

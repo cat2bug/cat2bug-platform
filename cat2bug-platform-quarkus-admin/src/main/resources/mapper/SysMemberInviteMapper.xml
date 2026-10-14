@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysMemberInviteMapper">
+
+    <resultMap id="SysMemberInviteResult" type="com.cat2bug.quarkus.common.domain.SysMemberInvite">
+        <result property="inviteId" column="invite_id"/>
+        <result property="token" column="token"/>
+        <result property="scope" column="scope"/>
+        <result property="teamId" column="team_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="repositoryId" column="repository_id"/>
+        <result property="roleIds" column="role_ids"/>
+        <result property="expiresAt" column="expires_at"/>
+        <result property="revoked" column="revoked"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <sql id="selectSysMemberInviteVo">
+        select invite_id, token, scope, team_id, project_id, repository_id, role_ids, expires_at, revoked, created_by, created_at
+        from sys_member_invite
+    </sql>
+
+    <select id="selectSysMemberInviteByInviteId" resultMap="SysMemberInviteResult">
+        <include refid="selectSysMemberInviteVo"/>
+        where invite_id = #{inviteId}
+    </select>
+
+    <select id="selectSysMemberInviteByToken" resultMap="SysMemberInviteResult">
+        <include refid="selectSysMemberInviteVo"/>
+        where token = #{token}
+    </select>
+
+    <select id="selectActiveSysMemberInviteListByTeamId" resultMap="SysMemberInviteResult">
+        <include refid="selectSysMemberInviteVo"/>
+        where team_id = #{teamId}
+          and scope = 'TEAM'
+          and revoked = 0
+          and expires_at &gt; #{now}
+        order by created_at desc
+    </select>
+
+    <select id="selectActiveSysMemberInviteListByProjectId" resultMap="SysMemberInviteResult">
+        <include refid="selectSysMemberInviteVo"/>
+        where project_id = #{projectId}
+          and scope = 'PROJECT'
+          and revoked = 0
+          and expires_at &gt; #{now}
+        order by created_at desc
+    </select>
+
+    <select id="selectActiveSysMemberInviteListByRepositoryId" resultMap="SysMemberInviteResult">
+        <include refid="selectSysMemberInviteVo"/>
+        where repository_id = #{repositoryId}
+          and scope = 'REPO'
+          and revoked = 0
+          and expires_at &gt; #{now}
+        order by created_at desc
+    </select>
+
+    <insert id="insertSysMemberInvite" useGeneratedKeys="true" keyProperty="inviteId">
+        insert into sys_member_invite
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="token != null">token,</if>
+            <if test="scope != null">scope,</if>
+            <if test="teamId != null">team_id,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="repositoryId != null">repository_id,</if>
+            <if test="roleIds != null">role_ids,</if>
+            <if test="expiresAt != null">expires_at,</if>
+            <if test="revoked != null">revoked,</if>
+            <if test="createdBy != null">created_by,</if>
+            <if test="createdAt != null">created_at,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="token != null">#{token},</if>
+            <if test="scope != null">#{scope},</if>
+            <if test="teamId != null">#{teamId},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="repositoryId != null">#{repositoryId},</if>
+            <if test="roleIds != null">#{roleIds},</if>
+            <if test="expiresAt != null">#{expiresAt},</if>
+            <if test="revoked != null">#{revoked},</if>
+            <if test="createdBy != null">#{createdBy},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+        </trim>
+    </insert>
+
+    <update id="revokeSysMemberInvite">
+        update sys_member_invite
+        set revoked = 1
+        where invite_id = #{inviteId}
+          and revoked = 0
+        <if test="teamId != null">
+          and team_id = #{teamId}
+          and scope = 'TEAM'
+        </if>
+        <if test="projectId != null">
+          and project_id = #{projectId}
+          and scope = 'PROJECT'
+        </if>
+        <if test="repositoryId != null">
+          and repository_id = #{repositoryId}
+          and scope = 'REPO'
+        </if>
+    </update>
+</mapper>

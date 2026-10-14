@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysConfigMapper">
+
+    <resultMap id="SysConfigResult" type="com.cat2bug.quarkus.common.domain.SysConfig">
+        <id property="configId" column="config_id"/>
+        <result property="configName" column="config_name"/>
+        <result property="configKey" column="config_key"/>
+        <result property="configValue" column="config_value"/>
+        <result property="configType" column="config_type"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="selectConfigVo">
+        SELECT config_id, config_name, config_key, config_value, config_type,
+               create_by, create_time, remark
+        FROM sys_config
+    </sql>
+
+    <select id="selectConfig" resultMap="SysConfigResult">
+        <include refid="selectConfigVo"/>
+        <where>
+            <if test="configId != null">
+                AND config_id = #{configId}
+            </if>
+            <if test="configKey != null and configKey != ''">
+                AND config_key = #{configKey}
+            </if>
+        </where>
+        LIMIT 1
+    </select>
+
+    <select id="selectConfigList" resultMap="SysConfigResult">
+        <include refid="selectConfigVo"/>
+        <where>
+            <if test="query != null and query.configName != null and query.configName != ''">
+                AND config_name LIKE CONCAT('%', #{query.configName}, '%')
+            </if>
+            <if test="query != null and query.configType != null and query.configType != ''">
+                AND config_type = #{query.configType}
+            </if>
+            <if test="query != null and query.configKey != null and query.configKey != ''">
+                AND config_key LIKE CONCAT('%', #{query.configKey}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="countConfigList" resultType="long">
+        SELECT COUNT(*) FROM sys_config
+        <where>
+            <if test="query != null and query.configName != null and query.configName != ''">
+                AND config_name LIKE CONCAT('%', #{query.configName}, '%')
+            </if>
+            <if test="query != null and query.configType != null and query.configType != ''">
+                AND config_type = #{query.configType}
+            </if>
+            <if test="query != null and query.configKey != null and query.configKey != ''">
+                AND config_key LIKE CONCAT('%', #{query.configKey}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="checkConfigKeyUnique" resultMap="SysConfigResult">
+        <include refid="selectConfigVo"/>
+        WHERE config_key = #{configKey}
+        LIMIT 1
+    </select>
+
+    <insert id="insertConfig">
+        INSERT INTO sys_config (
+            <if test="configName != null and configName != ''">config_name,</if>
+            <if test="configKey != null and configKey != ''">config_key,</if>
+            <if test="configValue != null and configValue != ''">config_value,</if>
+            <if test="configType != null and configType != ''">config_type,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            create_time
+        ) VALUES (
+            <if test="configName != null and configName != ''">#{configName},</if>
+            <if test="configKey != null and configKey != ''">#{configKey},</if>
+            <if test="configValue != null and configValue != ''">#{configValue},</if>
+            <if test="configType != null and configType != ''">#{configType},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            NOW()
+        )
+    </insert>
+
+    <update id="updateConfig">
+        UPDATE sys_config
+        <set>
+            <if test="configName != null and configName != ''">config_name = #{configName},</if>
+            <if test="configKey != null and configKey != ''">config_key = #{configKey},</if>
+            <if test="configValue != null and configValue != ''">config_value = #{configValue},</if>
+            <if test="configType != null and configType != ''">config_type = #{configType},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = NOW()
+        </set>
+        WHERE config_id = #{configId}
+    </update>
+
+    <delete id="deleteConfigById">
+        DELETE FROM sys_config WHERE config_id = #{configId}
+    </delete>
+</mapper>

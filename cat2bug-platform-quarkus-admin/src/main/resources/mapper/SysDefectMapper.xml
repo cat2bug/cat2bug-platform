@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysDefectMapper">
+
+    <resultMap id="SysDefectResult" type="com.cat2bug.quarkus.common.domain.SysDefect">
+        <id property="defectId" column="defect_id"/>
+        <result property="projectNum" column="project_num"/>
+        <result property="defectType" column="defect_type"/>
+        <result property="defectName" column="defect_name"/>
+        <result property="defectDescribe" column="defect_describe"/>
+        <result property="defectLevel" column="defect_level"/>
+        <result property="defectState" column="defect_state"/>
+        <result property="moduleId" column="module_id"/>
+        <result property="moduleName" column="module_name"/>
+        <result property="moduleVersion" column="module_version"/>
+        <result property="projectId" column="project_id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="testPlanId" column="test_plan_id"/>
+        <result property="caseStepId" column="case_step_id"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createById" column="create_by_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateById" column="update_by_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="handleBy" column="handle_by"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler"/>
+        <result property="handleTime" column="handle_time"/>
+        <result property="imgUrls" column="img_urls"/>
+        <result property="annexUrls" column="annex_urls"/>
+        <result property="planStartTime" column="plan_start_time"/>
+        <result property="planEndTime" column="plan_end_time"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="customFields" column="custom_fields"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.JsonMapTypeHandler"/>
+    </resultMap>
+
+    <sql id="selectSysDefectColumns">
+        d.defect_id, d.project_num, d.defect_type, d.defect_name, d.defect_describe,
+        d.defect_level, d.defect_state, d.module_id, m.module_name, d.module_version,
+        d.project_id, d.case_id, d.test_plan_id, d.case_step_id,
+        d.create_by, d.create_by_id, d.create_time, d.update_by, d.update_by_id, d.update_time,
+        d.handle_by, d.handle_time, d.img_urls, d.annex_urls,
+        d.plan_start_time, d.plan_end_time, d.del_flag, d.custom_fields
+    </sql>
+
+    <sql id="selectSysDefectFrom">
+        FROM sys_defect d
+        LEFT JOIN sys_module m ON m.module_id = d.module_id
+    </sql>
+
+    <sql id="selectSysDefectWhere">
+        WHERE d.del_flag = '0'
+        <if test="defect != null and defect.projectId != null">
+            AND d.project_id = #{defect.projectId}
+        </if>
+        <if test="defect != null and defect.defectName != null and defect.defectName != ''">
+            AND d.defect_name LIKE CONCAT('%', #{defect.defectName}, '%')
+        </if>
+        <if test="defect != null and defect.defectState != null">
+            AND d.defect_state = #{defect.defectState}
+        </if>
+        <if test="defect != null and defect.defectType != null">
+            AND d.defect_type = #{defect.defectType}
+        </if>
+        <if test="defect != null and defect.moduleId != null">
+            AND d.module_id = #{defect.moduleId}
+        </if>
+    </sql>
+
+    <select id="countSysDefectList" resultType="long">
+        SELECT COUNT(*)
+        <include refid="selectSysDefectFrom"/>
+        <include refid="selectSysDefectWhere"/>
+    </select>
+
+    <select id="selectSysDefectList" resultMap="SysDefectResult">
+        SELECT
+        <include refid="selectSysDefectColumns"/>
+        <include refid="selectSysDefectFrom"/>
+        <include refid="selectSysDefectWhere"/>
+        ORDER BY d.defect_id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectAllSysDefectList" resultMap="SysDefectResult">
+        SELECT
+        <include refid="selectSysDefectColumns"/>
+        <include refid="selectSysDefectFrom"/>
+        <include refid="selectSysDefectWhere"/>
+        ORDER BY d.defect_id DESC
+    </select>
+
+    <select id="selectSysDefectByDefectId" resultMap="SysDefectResult">
+        SELECT
+        <include refid="selectSysDefectColumns"/>
+        <include refid="selectSysDefectFrom"/>
+        WHERE d.defect_id = #{defectId} AND d.del_flag = '0'
+    </select>
+
+    <select id="selectByProjectIdAndProjectNum" resultMap="SysDefectResult">
+        SELECT
+        <include refid="selectSysDefectColumns"/>
+        <include refid="selectSysDefectFrom"/>
+        WHERE d.project_id = #{projectId}
+          AND d.project_num = #{projectNum}
+          AND d.del_flag = '0'
+        LIMIT 1
+    </select>
+
+    <select id="getProjectDefectMaxNum" resultType="long">
+        SELECT IFNULL(MAX(project_num), 0)
+        FROM sys_defect
+        WHERE project_id = #{projectId} AND del_flag = '0'
+    </select>
+
+    <insert id="insertSysDefect" parameterType="com.cat2bug.quarkus.common.domain.SysDefect"
+            useGeneratedKeys="true" keyProperty="defectId">
+        INSERT INTO sys_defect
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="projectNum != null">project_num,</if>
+            <if test="defectType != null">defect_type,</if>
+            <if test="defectName != null and defectName != ''">defect_name,</if>
+            <if test="defectDescribe != null">defect_describe,</if>
+            <if test="defectLevel != null">defect_level,</if>
+            <if test="defectState != null">defect_state,</if>
+            <if test="moduleId != null">module_id,</if>
+            <if test="moduleVersion != null">module_version,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="caseId != null">case_id,</if>
+            <if test="testPlanId != null">test_plan_id,</if>
+            <if test="caseStepId != null">case_step_id,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateById != null">update_by_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="handleBy != null">handle_by,</if>
+            <if test="handleTime != null">handle_time,</if>
+            <if test="imgUrls != null">img_urls,</if>
+            <if test="annexUrls != null">annex_urls,</if>
+            <if test="planStartTime != null">plan_start_time,</if>
+            <if test="planEndTime != null">plan_end_time,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="customFields != null">custom_fields,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="projectNum != null">#{projectNum},</if>
+            <if test="defectType != null">#{defectType},</if>
+            <if test="defectName != null and defectName != ''">#{defectName},</if>
+            <if test="defectDescribe != null">#{defectDescribe},</if>
+            <if test="defectLevel != null">#{defectLevel},</if>
+            <if test="defectState != null">#{defectState},</if>
+            <if test="moduleId != null">#{moduleId},</if>
+            <if test="moduleVersion != null">#{moduleVersion},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="caseId != null">#{caseId},</if>
+            <if test="testPlanId != null">#{testPlanId},</if>
+            <if test="caseStepId != null">#{caseStepId},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateById != null">#{updateById},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="handleBy != null">#{handleBy,typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="handleTime != null">#{handleTime},</if>
+            <if test="imgUrls != null">#{imgUrls},</if>
+            <if test="annexUrls != null">#{annexUrls},</if>
+            <if test="planStartTime != null">#{planStartTime},</if>
+            <if test="planEndTime != null">#{planEndTime},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="customFields != null">#{customFields,typeHandler=com.cat2bug.quarkus.system.mybatis.JsonMapTypeHandler},</if>
+        </trim>
+    </insert>
+
+    <insert id="batchInsertSysDefect" useGeneratedKeys="true" keyProperty="defectId" keyColumn="defect_id">
+        INSERT INTO sys_defect (
+            project_num, defect_type, defect_name, defect_describe,
+            project_id, module_id, module_version,
+            create_by, create_by_id, update_time, create_time, update_by, update_by_id,
+            defect_state, handle_by, defect_level, del_flag, custom_fields
+        ) VALUES
+        <foreach collection="defectList" item="defect" separator=",">
+            (
+            #{defect.projectNum},
+            #{defect.defectType},
+            #{defect.defectName},
+            #{defect.defectDescribe},
+            #{defect.projectId},
+            #{defect.moduleId},
+            #{defect.moduleVersion},
+            #{defect.createBy},
+            #{defect.createById},
+            #{defect.updateTime},
+            #{defect.createTime},
+            #{defect.updateBy},
+            #{defect.updateById},
+            #{defect.defectState},
+            #{defect.handleBy,typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},
+            #{defect.defectLevel},
+            #{defect.delFlag},
+            #{defect.customFields,typeHandler=com.cat2bug.quarkus.system.mybatis.JsonMapTypeHandler}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateSysDefect" parameterType="com.cat2bug.quarkus.common.domain.SysDefect">
+        UPDATE sys_defect
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="defectType != null">defect_type = #{defectType},</if>
+            <if test="defectName != null and defectName != ''">defect_name = #{defectName},</if>
+            <if test="defectDescribe != null">defect_describe = #{defectDescribe},</if>
+            <if test="defectLevel != null">defect_level = #{defectLevel},</if>
+            <if test="defectState != null">defect_state = #{defectState},</if>
+            <if test="moduleId != null">module_id = #{moduleId},</if>
+            <if test="moduleVersion != null">module_version = #{moduleVersion},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="caseId != null">case_id = #{caseId},</if>
+            <if test="testPlanId != null">test_plan_id = #{testPlanId},</if>
+            <if test="caseStepId != null">case_step_id = #{caseStepId},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateById != null">update_by_id = #{updateById},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="handleBy != null">handle_by = #{handleBy,typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="handleTime != null">handle_time = #{handleTime},</if>
+            <if test="imgUrls != null">img_urls = #{imgUrls},</if>
+            <if test="annexUrls != null">annex_urls = #{annexUrls},</if>
+            <if test="planStartTime != null">plan_start_time = #{planStartTime},</if>
+            <if test="planEndTime != null">plan_end_time = #{planEndTime},</if>
+            <if test="customFields != null">custom_fields = #{customFields,typeHandler=com.cat2bug.quarkus.system.mybatis.JsonMapTypeHandler},</if>
+        </trim>
+        WHERE defect_id = #{defectId} AND del_flag = '0'
+    </update>
+
+    <update id="deleteSysDefectByDefectId">
+        UPDATE sys_defect SET del_flag = '2'
+        WHERE defect_id = #{defectId} AND del_flag = '0'
+    </update>
+
+    <update id="restoreSysDefectByDefectId" parameterType="com.cat2bug.quarkus.common.domain.SysDefect">
+        UPDATE sys_defect
+        SET del_flag = '0',
+            update_by = #{updateBy},
+            update_by_id = #{updateById},
+            update_time = #{updateTime}
+        WHERE defect_id = #{defectId} AND del_flag = '2'
+    </update>
+
+    <resultMap id="SysVersionResult" type="com.cat2bug.quarkus.common.domain.SysVersion">
+        <result property="version" column="version"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="selectVersionList" resultMap="SysVersionResult">
+        SELECT module_version AS version, MAX(create_time) AS create_time
+        FROM sys_defect
+        WHERE module_version IS NOT NULL
+          AND project_id = #{projectId}
+          AND del_flag = '0'
+        GROUP BY module_version
+    </select>
+</mapper>

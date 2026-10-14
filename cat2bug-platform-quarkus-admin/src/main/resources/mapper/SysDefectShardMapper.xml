@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysDefectShardMapper">
+
+    <resultMap id="SysDefectShardResult" type="com.cat2bug.quarkus.common.domain.SysDefectShard">
+        <result property="defectShardId" column="defect_shard_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="defectId" column="defect_id"/>
+        <result property="password" column="password"/>
+        <result property="createTime" column="create_time"/>
+        <result property="createById" column="create_by_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="agingTime" column="aging_time"/>
+        <result property="agingHour" column="aging_hour"/>
+        <result property="defaultLang" column="default_lang"/>
+    </resultMap>
+
+    <sql id="selectSysDefectShardVo">
+        SELECT s.defect_shard_id,
+               s.defect_id,
+               d.project_id,
+               s.password,
+               s.create_time,
+               s.create_by_id,
+               s.update_time,
+               s.aging_time,
+               s.default_lang,
+               s.aging_hour
+        FROM sys_defect_shard s
+                 LEFT JOIN sys_defect d ON d.defect_id = s.defect_id
+    </sql>
+
+    <select id="selectSysDefectShardList" parameterType="com.cat2bug.quarkus.common.domain.SysDefectShard"
+            resultMap="SysDefectShardResult">
+        <include refid="selectSysDefectShardVo"/>
+        <where>
+            <if test="defectId != null">AND s.defect_id = #{defectId}</if>
+            <if test="createById != null">AND s.create_by_id = #{createById}</if>
+            <if test="agingTime != null">AND s.aging_time = #{agingTime}</if>
+        </where>
+    </select>
+
+    <select id="selectSysDefectShardByDefectShardId" parameterType="String" resultMap="SysDefectShardResult">
+        <include refid="selectSysDefectShardVo"/>
+        WHERE s.defect_shard_id = #{defectShardId}
+    </select>
+
+    <select id="selectSysDefectShardByDefectIdAndMemberId" resultMap="SysDefectShardResult">
+        <include refid="selectSysDefectShardVo"/>
+        WHERE s.defect_id = #{defectId}
+          AND s.create_by_id = #{memberId}
+    </select>
+
+    <insert id="insertSysDefectShard" parameterType="com.cat2bug.quarkus.common.domain.SysDefectShard">
+        INSERT INTO sys_defect_shard
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="defectShardId != null">defect_shard_id,</if>
+            <if test="defectId != null">defect_id,</if>
+            <if test="password != null">password,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="agingTime != null">aging_time,</if>
+            <if test="agingHour != null">aging_hour,</if>
+            <if test="defaultLang != null and defaultLang != ''">default_lang,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="defectShardId != null">#{defectShardId},</if>
+            <if test="defectId != null">#{defectId},</if>
+            <if test="password != null">#{password},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="agingTime != null">#{agingTime},</if>
+            <if test="agingHour != null">#{agingHour},</if>
+            <if test="defaultLang != null and defaultLang != ''">#{defaultLang},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysDefectShard" parameterType="com.cat2bug.quarkus.common.domain.SysDefectShard">
+        UPDATE sys_defect_shard
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="defectId != null">defect_id = #{defectId},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createById != null">create_by_id = #{createById},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="agingTime != null">aging_time = #{agingTime},</if>
+            <if test="agingHour != null">aging_hour = #{agingHour},</if>
+            <if test="defaultLang != null and defaultLang != ''">default_lang = #{defaultLang},</if>
+        </trim>
+        WHERE defect_shard_id = #{defectShardId}
+    </update>
+
+    <delete id="deleteSysDefectShardByDefectShardId" parameterType="String">
+        DELETE FROM sys_defect_shard WHERE defect_shard_id = #{defectShardId}
+    </delete>
+
+    <delete id="deleteSysDefectShardByDefectShardIds" parameterType="String">
+        DELETE FROM sys_defect_shard WHERE defect_shard_id IN
+        <foreach item="defectShardId" collection="array" open="(" separator="," close=")">
+            #{defectShardId}
+        </foreach>
+    </delete>
+</mapper>

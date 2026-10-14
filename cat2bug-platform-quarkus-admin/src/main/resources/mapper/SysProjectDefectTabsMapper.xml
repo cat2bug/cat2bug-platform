@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysProjectDefectTabsMapper">
+
+    <resultMap id="SysProjectDefectTabsResult" type="com.cat2bug.quarkus.common.domain.SysProjectDefectTabs">
+        <result property="tabId" column="tab_id"/>
+        <result property="tabName" column="tab_name"/>
+        <result property="projectId" column="project_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="config" column="config"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.SysDefectJsonTypeHandler"/>
+        <result property="tabSort" column="tab_sort"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="selectSysProjectDefectTabsVo">
+        select tab_id, tab_name, project_id, user_id, config, tab_sort, create_time
+        from sys_project_defect_tabs
+    </sql>
+
+    <sql id="selectSysProjectDefectTabsWhere">
+        <where>
+            <if test="tabs.tabName != null and tabs.tabName != ''">
+                and tab_name like concat('%', #{tabs.tabName}, '%')
+            </if>
+            <if test="tabs.projectId != null">
+                and project_id = #{tabs.projectId}
+            </if>
+            <if test="tabs.userId != null">
+                and user_id = #{tabs.userId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="countSysProjectDefectTabsList" resultType="long">
+        select count(*)
+        from sys_project_defect_tabs
+        <include refid="selectSysProjectDefectTabsWhere"/>
+    </select>
+
+    <select id="selectSysProjectDefectTabsList" resultMap="SysProjectDefectTabsResult">
+        <include refid="selectSysProjectDefectTabsVo"/>
+        <include refid="selectSysProjectDefectTabsWhere"/>
+        order by tab_sort desc, create_time desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectSysProjectDefectTabsListAll" resultMap="SysProjectDefectTabsResult">
+        <include refid="selectSysProjectDefectTabsVo"/>
+        <include refid="selectSysProjectDefectTabsWhere"/>
+        order by tab_sort desc, create_time desc
+    </select>
+
+    <select id="selectSysProjectDefectTabsByTabId" resultMap="SysProjectDefectTabsResult">
+        <include refid="selectSysProjectDefectTabsVo"/>
+        where tab_id = #{tabId}
+    </select>
+
+    <insert id="insertSysProjectDefectTabs" parameterType="com.cat2bug.quarkus.common.domain.SysProjectDefectTabs"
+            useGeneratedKeys="true" keyProperty="tabId" keyColumn="tab_id">
+        insert into sys_project_defect_tabs
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="tabId != null">tab_id,</if>
+            <if test="tabName != null and tabName != ''">tab_name,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="config != null">config,</if>
+            <if test="tabSort != null">tab_sort,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="tabId != null">#{tabId},</if>
+            <if test="tabName != null and tabName != ''">#{tabName},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="config != null">
+                #{config, typeHandler=com.cat2bug.quarkus.system.mybatis.SysDefectJsonTypeHandler},
+            </if>
+            <if test="tabSort != null">#{tabSort},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysProjectDefectTabs" parameterType="com.cat2bug.quarkus.common.domain.SysProjectDefectTabs">
+        update sys_project_defect_tabs
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="tabName != null and tabName != ''">tab_name = #{tabName},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="config != null">
+                config = #{config, typeHandler=com.cat2bug.quarkus.system.mybatis.SysDefectJsonTypeHandler},
+            </if>
+            <if test="tabSort != null">tab_sort = #{tabSort},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where tab_id = #{tabId}
+    </update>
+
+    <update id="updateSort">
+        update sys_project_defect_tabs
+        set tab_sort = case tab_id
+        <foreach collection="list" item="item">
+            when #{item.tabId} then #{item.tabSort}
+        </foreach>
+        end
+        where tab_id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.tabId}
+        </foreach>
+    </update>
+
+    <delete id="deleteSysProjectDefectTabsByTabId">
+        delete from sys_project_defect_tabs where tab_id = #{tabId}
+    </delete>
+
+    <delete id="deleteSysProjectDefectTabsByTabIds">
+        delete from sys_project_defect_tabs where tab_id in
+        <foreach collection="tabIds" item="tabId" open="(" separator="," close=")">
+            #{tabId}
+        </foreach>
+    </delete>
+</mapper>

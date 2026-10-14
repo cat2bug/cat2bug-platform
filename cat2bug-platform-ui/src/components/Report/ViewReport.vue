@@ -277,7 +277,6 @@ import { MarkdownRenderer as MarkdownItVue } from '@/components/Markdown'
 import multimdTable from 'markdown-it-multimd-table'
 import FileSaver from "file-saver";
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import {closeEditWindow, getReport, updateReport, listReportHistory, restoreReportHistory, delReportHistory} from "@/api/system/report";
 import {listComment, addComment, delComment} from "@/api/system/comment";
 import ReportTools from "./ReportTools/index"
@@ -311,7 +310,6 @@ import {pinia} from "@/store/pinia.js";
 import {useUserStore} from "@/stores/user";
 import {getToken} from "@/utils/auth";
 import {setHeader} from "@/utils/request";
-import '@/assets/font/simsun-normal';
 import {listDefect} from "@/api/system/defect";
 import {TablePlugin} from "@/components/Cat2BugMarkdown/plugins/TablePlugin";
 import {CardPlugin} from "@/components/Cat2BugMarkdown/plugins/CardPlugin";
@@ -665,6 +663,7 @@ export default {
         await this.withExportCapture(async ({ element }) => {
           const canvas = await this.html2canvasWithTimeout(element);
           const imgData = canvas.toDataURL('image/png');
+          const { jsPDF } = await import('jspdf');
           const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'px',
@@ -674,11 +673,6 @@ export default {
           const pdfWidth = pdf.internal.pageSize.getWidth();
           const pageHeight = pdf.internal.pageSize.getHeight();
           const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-          try {
-            pdf.setFont('simsun');
-          } catch (_e) {
-            // 字体可选
-          }
           let heightLeft = pdfHeight;
           let position = 0;
           pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);

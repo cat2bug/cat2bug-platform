@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysUserTeamRoleMapper">
+
+    <insert id="insertSysUserTeamRole" useGeneratedKeys="true" keyProperty="userTeamRoleId">
+        insert into sys_user_team_role
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userTeamId != null">user_team_id,</if>
+            <if test="roleId != null">role_id,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userTeamId != null">#{userTeamId},</if>
+            <if test="roleId != null">#{roleId},</if>
+        </trim>
+    </insert>
+
+    <delete id="deleteSysUserTeamByUserTeamId">
+        delete from sys_user_team_role where user_team_id = #{userTeamId}
+    </delete>
+</mapper>

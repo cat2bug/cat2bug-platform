@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.OpenApiDefectLogMapper">
+
+    <insert id="insertApiDefectLog" useGeneratedKeys="true" keyProperty="defectLogId">
+        insert into sys_defect_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="defectLogDescribe != null">defect_log_describe,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="defectLogState != null">defect_log_type,</if>
+            <if test="receiveBy != null">receive_by,</if>
+            <if test="defectId != null">defect_id,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="defectLogDescribe != null">#{defectLogDescribe},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="defectLogState != null">#{defectLogState, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectLogStateEnumTypeHandler},</if>
+            <if test="receiveBy != null">#{receiveBy, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="defectId != null">#{defectId},</if>
+        </trim>
+    </insert>
+
+    <insert id="batchInsertApiDefectLog" useGeneratedKeys="true" keyProperty="defectLogId">
+        insert into sys_defect_log (
+            defect_log_describe, create_by, create_time, defect_log_type, receive_by, defect_id
+        ) values
+        <foreach collection="defectLogList" item="log" separator=",">
+            (
+            #{log.defectLogDescribe},
+            #{log.createBy},
+            #{log.createTime},
+            #{log.defectLogState, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectLogStateEnumTypeHandler},
+            #{log.receiveBy, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},
+            #{log.defectId}
+            )
+        </foreach>
+    </insert>
+</mapper>

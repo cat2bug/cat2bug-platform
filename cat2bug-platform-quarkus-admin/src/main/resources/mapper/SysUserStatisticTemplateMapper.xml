@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysUserStatisticTemplateMapper">
+
+    <resultMap id="SysUserStatisticTemplateResult" type="com.cat2bug.quarkus.common.domain.SysUserStatisticTemplate">
+        <id property="statisticTemplateId" column="statistic_template_id"/>
+        <result property="statisticTemplatCode" column="statistic_templat_code"/>
+        <result property="moduleType" column="module_type"/>
+        <result property="projectId" column="project_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="statisticTemplatConfig" column="statistic_templat_config"/>
+    </resultMap>
+
+    <sql id="selectSysUserStatisticTemplateVo">
+        select statistic_template_id, statistic_templat_code, module_type, project_id, user_id, statistic_templat_config
+    </sql>
+
+    <sql id="selectSysUserStatisticTemplateWhere">
+        from sys_user_statistic_template
+        <where>
+            <if test="query.statisticTemplatCode != null and query.statisticTemplatCode != ''">
+                and statistic_templat_code = #{query.statisticTemplatCode}
+            </if>
+            <if test="query.moduleType != null">
+                and module_type = #{query.moduleType}
+            </if>
+            <if test="query.projectId != null">
+                and project_id = #{query.projectId}
+            </if>
+            <if test="query.userId != null">
+                and user_id = #{query.userId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectSysUserStatisticTemplateList" resultMap="SysUserStatisticTemplateResult">
+        <include refid="selectSysUserStatisticTemplateVo"/>
+        <include refid="selectSysUserStatisticTemplateWhere"/>
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="countSysUserStatisticTemplateList" resultType="long">
+        select count(*)
+        <include refid="selectSysUserStatisticTemplateWhere"/>
+    </select>
+
+    <select id="selectSysUserStatisticTemplateByStatisticTemplateId" resultMap="SysUserStatisticTemplateResult">
+        <include refid="selectSysUserStatisticTemplateVo"/>
+        from sys_user_statistic_template
+        where statistic_template_id = #{statisticTemplateId}
+    </select>
+
+    <insert id="insertSysUserStatisticTemplate">
+        insert into sys_user_statistic_template
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="statisticTemplateId != null">statistic_template_id,</if>
+            <if test="statisticTemplatCode != null">statistic_templat_code,</if>
+            <if test="moduleType != null">module_type,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="statisticTemplatConfig != null">statistic_templat_config,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="statisticTemplateId != null">#{statisticTemplateId},</if>
+            <if test="statisticTemplatCode != null">#{statisticTemplatCode},</if>
+            <if test="moduleType != null">#{moduleType},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="statisticTemplatConfig != null">#{statisticTemplatConfig},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysUserStatisticTemplate">
+        update sys_user_statistic_template
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="statisticTemplatCode != null">statistic_templat_code = #{statisticTemplatCode},</if>
+            <if test="moduleType != null">module_type = #{moduleType},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="statisticTemplatConfig != null">statistic_templat_config = #{statisticTemplatConfig},</if>
+        </trim>
+        where statistic_template_id = #{statisticTemplateId}
+    </update>
+
+    <delete id="deleteSysUserStatisticTemplateByStatisticTemplateIds">
+        delete from sys_user_statistic_template where statistic_template_id in
+        <foreach item="statisticTemplateId" collection="array" open="(" separator="," close=")">
+            #{statisticTemplateId}
+        </foreach>
+    </delete>
+</mapper>

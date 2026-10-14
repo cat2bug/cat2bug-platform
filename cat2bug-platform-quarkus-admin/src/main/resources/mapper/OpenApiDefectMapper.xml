@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.OpenApiDefectMapper">
+
+    <resultMap id="ApiDefectResult" type="com.cat2bug.quarkus.common.domain.open.ApiDefect">
+        <result property="defectId" column="defect_id"/>
+        <result property="defectNum" column="project_num"/>
+        <result property="defectType" column="defect_type"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.open.ApiDefectTypeEnumTypeHandler"/>
+        <result property="defectName" column="defect_name"/>
+        <result property="defectDescribe" column="defect_describe"/>
+        <result property="annexUrlList" column="annex_urls"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler"/>
+        <result property="imgUrlList" column="img_urls"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler"/>
+        <result property="deliverableId" column="module_id"/>
+        <result property="deliverableName" column="module_name"/>
+        <result property="version" column="module_version"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="defectState" column="defect_state"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.open.ApiDefectStateEnumTypeHandler"/>
+        <result property="handlerList" column="handle_by_list"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.open.ApiMemberBaseInfoArrayTypeHandler"/>
+        <result property="handleTime" column="handle_time"/>
+        <result property="defectLevel" column="defect_level"/>
+        <result property="creator" column="creator"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.open.ApiMemberBaseInfoTypeHandler"/>
+        <association property="currentLog" javaType="com.cat2bug.quarkus.common.domain.open.ApiDefectLog"
+                     resultMap="defectLogResult"/>
+    </resultMap>
+
+    <resultMap id="defectLogResult" type="com.cat2bug.quarkus.common.domain.open.ApiDefectLog">
+        <id property="defectLogId" column="defect_log_id"/>
+        <result property="defectLogState" column="defect_log_type"
+                typeHandler="com.cat2bug.quarkus.system.mybatis.open.ApiDefectLogStateEnumTypeHandler"/>
+        <result property="defectLogDescribe" column="defect_log_describe"/>
+        <result property="createTime" column="defect_log_create_time"/>
+    </resultMap>
+
+    <sql id="selectApiDefectVo">
+        SELECT
+            d.defect_id,
+            d.project_num,
+            d.defect_type,
+            d.defect_name,
+            d.defect_describe,
+            d.annex_urls,
+            d.img_urls,
+            d.project_id,
+            p.project_name,
+            d.test_plan_id,
+            d.case_id,
+            d.data_sources,
+            d.data_sources_params,
+            d.module_id,
+            m.module_name,
+            d.module_version,
+            CONCAT('{"memberId":',
+             CASE WHEN u.user_id IS NOT NULL THEN u.user_id ELSE 0 END,
+             ',"memberAccount":',
+             CASE WHEN u.user_name IS NOT NULL THEN CONCAT('"',u.user_name,'"') ELSE 'null' END,
+             ',"memberName":',
+             CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
+             ',"phoneNumber":',
+             CASE WHEN u.phonenumber IS NOT NULL THEN CONCAT('"',u.phonenumber,'"') ELSE 'null' END,
+             ',"email":',
+             CASE WHEN u.email IS NOT NULL THEN CONCAT('"',u.email,'"') ELSE 'null' END,
+             ',"avatar":',
+             CASE WHEN u.avatar IS NOT NULL THEN CONCAT('"',u.avatar,'"') ELSE 'null' END,
+             '}') AS creator,
+            d.create_by,
+            d.create_by_id,
+            d.update_time,
+            d.create_time,
+            d.update_by,
+            d.update_by_id,
+            d.defect_state,
+            d.case_step_id,
+            d.handle_by,
+            un.user_infos AS handle_by_list,
+            d.handle_time,
+            d.defect_level,
+            log.defect_log_id,
+            log.defect_log_type,
+            log.defect_log_describe,
+            log.create_time AS defect_log_create_time
+        FROM
+            sys_defect d
+            LEFT JOIN sys_user u ON d.create_by_id = u.user_id
+            LEFT JOIN (
+                SELECT
+                    l.defect_log_id,
+                    l.defect_log_type,
+                    l.defect_log_describe,
+                    l.create_time,
+                    l.defect_id
+                FROM sys_defect_log l
+                INNER JOIN (
+                    SELECT defect_id, max(defect_log_id) AS defect_log_id
+                    FROM sys_defect_log
+                    GROUP BY defect_id
+                ) l2 ON l.defect_id = l2.defect_id AND l.defect_log_id = l2.defect_log_id
+            ) log ON log.defect_id = d.defect_id
+            LEFT JOIN sys_module m ON m.module_id = d.module_id
+            LEFT JOIN sys_project p ON d.project_id = p.project_id
+            LEFT JOIN (
+                SELECT
+                    d1.defect_id,
+                    GROUP_CONCAT(u.user_name) AS user_names,
+                    CONCAT('[', GROUP_CONCAT(CONCAT('{"memberId":',
+                         CASE WHEN u.user_id IS NOT NULL THEN user_id ELSE 0 END,
+                         ',"memberAccount":',
+                         CASE WHEN u.user_name IS NOT NULL THEN CONCAT('"',u.user_name,'"') ELSE 'null' END,
+                         ',"memberName":',
+                         CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
+                         ',"phoneNumber":',
+                         CASE WHEN u.phonenumber IS NOT NULL THEN CONCAT('"',u.phonenumber,'"') ELSE 'null' END,
+                         ',"email":',
+                         CASE WHEN u.email IS NOT NULL THEN CONCAT('"',u.email,'"') ELSE 'null' END,
+                         ',"avatar":',
+                         CASE WHEN u.avatar IS NOT NULL THEN CONCAT('"',u.avatar,'"') ELSE 'null' END,
+                         '}')), ']') AS user_infos
+                FROM sys_defect d1
+                LEFT JOIN sys_user u ON d1.handle_by REGEXP CONCAT('\b',u.user_id,'\b')
+                    OR d1.handle_by REGEXP CONCAT('\\b',u.user_id,'\\b')
+                GROUP BY d1.defect_id
+            ) un ON un.defect_id = d.defect_id
+    </sql>
+
+    <select id="getProjectDefectMaxNum" resultType="Long">
+        select IFNULL(MAX(project_num), 0) from sys_defect where project_id = #{projectId} and del_flag = '0'
+    </select>
+
+    <select id="selectApiDefectListByDefectName" resultMap="ApiDefectResult">
+        <include refid="selectApiDefectVo"/>
+        <where>
+            d.defect_name = #{defectName}
+        </where>
+        order by d.create_time DESC
+    </select>
+
+    <sql id="selectApiDefectWhere">
+        <where>
+            d.project_id = #{projectId}
+            and d.del_flag = '0'
+            <if test="defect.defectNum != null">and d.project_num = #{defect.defectNum}</if>
+            <if test="defect.defectType != null">and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectTypeEnumTypeHandler}</if>
+            <if test="defect.defectName != null and defect.defectName != ''">and d.defect_name like concat('%', #{defect.defectName}, '%')</if>
+            <if test="defect.version != null and defect.version != ''">and d.module_version like concat('%', #{defect.version}, '%')</if>
+            <if test="defect.defectState != null">and d.defect_state = #{defect.defectState, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectStateEnumTypeHandler}</if>
+            <if test="defect.handlerAccountList != null and defect.handlerAccountList.size > 0">and
+                <foreach collection="defect.handlerAccountList" item="b" separator=" or " open="(" close=")">
+                    FIND_IN_SET(#{b}, un.user_names)
+                </foreach>
+            </if>
+            <if test="defect.defectLevel != null and defect.defectLevel != ''">and d.defect_level = #{defect.defectLevel}</if>
+        </where>
+    </sql>
+
+    <select id="countApiDefectList" resultType="long">
+        SELECT COUNT(*)
+        FROM sys_defect d
+        LEFT JOIN (
+            SELECT
+                d1.defect_id,
+                GROUP_CONCAT(u.user_name) AS user_names
+            FROM sys_defect d1
+            LEFT JOIN sys_user u ON d1.handle_by REGEXP CONCAT('\b',u.user_id,'\b')
+                OR d1.handle_by REGEXP CONCAT('\\b',u.user_id,'\\b')
+            GROUP BY d1.defect_id
+        ) un ON un.defect_id = d.defect_id
+        <include refid="selectApiDefectWhere"/>
+    </select>
+
+    <select id="selectApiDefectList" resultMap="ApiDefectResult">
+        <include refid="selectApiDefectVo"/>
+        <include refid="selectApiDefectWhere"/>
+        order by d.project_num DESC, d.update_time DESC
+    </select>
+
+    <select id="selectApiDefectPage" resultMap="ApiDefectResult">
+        <include refid="selectApiDefectVo"/>
+        <include refid="selectApiDefectWhere"/>
+        order by d.project_num DESC, d.update_time DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectSysDefectByDefectNumber" resultMap="ApiDefectResult">
+        <include refid="selectApiDefectVo"/>
+        where d.project_num = #{defectNum} and d.project_id = #{projectId} limit 1
+    </select>
+
+    <select id="selectDefectIdsByKey" resultType="java.lang.Long">
+        select defect_id from sys_defect
+        where project_id = #{projectId}
+          and del_flag = '0'
+        <if test="defectKey != null and defectKey != ''">
+            and defect_key = #{defectKey}
+        </if>
+        <if test="defectGroupKey != null and defectGroupKey != ''">
+            and defect_group_key = #{defectGroupKey}
+        </if>
+    </select>
+
+    <insert id="batchInsertSysDefect" useGeneratedKeys="true" keyProperty="defectList[].defectId">
+        insert into sys_defect (
+            defect_type, defect_name, defect_describe, annex_urls, img_urls, project_id,
+            module_id, module_version, create_by, create_by_id, update_time, create_time,
+            update_by, update_by_id, defect_state, handle_by, defect_level, del_flag
+        ) values
+        <foreach collection="defectList" item="defect" separator=",">
+            (
+            #{defect.defectType, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectTypeEnumTypeHandler},
+            #{defect.defectName},
+            #{defect.defectDescribe},
+            #{defect.annexUrlList, typeHandler=com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler},
+            #{defect.imgUrlList, typeHandler=com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler},
+            #{projectId},
+            #{defect.deliverableId},
+            #{defect.version},
+            #{defect.createBy},
+            #{defect.createById},
+            #{defect.updateTime},
+            #{defect.createTime},
+            #{defect.updateBy},
+            #{defect.updateById},
+            #{defect.defectState, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectStateEnumTypeHandler},
+            #{defect.handleBy, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},
+            #{defect.defectLevel},
+            '0'
+            )
+        </foreach>
+    </insert>
+
+    <insert id="insertApiDefect" useGeneratedKeys="true" keyProperty="defect.defectId">
+        insert into sys_defect
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="defect.defectNum != null">project_num,</if>
+            <if test="defect.defectType != null">defect_type,</if>
+            <if test="defect.defectName != null and defect.defectName != ''">defect_name,</if>
+            <if test="defect.defectDescribe != null and defect.defectDescribe != ''">defect_describe,</if>
+            <if test="defect.annexUrlList != null">annex_urls,</if>
+            <if test="defect.imgUrlList != null">img_urls,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="defect.deliverableId != null">module_id,</if>
+            <if test="defect.version != null">module_version,</if>
+            <if test="defect.createBy != null">create_by,</if>
+            <if test="defect.createById != null">create_by_id,</if>
+            <if test="defect.updateTime != null">update_time,</if>
+            <if test="defect.createTime != null">create_time,</if>
+            <if test="defect.updateBy != null">update_by,</if>
+            <if test="defect.updateById != null">update_by_id,</if>
+            <if test="defect.defectState != null">defect_state,</if>
+            <if test="defect.handleBy != null">handle_by,</if>
+            <if test="defect.defectLevel != null">defect_level,</if>
+            del_flag,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="defect.defectNum != null">#{defect.defectNum},</if>
+            <if test="defect.defectType != null">#{defect.defectType, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectTypeEnumTypeHandler},</if>
+            <if test="defect.defectName != null and defect.defectName != ''">#{defect.defectName},</if>
+            <if test="defect.defectDescribe != null and defect.defectDescribe != ''">#{defect.defectDescribe},</if>
+            <if test="defect.annexUrlList != null">#{defect.annexUrlList, typeHandler=com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler},</if>
+            <if test="defect.imgUrlList != null">#{defect.imgUrlList, typeHandler=com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="defect.deliverableId != null">#{defect.deliverableId},</if>
+            <if test="defect.version != null">#{defect.version},</if>
+            <if test="defect.createBy != null">#{defect.createBy},</if>
+            <if test="defect.createById != null">#{defect.createById},</if>
+            <if test="defect.updateTime != null">#{defect.updateTime},</if>
+            <if test="defect.createTime != null">#{defect.createTime},</if>
+            <if test="defect.updateBy != null">#{defect.updateBy},</if>
+            <if test="defect.updateById != null">#{defect.updateById},</if>
+            <if test="defect.defectState != null">#{defect.defectState, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectStateEnumTypeHandler},</if>
+            <if test="defect.handleBy != null">#{defect.handleBy, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="defect.defectLevel != null">#{defect.defectLevel},</if>
+            '0',
+        </trim>
+    </insert>
+
+    <update id="updateApiDefect">
+        update sys_defect
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="defectType != null">defect_type = #{defectType, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectTypeEnumTypeHandler},</if>
+            <if test="defectName != null and defectName != ''">defect_name = #{defectName},</if>
+            <if test="defectDescribe != null and defectDescribe != ''">defect_describe = #{defectDescribe},</if>
+            <if test="annexUrlList != null">annex_urls = #{annexUrlList, typeHandler=com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler},</if>
+            <if test="imgUrlList != null">img_urls = #{imgUrlList, typeHandler=com.cat2bug.quarkus.system.mybatis.open.CommaArrayTypeHandler},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="deliverableId != null">module_id = #{deliverableId},</if>
+            <if test="version != null">module_version = #{version},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="defectState != null">defect_state = #{defectState, typeHandler=com.cat2bug.quarkus.system.mybatis.open.ApiDefectStateEnumTypeHandler},</if>
+            <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="defectLevel != null">defect_level = #{defectLevel},</if>
+        </trim>
+        where defect_id = #{defectId}
+    </update>
+</mapper>

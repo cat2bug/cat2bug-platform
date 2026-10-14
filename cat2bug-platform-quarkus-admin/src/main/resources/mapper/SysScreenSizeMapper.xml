@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysScreenSizeMapper">
+
+    <resultMap id="SysScreenSizeResult" type="com.cat2bug.quarkus.common.domain.SysScreenSize">
+        <id property="screenSizeId" column="screen_size_id"/>
+        <result property="name" column="name"/>
+        <result property="width" column="width"/>
+        <result property="height" column="height"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <sql id="selectSysScreenSizeVo">
+        select screen_size_id, name, width, height, remark from sys_screen_size
+    </sql>
+
+    <sql id="selectSysScreenSizeListWhere">
+        <where>
+            <if test="query.name != null and query.name != ''">
+                and name like concat('%', #{query.name}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectSysScreenSizeByScreenSizeId" resultMap="SysScreenSizeResult">
+        <include refid="selectSysScreenSizeVo"/>
+        where screen_size_id = #{screenSizeId}
+    </select>
+
+    <select id="countSysScreenSizeList" resultType="long">
+        select count(*) from sys_screen_size
+        <include refid="selectSysScreenSizeListWhere"/>
+    </select>
+
+    <select id="selectSysScreenSizeList" resultMap="SysScreenSizeResult">
+        <include refid="selectSysScreenSizeVo"/>
+        <include refid="selectSysScreenSizeListWhere"/>
+        order by screen_size_id
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectSysScreenSizeListAll" resultMap="SysScreenSizeResult">
+        <include refid="selectSysScreenSizeVo"/>
+        <include refid="selectSysScreenSizeListWhere"/>
+        order by screen_size_id
+    </select>
+
+    <insert id="insertSysScreenSize" useGeneratedKeys="true" keyProperty="screenSizeId">
+        insert into sys_screen_size
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="screenSizeId != null">screen_size_id,</if>
+            <if test="name != null and name != ''">name,</if>
+            <if test="width != null">width,</if>
+            <if test="height != null">height,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="screenSizeId != null">#{screenSizeId},</if>
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="width != null">#{width},</if>
+            <if test="height != null">#{height},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysScreenSize">
+        update sys_screen_size
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="width != null">width = #{width},</if>
+            <if test="height != null">height = #{height},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where screen_size_id = #{screenSizeId}
+    </update>
+
+    <delete id="deleteSysScreenSizeByScreenSizeId">
+        delete from sys_screen_size where screen_size_id = #{screenSizeId}
+    </delete>
+
+    <delete id="deleteSysScreenSizeByScreenSizeIds">
+        delete from sys_screen_size where screen_size_id in
+        <foreach item="screenSizeId" collection="array" open="(" separator="," close=")">
+            #{screenSizeId}
+        </foreach>
+    </delete>
+</mapper>

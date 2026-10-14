@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysGitPullRequestCommentMapper">
+
+    <resultMap type="com.cat2bug.quarkus.common.domain.SysGitPullRequestComment" id="SysGitPullRequestCommentResult">
+        <result property="commentId"     column="comment_id"/>
+        <result property="pullRequestId" column="pull_request_id"/>
+        <result property="userId"        column="user_id"/>
+        <result property="body"          column="body"/>
+        <result property="parentId"      column="parent_id"/>
+        <result property="createTime"    column="create_time"/>
+        <result property="updateTime"    column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSysGitPullRequestCommentVo">
+        select comment_id, pull_request_id, user_id, body, parent_id, create_time, update_time
+        from sys_git_pull_request_comment
+    </sql>
+
+    <insert id="insert" parameterType="com.cat2bug.quarkus.common.domain.SysGitPullRequestComment" useGeneratedKeys="true" keyProperty="commentId">
+        insert into sys_git_pull_request_comment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="pullRequestId != null">pull_request_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="body != null">body,</if>
+            <if test="parentId != null">parent_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="pullRequestId != null">#{pullRequestId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="body != null">#{body},</if>
+            <if test="parentId != null">#{parentId},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <select id="selectListByPullRequestId" parameterType="java.lang.Long" resultMap="SysGitPullRequestCommentResult">
+        <include refid="selectSysGitPullRequestCommentVo"/>
+        where pull_request_id = #{pullRequestId}
+        order by create_time asc, comment_id asc
+    </select>
+
+</mapper>

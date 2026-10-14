@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.AiAccountMapper">
+
+    <resultMap id="AiAccountResult" type="com.cat2bug.quarkus.common.domain.AiAccount">
+        <result property="accountId" column="account_id"/>
+        <result property="aiUrl" column="ai_url"/>
+        <result property="modelName" column="model_name"/>
+        <result property="maxCompletionTokens" column="max_completion_tokens"/>
+        <result property="apiKey" column="api_key"/>
+        <result property="createBy" column="create_by"/>
+        <result property="projectId" column="project_id"/>
+        <result property="accountName" column="account_name"/>
+    </resultMap>
+
+    <sql id="selectAiAccountVo">
+        SELECT account_id, ai_url, model_name, max_completion_tokens, api_key, create_by, project_id, account_name
+        FROM ai_account
+    </sql>
+
+    <select id="selectAiAccountList" resultMap="AiAccountResult">
+        <include refid="selectAiAccountVo"/>
+        <where>
+            <if test="query != null and query.modelName != null and query.modelName != ''">
+                AND model_name LIKE CONCAT('%', #{query.modelName}, '%')
+            </if>
+            <if test="query != null and query.projectId != null">
+                AND project_id = #{query.projectId}
+            </if>
+            <if test="query != null and query.accountName != null and query.accountName != ''">
+                AND account_name LIKE CONCAT('%', #{query.accountName}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAiAccountByAccountId" resultMap="AiAccountResult">
+        <include refid="selectAiAccountVo"/>
+        WHERE account_id = #{accountId}
+    </select>
+
+    <insert id="insertAiAccount" useGeneratedKeys="true" keyProperty="accountId">
+        INSERT INTO ai_account
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="aiUrl != null and aiUrl != ''">ai_url,</if>
+            <if test="modelName != null and modelName != ''">model_name,</if>
+            <if test="maxCompletionTokens != null">max_completion_tokens,</if>
+            <if test="apiKey != null and apiKey != ''">api_key,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="accountName != null and accountName != ''">account_name,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="aiUrl != null and aiUrl != ''">#{aiUrl},</if>
+            <if test="modelName != null and modelName != ''">#{modelName},</if>
+            <if test="maxCompletionTokens != null">#{maxCompletionTokens},</if>
+            <if test="apiKey != null and apiKey != ''">#{apiKey},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="accountName != null and accountName != ''">#{accountName},</if>
+        </trim>
+    </insert>
+
+    <update id="updateAiAccount">
+        UPDATE ai_account
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="aiUrl != null and aiUrl != ''">ai_url = #{aiUrl},</if>
+            <if test="modelName != null and modelName != ''">model_name = #{modelName},</if>
+            <if test="maxCompletionTokens != null">max_completion_tokens = #{maxCompletionTokens},</if>
+            <if test="apiKey != null and apiKey != ''">api_key = #{apiKey},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="accountName != null and accountName != ''">account_name = #{accountName},</if>
+        </trim>
+        WHERE account_id = #{accountId}
+    </update>
+
+    <delete id="deleteAiAccountByAccountId">
+        DELETE FROM ai_account WHERE account_id = #{accountId}
+    </delete>
+
+    <delete id="deleteAiAccountByAccountIds">
+        DELETE FROM ai_account WHERE account_id IN
+        <foreach item="accountId" collection="accountIds" open="(" separator="," close=")">
+            #{accountId}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.quarkus.system.mapper.SysUserTeamMapper">
+
+    <resultMap id="SysUserTeamResult" type="com.cat2bug.quarkus.common.domain.SysUserTeam">
+        <result property="userTeamId" column="user_team_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="teamId" column="team_id"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="teamLock" column="team_lock"/>
+    </resultMap>
+
+    <sql id="selectSysUserTeamVo">
+        select user_team_id, user_id, team_id, create_by, create_time, update_by, update_time, team_lock
+        from sys_user_team
+    </sql>
+
+    <select id="selectSysUserTeamList" resultMap="SysUserTeamResult">
+        <include refid="selectSysUserTeamVo"/>
+        <where>
+            <if test="userId != null">and user_id = #{userId}</if>
+            <if test="teamId != null">and team_id = #{teamId}</if>
+            <if test="teamLock != null">and team_lock = #{teamLock}</if>
+        </where>
+    </select>
+
+    <insert id="insertSysUserTeam" useGeneratedKeys="true" keyProperty="userTeamId">
+        insert into sys_user_team
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="teamId != null">team_id,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="teamLock != null">team_lock,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="teamId != null">#{teamId},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="teamLock != null">#{teamLock},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysUserTeamByTeamIdAndMemberId">
+        update sys_user_team
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="teamLock != null">team_lock = #{teamLock},</if>
+        </trim>
+        where team_id = #{teamId} and user_id = #{userId}
+    </update>
+</mapper>
