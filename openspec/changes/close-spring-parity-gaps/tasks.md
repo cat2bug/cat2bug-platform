@@ -13,8 +13,10 @@
 - [x] 2.5 单元测试（Vitest 或现有前端测试方式）：脚本、事件属性、`javascript:` 链接被移除，对齐 / 颜色保留；`npm run lint`、`npm run build:prod` 通过
   - Jest `tests/unit/utils/sanitize-html.spec.js` 12 例通过，全量 78 套件 448 例通过；`build:prod` 通过
   - `npm run lint` 在本变更前就不可用：`.eslintrc.js` 的 `vue/max-attributes-per-line` 旧写法与 eslint-plugin-vue 9 不兼容，且 `.eslintignore` 的 `*.js`/`*.vue` 实际忽略了全部文件。改用临时修正配置逐文件对比改前改后错误数：未引入新的实质问题（增量仅为沿用文件原有双引号/分号风格）
-- [ ] 2.6 浏览器验证：缺陷描述、评论、通知、报告各写入一条 XSS 载荷，页面不执行；现有报告样例前后截图一致
-  - 未做：需要完整后端与测试数据，且不能往开发库写数据；以 2.5 的单测（载荷与 markdown-it 实际渲染结果）替代，合并后建议主 agent 在浏览器补一次
+- [x] 2.6 浏览器验证：缺陷描述、评论、通知、报告各写入一条 XSS 载荷，页面不执行；现有报告样例前后截图一致
+  - 合并后由主 agent 在 Native 全新 H2 库上验证：缺陷描述、缺陷日志评论、报告正文与批注、通知标题与正文均写入 `<script>`、`onerror`、`onload`、`javascript:` 链接、`<iframe>`、带 `background-image` 的 `style` 载荷；页面 `window.__xss` 始终未定义，DOM 中无事件属性与 `javascript:` 链接，坏图回退为占位图，`color` 与 Markdown 粗体保留
+  - 「现有报告样例前后截图」未做：全新库没有历史报告样例
+  - 验证中发现并修复了 4 个与 XSS 无关、但阻碍验证的遗漏，见第 8 组
 
 ## 3. 数据权限
 
@@ -44,3 +46,12 @@
 - [x] 7.1 新增 `docs/07-技术决策/ADR-012-用户内容在前端渲染时清洗而非后端转义.md`，加入 ADR 说明与总览
 - [x] 7.2 `docs/03-技术方案/权限模型与鉴权链路.md` 删除 dataScope 已知缺口并写明实现；本机 `CLAUDE.md` 同步（`CLAUDE.md` 不入库，按要求本 worktree 不改，由主 agent 合并后删去「已知缺口：Mapper 未拼接 dataScope 数据权限」一句；另同步了 `02-系统架构/整体架构.md` 与两份接口清单）
 - [x] 7.3 可复用的坑写入 `docs/06-踩坑记录/`（没有则注明无）；`docs/08-版本记录/2026-10.md` 记录本变更（含「数据范围受限角色列表变少」的行为说明）；`check_links.py` 坏链为 0（新增两篇踩坑；坏链 0）
+
+## 8. 浏览器验证中发现的遗漏（合并后补）
+
+- [x] 8.1 新建缺陷补写「创建」日志（Spring `insertSysDefect` 有，Quarkus 漏了；否则新缺陷日志区为空、无法评论）
+- [x] 8.2 缺陷日志查询（列表、单条、分享页）补回 `commentList` 与 `receiveByList`，新增 `SysCommentMapper#selectSysCommentListByModuleAndCorrelationIds`；接收人只带用户名、昵称、头像
+- [x] 8.3 H2 下 `CAST(x AS CHAR)` 被截成一个字符：通知正文去掉 cast，仪表盘动态改为 `CHAR(255)`；`SysNotice` 时间改为 `Date` + `@JsonFormat`，消除 H2 带微秒导致前端显示 `0-0-0 0:0:0`
+- [x] 8.4 缺陷通知标题的状态改为 i18n 文案（「[处理中]」而非「[PROCESSING]」），并从 Spring 补回代码中用到但缺失的 8 个词条与 5 个状态词条
+- [x] 8.5 测试：`QuarkusDefectLogTest`、`QuarkusDefectImNoticeTest`、`ImMessageTemplatesTest` 补用例；全量 213 个通过（跳过 2）；Native 重建后两种冒烟通过，H2 下通知正文完整、仪表盘 ID 正确
+

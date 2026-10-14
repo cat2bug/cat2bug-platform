@@ -26,6 +26,14 @@ class ImMessageTemplatesTest {
     }
 
     @Test
+    void defectStateLabelIsLocalized() {
+        assertEquals("处理中", ImMessageTemplates.defectStateLabel(0));
+        assertEquals("待验证", ImMessageTemplates.defectStateLabel(1));
+        assertEquals("已驳回", ImMessageTemplates.defectStateLabel(3));
+        assertEquals("已关闭", ImMessageTemplates.defectStateLabel(4));
+    }
+
+    @Test
     void allDefectFormatsContainNumberAndName() {
         ImMessageBody body = ImMessageTemplates.defect(sampleDefect("登录失败"), LINK);
 
@@ -33,7 +41,7 @@ class ImMessageTemplatesTest {
             assertTrue(content.contains("#12"), content);
             assertTrue(content.contains("登录失败"), content);
         }
-        assertTrue(body.text().contains("状态: PROCESSING"));
+        assertTrue(body.text().contains("状态: 处理中"));
         assertTrue(body.text().contains("处理人: 张三, lisi"));
         assertTrue(body.html().contains("href=\"http://h/team/proj/defect?projectId=1&amp;defectId=9\""));
     }

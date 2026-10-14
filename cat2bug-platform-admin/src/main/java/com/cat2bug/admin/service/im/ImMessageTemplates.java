@@ -4,6 +4,7 @@ import com.cat2bug.common.constant.DefectConstants;
 import com.cat2bug.common.domain.SysDefect;
 import com.cat2bug.common.domain.SysReport;
 import com.cat2bug.common.domain.vo.EnumVo;
+import com.cat2bug.common.util.MessageUtils;
 import com.cat2bug.common.util.StringUtils;
 
 import java.util.ArrayList;
@@ -83,11 +84,11 @@ public final class ImMessageTemplates {
         }
         for (EnumVo state : DefectConstants.getDefectStateList()) {
             if (state.getKey() != null && state.getKey().intValue() == defectState) {
-                return state.getValue() != null ? state.getValue() : String.valueOf(defectState);
+                return state.getValue() != null ? MessageUtils.message(state.getValue()) : String.valueOf(defectState);
             }
         }
         if (defectState >= 0 && defectState < DefectConstants.DEFECT_STATES.length) {
-            return DefectConstants.DEFECT_STATES[defectState];
+            return MessageUtils.message(DefectConstants.DEFECT_STATES[defectState]);
         }
         return String.valueOf(defectState);
     }

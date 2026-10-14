@@ -18,6 +18,9 @@ public interface SysCommentMapper {
                                           @Param("offset") int offset,
                                           @Param("limit") int limit);
 
+    List<SysComment> selectSysCommentListByModuleAndCorrelationIds(@Param("moduleType") String moduleType,
+                                                                   @Param("correlationIds") List<Long> correlationIds);
+
     SysComment selectSysCommentByCommentId(@Param("commentId") Long commentId);
 
     int insertSysComment(SysComment comment);

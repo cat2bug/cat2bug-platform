@@ -22,7 +22,7 @@
     </resultMap>
 
     <sql id="selectNoticeVo">
-        select n.notice_id, n.notice_title, n.notice_type, cast(n.notice_content as char) as notice_content,
+        select n.notice_id, n.notice_title, n.notice_type, n.notice_content,
                n.group_name, n.status, n.create_by, n.create_time, n.update_by, n.update_time, n.remark, n.is_read,
                n.receiver_id, p.project_name, t.team_name
         from sys_notice n

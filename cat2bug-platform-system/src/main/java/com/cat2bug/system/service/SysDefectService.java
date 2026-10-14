@@ -278,6 +278,7 @@ public class SysDefectService {
         return defect;
     }
 
+    @Transactional
     public SysDefect insertSysDefect(SysDefect defect) {
         LoginUser loginUser = requireLoginUser();
         Date now = new Date();
@@ -294,6 +295,11 @@ public class SysDefectService {
         if (sysDefectMapper.insertSysDefect(defect) <= 0) {
             throw new ApiException("新增缺陷失败");
         }
+        SysDefectLog log = new SysDefectLog();
+        log.setDefectId(defect.getDefectId());
+        log.setReceiveBy(defect.getHandleBy());
+        log.setDefectLogType(DefectLogState.CREATE);
+        insertLog(log);
         defectMemberEnricher.enrich(defect);
         return defect;
     }

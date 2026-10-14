@@ -347,25 +347,25 @@
     <select id="actonList" resultMap="SysActionResult">
         SELECT s.*, u.nick_name, u.user_name, u.avatar
         FROM (
-            SELECT CAST(defect_id AS CHAR) AS id,
+            SELECT CAST(defect_id AS CHAR(255)) AS id,
                    CONCAT('#', project_num, ' ', defect_name) AS title,
                    'defect' AS type,
-                   CAST(defect_state AS CHAR) AS state,
+                   CAST(defect_state AS CHAR(255)) AS state,
                    IFNULL(update_time, create_time) AS time,
                    update_by_id
             FROM sys_defect
             WHERE project_id = #{projectId} AND del_flag = '0'
             UNION
-            SELECT CAST(case_id AS CHAR) AS id,
+            SELECT CAST(case_id AS CHAR(255)) AS id,
                    case_name AS title,
                    'case' AS type,
                    NULL AS state,
                    IFNULL(update_time, create_time) AS time,
-                   (SELECT u2.user_id FROM sys_user u2 WHERE CAST(u2.user_name AS CHAR) = CAST(c.update_by AS CHAR) LIMIT 1) AS update_by_id
+                   (SELECT u2.user_id FROM sys_user u2 WHERE CAST(u2.user_name AS CHAR(255)) = CAST(c.update_by AS CHAR(255)) LIMIT 1) AS update_by_id
             FROM sys_case c
             WHERE project_id = #{projectId}
             UNION
-            SELECT CAST(plan_id AS CHAR) AS id,
+            SELECT CAST(plan_id AS CHAR(255)) AS id,
                    plan_name AS title,
                    'plan' AS type,
                    NULL AS state,
@@ -374,7 +374,7 @@
             FROM sys_plan
             WHERE project_id = #{projectId}
             UNION
-            SELECT CAST(report_id AS CHAR) AS id,
+            SELECT CAST(report_id AS CHAR(255)) AS id,
                    report_title AS title,
                    'report' AS type,
                    NULL AS state,
@@ -383,7 +383,7 @@
             FROM sys_report
             WHERE project_id = #{projectId}
             UNION
-            SELECT CAST(doc_id AS CHAR) AS id,
+            SELECT CAST(doc_id AS CHAR(255)) AS id,
                    file_url AS title,
                    'document' AS type,
                    NULL AS state,

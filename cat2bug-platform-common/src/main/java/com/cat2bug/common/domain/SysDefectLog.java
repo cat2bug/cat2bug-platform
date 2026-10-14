@@ -12,6 +12,7 @@ public class SysDefectLog {
     private String defectLogDescribe;
     private DefectLogState defectLogType;
     private List<Long> receiveBy;
+    private List<SysUser> receiveByList;
     private String annexUrls;
     private Long defectId;
     private String createBy;
@@ -20,6 +21,7 @@ public class SysDefectLog {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
     private String srcHost;
+    private List<SysComment> commentList;
 
     public Long getDefectLogId() {
         return defectLogId;
@@ -107,5 +109,21 @@ public class SysDefectLog {
 
     public void setSrcHost(String srcHost) {
         this.srcHost = srcHost;
+    }
+
+    public List<SysUser> getReceiveByList() {
+        return receiveByList;
+    }
+
+    public void setReceiveByList(List<SysUser> receiveByList) {
+        this.receiveByList = receiveByList;
+    }
+
+    public List<SysComment> getCommentList() {
+        return commentList;
+    }
+
+    public void setCommentList(List<SysComment> commentList) {
+        this.commentList = commentList;
     }
 }
