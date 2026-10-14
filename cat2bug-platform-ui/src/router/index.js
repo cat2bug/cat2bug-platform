@@ -384,6 +384,11 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/oauth/consent',
+    component: () => import('@/views/oauth/consent'),
+    hidden: true
+  },
+  {
     path: '/404',
     component: () => import('@/views/error/404'),
     hidden: true

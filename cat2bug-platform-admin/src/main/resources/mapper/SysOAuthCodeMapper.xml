@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysOAuthCodeMapper">
+
+    <resultMap type="com.cat2bug.common.domain.SysOAuthCode" id="SysOAuthCodeResult">
+        <result property="codeHash"      column="code_hash" />
+        <result property="clientId"      column="client_id" />
+        <result property="userId"        column="user_id" />
+        <result property="redirectUri"   column="redirect_uri" />
+        <result property="codeChallenge" column="code_challenge" />
+        <result property="resource"      column="resource" />
+        <result property="expiresAt"     column="expires_at" />
+        <result property="used"          column="used" />
+        <result property="createTime"    column="create_time" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysOAuthCode">
+        insert into sys_oauth_code (
+            code_hash, client_id, user_id, redirect_uri, code_challenge, resource, expires_at, used, create_time
+        ) values (
+            #{codeHash}, #{clientId}, #{userId}, #{redirectUri}, #{codeChallenge}, #{resource}, #{expiresAt}, 0, #{createTime}
+        )
+    </insert>
+
+    <select id="selectByHash" resultMap="SysOAuthCodeResult">
+        select code_hash, client_id, user_id, redirect_uri, code_challenge, resource, expires_at, used, create_time
+        from sys_oauth_code
+        where code_hash = #{codeHash}
+    </select>
+
+    <update id="markUsed">
+        update sys_oauth_code set used = 1 where code_hash = #{codeHash} and used = 0
+    </update>
+
+    <delete id="deleteExpiredBefore">
+        delete from sys_oauth_code where expires_at &lt; #{before}
+    </delete>
+
+</mapper>

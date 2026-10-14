@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysUserAccessTokenMapper">
+
+    <resultMap type="com.cat2bug.common.domain.SysUserAccessToken" id="SysUserAccessTokenResult">
+        <result property="tokenId"     column="token_id" />
+        <result property="userId"      column="user_id" />
+        <result property="name"        column="name" />
+        <result property="tokenHash"   column="token_hash" />
+        <result property="tokenPrefix" column="token_prefix" />
+        <result property="source"      column="source" />
+        <result property="clientId"    column="client_id" />
+        <result property="clientName"  column="client_name" />
+        <result property="grantId"     column="grant_id" />
+        <result property="resource"    column="resource" />
+        <result property="expiresAt"   column="expires_at" />
+        <result property="lastUsedAt"  column="last_used_at" />
+        <result property="lastUsedIp"  column="last_used_ip" />
+        <result property="revokedAt"   column="revoked_at" />
+        <result property="createTime"  column="create_time" />
+    </resultMap>
+
+    <sql id="selectTokenVo">
+        select t.token_id, t.user_id, t.name, t.token_hash, t.token_prefix, t.source, t.client_id,
+               c.client_name, t.grant_id, t.resource, t.expires_at, t.last_used_at, t.last_used_ip,
+               t.revoked_at, t.create_time
+        from sys_user_access_token t
+        left join sys_oauth_client c on c.client_id = t.client_id
+    </sql>
+
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysUserAccessToken" useGeneratedKeys="true" keyProperty="tokenId">
+        insert into sys_user_access_token (
+            user_id, name, token_hash, token_prefix, source, client_id, grant_id, resource,
+            expires_at, create_time
+        ) values (
+            #{userId}, #{name}, #{tokenHash}, #{tokenPrefix}, #{source}, #{clientId}, #{grantId}, #{resource},
+            #{expiresAt}, #{createTime}
+        )
+    </insert>
+
+    <select id="selectByHash" resultMap="SysUserAccessTokenResult">
+        <include refid="selectTokenVo"/>
+        where t.token_hash = #{tokenHash}
+    </select>
+
+    <select id="selectById" resultMap="SysUserAccessTokenResult">
+        <include refid="selectTokenVo"/>
+        where t.token_id = #{tokenId}
+    </select>
+
+    <select id="selectVisibleByUserId" resultMap="SysUserAccessTokenResult">
+        <include refid="selectTokenVo"/>
+        where t.user_id = #{userId}
+          and t.revoked_at is null
+          and t.source in ('manual', 'oauth_refresh')
+        order by t.create_time desc, t.token_id desc
+    </select>
+
+    <update id="revokeById">
+        update sys_user_access_token set revoked_at = #{revokedAt}
+        where token_id = #{tokenId} and revoked_at is null
+    </update>
+
+    <update id="revokeGrant">
+        update sys_user_access_token set revoked_at = #{revokedAt}
+        where grant_id = #{grantId} and revoked_at is null
+    </update>
+
+    <update id="revokeAllByUserId">
+        update sys_user_access_token set revoked_at = #{revokedAt}
+        where user_id = #{userId} and revoked_at is null
+    </update>
+
+    <update id="touch">
+        update sys_user_access_token set last_used_at = #{usedAt}, last_used_ip = #{ip}
+        where token_id = #{tokenId}
+    </update>
+
+    <update id="touchGrantRefresh">
+        update sys_user_access_token set last_used_at = #{usedAt}, last_used_ip = #{ip}
+        where grant_id = #{grantId} and source = 'oauth_refresh' and revoked_at is null
+    </update>
+
+    <delete id="deleteInactiveBefore">
+        delete from sys_user_access_token
+        where (revoked_at is not null and revoked_at &lt; #{before})
+           or (expires_at is not null and expires_at &lt; #{before})
+    </delete>
+
+</mapper>

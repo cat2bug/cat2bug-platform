@@ -4,7 +4,7 @@ export const PATH_KEY_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9._-]{0,98}[a-zA-Z0-9])
 export const PATH_KEY_RESERVED = new Set([
   'login', 'register', 'logout', 'setup', 'upgrade', 'static', 'profile', 'prod-api',
   'git', 'system', 'project', 'docs', 'websocket', 'captchaImage', 'version', 'index',
-  'home', 'api', 'oauth', 'actuator', 'error', 'favicon.ico', 'code',
+  'home', 'api', 'oauth', 'mcp', 'actuator', 'error', 'favicon.ico', 'code',
   // SPA first-segment routes that must never be parsed as teamKey
   'invite', 'redirect', '404', '401', 'tools', 'tool', 'shard', 'monitor', 'admin',
   'team', 'team-options'

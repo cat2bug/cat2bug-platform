@@ -24,15 +24,15 @@
 
 ### D1：一张令牌表，两种来源
 
-表 `sys_user_access_token`：`token_id`、`user_id`、`name`、`token_hash`（SHA-256）、`token_prefix`（明文前 8 位，便于用户辨认）、`source`（`manual` / `oauth`）、`client_id`（OAuth 来源时）、`expires_at`、`last_used_at`、`last_used_ip`、`revoked_at`、`create_time`。
+表 `sys_user_access_token`：`token_id`、`user_id`、`name`、`token_hash`（SHA-256）、`token_prefix`（类型前缀 + 随机部分前几位，便于用户辨认）、`source`（`manual` / `oauth` / `oauth_refresh`）、`client_id`（OAuth 来源时）、`grant_id`（同一次 OAuth 授权产生的访问令牌与刷新令牌共用，用于整链吊销）、`resource`、`expires_at`、`last_used_at`、`last_used_ip`、`revoked_at`、`create_time`。
 
-- 令牌格式：`c2b_pat_` + 32 字节随机数的 Base62（手动）；`c2b_oat_` + 随机数（OAuth 访问令牌）。前缀让泄露扫描工具能识别，也方便日志脱敏。
+- 令牌格式：`c2b_pat_` + 32 字节随机数的 Base62（手动）；`c2b_oat_`（OAuth 访问令牌）、`c2b_ort_`（刷新令牌）、`c2b_oac_`（授权码）同样是前缀 + 随机数；动态注册的 client_id 为 `c2b_client_` + UUID。前缀让泄露扫描工具能识别，也方便日志脱敏。
 - 只存哈希：明文只在创建时返回一次。
 - 否决「把令牌做成长期 JWT」：JWT 无法单独吊销，除非再维护黑名单，不如直接查表。
 
 ### D2：令牌只在 MCP 路径生效
 
-新增 `AccessTokenAuthFilter`，只匹配 MCP 路径（由 `mcp-server` 定义，例如 `/mcp/**`），从 `Authorization: Bearer` 读令牌，查表校验未过期、未吊销、用户状态正常后构造 `LoginUser`，并异步更新 `last_used_at`。`JwtAuthFilter` 对 MCP 路径不处理。
+实现为 Quarkus Security 的 `AccessTokenAuthMechanism` + `IdentityProvider`（而非 JAX-RS Filter，因为 MCP 端点由 quarkus-mcp-server 以 Vert.x 路由提供，不经过 RESTEasy 过滤器）：只处理 `/mcp`、`/mcp/*`，从 `Authorization: Bearer` 读令牌，查表校验未过期、未吊销、用户状态正常后构造 `LoginUser` 放入 identity 属性 `cat2bug.loginUser`（用 `AccessTokenIdentities.loginUser(identity)` 取出），并异步更新 `last_used_at`。`quarkus.http.auth.permission.mcp` 对 MCP 路径要求已认证。`JwtAuthFilter` 对 MCP 路径不处理。
 
 否决「令牌在所有接口都可用」：扩大了泄露后的影响面；网页接口没有为 AI 场景做幂等、限流和审计标记。
 
@@ -49,7 +49,9 @@
 
 否决「接入 Keycloak 等外部 IdP」：增加部署组件，违背单文件交付（ADR-004）。否决引入完整 OAuth 框架：Quarkus 侧没有轻量的授权服务器扩展，所需端点有限，自己实现可控，按规范逐条写测试。
 
-表：`sys_oauth_client`（client_id、client_name、redirect_uris、create_time、last_used_at）、`sys_oauth_code`（code 哈希、client_id、user_id、redirect_uri、code_challenge、resource、expires_at、used）、刷新令牌存 `sys_user_access_token`（`source=oauth_refresh`，与访问令牌通过 `parent_id` 关联）。
+表：`sys_oauth_client`（client_id、client_name、redirect_uris、create_time、last_used_at）、`sys_oauth_code`（code 哈希、client_id、user_id、redirect_uri、code_challenge、resource、expires_at、used）、刷新令牌存 `sys_user_access_token`（`source=oauth_refresh`，与访问令牌通过 `grant_id` 关联；比 `parent_id` 链式关联更简单，轮换与重放吊销按 `grant_id` 一次更新）。
+
+迁移脚本为 `V1_1_0_40__access_token_oauth.sql`（H2 / MySQL 各一份）：回滚前的备份分支 `backup/core-before-rollback-20261014` 已用过 1.1.0.12～39，部分开发库执行过，沿用 12 会与已有记录冲突。
 
 ### D4：issuer 与对外地址
 
@@ -57,11 +59,14 @@
 
 ### D5：授权确认页
 
-前端新增路由 `/oauth/consent`，未登录时先走登录页并带回原地址。页面显示「<客户端名称> 请求以你的身份访问 cat2bug」、回调地址的主机名、将获得的能力说明（与你在网页上的权限相同，受项目 MCP 设置限制），按钮「允许」「拒绝」。
+前端新增路由 `/oauth/consent`，未登录时先走登录页并带回原地址（顺带修复登录页 `router.push({path})` 丢失 query 的问题，改为 push 完整的站内相对地址，并拒绝 `//` 开头的外部地址）。页面显示「<客户端名称> 请求以你的身份访问 cat2bug」、回调地址的主机名（回环地址标注「本机应用」）、将获得的能力说明（与你在网页上的权限相同，受项目 MCP 设置限制），按钮「允许」「拒绝」。
+
+防点击劫持：确认页检测到自己被嵌入 iframe 时只显示错误、不渲染按钮；单 JAR 由 `EmbeddedSpaFallbackFilter`、Docker 由 nginx 为该页加 `X-Frame-Options: DENY` 与 `Content-Security-Policy: frame-ancestors 'none'`。decision 接口只认请求头里的 JWT（不读 Cookie、未开 CORS），没有 CSRF 面。
 
 ### D6：防滥用
 
-- `/oauth/register` 与 `/oauth/token` 按 IP 限流；授权码只能用一次，且必须与 client_id、redirect_uri、code_verifier 全部匹配。
+- `/oauth/register`、`/oauth/token`、`/oauth/revoke` 按 IP 限流；客户端 IP 由 `IpRateLimiter.clientKey` 取：只有直连地址是回环 / 内网（即经过本机或内网反向代理）时才信任 `X-Forwarded-For` 的最后一段（代理追加的那一段），其次 `X-Real-IP`；公网直连一律用连接地址，防止伪造请求头绕过限流。
+- 授权码只能用一次，且必须与 client_id、redirect_uri、code_verifier 全部匹配。
 - 令牌校验失败统一返回 401，不区分「不存在 / 过期 / 吊销」。
 - 用户被停用或删除时，其所有令牌立即失效（校验时检查用户状态）。
 

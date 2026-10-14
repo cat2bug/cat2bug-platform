@@ -63,7 +63,9 @@ public final class NativeRuntimeInitFeature implements Feature {
                 "cn.hutool.http.HttpGlobalConfig",
                 "cn.hutool.core.lang.id.NanoId",
                 // JJWT 静态 SecureRandom / 算法注册表，反射可达后会被常量折叠进镜像堆
-                "io.jsonwebtoken");
+                "io.jsonwebtoken",
+                // 静态 SecureRandom 生成访问令牌，烤进镜像会让所有实例共享种子
+                "com.cat2bug.common.security.AccessTokens");
 
         int registered = 0;
         int providers = 0;

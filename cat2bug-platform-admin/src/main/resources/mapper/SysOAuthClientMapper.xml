@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysOAuthClientMapper">
+
+    <resultMap type="com.cat2bug.common.domain.SysOAuthClient" id="SysOAuthClientResult">
+        <result property="clientId"     column="client_id" />
+        <result property="clientName"   column="client_name" />
+        <result property="redirectUris" column="redirect_uris" />
+        <result property="createTime"   column="create_time" />
+        <result property="lastUsedAt"   column="last_used_at" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysOAuthClient">
+        insert into sys_oauth_client (client_id, client_name, redirect_uris, create_time)
+        values (#{clientId}, #{clientName}, #{redirectUris}, #{createTime})
+    </insert>
+
+    <select id="selectById" resultMap="SysOAuthClientResult">
+        select client_id, client_name, redirect_uris, create_time, last_used_at
+        from sys_oauth_client
+        where client_id = #{clientId}
+    </select>
+
+    <update id="touch">
+        update sys_oauth_client set last_used_at = #{usedAt} where client_id = #{clientId}
+    </update>
+
+    <delete id="deleteUnusedBefore">
+        delete from sys_oauth_client
+        where coalesce(last_used_at, create_time) &lt; #{before}
+          and not exists (
+              select 1 from sys_user_access_token t
+              where t.client_id = sys_oauth_client.client_id
+                and t.revoked_at is null
+                and (t.expires_at is null or t.expires_at &gt; #{now})
+          )
+    </delete>
+
+</mapper>

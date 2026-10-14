@@ -55,8 +55,19 @@ public final class PublicPaths {
         if (isReportPresetPreviewPath(normalized)) {
             return true;
         }
-        return false;
+        if (normalized.startsWith(".well-known/")) {
+            return true;
+        }
+        return OAUTH_PUBLIC.contains(normalized);
     }
+
+    /** OAuth 中由 MCP 客户端直接调用的端点；{@code oauth/authorize/decision} 需网页登录 */
+    private static final Set<String> OAUTH_PUBLIC = Set.of(
+            "oauth/register",
+            "oauth/authorize",
+            "oauth/token",
+            "oauth/revoke"
+    );
 
     /** 预制报告模版预览图由 &lt;img&gt; 加载，不会带 token（对齐 Spring SecurityConfig）。 */
     private static boolean isReportPresetPreviewPath(String normalized) {

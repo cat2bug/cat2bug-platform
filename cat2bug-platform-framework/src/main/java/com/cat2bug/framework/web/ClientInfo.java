@@ -61,7 +61,7 @@ public record ClientInfo(String ip, String browser, String os) {
         }
     }
 
-    static String resolveIp(HttpServerRequest request) {
+    public static String resolveIp(HttpServerRequest request) {
         String ip = null;
         for (String header : new String[]{"X-Forwarded-For", "Proxy-Client-IP", "X-Real-IP", "WL-Proxy-Client-IP"}) {
             ip = request.getHeader(header);

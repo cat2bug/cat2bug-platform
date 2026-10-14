@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 public class EmbeddedSpaFallbackFilter implements ContainerRequestFilter {
 
     private static final String INDEX_HTML_LOCATION = "META-INF/resources/index.html";
+    private static final String OAUTH_CONSENT_PATH = "/oauth/consent";
 
     /** 与 POST-only REST 同路径的 SPA 页面：GET 一律回退 index.html，避免 405。 */
     private static final Set<String> POST_ONLY_SPA_PATHS = Set.of("/login", "/register");
@@ -57,6 +58,12 @@ public class EmbeddedSpaFallbackFilter implements ContainerRequestFilter {
             "/common/",
             "/git/",
             "/druid/",
+            "/.well-known/",
+            "/mcp",
+            "/oauth/authorize",
+            "/oauth/register",
+            "/oauth/token",
+            "/oauth/revoke",
             "/captchaImage",
             "/version",
             "/getInfo",
@@ -103,9 +110,14 @@ public class EmbeddedSpaFallbackFilter implements ContainerRequestFilter {
         if (!shouldServeSpa(ctx, path)) {
             return;
         }
-        ctx.abortWith(Response.ok(indexHtmlBytes)
-                .type(MediaType.TEXT_HTML_TYPE.withCharset(StandardCharsets.UTF_8.name()))
-                .build());
+        Response.ResponseBuilder response = Response.ok(indexHtmlBytes)
+                .type(MediaType.TEXT_HTML_TYPE.withCharset(StandardCharsets.UTF_8.name()));
+        if (OAUTH_CONSENT_PATH.equals(path)) {
+            // 授权确认页禁止被嵌入，防止点击劫持骗取「允许」
+            response.header("X-Frame-Options", "DENY")
+                    .header("Content-Security-Policy", "frame-ancestors 'none'");
+        }
+        ctx.abortWith(response.build());
     }
 
     static boolean shouldServeSpa(ContainerRequestContext ctx, String path) {

@@ -3,6 +3,7 @@ package com.cat2bug.framework.security;
 import com.cat2bug.common.domain.LoginUser;
 import com.cat2bug.framework.security.git.GitSmartHttpPathSupport;
 import com.cat2bug.framework.security.open.OpenApiPaths;
+import com.cat2bug.framework.security.token.McpPaths;
 import com.cat2bug.framework.web.SecurityResponses;
 import jakarta.ws.rs.Priorities;
 import jakarta.annotation.Priority;
@@ -23,7 +24,7 @@ public class JwtAuthFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext ctx) throws IOException {
         String path = PublicPaths.normalize(ctx.getUriInfo().getPath());
-        if (OpenApiPaths.isOpenApi(path)) {
+        if (OpenApiPaths.isOpenApi(path) || McpPaths.isMcp(path)) {
             return;
         }
         if (PublicPaths.isPublic(path)) {

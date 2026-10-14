@@ -388,8 +388,8 @@ export default {
           userStore.Login(this.loginForm).then(() => {
             resetSetupStatusCache()
             appStore.closeSideBar({ withoutAnimation: true })
-            const redirect = this.$route.query.redirect || this.redirect || '/'
-            return this.$router.push({ path: redirect })
+            const redirect = String(this.$route.query.redirect || this.redirect || '/')
+            return this.$router.push(redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/')
           }).catch(() => {
             if (this.captchaEnabled) {
               this.getCode();

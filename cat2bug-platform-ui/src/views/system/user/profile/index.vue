@@ -46,10 +46,14 @@
               <el-tab-pane name="resetPwd">
                 <template #label><span class="profile-tab-label">{{ $t('modify-password') }}</span></template>
               </el-tab-pane>
+              <el-tab-pane name="tokens">
+                <template #label><span class="profile-tab-label">{{ $t('access-token.tab') }}</span></template>
+              </el-tab-pane>
             </el-tabs>
           </div></template>
           <userInfo v-show="activeTab === 'userinfo'" :user="user" :form-active="activeTab === 'userinfo'" />
           <resetPwd v-show="activeTab === 'resetPwd'" :form-active="activeTab === 'resetPwd'" />
+          <accessToken v-show="activeTab === 'tokens'" :active="activeTab === 'tokens'" />
         </el-card>
       </el-col>
     </el-row>
@@ -60,6 +64,7 @@
 import userAvatar from "./userAvatar";
 import userInfo from "./userInfo";
 import resetPwd from "./resetPwd";
+import accessToken from "./accessToken";
 import { getUserProfile } from "@/api/system/user";
 import { formatContactDisplay } from "@/utils/user-contact-rules";
 import pageActionHints from '@/mixins/page-action-hints'
@@ -67,12 +72,12 @@ import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 
 const PROFILE_KBD_SCOPE = 'profile'
-const PROFILE_TABS = ['userinfo', 'resetPwd']
+const PROFILE_TABS = ['userinfo', 'resetPwd', 'tokens']
 
 export default {
   name: "Profile",
   mixins: [pageActionHints],
-  components: { userAvatar, userInfo, resetPwd },
+  components: { userAvatar, userInfo, resetPwd, accessToken },
   data() {
     return {
       user: {},
@@ -82,6 +87,8 @@ export default {
     };
   },
   created() {
+    const tab = this.$route.query && this.$route.query.tab
+    if (PROFILE_TABS.includes(tab)) this.activeTab = tab
     this.getUser();
   },
   mounted() {

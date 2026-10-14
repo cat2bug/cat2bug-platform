@@ -322,6 +322,17 @@ export default defineConfig(({ mode }) => {
           proxyTimeout: 0,
           configure: configureGitSmartHttpProxy
         },
+        // OAuth / MCP 端点直接走后端；/oauth/consent 是前端页面，不在此列
+        '^/oauth/(authorize|register|token|revoke)(\\?|$)': {
+          target: 'http://127.0.0.1:2020',
+          changeOrigin: false
+        },
+        '^/(\\.well-known/|mcp(/|\\?|$))': {
+          target: 'http://127.0.0.1:2020',
+          changeOrigin: false,
+          timeout: 0,
+          proxyTimeout: 0
+        },
         [baseWs]: {
           target: 'ws://127.0.0.1:2020',
           changeOrigin: true,
