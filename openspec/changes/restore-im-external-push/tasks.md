@@ -1,8 +1,11 @@
 ## 1. 准备
 
-- [ ] 1.1 确认工作区干净，记录当前 HEAD；对照 tag `spring-final-1.1.0` 列出要移植的 Spring 类（`IMService`、各 `*MessageServiceImpl`、各 `*MessageFactoryImpl`、三个 `*MessageOfNoticeTemplateImpl`）
-- [ ] 1.2 根 `pom.xml` 依赖管理与 `cat2bug-platform-system` 加入 `io.quarkus:quarkus-mailer`；如需 HTTP 桩测试，加入测试依赖（优先复用已有依赖）；`mvn -pl cat2bug-platform-system -am -DskipTests install` 通过
-- [ ] 1.3 核对前端缺陷 / 通知 / 报告详情的现行路由（Hash 或 History、项目路径键），确定三种事件的链接格式
+- [x] 1.1 确认工作区干净，记录当前 HEAD；对照 tag `spring-final-1.1.0` 列出要移植的 Spring 类（`IMService`、各 `*MessageServiceImpl`、各 `*MessageFactoryImpl`、三个 `*MessageOfNoticeTemplateImpl`）
+  - HEAD `1dbb658a`；移植对象：`IMService`、`Ding/Feishu/FeishuApp/EnterpriseWeChat/Mail/Notice/PanelNotice` 的 `*MessageServiceImpl` 与 `*MessageFactoryImpl`、`DefaultMessageTemplateImpl`、system 模块 `DefectMessageOfNoticeTemplateImpl`、`ReportMessageOfNoticeTemplateImpl`
+- [x] 1.2 根 `pom.xml` 依赖管理与 `cat2bug-platform-system` 加入 `io.quarkus:quarkus-mailer`；如需 HTTP 桩测试，加入测试依赖（优先复用已有依赖）；`mvn -pl cat2bug-platform-system -am -DskipTests install` 通过
+  - 根 `pom.xml` 不导入 Quarkus BOM，版本由 system 模块自带的 `quarkus-bom` 管理，只改 system `pom.xml`；HTTP 桩用 JDK 自带 `com.sun.net.httpserver`，不新增测试依赖；并行开发期间用 `package` 代替 `install` 验证
+- [x] 1.3 核对前端缺陷 / 通知 / 报告详情的现行路由（Hash 或 History、项目路径键），确定三种事件的链接格式
+  - 前端为 History 路由（`createWebHistory`），旧 `/#/...` 链接会落到首页。链接改为：缺陷 `{host}/{teamKey}/{projectKey}/defect?projectId=&defectId=`，报告 `{host}/{teamKey}/{projectKey}/report?projectId=&reportId=`（取不到路径键时退回 `/project/defect`、`/project/report` 旧路径，由前端重定向）；通知 `{host}/notice/index?projectId=`
 
 ## 2. 平台客户端与 token 缓存
 
