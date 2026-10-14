@@ -83,7 +83,11 @@
     <select id="selectSysDocumentList" resultMap="SysDocumentResult">
         <include refid="selectSysDocumentVo"/>
         <include refid="selectSysDocumentWhere"/>
-        order by d.doc_type asc, d.create_time desc
+        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current('update_by_name=u.nick_name')"/>
+        <choose>
+            <when test="_pageOrder != null">order by ${_pageOrder}</when>
+            <otherwise>order by d.doc_type asc, d.create_time desc</otherwise>
+        </choose>
         limit #{limit} offset #{offset}
     </select>
 

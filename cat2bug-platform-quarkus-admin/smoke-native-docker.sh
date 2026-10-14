@@ -183,6 +183,17 @@ check "defect list"   "/system/defect/list?projectId=$PID&pageNum=1&pageSize=5"
 check "case list"     "/system/case/list?projectId=$PID&pageNum=1&pageSize=5"
 check "module list"   "/system/module/list?projectId=$PID"
 check "plan list"     "/system/plan/list?projectId=$PID&pageNum=1&pageSize=5"
+check "defect sort"   "/system/defect/list?projectId=$PID&pageNum=1&pageSize=5&orderByColumn=createMember&isAsc=descending"
+check "case sort"     "/system/case/list?projectId=$PID&pageNum=1&pageSize=5&orderByColumn=caseLevel&isAsc=ascending"
+check "oper log sort" "/monitor/operlog/list?pageNum=1&pageSize=5&orderByColumn=operTime&isAsc=descending"
+SORT_BAD=$(curl -s "http://127.0.0.1:2020/system/defect/list?projectId=$PID&orderByColumn=defect_id%27" \
+  -H "Authorization: Bearer $TOKEN" || true)
+if echo "$SORT_BAD" | grep -q '参数不符合规范'; then
+  echo "sort injection guard: OK"
+else
+  echo "sort injection guard: FAIL $(echo "$SORT_BAD" | head -c 200)"
+  FAILS=$((FAILS+1))
+fi
 check "notice list"   "/system/notice/list?pageNum=1&pageSize=5"
 check "report picker" "/system/report/template/picker?projectId=$PID"
 if [[ "$HAS_PROJECT" == "true" ]]; then

@@ -75,7 +75,11 @@
     <select id="selectOperLogList" resultMap="SysOperLogResult">
         <include refid="selectOperLogVo"/>
         <include refid="selectOperLogListWhere"/>
-        order by oper_id desc
+        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <choose>
+            <when test="_pageOrder != null">order by ${_pageOrder}</when>
+            <otherwise>order by oper_id desc</otherwise>
+        </choose>
         limit #{limit} offset #{offset}
     </select>
 

@@ -59,7 +59,11 @@
     <select id="selectSysReportList" resultMap="SysReportResult">
         <include refid="selectSysReportVo"/>
         <include refid="selectSysReportWhere"/>
-        order by r.report_time desc
+        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <choose>
+            <when test="_pageOrder != null">order by ${_pageOrder}</when>
+            <otherwise>order by r.report_time desc</otherwise>
+        </choose>
         limit #{limit} offset #{offset}
     </select>
 

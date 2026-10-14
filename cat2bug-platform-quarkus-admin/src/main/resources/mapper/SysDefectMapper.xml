@@ -80,7 +80,11 @@
         <include refid="selectSysDefectColumns"/>
         <include refid="selectSysDefectFrom"/>
         <include refid="selectSysDefectWhere"/>
-        ORDER BY d.defect_id DESC
+        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current('create_member=d.create_by_id')"/>
+        <choose>
+            <when test="_pageOrder != null">ORDER BY ${_pageOrder}</when>
+            <otherwise>ORDER BY d.defect_id DESC</otherwise>
+        </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

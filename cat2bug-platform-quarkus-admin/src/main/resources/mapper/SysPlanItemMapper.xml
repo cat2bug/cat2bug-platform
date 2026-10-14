@@ -13,7 +13,7 @@
         <result property="updateBy" column="update_by"/>
         <result property="updateTime" column="update_time"/>
         <result property="defectIds" column="defect_ids"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler"/>
+                typeHandler="com.cat2bug.quarkus.system.mybatis.LongCsvTypeHandler"/>
         <result property="caseName" column="case_name"/>
         <result property="moduleName" column="module_name"/>
         <result property="caseType" column="case_type"/>
@@ -109,7 +109,11 @@
                 </foreach>
             </if>
         </where>
-        order by c.case_num DESC
+        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <choose>
+            <when test="_pageOrder != null">order by ${_pageOrder}</when>
+            <otherwise>order by c.case_num DESC</otherwise>
+        </choose>
     </sql>
 
     <select id="countSysPlanItemList" resultType="long">
@@ -184,7 +188,11 @@
     <select id="selectCaseList" resultMap="SysCaseResult">
         <include refid="selectSysCaseVo"/>
         <include refid="caseListWhere"/>
-        ORDER BY c.case_num DESC
+        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <choose>
+            <when test="_pageOrder != null">ORDER BY ${_pageOrder}</when>
+            <otherwise>ORDER BY c.case_num DESC</otherwise>
+        </choose>
         limit #{limit} offset #{offset}
     </select>
 
@@ -213,7 +221,7 @@
             <if test="planItemState != null">#{planItemState},</if>
             <if test="updateById != null">#{updateById},</if>
             <if test="updateTime != null">#{updateTime},</if>
-            <if test="defectIds != null">#{defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="defectIds != null">#{defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongCsvTypeHandler},</if>
         </trim>
     </insert>
 
@@ -225,7 +233,7 @@
             <if test="planItemState != null">plan_item_state = #{planItemState},</if>
             <if test="updateById != null">update_by_id = #{updateById},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
-            <if test="defectIds != null">defect_ids = #{defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="defectIds != null">defect_ids = #{defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongCsvTypeHandler},</if>
             <if test="params != null and params.defectId != null and params.defectId != ''">
                 defect_ids = CONCAT(REPLACE(IFNULL(defect_ids, ''), CONCAT(',', #{params.defectId}), ''), ',', #{params.defectId})
             </if>
@@ -244,7 +252,7 @@
             <if test="planItemState != null">plan_item_state = #{planItemState},</if>
             <if test="updateById != null">update_by_id = #{updateById},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
-            <if test="defectIds != null">defect_ids = #{defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler},</if>
+            <if test="defectIds != null">defect_ids = #{defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongCsvTypeHandler},</if>
             <if test="params != null and params.defectId != null and params.defectId != ''">
                 defect_ids = CONCAT(REPLACE(IFNULL(defect_ids, ''), CONCAT(',', #{params.defectId}), ''), ',', #{params.defectId})
             </if>

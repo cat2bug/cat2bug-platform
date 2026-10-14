@@ -33,6 +33,8 @@ public final class NativeRuntimeInitFeature implements Feature {
             "com.cat2bug.quarkus.system.git.browse.domain.",
             "com.cat2bug.quarkus.system.mybatis.",
             "com.cat2bug.quarkus.admin.domain.",
+            // MyBatis OGNL 静态调用 PageOrder.current()
+            "com.cat2bug.quarkus.framework.web.PageOrder",
             "io.jsonwebtoken.impl.",
             "io.jsonwebtoken.jackson.",
     };

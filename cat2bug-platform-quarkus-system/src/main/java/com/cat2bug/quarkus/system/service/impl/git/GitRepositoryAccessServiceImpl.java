@@ -3,7 +3,9 @@ import jakarta.inject.Inject;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
+import com.cat2bug.quarkus.common.constant.SecurityConstants;
 import com.cat2bug.quarkus.common.domain.SysRole;
+import com.cat2bug.quarkus.common.domain.SysUser;
 import com.cat2bug.quarkus.common.domain.SysGitRepository;
 import com.cat2bug.quarkus.common.domain.SysGitRepositoryMember;
 import com.cat2bug.quarkus.common.domain.git.GitRepositoryAclRoles;
@@ -21,8 +23,8 @@ import java.util.Set;
 /**
  * 仓级 ACL 优先，否则回落项目角色的 Git 仓库权限判定。
  *
- * <p>刻意不检查 {@code SysUser#isAdmin()} / {@code team.admin} / {@code team.create-by}：
- * 只有 ACL 行或目标项目下的四个项目角色才授予权限。</p>
+ * <p>系统超级管理员拥有全部仓库的完整权限；不检查 {@code team.admin} / {@code team.create-by}：
+ * 其余用户只有 ACL 行或目标项目下的四个项目角色才授予权限。</p>
  */
 @ApplicationScoped
 public class GitRepositoryAccessServiceImpl implements GitRepositoryAccessService
@@ -71,11 +73,36 @@ public class GitRepositoryAccessServiceImpl implements GitRepositoryAccessServic
         return evaluate(userId, repositoryId).role;
     }
 
+    @Override
+    public boolean isSystemAdmin(Long userId)
+    {
+        if (userId == null)
+        {
+            return false;
+        }
+        if (SysUser.isAdmin(userId))
+        {
+            return true;
+        }
+        List<SysRole> roles = sysRoleMapper.selectRolePermissionByUserId(null, null, userId);
+        if (CollectionUtils.isEmpty(roles))
+        {
+            return false;
+        }
+        return roles.stream().anyMatch(r -> r != null && SecurityConstants.SUPER_ADMIN.equals(r.getRoleKey()));
+    }
+
     private AccessFlags evaluate(Long userId, Long repositoryId)
     {
         if (userId == null || repositoryId == null)
         {
             return AccessFlags.DENIED;
+        }
+        if (isSystemAdmin(userId))
+        {
+            return sysGitRepositoryMapper.selectSysGitRepositoryByRepositoryId(repositoryId) == null
+                    ? AccessFlags.DENIED
+                    : new AccessFlags(GitRepositoryAclRoles.ADMIN, true, true, true);
         }
 
         SysGitRepositoryMember acl = sysGitRepositoryMemberMapper

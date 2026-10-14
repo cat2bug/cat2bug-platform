@@ -54,7 +54,7 @@
         <result property="updateById" column="sub_update_by_id"/>
         <result property="updateTime" column="sub_update_time"/>
         <result property="defectIds" column="sub_defect_ids"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler"/>
+                typeHandler="com.cat2bug.quarkus.system.mybatis.LongCsvTypeHandler"/>
     </resultMap>
 
     <resultMap id="SysPlanItemSimpleResult" type="com.cat2bug.quarkus.common.domain.SysPlanItem">
@@ -66,13 +66,11 @@
         <result property="updateById" column="update_by_id"/>
         <result property="updateTime" column="update_time"/>
         <result property="defectIds" column="defect_ids"
-                typeHandler="com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler"/>
+                typeHandler="com.cat2bug.quarkus.system.mybatis.LongCsvTypeHandler"/>
     </resultMap>
 
     <sql id="planItemDefectIdMatch">
-        CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%,', CAST(${defectIdExpr} AS CHAR(255)), ',%')
-        or CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%', CAST(${defectIdExpr} AS CHAR(255)), ',%')
-        or CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%,', CAST(${defectIdExpr} AS CHAR(255)), '%')
+        concat(',', CAST(${planItemAlias}.defect_ids AS CHAR(3000)), ',') like concat('%,', CAST(${defectIdExpr} AS CHAR(255)), ',%')
     </sql>
 
     <sql id="defectLogReceiveByMatchUser">
@@ -248,7 +246,11 @@
     <select id="selectSysPlanList" resultMap="SysPlanResult">
         <include refid="selectSysPlanVo"/>
         <include refid="selectSysPlanWhere"/>
-        ORDER BY p.create_time DESC
+        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <choose>
+            <when test="_pageOrder != null">ORDER BY ${_pageOrder}</when>
+            <otherwise>ORDER BY p.create_time DESC</otherwise>
+        </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
@@ -374,7 +376,7 @@
         <foreach item="item" collection="list" separator=",">
             (#{item.planItemId}, #{item.planId}, #{item.moduleId}, #{item.caseId}, #{item.planItemState},
              #{item.updateById}, #{item.updateTime},
-             #{item.defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongListJsonTypeHandler})
+             #{item.defectIds, typeHandler=com.cat2bug.quarkus.system.mybatis.LongCsvTypeHandler})
         </foreach>
     </insert>
 
@@ -382,7 +384,7 @@
         FROM sys_defect d
         LEFT JOIN sys_module m ON m.module_id = d.module_id
         LEFT JOIN sys_plan_item spi ON spi.defect_ids IS NOT NULL
-            AND CAST(spi.defect_ids AS CHAR(3000)) LIKE CONCAT('%,', CAST(d.defect_id AS CHAR(255)))
+            AND CONCAT(',', CAST(spi.defect_ids AS CHAR(3000)), ',') LIKE CONCAT('%,', CAST(d.defect_id AS CHAR(255)), ',%')
         LEFT JOIN sys_case c ON c.case_id = d.case_id
     </sql>
 
@@ -498,7 +500,11 @@
             d.plan_start_time, d.plan_end_time, d.del_flag
         <include refid="selectSysDefectOfPlanFrom"/>
         <include refid="selectPlanDefectWhere"/>
-        ORDER BY d.defect_id DESC
+        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <choose>
+            <when test="_pageOrder != null">ORDER BY ${_pageOrder}</when>
+            <otherwise>ORDER BY d.defect_id DESC</otherwise>
+        </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 </mapper>

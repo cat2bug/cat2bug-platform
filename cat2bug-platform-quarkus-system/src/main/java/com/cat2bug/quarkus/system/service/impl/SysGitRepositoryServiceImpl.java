@@ -702,14 +702,17 @@ public class SysGitRepositoryServiceImpl implements ISysGitRepositoryService
 
     /**
      * 按 projectId 查询当前用户的项目角色（不传 teamId，故团队角色不参与并集），
-     * 判断其角色ID是否落在给定集合内。刻意不使用 {@code SecurityUtils.isAdmin()} /
-     * {@code *:*:*} 全局放行，避免系统管理员或团队管理员在未被赋予项目角色时绕过校验。
+     * 判断其角色ID是否落在给定集合内。系统超级管理员直接放行；团队管理员未被赋予项目角色时不放行。
      */
     private boolean matchesAnyRole(Long projectId, Long userId, Set<Long> roleIds)
     {
         if (projectId == null || userId == null)
         {
             return false;
+        }
+        if (gitRepositoryAccessService.isSystemAdmin(userId))
+        {
+            return true;
         }
         List<SysRole> roles = sysRoleMapper.selectRolePermissionByUserId(null, projectId, userId);
         if (roles == null)

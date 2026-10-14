@@ -91,7 +91,11 @@
     <sql id="selectSysCasesOrdered">
         <include refid="selectSysCaseVo"/>
         <include refid="selectSysCaseWhere"/>
-        ORDER BY c.case_num DESC
+        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <choose>
+            <when test="_pageOrder != null">ORDER BY ${_pageOrder}</when>
+            <otherwise>ORDER BY c.case_num DESC</otherwise>
+        </choose>
     </sql>
 
     <select id="selectPrevSysCase" resultMap="SysCaseResult">
@@ -122,7 +126,11 @@
     <select id="selectSysCaseList" resultMap="SysCaseResult">
         <include refid="selectSysCaseVo"/>
         <include refid="selectSysCaseWhere"/>
-        ORDER BY c.case_num DESC
+        <bind name="_pageOrder" value="@com.cat2bug.quarkus.framework.web.PageOrder@current()"/>
+        <choose>
+            <when test="_pageOrder != null">ORDER BY ${_pageOrder}</when>
+            <otherwise>ORDER BY c.case_num DESC</otherwise>
+        </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

@@ -113,9 +113,7 @@
 
     <!-- H2 可能将 defect_ids 推断为 JSON，与 BIGINT 直接 LIKE 比较会报错 -->
     <sql id="planItemDefectIdMatch">
-        CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%,', CAST(${defectIdExpr} AS CHAR(255)), ',%')
-        or CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%', CAST(${defectIdExpr} AS CHAR(255)), ',%')
-        or CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%,', CAST(${defectIdExpr} AS CHAR(255)), '%')
+        concat(',', CAST(${planItemAlias}.defect_ids AS CHAR(3000)), ',') like concat('%,', CAST(${defectIdExpr} AS CHAR(255)), ',%')
     </sql>
 
     <!-- H2 中 receive_by 为 JSON，不能与 BIGINT 的 user_id 直接比较 -->

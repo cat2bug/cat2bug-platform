@@ -5,7 +5,7 @@ package com.cat2bug.quarkus.system.service.git;
  *
  * <p>签名以 {@code repositoryId} 为第二参数：有 ACL 行时仅该角色生效；无行时加载仓库的
  * {@code projectId} 再按项目角色矩阵（develop/tester → pull+push；create-by/admin → manage）。
- * 超管 / 团队管理员不绕过。</p>
+ * 系统超级管理员（与菜单权限 {@code *:*:*} 同口径）拥有全部仓库的完整权限；团队管理员不绕过。</p>
  */
 public interface GitRepositoryAccessService
 {
@@ -29,4 +29,9 @@ public interface GitRepositoryAccessService
      * <p>有 ACL 行返回该行角色；否则项目 manage → {@code admin}，项目 pull/push → {@code write}。</p>
      */
     String resolveEffectiveRole(Long userId, Long repositoryId);
+
+    /**
+     * 是否系统超级管理员（userId=1 或拥有系统角色 {@code admin}）。
+     */
+    boolean isSystemAdmin(Long userId);
 }

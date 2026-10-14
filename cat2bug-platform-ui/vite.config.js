@@ -301,7 +301,7 @@ export default defineConfig(({ mode }) => {
       },
       proxy: {
         [baseApi]: {
-          target: 'http://localhost:2020',
+          target: 'http://127.0.0.1:2020',
           changeOrigin: true,
           // 源码归档等大响应：避免开发代理默认超时把已 200 的流掐成 ERR_FAILED
           timeout: 0,
@@ -311,7 +311,7 @@ export default defineConfig(({ mode }) => {
         // Git Smart HTTP：clone/push 走与页面同源的 /git/**，转发到后端（勿返回 SPA HTML）
         // 大仓 push 易超时/断流，需拉长代理超时并关闭响应缓冲
         '/git': {
-          target: 'http://localhost:2020',
+          target: 'http://127.0.0.1:2020',
           changeOrigin: true,
           timeout: 0,
           proxyTimeout: 0,
@@ -319,14 +319,14 @@ export default defineConfig(({ mode }) => {
         },
         // 命名空间 clone：/{teamKey}/{projectKey}/code/{slug}.git/**
         '^/[^/]+/[^/]+/code/[^/]+\\.git': {
-          target: 'http://localhost:2020',
+          target: 'http://127.0.0.1:2020',
           changeOrigin: true,
           timeout: 0,
           proxyTimeout: 0,
           configure: configureGitSmartHttpProxy
         },
         [baseWs]: {
-          target: 'ws://localhost:2020',
+          target: 'ws://127.0.0.1:2020',
           changeOrigin: true,
           ws: true,
           rewrite: (p) => p.replace(new RegExp(`^${baseWs}`), '')
