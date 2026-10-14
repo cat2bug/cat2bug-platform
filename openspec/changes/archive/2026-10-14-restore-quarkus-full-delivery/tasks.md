@@ -57,3 +57,7 @@
 - [x] 7.11 列表排序对等：`orderByColumn`/`isAsc` 此前被 Quarkus 忽略（缺陷页默认按更新时间倒序也失效）。新增 `PageOrder`（驼峰转下划线、ascending/descending、忽略 `custom_` 列、与 `SqlUtil.escapeOrderBySql` 相同的白名单/长度校验）与 `PageOrderFilter`（非法参数返回「参数不符合规范，不能进行查询」），缺陷/用例/计划/计划项/计划缺陷/报告/文档/操作日志/登录日志 Mapper 改为「有排序参数用之，否则用原默认排序」；前端各表格可排序列逐列验证升降序
 - [x] 7.12 计划项 `defect_ids` 格式对等：Spring 存逗号分隔（`,12,34`），Quarkus 误用 JSON 处理器导致关联过缺陷的计划其缺陷列表 500、且两种写法混写；改为 `LongCsvTypeHandler`（兼容已写入的 JSON）。同时修正计划缺陷列表只匹配末尾缺陷、统计中 id 前缀误匹配（如 1 匹配 12）的 LIKE 条件（Spring 同样存在）
 - 刻意不迁：`tool/gen`（代码生成）、`test/user`（若依示例）——两边菜单父节点均隐藏，SPA 无入口
+
+## 8. 回写长期知识
+
+- [x] 8.1 ADR-003/004/008、14 篇踩坑、`docs/02`～`05` 架构/部署/方案/接口事实与 `docs/08-版本记录/2026-10.md` 已写入 `docs/`

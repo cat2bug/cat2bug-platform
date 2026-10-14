@@ -187,3 +187,11 @@ Temporary Items
 # Quarkus 本机安装配置（含密码）与测试运行时上传文件
 /cat2bug-platform-quarkus-admin/config/install/
 /cat2bug-platform-quarkus-admin/upload/
+
+# Obsidian 库（docs/）：共享设置入库，个人工作区不入库
+docs/.obsidian/workspace*.json
+docs/.obsidian/cache
+docs/.obsidian/plugins/
+docs/.obsidian/themes/
+docs/.obsidian/graph.json
+docs/.trash/

@@ -30,3 +30,7 @@
 
 - [x] 5.1 Manual smoke: create annotated tag → list/search → download → create release from tag → delete tag cascades release; delete release alone leaves tag
 - [x] 5.2 Confirm release-created lightweight tags appear with empty description and can be deleted/cascaded correctly
+
+## 6. 回写长期知识
+
+- [x] 6.1 标签真相源、409 + `cascadeRelease` 级联约定写入 `docs/03-技术方案/Git Smart HTTP与在线浏览.md` 与接口清单；无新 ADR、无新踩坑

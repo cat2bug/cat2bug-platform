@@ -1,0 +1,15 @@
+schema: spec-driven
+
+context: |
+  长期知识在 docs/（Obsidian 库），入口 docs/00-项目总览.md；架构决策在 docs/07-技术决策/（ADR）。
+  OpenSpec 只描述这一次变更，长期知识只引用、不复制。
+
+rules:
+  proposal:
+    - 动笔前先读 docs/00-项目总览.md 与 docs/07-技术决策/说明.md；若本次要推翻已有 ADR 须在 proposal 中写明
+  design:
+    - 末尾必须有「## 相关长期文档」小节，列出引用的 docs/ 路径和 ADR；没有就写「无」
+    - 引用 docs/ 内容时写路径，不要整段复制
+    - 本次产生的新长期技术决策，列出拟新增的 ADR 标题
+  tasks:
+    - 最后一组任务包含「回写长期知识」：把可复用经验、踩坑、ADR 写回 docs/，没有就勾掉并注明无

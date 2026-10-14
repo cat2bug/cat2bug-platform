@@ -77,3 +77,9 @@
 
 - Native 20MB 是否含 UPX 后体积（历史实践多为 UPX 后口径）— **默认按 UPX 后计**，在 Gate B 文档写明。
 - Spring admin 是否在本 change 末从默认文档中完全移除运行说明 — **默认降级为「对照/紧急回滚」一节，不删代码**。
+
+## 相关长期文档
+
+- `docs/02-系统架构/整体架构.md`、`docs/02-系统架构/部署.md`、`docs/02-系统架构/数据库.md`
+- `docs/03-技术方案/列表排序与注入防护.md`、`docs/03-技术方案/计划项缺陷ID的CSV存储.md`、`docs/03-技术方案/Native镜像与操作日志对等.md`、`docs/03-技术方案/权限模型与鉴权链路.md`
+- ADR：`docs/07-技术决策/ADR-003-恢复Quarkus为默认后端-Spring保留为回滚线.md`、`ADR-004-Native交付分两道门并接受约38MiB.md`、`ADR-008-系统管理员对Git仓库全权限.md`（取代 ADR-001、ADR-002）

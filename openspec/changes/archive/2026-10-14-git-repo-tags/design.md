@@ -96,3 +96,9 @@ Prefer placing endpoints on `SysGitBrowseController` (or a thin `SysGitTagContro
 ## Open Questions
 
 - None blocking — cascade flag, annotated create, dialog, `/tags` route, and search confirmed in explore.
+
+## 相关长期文档
+
+- `docs/03-技术方案/Git Smart HTTP与在线浏览.md`（标签真相源与级联删除约定）
+- `docs/05-接口文档/接口清单-Git代码仓库.md`
+- ADR：`docs/07-技术决策/ADR-006-Git仓库用JGit自托管与Smart-HTTP.md`；本变更无新 ADR
