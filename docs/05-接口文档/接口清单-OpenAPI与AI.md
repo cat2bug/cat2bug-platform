@@ -60,6 +60,8 @@
 | POST | `/system/ai/account/test/{accountId}` | 测试连接 | `ai:account:edit` |
 | POST | `/system/ai/account/export`、`/ai/account/export` | 导出（后者为前端兼容别名 `AiAccountExportAliasResource`） | `ai:account:export` |
 
+启动时：`cat2bug.ai.enabled=true` 且配置了 `cat2bug.ai.default-business-model` 时，`OllamaDefaultModelBootstrap` 在后台线程查询 Ollama 的 `/api/tags`，缺少该模型就按 `/system/ai/model` 同样的方式流式拉取（进度经 WebSocket 主题 `aiModelPull` 推送）；Ollama 不可达只记一条 WARN，不重试、不阻塞启动。
+
 ## AI 辅助生成（JWT）
 
 | 方法 | 路径 | 说明 | 权限 |

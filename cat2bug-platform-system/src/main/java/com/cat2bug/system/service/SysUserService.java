@@ -8,9 +8,11 @@ import com.cat2bug.common.domain.SysUser;
 import com.cat2bug.common.domain.SysUserPost;
 import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.common.util.StringUtils;
+import com.cat2bug.framework.security.SecurityUtils;
 import com.cat2bug.system.mapper.SysPostMapper;
 import com.cat2bug.system.mapper.SysUserMapper;
 import com.cat2bug.system.mapper.SysUserPostMapper;
+import com.cat2bug.system.security.DataScopeSqlBuilder;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -33,24 +35,30 @@ public class SysUserService {
     @Inject
     SysPostMapper sysPostMapper;
 
+    @Inject
+    DataScopeSqlBuilder dataScopeSqlBuilder;
+
     public TableDataInfo selectUserPage(SysUser user, Integer pageNum, Integer pageSize) {
         PageDomain page = PageDomain.of(pageNum, pageSize);
-        long total = sysUserMapper.countUserList(user);
-        var rows = sysUserMapper.selectUserList(user, page.getOffset(), page.getPageSize());
+        String dataScope = userDataScope();
+        long total = sysUserMapper.countUserList(user, dataScope);
+        var rows = sysUserMapper.selectUserList(user, dataScope, page.getOffset(), page.getPageSize());
         return new TableDataInfo(rows, total);
     }
 
     public TableDataInfo selectAllocatedPage(SysUser user, Integer pageNum, Integer pageSize) {
         PageDomain page = PageDomain.of(pageNum, pageSize);
-        long total = sysUserMapper.countAllocatedList(user);
-        var rows = sysUserMapper.selectAllocatedList(user, page.getOffset(), page.getPageSize());
+        String dataScope = userDataScope();
+        long total = sysUserMapper.countAllocatedList(user, dataScope);
+        var rows = sysUserMapper.selectAllocatedList(user, dataScope, page.getOffset(), page.getPageSize());
         return new TableDataInfo(rows, total);
     }
 
     public TableDataInfo selectUnallocatedPage(SysUser user, Integer pageNum, Integer pageSize) {
         PageDomain page = PageDomain.of(pageNum, pageSize);
-        long total = sysUserMapper.countUnallocatedList(user);
-        var rows = sysUserMapper.selectUnallocatedList(user, page.getOffset(), page.getPageSize());
+        String dataScope = userDataScope();
+        long total = sysUserMapper.countUnallocatedList(user, dataScope);
+        var rows = sysUserMapper.selectUnallocatedList(user, dataScope, page.getOffset(), page.getPageSize());
         return new TableDataInfo(rows, total);
     }
 
@@ -63,12 +71,13 @@ public class SysUserService {
     }
 
     public List<SysUser> selectUserListAll(SysUser user) {
-        long total = sysUserMapper.countUserList(user);
+        String dataScope = userDataScope();
+        long total = sysUserMapper.countUserList(user, dataScope);
         if (total <= 0) {
             return Collections.emptyList();
         }
         int limit = total > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) total;
-        return sysUserMapper.selectUserList(user, 0, limit);
+        return sysUserMapper.selectUserList(user, dataScope, 0, limit);
     }
 
     public boolean checkUserNameUnique(SysUser user) {
@@ -105,14 +114,26 @@ public class SysUserService {
     }
 
     public void checkUserDataScope(Long userId, Long currentUserId) {
-        if (userId == null || SysUser.isAdmin(currentUserId)) {
+        if (SysUser.isAdmin(currentUserId)) {
+            return;
+        }
+        checkUserDataScope(userId);
+    }
+
+    /** 按当前登录用户的数据范围校验目标用户可见；超级管理员不受限 */
+    public void checkUserDataScope(Long userId) {
+        if (userId == null || SecurityUtils.isAdmin()) {
             return;
         }
         SysUser query = new SysUser();
         query.setUserId(userId);
-        if (sysUserMapper.countUserList(query) == 0) {
+        if (sysUserMapper.countUserList(query, userDataScope()) == 0) {
             throw new ApiException("没有权限访问用户数据！");
         }
+    }
+
+    private String userDataScope() {
+        return dataScopeSqlBuilder.forCurrentUser("d", "u");
     }
 
     @Transactional
@@ -166,6 +187,7 @@ public class SysUserService {
             SysUser u = new SysUser();
             u.setUserId(userId);
             checkUserAllowed(u);
+            checkUserDataScope(userId);
         }
         sysUserMapper.deleteUserRoleByUserIds(userIds);
         sysUserPostMapper.deleteUserPost(userIds);

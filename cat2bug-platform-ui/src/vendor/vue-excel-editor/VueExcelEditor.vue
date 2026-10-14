@@ -315,6 +315,7 @@ import PanelSetting from './PanelSetting.vue'
 import PanelFind from './PanelFind.vue'
 import DatePicker from 'vue2-datepicker'
 import XLSX from 'xlsx'
+import { escapeHtml } from '@/utils/sanitize-html'
 
 import 'vue2-datepicker/index.css'
 
@@ -1991,7 +1992,7 @@ export default {
           const rec = this.table[recPos]
           this.vScroller.runner = recPos + '<br>' + this.fields
             .filter((field, i) => field.keyField || field.sticky || this.sortPos === i)
-            .map(field => field.label + ': ' + rec[field.name])
+            .map(field => escapeHtml(field.label) + ': ' + escapeHtml(rec[field.name]))
             .join('<br>')
           this.$forceUpdate()
         }

@@ -36,6 +36,7 @@ import { ElMessageBox } from 'element-plus'
 import {getToken} from "@/utils/auth";
 import {strFormat} from "@/utils";
 import {setHeader} from "@/utils/request";
+import { sanitizeHtml } from "@/utils/sanitize-html";
 import {
   appendExportColumnParams,
   resolveDefectExportColumns
@@ -106,7 +107,7 @@ export default {
       this.upload.isUploading = false;
       this.$refs.upload.clearFiles();
       ElMessageBox.alert(
-        "<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>",
+        sanitizeHtml("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>"),
         this.$i18n.t('defect.import-result').toString(),
         { dangerouslyUseHTMLString: true }
       );

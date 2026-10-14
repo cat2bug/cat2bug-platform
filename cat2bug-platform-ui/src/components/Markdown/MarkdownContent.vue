@@ -1,9 +1,11 @@
 <template>
-  <div class="markdown-it-vue md-body" v-html="html" />
+  <div class="markdown-it-vue md-body" v-html="html" @error.capture="handleImageErrorEvent" />
 </template>
 
 <script>
 import MarkdownIt from 'markdown-it'
+import { sanitizeHtml } from '@/utils/sanitize-html'
+import { handleImageErrorEvent } from '@/utils/upload-asset'
 
 let mdInstance
 
@@ -28,8 +30,11 @@ export default {
   },
   computed: {
     html() {
-      return getMarkdownIt().render(this.content || '')
+      return sanitizeHtml(getMarkdownIt().render(this.content || ''))
     }
+  },
+  methods: {
+    handleImageErrorEvent
   }
 }
 </script>

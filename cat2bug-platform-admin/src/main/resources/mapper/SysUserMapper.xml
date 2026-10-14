@@ -65,6 +65,9 @@
             AND (u.dept_id = #{user.deptId}
             OR u.dept_id IN (SELECT t.dept_id FROM sys_dept t WHERE find_in_set(#{user.deptId}, ancestors)))
         </if>
+        <if test="dataScope != null and dataScope != ''">
+            ${dataScope}
+        </if>
     </sql>
 
     <select id="selectUserByUserName" resultMap="SysUserResult">
@@ -115,6 +118,9 @@
         <if test="user.phoneNumber != null and user.phoneNumber != ''">
             AND u.phonenumber like concat('%', #{user.phoneNumber}, '%')
         </if>
+        <if test="dataScope != null and dataScope != ''">
+            ${dataScope}
+        </if>
     </sql>
 
     <select id="countAllocatedList" resultType="long">
@@ -145,6 +151,9 @@
         </if>
         <if test="user.phoneNumber != null and user.phoneNumber != ''">
             AND u.phonenumber like concat('%', #{user.phoneNumber}, '%')
+        </if>
+        <if test="dataScope != null and dataScope != ''">
+            ${dataScope}
         </if>
     </sql>
 

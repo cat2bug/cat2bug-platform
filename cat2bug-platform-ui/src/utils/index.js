@@ -148,9 +148,9 @@ export function param2Obj(url) {
  * @returns {string}
  */
 export function html2Text(val) {
-  const div = document.createElement('div')
-  div.innerHTML = val
-  return div.textContent || div.innerText
+  // 当前文档里的游离节点仍会加载 <img> 并触发 onerror，必须在惰性文档中解析
+  const doc = new DOMParser().parseFromString(String(val == null ? '' : val), 'text/html')
+  return doc.body.textContent || ''
 }
 
 /**

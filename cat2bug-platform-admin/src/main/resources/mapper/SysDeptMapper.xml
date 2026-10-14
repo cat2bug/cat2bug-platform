@@ -24,17 +24,20 @@
     <select id="selectDeptList" resultMap="SysDeptResult">
         <include refid="selectDeptVo"/>
         where d.del_flag = '0'
-        <if test="deptId != null and deptId != 0">
-            AND d.dept_id = #{deptId}
+        <if test="dept.deptId != null and dept.deptId != 0">
+            AND d.dept_id = #{dept.deptId}
         </if>
-        <if test="parentId != null and parentId != 0">
-            AND d.parent_id = #{parentId}
+        <if test="dept.parentId != null and dept.parentId != 0">
+            AND d.parent_id = #{dept.parentId}
         </if>
-        <if test="deptName != null and deptName != ''">
-            AND d.dept_name like concat('%', #{deptName}, '%')
+        <if test="dept.deptName != null and dept.deptName != ''">
+            AND d.dept_name like concat('%', #{dept.deptName}, '%')
         </if>
-        <if test="status != null and status != ''">
-            AND d.status = #{status}
+        <if test="dept.status != null and dept.status != ''">
+            AND d.status = #{dept.status}
+        </if>
+        <if test="dataScope != null and dataScope != ''">
+            ${dataScope}
         </if>
         order by d.parent_id, d.order_num
     </select>

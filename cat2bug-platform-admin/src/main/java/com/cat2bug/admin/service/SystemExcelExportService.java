@@ -1,6 +1,7 @@
 package com.cat2bug.admin.service;
 
 import com.cat2bug.common.domain.AiAccount;
+import com.cat2bug.common.domain.SysCasePrompt;
 import com.cat2bug.common.domain.SysAiModuleConfig;
 import com.cat2bug.common.domain.SysConfig;
 import com.cat2bug.common.domain.SysDefectLog;
@@ -22,6 +23,7 @@ import com.cat2bug.common.domain.SysScreenSize;
 import com.cat2bug.common.domain.SysTeam;
 import com.cat2bug.common.domain.SysUserStatisticTemplate;
 import com.cat2bug.system.service.AiAccountService;
+import com.cat2bug.system.service.SysCasePromptService;
 import com.cat2bug.system.service.SysAiModuleConfigService;
 import com.cat2bug.system.service.SysConfigService;
 import com.cat2bug.system.service.SysDefectLogService;
@@ -243,6 +245,11 @@ public class SystemExcelExportService {
             new SimpleExcelExportSupport.ColumnDef<>("访问时间", i -> formatDateTime(i.getLoginTime()))
     );
 
+    private static final List<SimpleExcelExportSupport.ColumnDef<SysCasePrompt>> CASE_PROMPT_COLUMNS = List.of(
+            new SimpleExcelExportSupport.ColumnDef<>("提示词内容", SysCasePrompt::getCasePromptContent),
+            new SimpleExcelExportSupport.ColumnDef<>("创建人ID", p -> SimpleExcelExportSupport.text(p.getCreateById()))
+    );
+
     private static final List<SimpleExcelExportSupport.ColumnDef<SysScreenSize>> SCREEN_SIZE_COLUMNS = List.of(
             new SimpleExcelExportSupport.ColumnDef<>("名称", SysScreenSize::getName),
             new SimpleExcelExportSupport.ColumnDef<>("宽", SysScreenSize::getWidth),
@@ -315,6 +322,9 @@ public class SystemExcelExportService {
 
     @Inject
     SysScreenSizeService sysScreenSizeService;
+
+    @Inject
+    SysCasePromptService sysCasePromptService;
 
     public byte[] exportRoles(SysRole query) {
         return SimpleExcelExportSupport.export("角色数据", ROLE_COLUMNS, sysRoleService.selectRoleList(query), "导出角色数据失败");
@@ -419,6 +429,11 @@ public class SystemExcelExportService {
     public byte[] exportScreenSizes(SysScreenSize query) {
         return SimpleExcelExportSupport.export("屏幕尺寸数据", SCREEN_SIZE_COLUMNS,
                 sysScreenSizeService.selectScreenSizeListAll(query), "导出屏幕尺寸失败");
+    }
+
+    public byte[] exportCasePrompts(SysCasePrompt query) {
+        return SimpleExcelExportSupport.export("测试用例提示词数据", CASE_PROMPT_COLUMNS,
+                sysCasePromptService.selectSysCasePromptList(query), "导出测试用例提示词失败");
     }
 
     private static String formatDefectIds(List<Long> defectIds) {

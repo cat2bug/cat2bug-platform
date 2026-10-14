@@ -27,6 +27,9 @@ public class PermissionAuthorizationFilter implements ContainerRequestFilter {
     @Inject
     PermissionChecker permissionChecker;
 
+    @Inject
+    AuthContext authContext;
+
     @Override
     public void filter(ContainerRequestContext ctx) throws IOException {
         RequiresPermissions annotation = resolveAnnotation();
@@ -40,7 +43,9 @@ public class PermissionAuthorizationFilter implements ContainerRequestFilter {
         }
         if (!checkPermissions(loginUser, annotation)) {
             ctx.abortWith(SecurityResponses.forbidden());
+            return;
         }
+        authContext.setPermissionContext(String.join(",", annotation.value()));
     }
 
     private RequiresPermissions resolveAnnotation() {

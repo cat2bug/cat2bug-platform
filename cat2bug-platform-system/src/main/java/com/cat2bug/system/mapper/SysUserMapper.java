@@ -15,20 +15,23 @@ public interface SysUserMapper {
     SysUser selectUserByUserName(@Param("userName") String userName);
 
     List<SysUser> selectUserList(@Param("user") SysUser user,
+                                 @Param("dataScope") String dataScope,
                                  @Param("offset") int offset,
                                  @Param("limit") int limit);
 
-    long countUserList(@Param("user") SysUser user);
+    long countUserList(@Param("user") SysUser user, @Param("dataScope") String dataScope);
 
-    long countAllocatedList(@Param("user") SysUser user);
+    long countAllocatedList(@Param("user") SysUser user, @Param("dataScope") String dataScope);
 
     List<SysUser> selectAllocatedList(@Param("user") SysUser user,
+                                      @Param("dataScope") String dataScope,
                                       @Param("offset") int offset,
                                       @Param("limit") int limit);
 
-    long countUnallocatedList(@Param("user") SysUser user);
+    long countUnallocatedList(@Param("user") SysUser user, @Param("dataScope") String dataScope);
 
     List<SysUser> selectUnallocatedList(@Param("user") SysUser user,
+                                        @Param("dataScope") String dataScope,
                                         @Param("offset") int offset,
                                         @Param("limit") int limit);
 
