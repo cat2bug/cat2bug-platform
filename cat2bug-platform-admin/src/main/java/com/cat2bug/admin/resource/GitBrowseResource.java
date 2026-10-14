@@ -115,6 +115,17 @@ public class GitBrowseResource {
     }
 
     @GET
+    @Path("/{repositoryId:[0-9]+}/search")
+    @RequiresPermissions("system:git:repo:pull")
+    public AjaxResult search(@PathParam("repositoryId") Long repositoryId,
+                             @QueryParam("q") String query,
+                             @QueryParam("ref") String ref,
+                             @QueryParam("path") String path,
+                             @QueryParam("limit") Integer limit) {
+        return AjaxResult.success(gitBrowseService.searchCode(repositoryId, ref, query, path, limit));
+    }
+
+    @GET
     @Path("/{repositoryId:[0-9]+}/raw")
     @RequiresPermissions("system:git:repo:pull")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)

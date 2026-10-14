@@ -22,6 +22,11 @@ public class LoginUser {
     private SysUser user;
     /** 是否已按当前团队/项目上下文合并过角色权限（旧会话兼容） */
     private boolean contextPermissionsMerged;
+    /** MCP 内部会话：来源渠道（{@code mcp}）与客户端名称，用于审计；网页会话为空 */
+    private String operChannel;
+    private String clientName;
+    /** MCP 内部会话绑定的项目，权限按该项目计算 */
+    private Long mcpProjectId;
 
     public Long getUserId() {
         return userId;
@@ -122,5 +127,34 @@ public class LoginUser {
     @JsonIgnore
     public String getUsername() {
         return user != null ? user.getUserName() : null;
+    }
+
+    public String getOperChannel() {
+        return operChannel;
+    }
+
+    public void setOperChannel(String operChannel) {
+        this.operChannel = operChannel;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
+
+    public Long getMcpProjectId() {
+        return mcpProjectId;
+    }
+
+    public void setMcpProjectId(Long mcpProjectId) {
+        this.mcpProjectId = mcpProjectId;
+    }
+
+    @JsonIgnore
+    public boolean isMcpSession() {
+        return "mcp".equals(operChannel);
     }
 }

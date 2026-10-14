@@ -67,6 +67,13 @@
         <if test="defect != null and defect.moduleId != null">
             AND d.module_id = #{defect.moduleId}
         </if>
+        <if test="defect != null and defect.params != null and defect.params.projectNum != null">
+            AND d.project_num = #{defect.params.projectNum}
+        </if>
+        <if test="defect != null and defect.params != null and defect.params.handleById != null">
+            AND CONCAT(',', REPLACE(REPLACE(REPLACE(d.handle_by, '[', ''), ']', ''), ' ', ''), ',')
+                LIKE CONCAT('%,', #{defect.params.handleById}, ',%')
+        </if>
     </sql>
 
     <select id="countSysDefectList" resultType="long">

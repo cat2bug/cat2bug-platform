@@ -7,5 +7,12 @@ import com.cat2bug.common.domain.LoginUser;
  */
 public interface AccessTokenResolver {
 
-    LoginUser authenticate(String token, String clientIp);
+    default LoginUser authenticate(String token, String clientIp) {
+        return authenticate(token, clientIp, null);
+    }
+
+    /**
+     * @param expectedResource 本服务的 MCP 资源地址；OAuth 令牌绑定了别的 resource 时拒绝，为 {@code null} 时不校验
+     */
+    LoginUser authenticate(String token, String clientIp, String expectedResource);
 }

@@ -11,6 +11,7 @@ import com.cat2bug.common.util.PathKeyValidator;
 import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectRoleMapper;
+import com.cat2bug.system.service.mcp.SysProjectMcpService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -35,6 +36,9 @@ public class SysProjectService {
 
     @Inject
     SysUserProjectRoleMapper sysUserProjectRoleMapper;
+
+    @Inject
+    SysProjectMcpService sysProjectMcpService;
     public TableDataInfo selectProjectPage(Long userId, SysProject query, Integer pageNum, Integer pageSize) {
         if (query.getTeamId() == null) {
             throw new ApiException("团队不能为空");
@@ -121,6 +125,7 @@ public class SysProjectService {
         if (sysUserProjectRoleMapper.insertSysUserProjectRole(role) != 1) {
             throw new ApiException("创建项目角色失败");
         }
+        sysProjectMcpService.createDefault(sysProject.getProjectId(), String.valueOf(userId));
         return 1;
     }
     public int updateSysProject(SysProject sysProject, Long userId) {

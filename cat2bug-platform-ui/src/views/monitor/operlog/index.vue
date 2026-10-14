@@ -43,6 +43,17 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="渠道" prop="operChannel">
+        <el-select
+          v-model="queryParams.operChannel"
+          placeholder="操作渠道"
+          clearable
+          style="width: 240px"
+        >
+          <el-option label="网页" value="web" />
+          <el-option label="MCP" value="mcp" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select
           v-model="queryParams.status"
@@ -121,6 +132,12 @@
         </template>
       </el-table-column>
       <el-table-column label="操作人员" align="center" prop="operName" width="110" :show-overflow-tooltip="true" sortable="custom" :sort-orders="['descending', 'ascending']" />
+      <el-table-column label="渠道" align="center" prop="operChannel" width="140" :show-overflow-tooltip="true">
+        <template #default="scope">
+          <el-tag v-if="scope.row.operChannel === 'mcp'" size="small" type="warning" effect="plain">MCP{{ scope.row.clientName ? '（' + scope.row.clientName + '）' : '' }}</el-tag>
+          <span v-else>网页</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作地址" align="center" prop="operIp" width="130" :show-overflow-tooltip="true" />
       <el-table-column label="操作地点" align="center" prop="operLocation" :show-overflow-tooltip="true" />
       <el-table-column label="操作状态" align="center" prop="status">
@@ -239,6 +256,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         operIp: undefined,
+        operChannel: undefined,
         title: undefined,
         operName: undefined,
         businessType: undefined,

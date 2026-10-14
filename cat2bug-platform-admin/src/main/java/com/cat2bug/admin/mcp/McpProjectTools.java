@@ -1,0 +1,133 @@
+package com.cat2bug.admin.mcp;
+
+import com.cat2bug.common.constant.SecurityConstants;
+import com.cat2bug.common.domain.LoginUser;
+import com.cat2bug.common.domain.SysGitRepository;
+import com.cat2bug.common.domain.SysProject;
+import com.cat2bug.common.security.McpModules;
+import com.cat2bug.system.mapper.SysGitRepositoryMapper;
+import com.cat2bug.system.service.mcp.McpAccessService;
+import com.cat2bug.system.service.mcp.McpProjectAccess;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.quarkiverse.mcp.server.McpConnection;
+import io.quarkiverse.mcp.server.Tool;
+import io.quarkiverse.mcp.server.ToolArg;
+import io.quarkiverse.mcp.server.ToolCallException;
+import jakarta.inject.Inject;
+
+import java.net.URI;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * 项目发现类工具：不走网页转发，直接按（用户，项目）计算 MCP 可见范围。
+ */
+public class McpProjectTools {
+
+    private static final Pattern NAMESPACED = Pattern.compile("/([^/]+)/([^/]+)/code/([^/]+?)(?:\\.git)?/?$");
+    private static final Pattern LEGACY = Pattern.compile("/git/p/(\\d+)/([^/]+?)(?:\\.git)?/?$");
+
+    @Inject
+    McpContext context;
+
+    @Inject
+    McpAccessService accessService;
+
+    @Inject
+    SysGitRepositoryMapper repositoryMapper;
+
+    @Inject
+    McpJson json;
+
+    @Tool(name = "list_my_projects",
+            description = "列出当前用户可经 MCP 访问的项目（项目已开启 MCP 且你是成员）。返回 project 引用（团队标识/项目标识）、"
+                    + "名称，以及你在该项目可用的模块。其它工具的 project 参数传这里返回的 ref 或 projectId。",
+            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+    String listMyProjects() {
+        LoginUser caller = context.caller();
+        ArrayNode out = json.array();
+        for (SysProject p : accessService.enabledProjectsOf(caller.getUserId())) {
+            McpProjectAccess access = accessService.access(McpContext.userOf(caller), p.getProjectId());
+            ObjectNode o = projectNode(p);
+            o.set("modules", json.valueToTree(usableModules(access)));
+            out.add(o);
+        }
+        return json.write(out);
+    }
+
+    @Tool(name = "resolve_project_by_git_remote",
+            description = "根据 git remote 地址（git remote get-url origin 的输出）找到对应的 Cat2Bug 项目与代码仓库。"
+                    + "只识别本平台托管的仓库地址（…/团队标识/项目标识/code/仓库.git）。",
+            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+    String resolveProjectByGitRemote(McpConnection connection,
+                                     @ToolArg(name = "remote_url", description = "git remote 地址，http(s) 形式") String remoteUrl) {
+        context.caller();
+        SysGitRepository repo = parseRemote(remoteUrl);
+        if (repo == null) {
+            throw new ToolCallException("不是本平台托管的仓库地址，或仓库不存在：" + remoteUrl
+                    + "。可调用 list_my_projects 手动选择项目");
+        }
+        McpScope scope = context.scope(connection, String.valueOf(repo.getProjectId()));
+        ObjectNode o = projectNode(scope.access().project());
+        o.put("repositoryId", repo.getRepositoryId());
+        o.put("repositoryName", repo.getName());
+        o.put("repositorySlug", repo.getSlug());
+        o.set("modules", json.valueToTree(usableModules(scope.access())));
+        return json.write(o);
+    }
+
+    SysGitRepository parseRemote(String remoteUrl) {
+        if (remoteUrl == null || remoteUrl.isBlank()) {
+            return null;
+        }
+        String path;
+        try {
+            path = URI.create(remoteUrl.trim()).getPath();
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        if (path == null) {
+            return null;
+        }
+        Matcher legacy = LEGACY.matcher(path);
+        if (legacy.find()) {
+            return repositoryMapper.selectSysGitRepositoryByProjectIdAndSlug(Long.valueOf(legacy.group(1)), legacy.group(2));
+        }
+        Matcher ns = NAMESPACED.matcher(path);
+        if (ns.find()) {
+            return repositoryMapper.selectSysGitRepositoryByTeamKeyAndProjectKeyAndSlug(ns.group(1), ns.group(2), ns.group(3));
+        }
+        return null;
+    }
+
+    private ObjectNode projectNode(SysProject p) {
+        ObjectNode o = json.object();
+        o.put("projectId", p.getProjectId());
+        if (p.getTeamKey() != null && p.getProjectKey() != null) {
+            o.put("ref", p.getTeamKey() + "/" + p.getProjectKey());
+        }
+        o.put("projectName", p.getProjectName());
+        if (p.getTeamName() != null) {
+            o.put("teamName", p.getTeamName());
+        }
+        return o;
+    }
+
+    /** 已勾选、且角色在该模块下至少有一个权限的模块。 */
+    static List<String> usableModules(McpProjectAccess access) {
+        boolean all = access.admin() || access.rolePermissions().contains(SecurityConstants.ALL_PERMISSION);
+        return McpModules.ALL.stream()
+                .filter(m -> access.moduleSelected(m.key()))
+                .filter(m -> all || access.rolePermissions().stream()
+                        .anyMatch(p -> key(p).equals(m.key())))
+                .map(McpModules.Module::key)
+                .toList();
+    }
+
+    private static String key(String permission) {
+        String k = McpModules.moduleOf(permission);
+        return k == null ? "" : k;
+    }
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysMcpIdempotencyMapper">
+
+    <select id="selectResultId" resultType="string">
+        select result_id from sys_mcp_idempotency
+        where user_id = #{userId} and tool = #{tool} and idem_key = #{key} and create_time &gt; #{after}
+    </select>
+
+    <insert id="insert">
+        insert into sys_mcp_idempotency (user_id, tool, idem_key, result_id, create_time)
+        values (#{userId}, #{tool}, #{key}, #{resultId}, #{createTime})
+    </insert>
+
+    <delete id="deleteBefore">
+        delete from sys_mcp_idempotency where create_time &lt; #{before}
+    </delete>
+
+    <delete id="deleteOne">
+        delete from sys_mcp_idempotency where user_id = #{userId} and tool = #{tool} and idem_key = #{key}
+    </delete>
+</mapper>

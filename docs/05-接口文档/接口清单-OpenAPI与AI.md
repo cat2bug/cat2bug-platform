@@ -51,6 +51,15 @@
 | POST | `/system/user/profile/tokens` | 创建个人令牌：`name`（≤ 128 字）、`expireDays`（1～3650，空为永不过期）；明文 `token` 只在本次响应返回 |
 | DELETE | `/system/user/profile/tokens/{tokenId}` | 吊销；OAuth 条目按 `grant_id` 连带吊销同一授权的访问令牌与刷新令牌 |
 
+## MCP（`/mcp`，个人访问令牌 / OAuth 访问令牌）
+
+Streamable HTTP 的 MCP 端点，工具清单、权限计算、通用通道与客户端配置见 [[MCP接入与权限]]。
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| POST / GET | `/mcp` | MCP 协议端点；未认证 401，`WWW-Authenticate` 带 `resource_metadata` |
+| GET | `/.well-known/oauth-protected-resource`（及 `/mcp` 子路径） | 受保护资源元数据（RFC 9728）：`resource`、`authorization_servers` |
+
 ## OAuth 2.1 授权服务器（公开路径，HTTP 状态码按 OAuth 规范返回）
 
 | 方法 | 路径 | 说明 |

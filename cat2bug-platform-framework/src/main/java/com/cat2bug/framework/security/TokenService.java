@@ -56,6 +56,22 @@ public class TokenService {
         return createJwt(claims);
     }
 
+    /**
+     * MCP 内部会话：不做 IP 归属地解析，按给定秒数过期且不会被 {@link #verifyToken} 续期，
+     * 调用方用完后应 {@link #delLoginUser} 删除。
+     */
+    public String createInternalToken(LoginUser loginUser, long ttlSeconds) {
+        String sessionId = UUID.randomUUID().toString().replace("-", "");
+        long now = System.currentTimeMillis();
+        loginUser.setToken(sessionId);
+        loginUser.setLoginTime(now);
+        loginUser.setExpireTime(now + ttlSeconds * 1000L);
+        sessionStore.save(tokenKey(sessionId), loginUser, ttlSeconds);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(TokenConstants.LOGIN_USER_KEY, sessionId);
+        return createJwt(claims);
+    }
+
     public LoginUser getLoginUser(String authorizationHeader) {
         String jwt = stripBearer(authorizationHeader);
         if (jwt == null || jwt.isBlank()) {
@@ -74,7 +90,7 @@ public class TokenService {
     }
 
     public void verifyToken(LoginUser loginUser) {
-        if (loginUser == null || loginUser.getExpireTime() == null) {
+        if (loginUser == null || loginUser.getExpireTime() == null || loginUser.isMcpSession()) {
             return;
         }
         long expireTime = loginUser.getExpireTime();
@@ -92,11 +108,13 @@ public class TokenService {
     }
 
     public List<LoginUser> listOnlineUsers() {
-        return sessionStore.listActive(CacheConstants.LOGIN_TOKEN_KEY);
+        return sessionStore.listActive(CacheConstants.LOGIN_TOKEN_KEY).stream()
+                .filter(u -> !u.isMcpSession())
+                .toList();
     }
 
     public void updateLoginUser(LoginUser loginUser) {
-        if (loginUser == null || loginUser.getToken() == null) {
+        if (loginUser == null || loginUser.getToken() == null || loginUser.isMcpSession()) {
             return;
         }
         refreshToken(loginUser);

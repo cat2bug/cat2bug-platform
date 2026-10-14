@@ -22,6 +22,12 @@ public class SysDefectLog {
     private Date createTime;
     private String srcHost;
     private List<SysComment> commentList;
+    /** 来源渠道：{@code web} / {@code mcp} / {@code api}；为空视为网页 */
+    private String operChannel;
+    /** 经 MCP 时客户端在 initialize 中上报的名称 */
+    private String clientName;
+    /** 修复时关联的提交 */
+    private List<SysDefectCommit> commits;
 
     public Long getDefectLogId() {
         return defectLogId;
@@ -125,5 +131,29 @@ public class SysDefectLog {
 
     public void setCommentList(List<SysComment> commentList) {
         this.commentList = commentList;
+    }
+
+    public String getOperChannel() {
+        return operChannel;
+    }
+
+    public void setOperChannel(String operChannel) {
+        this.operChannel = operChannel;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
+
+    public List<SysDefectCommit> getCommits() {
+        return commits;
+    }
+
+    public void setCommits(List<SysDefectCommit> commits) {
+        this.commits = commits;
     }
 }

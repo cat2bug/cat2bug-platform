@@ -80,6 +80,11 @@
             <version>${quarkus.mybatis.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.quarkiverse.mcp</groupId>
+            <artifactId>quarkus-mcp-server-http</artifactId>
+            <version>${quarkus.mcp.version}</version>
+        </dependency>
+        <dependency>
             <groupId>at.favre.lib</groupId>
             <artifactId>bcrypt</artifactId>
             <version>${bcrypt.version}</version>

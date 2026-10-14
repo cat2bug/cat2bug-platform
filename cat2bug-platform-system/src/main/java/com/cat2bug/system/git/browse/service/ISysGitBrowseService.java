@@ -3,6 +3,7 @@ package com.cat2bug.system.git.browse.service;
 import com.cat2bug.common.web.BinaryHttpResponse;
 
 import com.cat2bug.system.git.browse.domain.GitBlobContent;
+import com.cat2bug.system.git.browse.domain.GitCodeSearchResult;
 import com.cat2bug.system.git.browse.domain.GitBranchInfo;
 import com.cat2bug.system.git.browse.domain.GitCommitDetail;
 import com.cat2bug.system.git.browse.domain.GitCommitInfo;
@@ -64,6 +65,13 @@ public interface ISysGitBrowseService
     List<GitTreeEntryInfo> listTree(Long repositoryId, String ref, String path);
 
     GitBlobContent readBlob(Long repositoryId, String ref, String path);
+
+    /**
+     * 在指定 ref 的文件树中按行检索（不区分大小写的字面量匹配），跳过二进制与超大文件。
+     *
+     * @param pathPrefix 只在该目录下检索，可为空
+     */
+    GitCodeSearchResult searchCode(Long repositoryId, String ref, String query, String pathPrefix, Integer limit);
 
     /**
      * @param limit 最大返回条数，未传时使用默认值

@@ -67,12 +67,11 @@ class QuarkusDefectWorkflowTest {
         given()
                 .header("Authorization", token)
                 .contentType(ContentType.JSON)
-                .body("{\"defectLogDescribe\":\"重新打开\",\"receiveBy\":[1]}")
+                .body("{\"defectLogDescribe\":\"驳回后不能直接打开\",\"receiveBy\":[1]}")
                 .when().post("/system/defect/" + defectId + "/open")
                 .then()
-                .statusCode(200)
-                .body("code", equalTo(200))
-                .body("data.defectLogType", equalTo("OPEN"));
+                .statusCode(409)
+                .body("code", equalTo(409));
 
         given()
                 .header("Authorization", token)

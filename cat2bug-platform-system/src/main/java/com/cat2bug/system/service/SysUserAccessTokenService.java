@@ -88,7 +88,7 @@ public class SysUserAccessTokenService implements AccessTokenResolver {
     }
 
     @Override
-    public LoginUser authenticate(String token, String clientIp) {
+    public LoginUser authenticate(String token, String clientIp, String expectedResource) {
         if (!AccessTokens.looksLikeAccessToken(token)) {
             return null;
         }
@@ -97,7 +97,8 @@ public class SysUserAccessTokenService implements AccessTokenResolver {
         if (row == null
                 || !AUTHENTICATING_SOURCES.contains(row.getSource())
                 || row.getRevokedAt() != null
-                || (row.getExpiresAt() != null && !row.getExpiresAt().after(now))) {
+                || (row.getExpiresAt() != null && !row.getExpiresAt().after(now))
+                || !resourceMatches(row.getResource(), expectedResource)) {
             return null;
         }
         SysUser user = activeUser(row.getUserId());
@@ -112,6 +113,21 @@ public class SysUserAccessTokenService implements AccessTokenResolver {
             loginUser.setExpireTime(row.getExpiresAt().getTime());
         }
         return loginUser;
+    }
+
+    static boolean resourceMatches(String bound, String expected) {
+        if (bound == null || bound.isBlank() || expected == null || expected.isBlank()) {
+            return true;
+        }
+        return trimSlash(bound).equalsIgnoreCase(trimSlash(expected));
+    }
+
+    private static String trimSlash(String s) {
+        String v = s.trim();
+        while (v.endsWith("/")) {
+            v = v.substring(0, v.length() - 1);
+        }
+        return v;
     }
 
     /** 按用户名再查一次：该查询过滤已删除用户（del_flag），按 ID 的查询不过滤 */

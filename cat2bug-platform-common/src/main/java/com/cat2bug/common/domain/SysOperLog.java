@@ -27,6 +27,10 @@ public class SysOperLog {
     private String errorMsg;
     private Date operTime;
     private Long costTime;
+    /** 来源渠道：{@code web} / {@code mcp} / {@code api}；为空视为网页 */
+    private String operChannel;
+    /** 经 MCP 时客户端在 initialize 中上报的名称 */
+    private String clientName;
     private Map<String, Object> params = new HashMap<>();
 
     public Long getOperId() {
@@ -179,5 +183,21 @@ public class SysOperLog {
 
     public void setParams(Map<String, Object> params) {
         this.params = params != null ? params : new HashMap<>();
+    }
+
+    public String getOperChannel() {
+        return operChannel;
+    }
+
+    public void setOperChannel(String operChannel) {
+        this.operChannel = operChannel;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
     }
 }

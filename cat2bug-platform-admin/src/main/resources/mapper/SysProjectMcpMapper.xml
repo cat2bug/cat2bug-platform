@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysProjectMcpMapper">
+
+    <resultMap type="com.cat2bug.common.domain.SysProjectMcp" id="SysProjectMcpResult">
+        <result property="projectId"  column="project_id" />
+        <result property="enabled"    column="enabled" />
+        <result property="modules"    column="modules" typeHandler="com.cat2bug.system.mybatis.StringListJsonTypeHandler" />
+        <result property="updateBy"   column="update_by" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <resultMap type="com.cat2bug.common.domain.SysProject" id="McpProjectResult">
+        <result property="projectId"   column="project_id" />
+        <result property="teamId"      column="team_id" />
+        <result property="teamName"    column="team_name" />
+        <result property="teamKey"     column="team_key" />
+        <result property="projectName" column="project_name" />
+        <result property="projectKey"  column="project_key" />
+    </resultMap>
+
+    <select id="selectByProjectId" resultMap="SysProjectMcpResult">
+        select project_id, enabled, modules, update_by, update_time
+        from sys_project_mcp
+        where project_id = #{projectId}
+    </select>
+
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysProjectMcp">
+        insert into sys_project_mcp (project_id, enabled, modules, update_by, update_time)
+        values (#{projectId}, #{enabled}, #{modules,typeHandler=com.cat2bug.system.mybatis.StringListJsonTypeHandler},
+                #{updateBy}, #{updateTime})
+    </insert>
+
+    <update id="update" parameterType="com.cat2bug.common.domain.SysProjectMcp">
+        update sys_project_mcp
+        set enabled = #{enabled},
+            modules = #{modules,typeHandler=com.cat2bug.system.mybatis.StringListJsonTypeHandler},
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        where project_id = #{projectId}
+    </update>
+
+    <delete id="deleteByProjectId">
+        delete from sys_project_mcp where project_id = #{projectId}
+    </delete>
+
+    <select id="selectEnabledProjectsOfUser" resultMap="McpProjectResult">
+        select distinct p.project_id, p.team_id, t.team_name, t.team_key, p.project_name, p.project_key
+        from sys_user_project up
+        join sys_project p on p.project_id = up.project_id
+        join sys_project_mcp m on m.project_id = p.project_id
+        left join sys_team t on t.team_id = p.team_id
+        where up.user_id = #{userId} and p.project_state > 0 and m.enabled = 1
+        order by p.project_id
+    </select>
+
+    <select id="countMember" resultType="int">
+        select count(*) from sys_user_project where project_id = #{projectId} and user_id = #{userId}
+    </select>
+</mapper>

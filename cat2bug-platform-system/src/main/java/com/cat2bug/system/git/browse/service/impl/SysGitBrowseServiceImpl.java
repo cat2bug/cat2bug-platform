@@ -14,6 +14,7 @@ import com.cat2bug.common.util.FileResponseUtils;
 import com.cat2bug.common.domain.SysGitRepository;
 import com.cat2bug.common.domain.SysGitRelease;
 import com.cat2bug.system.git.browse.domain.GitBlobContent;
+import com.cat2bug.system.git.browse.domain.GitCodeSearchResult;
 import com.cat2bug.system.git.browse.domain.GitBranchInfo;
 import com.cat2bug.system.git.browse.domain.GitCommitChangeStats;
 import com.cat2bug.system.git.browse.domain.GitCommitDetail;
@@ -96,6 +97,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @ApplicationScoped
 public class SysGitBrowseServiceImpl implements ISysGitBrowseService
 {
+    private static final int MAX_SEARCH_QUERY_LENGTH = 200;
+    private static final int DEFAULT_SEARCH_MATCHES = 50;
+    private static final int MAX_SEARCH_MATCHES = 200;
+    private static final int MAX_SEARCH_FILES = 20_000;
+    private static final long MAX_SEARCH_FILE_BYTES = 1024L * 1024L;
+    private static final long MAX_SEARCH_TOTAL_BYTES = 64L * 1024L * 1024L;
+    private static final int MAX_SEARCH_LINE_CHARS = 300;
+
     /** 文件内容预览上限（字节），超出则截断并标记 truncated */
     private static final int MAX_BLOB_PREVIEW_BYTES = 2 * 1024 * 1024;
     /** README 等 Markdown 内嵌资源（图片）直出上限 */
@@ -497,6 +506,91 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
         {
             throw new ApiException(MessageUtils.message("git.repo.browse.read-failed"), HttpStatus.ERROR);
         }
+    }
+
+    @Override
+    public GitCodeSearchResult searchCode(Long repositoryId, String ref, String query, String pathPrefix, Integer limit)
+    {
+        SysGitRepository repo = requireRepo(repositoryId);
+        assertPull(repo.getRepositoryId());
+        String needle = query == null ? "" : query.trim();
+        if (needle.isEmpty() || needle.length() > MAX_SEARCH_QUERY_LENGTH)
+        {
+            throw new ApiException(MessageUtils.message("git.repo.browse.search-query-invalid",
+                    String.valueOf(MAX_SEARCH_QUERY_LENGTH)), HttpStatus.BAD_REQUEST);
+        }
+        String lowerNeedle = needle.toLowerCase(java.util.Locale.ROOT);
+        String prefix = normalizePath(pathPrefix);
+        int max = (limit != null && limit > 0) ? Math.min(limit, MAX_SEARCH_MATCHES) : DEFAULT_SEARCH_MATCHES;
+        GitCodeSearchResult result = new GitCodeSearchResult();
+        try (Repository repository = openRepository(repo.getDiskPath()))
+        {
+            ObjectId commitId = resolveCommitish(repository, ref, repo.getDefaultBranch());
+            if (commitId == null)
+            {
+                return result;
+            }
+            result.setCommitId(commitId.name());
+            try (RevWalk revWalk = new RevWalk(repository); TreeWalk treeWalk = new TreeWalk(repository))
+            {
+                treeWalk.addTree(revWalk.parseCommit(commitId).getTree());
+                treeWalk.setRecursive(true);
+                if (!prefix.isEmpty())
+                {
+                    treeWalk.setFilter(org.eclipse.jgit.treewalk.filter.PathFilter.create(prefix));
+                }
+                long bytesScanned = 0;
+                int files = 0;
+                while (treeWalk.next())
+                {
+                    if (files >= MAX_SEARCH_FILES || bytesScanned >= MAX_SEARCH_TOTAL_BYTES)
+                    {
+                        result.setTruncated(true);
+                        break;
+                    }
+                    if (!treeWalk.getFileMode(0).equals(org.eclipse.jgit.lib.FileMode.REGULAR_FILE)
+                            && !treeWalk.getFileMode(0).equals(org.eclipse.jgit.lib.FileMode.EXECUTABLE_FILE))
+                    {
+                        continue;
+                    }
+                    ObjectLoader loader = repository.open(treeWalk.getObjectId(0));
+                    if (loader.getSize() > MAX_SEARCH_FILE_BYTES)
+                    {
+                        continue;
+                    }
+                    byte[] bytes = loader.getBytes();
+                    files++;
+                    bytesScanned += bytes.length;
+                    if (isLikelyBinary(bytes))
+                    {
+                        continue;
+                    }
+                    String path = treeWalk.getPathString();
+                    String[] lines = new String(bytes, StandardCharsets.UTF_8).split("\\r?\\n", -1);
+                    for (int i = 0; i < lines.length; i++)
+                    {
+                        if (lines[i].toLowerCase(java.util.Locale.ROOT).contains(lowerNeedle))
+                        {
+                            if (result.getMatches().size() >= max)
+                            {
+                                result.setTruncated(true);
+                                result.setFilesScanned(files);
+                                return result;
+                            }
+                            String text = lines[i].length() > MAX_SEARCH_LINE_CHARS
+                                    ? lines[i].substring(0, MAX_SEARCH_LINE_CHARS) : lines[i];
+                            result.getMatches().add(new GitCodeSearchResult.Match(path, i + 1, text));
+                        }
+                    }
+                }
+                result.setFilesScanned(files);
+            }
+        }
+        catch (IOException e)
+        {
+            throw new ApiException(MessageUtils.message("git.repo.browse.read-failed"), HttpStatus.ERROR);
+        }
+        return result;
     }
 
     @Override

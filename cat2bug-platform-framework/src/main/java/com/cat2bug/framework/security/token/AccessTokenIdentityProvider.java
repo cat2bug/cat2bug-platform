@@ -29,8 +29,9 @@ public class AccessTokenIdentityProvider implements IdentityProvider<TokenAuthen
     public Uni<SecurityIdentity> authenticate(TokenAuthenticationRequest request, AuthenticationRequestContext context) {
         return context.runBlocking(() -> {
             String clientIp = (String) request.getAttribute(AccessTokenAuthMechanism.CLIENT_IP_ATTRIBUTE);
+            String resource = (String) request.getAttribute(AccessTokenAuthMechanism.RESOURCE_ATTRIBUTE);
             LoginUser loginUser = resolver.isResolvable()
-                    ? resolver.get().authenticate(request.getToken().getToken(), clientIp)
+                    ? resolver.get().authenticate(request.getToken().getToken(), clientIp, resource)
                     : null;
             if (loginUser == null) {
                 throw new AuthenticationFailedException();

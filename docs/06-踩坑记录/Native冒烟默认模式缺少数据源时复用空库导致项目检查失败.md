@@ -30,6 +30,12 @@ Native 二进制只支持 H2（db-kind 是构建期属性，见 [[Quarkus数据�
 3. `POST /system/case` 建一条用例
 4. `PUT /system/user-config`，body `{"currentProjectId":<项目ID>}`
 
+2026-10-15（`mcp-server`）起脚本已自动处理，上面的手工步骤不再需要：
+
+- 库落后于迁移脚本时，先调 `POST /upgrade/submit`（`applyConfigChanges:false`、`backupEnabled:false`，不传会因重写配置而 500），再重启容器。
+- 没有项目时自建团队与项目；把 admin 加入项目并设为当前项目后重新登录；项目没有用例时建一个模块和一条用例。
+- MCP 检查同样依赖「admin 是项目成员」，否则返回「项目不存在或你不是该项目成员」。
+
 ## 以后怎么避免
 
 - 默认模式找不到 `/tmp/cat2bug-smoke/` 时，看到项目相关检查失败先确认数据来源，不要直接按 Native 回归排查。

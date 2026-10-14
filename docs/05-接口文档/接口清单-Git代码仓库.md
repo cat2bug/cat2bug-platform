@@ -37,6 +37,7 @@
 | PUT | `.../default-branch` | 设置默认分支 | `manage` |
 | GET | `.../tree`、`.../blob`、`.../raw` | 目录树 / 文件内容 / 原始文件 | `pull` |
 | GET | `.../commits`、`.../commits/{commitId}`、`.../commit-count` | 提交列表 / 详情 / 计数 | `pull` |
+| GET | `.../search?q=&ref=&path=&limit=` | 代码文本检索（不区分大小写的字面量匹配，有文件数 / 大小 / 结果数上限） | `pull` |
 | GET | `.../contributors` | 贡献者 | `pull` |
 | GET | `.../archive` | 源码归档下载 | `pull` |
 

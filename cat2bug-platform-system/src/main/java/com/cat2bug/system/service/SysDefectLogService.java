@@ -36,6 +36,9 @@ public class SysDefectLogService {
     @Inject
     SysUserMapper sysUserMapper;
 
+    @Inject
+    SysDefectCommitService sysDefectCommitService;
+
     public TableDataInfo selectLogPage(SysDefectLog query, Integer pageNum, Integer pageSize) {
         PageDomain page = PageDomain.of(pageNum, pageSize);
         long total = sysDefectLogMapper.countSysDefectLogList(query);
@@ -79,6 +82,7 @@ public class SysDefectLogService {
         if (list == null || list.isEmpty()) {
             return;
         }
+        sysDefectCommitService.attachToLogs(list);
         List<Long> logIds = list.stream()
                 .map(SysDefectLog::getDefectLogId)
                 .filter(Objects::nonNull)

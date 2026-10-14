@@ -46,22 +46,22 @@
 | `document` | `system:document` |
 | `code` | `system:git` |
 | `dashboard` | `system:dashboard` |
-| `project` | 项目设置与成员相关的项目级权限 |
+| `project` | `system:project:query` / `list` / `edit` / `member`、`system:project:defect-field:` |
 
-具体前缀在实施时按菜单与接口逐一核对。不在映射表中的权限前缀一律视为系统级，MCP 中不可用。
+实现为 `McpModules`（common）。`defect` 额外包含 `system:comment:`，`plan` 额外包含 `system:PlanItem:`。新建 / 删除 / 推送项目、项目 API Key、团队及所有系统管理权限不在表内，一律视为系统级，MCP 中不可用。
 
 ### D3：按（用户，项目）计算有效权限，不改用户的当前项目
 
-新增服务：根据项目找到所属团队，调用现有 `selectRolePermissionByUserId(teamId, projectId, userId)` 求角色权限，再与项目已勾选模块对应的权限前缀求交集。结果按（用户，项目）短时缓存（例如 60 秒），角色或 MCP 设置变更时清除。
+新增服务：根据项目找到所属团队，调用现有 `selectRolePermissionByUserId(teamId, projectId, userId)` 求角色权限，再与项目已勾选模块对应的权限前缀求交集。结果按（用户，项目）缓存 30 秒（`McpAccessService`）；修改 MCP 设置时立即清除，成员角色变更最多延迟 30 秒生效（实施时简化：不在角色变更处埋清除点）。
 
 不复用 `sys_user_config` 的当前项目：AI 同时操作别的项目时，不能把用户网页上正在看的项目切走。
 
 ### D4：MCP 端点与鉴权
 
-- 端点 `/mcp`（Streamable HTTP），由 `personal-access-token-oauth` 的 `AccessTokenAuthFilter` 鉴权。
+- 端点 `/mcp`（Streamable HTTP），由 `personal-access-token-oauth` 的 `AccessTokenAuthMechanism`（Vert.x HTTP 认证机制）鉴权，身份属性里带 `LoginUser`，工具通过 `SecurityIdentity` 取得。
 - `GET /.well-known/oauth-protected-resource`：`resource` 为 `{public-url}/mcp`，`authorization_servers` 指向本平台 issuer。
 - 未带令牌或令牌无效：HTTP 401，`WWW-Authenticate: Bearer resource_metadata="{public-url}/.well-known/oauth-protected-resource"`。
-- OAuth 访问令牌的 `resource` 必须与 `/mcp` 匹配。
+- OAuth 访问令牌的 `resource` 必须与 `{public-url}/mcp` 匹配（忽略大小写与末尾斜杠）；令牌或请求任一方没有 resource 时放行（个人令牌不绑定 resource）。
 - 记录 MCP 会话的客户端名称（`initialize` 中的 `clientInfo.name`），用于审计。
 
 ### D5：项目定位
@@ -83,7 +83,9 @@
 - 交付物 / 报告 / 文档：`list_deliverables`、`get_deliverable`、`list_reports`、`get_report`、`list_documents`、`read_document`
 - 代码：`list_repositories`、`list_tree`、`read_file`、`grep_code`、`list_commits`、`get_commit`
 
-实现上，精做工具调用与对应网页接口**相同的 Service 方法**，并在进入时用 D3 的有效权限检查对应权限串，保证与网页规则一致。每个工具标注 MCP 工具注解（`readOnlyHint` / `destructiveHint` / `idempotentHint`），让客户端按风险提示用户确认。
+实现上（实施时调整）：精做工具与通用通道一样，经 D7 的回环网关转发到对应网页接口，而不是直接调 Service。这样 `@RequiresPermissions`、数据范围、操作日志、异常映射只有一份；工具进入时先用 D3 的有效权限做一次前置检查，给出更明确的错误说明。最终工具名：`search_defects`、`get_defect`、`create_defect`、`update_defect`、`comment_defect`、`assign_defect`、`repair_defect`、`reject_defect`、`pass_defect`、`close_defect`、`open_defect`、`list_project_members`、`search_cases`、`get_case`、`create_case`、`update_case`、`list_plans`、`list_plan_items`、`update_plan_item`、`list_modules`、`list_reports`、`get_report`、`list_documents`、`get_project_stats`、`list_repositories`、`list_code_tree`、`read_code_file`、`search_code`、`list_commits`、`get_commit`，加上下文与通用通道共 35 个。
+
+缺陷流转在 MCP 层镜像网页按钮的处理人规则（修复 / 驳回 / 通过要求当前用户是处理人，指派要求是创建人或处理人）；后端 `SysDefectService` 新增状态校验，非法流转返回 409（原先后端不校验，网页靠按钮隐藏）。每个工具标注 MCP 工具注解（`readOnlyHint` / `destructiveHint` / `idempotentHint`），让客户端按风险提示用户确认。
 
 ### D7：通用通道
 
@@ -92,7 +94,11 @@
 - `describe_operation(operation)`：返回参数说明；请求体给出字段名、类型和必填信息。
 - `call_operation(project, operation, args)`：在服务端以该用户身份转发到原接口。
 
-转发方式：为本次调用创建一个短时（例如 2 分钟）的内部会话，会话的角色和权限按 D3 计算（当前项目为目标项目），然后对本机回环地址发起 HTTP 请求，复用完整的过滤器链（认证、`@RequiresPermissions`、数据范围、分页、日志、异常映射）。内部会话带「来源 MCP + 客户端名」标记，供审计使用；调用结束即销毁。
+对象归属：网页接口按 ID 访问对象时并不校验对象属于哪个项目（既有问题）。MCP 层在转发前必须先确认路径、查询、请求体中出现的对象 ID 都属于目标项目（`McpObjects`）；不认识的 `*Id` / `*Ids` 字段一律拒绝；`correlationId` 只接受 `defect_log` 与 `report` 两种关联类型并校验归属。
+
+收录规则（`McpOperationCatalog`）：只收带 `@RequiresPermissions`、权限全部落在已映射模块、返回 JSON、不含表单参数的接口；排除路径中含 export / import / upload / download / template / raw / archive / shard 等片段的接口，以及 `/ai`、`/git/`（Smart HTTP）、`/api/`、`/monitor`、`/tool` 前缀。任务 1.2 审计出从 `sys_user_config` 读当前项目的接口：`GET /system/defect/config`、`GET /system/case/module/{moduleId}/ids`、`GET /system/case/level/{level}/ids`、`POST /system/project/{projectId}/push`（导入导出类已被片段规则排除），全部列入排除清单；项目 MCP 设置接口本身也排除。
+
+转发方式：为本次调用创建一个短时（例如 2 分钟）的内部会话，会话的角色和权限按 D3 计算（当前项目为目标项目），然后对本机回环地址发起 HTTP 请求，复用完整的过滤器链（认证、`@RequiresPermissions`、数据范围、分页、日志、异常映射）。内部会话带「来源 MCP + 客户端名」标记，供审计使用；调用结束即销毁。内部会话只接受 TCP 对端为回环地址的请求（不看 `X-Forwarded-For`），也不能用于 Cookie 换取登录态（`resolveToken` 拒绝），泄露后无法从外部使用。回环地址默认 `http://127.0.0.1:{quarkus.http.port}`，可用 `cat2bug.mcp.loopback-url` 覆盖。
 
 否决方案：
 - 直接通过 CDI 调用资源方法：绕过过滤器链，权限和日志都要重写，等于两套逻辑。
@@ -103,15 +109,17 @@
 表 `sys_defect_commit`：`id`、`defect_id`、`defect_log_id`（对应那次修复日志）、`repository_id`（托管仓库时）、`commit_sha`、`commit_url`（外部仓库时）、`commit_message`、`create_by`、`create_time`。
 
 - `repair_defect` 与网页的修复接口都可带提交列表。
-- 托管仓库：校验提交存在于该项目的仓库，并且用户对该仓库有拉取权限；不存在时整个请求失败。
-- 外部仓库：只校验 SHA 格式，记录链接。
+- 每次最多 20 条；SHA 必须是 7～64 位十六进制。
+- 托管仓库：仓库必须属于该项目，经 `ISysGitBrowseService.getCommitDetail` 校验提交存在（同时校验拉取权限），并用仓库里的完整 SHA、首行说明、提交时间回填；不存在时整个请求失败、缺陷状态不变。
+- 外部仓库：只校验 SHA 格式与 http(s) 链接，记录链接。
 - 缺陷详情的日志中展示关联提交；托管仓库的提交可以点开查看改动。
 
 ### D9：来源审计与写操作保护
 
-- `sys_oper_log`、`sys_defect_log` 新增 `oper_channel`（`web` / `mcp` / `api`）与 `client_name`。网页日志与缺陷日志显示「经由 MCP（客户端名）」。
+- `sys_oper_log`、`sys_defect_log` 新增 `oper_channel`（`mcp` / `api`；网页写入 NULL，按 `web` 筛选时匹配 NULL）与 `client_name`。MCP 会话下没有登记规则的写接口，操作日志用兜底规则记录。网页日志与缺陷日志显示「经由 MCP（客户端名）」。
 - `create_defect`、`create_case`、`comment_defect` 支持可选的 `idempotency_key`：同一用户、同一键在 24 小时内重复调用时，返回第一次的结果，不重复创建。
-- MCP 调用按用户限流（例如每分钟 120 次，可配置）。
+- MCP 调用按用户限流：60 秒滑动窗口，默认 120 次，`cat2bug.mcp.rate-limit.per-minute` 可配置。
+- 幂等记录表 `sys_mcp_idempotency`，键为（用户，工具，幂等键），每小时清理超过 24 小时的记录。
 
 ## Risks / Trade-offs
 
@@ -123,9 +131,15 @@
 
 迁移：新增表和字段都有默认值，老数据不受影响；老项目默认关闭 MCP。回滚时关闭 `/mcp` 即可。
 
+## 实施中发现的既有问题（未在本变更修复）
+
+- `DELETE /system/document/{docIds}` 没有 `@RequiresPermissions`。
+- 网页 `PUT /system/defect` 可以修改 `projectId`，等同把缺陷移到任意项目。
+- 网页接口普遍按 ID 访问对象而不校验所属项目；MCP 层已自行校验，网页侧需另开变更。
+
 ## Open Questions
 
-- 精做工具的数量是否控制在 30 个左右？实施时看客户端的实际表现再调整。
+- 精做工具最终 35 个（含通用通道 3 个），客户端表现待 7.3 实测后再调整。
 - 是否需要 MCP 的资源（resources）或提示（prompts）能力，例如提供「项目缺陷规范」「提缺陷模板」？第一阶段先不做。
 
 ## 相关长期文档

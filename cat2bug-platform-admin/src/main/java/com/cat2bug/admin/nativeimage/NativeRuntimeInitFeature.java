@@ -33,6 +33,9 @@ public final class NativeRuntimeInitFeature implements Feature {
             "com.cat2bug.system.git.browse.domain.",
             "com.cat2bug.system.mybatis.",
             "com.cat2bug.admin.domain.",
+            // McpOperationCatalog 反射读取 REST 资源方法与注解；MCP 工具参数 record 由 Jackson 反序列化
+            "com.cat2bug.admin.resource.",
+            "com.cat2bug.admin.mcp.",
             // MyBatis OGNL 静态调用 PageOrder.current()
             "com.cat2bug.framework.web.PageOrder",
             "io.jsonwebtoken.impl.",

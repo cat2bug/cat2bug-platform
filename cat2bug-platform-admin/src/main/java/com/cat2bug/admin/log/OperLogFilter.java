@@ -60,6 +60,7 @@ public class OperLogFilter implements ContainerRequestFilter, ContainerResponseF
     static final int STATUS_SUCCESS = 0;
     static final int STATUS_FAIL = 1;
     static final int MAX_TEXT = 2000;
+    static final int BUSINESS_OTHER = 0;
 
     @Context
     ResourceInfo resourceInfo;
@@ -76,10 +77,24 @@ public class OperLogFilter implements ContainerRequestFilter, ContainerResponseF
     @Override
     public void filter(ContainerRequestContext ctx) {
         operLogRules.find(ctx.getMethod(), resourceInfo.getResourceClass(), resourceInfo.getResourceMethod())
+                .or(() -> mcpFallbackRule(ctx))
                 .ifPresent(rule -> {
                     ctx.setProperty(RULE_PROPERTY, rule);
                     ctx.setProperty(START_PROPERTY, System.currentTimeMillis());
                 });
+    }
+
+    /** MCP 会话下的写请求即使规则表未收录也要留痕。 */
+    private java.util.Optional<OperLogRules.Rule> mcpFallbackRule(ContainerRequestContext ctx) {
+        if ("GET".equals(ctx.getMethod()) || resourceInfo.getResourceClass() == null) {
+            return java.util.Optional.empty();
+        }
+        LoginUser loginUser = SecurityRequestContext.getLoginUser(ctx);
+        if (loginUser == null || !loginUser.isMcpSession()) {
+            return java.util.Optional.empty();
+        }
+        return java.util.Optional.of(new OperLogRules.Rule(resourceInfo.getResourceClass().getSimpleName(),
+                BUSINESS_OTHER, true, false, Set.of()));
     }
 
     @Override
@@ -108,6 +123,10 @@ public class OperLogFilter implements ContainerRequestFilter, ContainerResponseF
             LoginUser loginUser = SecurityRequestContext.getLoginUser(req);
             if (loginUser != null && loginUser.getUser() != null) {
                 operLog.setOperName(loginUser.getUser().getUserName());
+            }
+            if (loginUser != null) {
+                operLog.setOperChannel(loginUser.getOperChannel());
+                operLog.setClientName(truncate(loginUser.getClientName(), 128));
             }
             Object start = req.getProperty(START_PROPERTY);
             operLog.setCostTime(start instanceof Long s ? System.currentTimeMillis() - s : 0L);

@@ -44,13 +44,14 @@ public class OperlogResource {
                               @QueryParam("operName") String operName,
                               @QueryParam("businessType") Integer businessType,
                               @QueryParam("status") Integer status,
+                              @QueryParam("operChannel") String operChannel,
                               @QueryParam("params[beginTime]") String beginTime,
                               @QueryParam("params[endTime]") String endTime,
                               @QueryParam("pageNum") Integer pageNum,
                               @QueryParam("pageSize") Integer pageSize) {
-        return sysOperLogService.selectOperLogPage(
-                buildQuery(operIp, title, operName, businessType, status, beginTime, endTime),
-                pageNum, pageSize);
+        SysOperLog query = buildQuery(operIp, title, operName, businessType, status, beginTime, endTime);
+        query.setOperChannel(operChannel == null || operChannel.isBlank() ? null : operChannel);
+        return sysOperLogService.selectOperLogPage(query, pageNum, pageSize);
     }
 
     @POST

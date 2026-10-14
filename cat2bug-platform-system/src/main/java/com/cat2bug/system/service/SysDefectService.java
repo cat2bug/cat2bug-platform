@@ -7,6 +7,7 @@ import com.cat2bug.common.core.page.PageDomain;
 import com.cat2bug.common.domain.ImportDefectResult;
 import com.cat2bug.common.domain.LoginUser;
 import com.cat2bug.common.domain.SysDefect;
+import com.cat2bug.common.domain.SysDefectCommit;
 import com.cat2bug.common.domain.SysDefectLog;
 import com.cat2bug.common.domain.SysModule;
 import com.cat2bug.common.domain.SysProjectDefectTabs;
@@ -16,6 +17,7 @@ import com.cat2bug.common.domain.SysVersion;
 import com.cat2bug.common.domain.vo.EnumVo;
 import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.common.util.DefectDefaults;
+import com.cat2bug.common.util.MessageUtils;
 import com.cat2bug.common.util.StringUtils;
 import com.cat2bug.framework.security.AuthContext;
 import com.cat2bug.system.mapper.SysDefectLogMapper;
@@ -72,6 +74,9 @@ public class SysDefectService {
 
     @Inject
     SysDictDataService sysDictDataService;
+
+    @Inject
+    SysDefectCommitService sysDefectCommitService;
 
     public Map<String, Object> getDefectConfig() {
         Map<String, Object> config = new HashMap<>();
@@ -343,6 +348,8 @@ public class SysDefectService {
 
     @Transactional
     public SysDefectLog assign(SysDefectLog log) {
+        requireTransition(log, "assign",
+                DefectConstants.STATE_PROCESSING, DefectConstants.STATE_AUDIT, DefectConstants.STATE_REJECTED);
         SysDefect patch = new SysDefect();
         patch.setDefectId(requireDefectId(log));
         patch.setHandleBy(log.getReceiveBy());
@@ -355,7 +362,7 @@ public class SysDefectService {
 
     @Transactional
     public SysDefectLog reject(SysDefectLog log) {
-        SysDefect existing = selectSysDefectByDefectId(requireDefectId(log));
+        SysDefect existing = requireTransition(log, "reject", DefectConstants.STATE_AUDIT);
         existing.setDefectState(DefectConstants.STATE_REJECTED);
         existing.setHandleBy(resolveRejectHandleBy(existing));
         doUpdateSysDefect(existing);
@@ -368,8 +375,11 @@ public class SysDefectService {
 
     @Transactional
     public SysDefectLog repair(SysDefectLog log) {
+        SysDefect existing = requireTransition(log, "repair",
+                DefectConstants.STATE_PROCESSING, DefectConstants.STATE_REJECTED);
+        List<SysDefectCommit> commits = sysDefectCommitService.verify(existing.getProjectId(), log.getCommits());
         SysDefect patch = new SysDefect();
-        patch.setDefectId(requireDefectId(log));
+        patch.setDefectId(existing.getDefectId());
         patch.setDefectState(DefectConstants.STATE_AUDIT);
         patch.setHandleBy(log.getReceiveBy());
         doUpdateSysDefect(patch);
@@ -377,11 +387,19 @@ public class SysDefectService {
         log.setDefectLogType(DefectLogState.REPAIR);
         log.setReceiveBy(patch.getHandleBy());
         insertLog(log);
-        return sysDefectLogMapper.selectSysDefectLogByDefectLogId(log.getDefectLogId());
+        if (!commits.isEmpty()) {
+            sysDefectCommitService.saveForLog(existing.getDefectId(), log.getDefectLogId(), commits, log.getCreateBy());
+        }
+        SysDefectLog saved = sysDefectLogMapper.selectSysDefectLogByDefectLogId(log.getDefectLogId());
+        if (saved != null) {
+            sysDefectCommitService.attachToLogs(List.of(saved));
+        }
+        return saved;
     }
 
     @Transactional
     public SysDefectLog pass(SysDefectLog log) {
+        requireTransition(log, "pass", DefectConstants.STATE_AUDIT);
         SysDefect patch = new SysDefect();
         patch.setDefectId(requireDefectId(log));
         patch.setDefectState(DefectConstants.STATE_CLOSED);
@@ -394,6 +412,8 @@ public class SysDefectService {
 
     @Transactional
     public SysDefectLog close(SysDefectLog log) {
+        requireTransition(log, "close",
+                DefectConstants.STATE_PROCESSING, DefectConstants.STATE_AUDIT, DefectConstants.STATE_REJECTED);
         SysDefect patch = new SysDefect();
         patch.setDefectId(requireDefectId(log));
         patch.setDefectState(DefectConstants.STATE_CLOSED);
@@ -406,6 +426,7 @@ public class SysDefectService {
 
     @Transactional
     public SysDefectLog open(SysDefectLog log) {
+        requireTransition(log, "open", DefectConstants.STATE_CLOSED);
         SysDefect patch = new SysDefect();
         patch.setDefectId(requireDefectId(log));
         patch.setDefectState(DefectConstants.STATE_PROCESSING);
@@ -467,9 +488,28 @@ public class SysDefectService {
         LoginUser loginUser = requireLoginUser();
         log.setCreateBy(String.valueOf(loginUser.getUserId()));
         log.setCreateTime(new Date());
+        log.setOperChannel(loginUser.getOperChannel());
+        log.setClientName(loginUser.getClientName());
         if (sysDefectLogMapper.insertSysDefectLog(log) <= 0) {
             throw new ApiException("写入缺陷日志失败");
         }
+    }
+
+    /** 与前端按钮可见性一致的状态前置条件；已删除的缺陷不允许任何流转。 */
+    private SysDefect requireTransition(SysDefectLog log, String action, int... allowedStates) {
+        SysDefect existing = selectSysDefectByDefectId(requireDefectId(log));
+        if ("2".equals(existing.getDelFlag())) {
+            throw new ApiException(409, MessageUtils.message("defect.transition.deleted"));
+        }
+        Integer state = existing.getDefectState();
+        for (int allowed : allowedStates) {
+            if (state != null && state == allowed) {
+                return existing;
+            }
+        }
+        String stateName = state != null && state >= 0 && state < DefectConstants.DEFECT_STATES.length
+                ? DefectConstants.DEFECT_STATES[state] : String.valueOf(state);
+        throw new ApiException(409, MessageUtils.message("defect.transition.invalid-state", action, stateName));
     }
 
     private Long requireDefectId(SysDefectLog log) {

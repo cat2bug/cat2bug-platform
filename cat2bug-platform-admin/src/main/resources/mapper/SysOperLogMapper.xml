@@ -21,11 +21,14 @@
         <result property="errorMsg" column="error_msg"/>
         <result property="operTime" column="oper_time"/>
         <result property="costTime" column="cost_time"/>
+        <result property="operChannel" column="oper_channel"/>
+        <result property="clientName" column="client_name"/>
     </resultMap>
 
     <sql id="selectOperLogVo">
         select oper_id, title, business_type, method, request_method, operator_type, oper_name, dept_name,
-               oper_url, oper_ip, oper_location, oper_param, json_result, status, error_msg, oper_time, cost_time
+               oper_url, oper_ip, oper_location, oper_param, json_result, status, error_msg, oper_time, cost_time,
+               oper_channel, client_name
         from sys_oper_log
     </sql>
 
@@ -49,6 +52,12 @@
             <if test="query.status != null">
                 AND status = #{query.status}
             </if>
+            <if test="query.operChannel == 'web'">
+                AND (oper_channel IS NULL OR oper_channel = 'web')
+            </if>
+            <if test="query.operChannel != null and query.operChannel != '' and query.operChannel != 'web'">
+                AND oper_channel = #{query.operChannel}
+            </if>
             <if test="query.operName != null and query.operName != ''">
                 AND oper_name like concat('%', #{query.operName}, '%')
             </if>
@@ -63,9 +72,11 @@
 
     <insert id="insertOperlog">
         insert into sys_oper_log(title, business_type, method, request_method, operator_type, oper_name, dept_name,
-                                 oper_url, oper_ip, oper_location, oper_param, json_result, status, error_msg, cost_time, oper_time)
+                                 oper_url, oper_ip, oper_location, oper_param, json_result, status, error_msg, cost_time, oper_time,
+                                 oper_channel, client_name)
         values (#{title}, #{businessType}, #{method}, #{requestMethod}, #{operatorType}, #{operName}, #{deptName},
-                #{operUrl}, #{operIp}, #{operLocation}, #{operParam}, #{jsonResult}, #{status}, #{errorMsg}, #{costTime}, NOW())
+                #{operUrl}, #{operIp}, #{operLocation}, #{operParam}, #{jsonResult}, #{status}, #{errorMsg}, #{costTime}, NOW(),
+                #{operChannel}, #{clientName})
     </insert>
 
     <select id="countOperLogList" resultType="long">

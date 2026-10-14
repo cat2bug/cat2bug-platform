@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysDefectCommitMapper">
+
+    <resultMap type="com.cat2bug.common.domain.SysDefectCommit" id="SysDefectCommitResult">
+        <result property="commitLinkId"   column="commit_link_id" />
+        <result property="defectId"       column="defect_id" />
+        <result property="defectLogId"    column="defect_log_id" />
+        <result property="repositoryId"   column="repository_id" />
+        <result property="repositoryName" column="repository_name" />
+        <result property="commitSha"      column="commit_sha" />
+        <result property="commitUrl"      column="commit_url" />
+        <result property="commitMessage"  column="commit_message" />
+        <result property="commitTime"     column="commit_time" />
+        <result property="createBy"       column="create_by" />
+        <result property="createTime"     column="create_time" />
+    </resultMap>
+
+    <sql id="selectVo">
+        select c.commit_link_id, c.defect_id, c.defect_log_id, c.repository_id, r.name as repository_name,
+               c.commit_sha, c.commit_url, c.commit_message, c.commit_time, c.create_by, c.create_time
+        from sys_defect_commit c
+        left join sys_git_repository r on r.repository_id = c.repository_id
+    </sql>
+
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysDefectCommit"
+            useGeneratedKeys="true" keyProperty="commitLinkId" keyColumn="commit_link_id">
+        insert into sys_defect_commit (defect_id, defect_log_id, repository_id, commit_sha, commit_url,
+                                       commit_message, commit_time, create_by, create_time)
+        values (#{defectId}, #{defectLogId}, #{repositoryId}, #{commitSha}, #{commitUrl},
+                #{commitMessage}, #{commitTime}, #{createBy}, #{createTime})
+    </insert>
+
+    <select id="selectByDefectLogIds" resultMap="SysDefectCommitResult">
+        <include refid="selectVo"/>
+        where c.defect_log_id in
+        <foreach collection="defectLogIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+        order by c.commit_link_id
+    </select>
+
+    <select id="selectByDefectId" resultMap="SysDefectCommitResult">
+        <include refid="selectVo"/>
+        where c.defect_id = #{defectId}
+        order by c.commit_link_id
+    </select>
+</mapper>

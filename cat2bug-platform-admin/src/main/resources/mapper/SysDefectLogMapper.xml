@@ -16,6 +16,8 @@
                 typeHandler="com.cat2bug.system.mybatis.LongListJsonTypeHandler"/>
         <result property="annexUrls" column="annex_urls"/>
         <result property="defectId" column="defect_id"/>
+        <result property="operChannel" column="oper_channel"/>
+        <result property="clientName" column="client_name"/>
     </resultMap>
 
     <sql id="selectSysDefectLogVo">
@@ -29,7 +31,9 @@
             dl.defect_log_type,
             dl.receive_by,
             dl.annex_urls,
-            dl.defect_id
+            dl.defect_id,
+            dl.oper_channel,
+            dl.client_name
         FROM sys_defect_log dl
         LEFT JOIN sys_user u1 ON u1.user_id = dl.create_by
     </sql>
@@ -75,6 +79,8 @@
             <if test="receiveBy != null">receive_by,</if>
             <if test="annexUrls != null">annex_urls,</if>
             <if test="defectId != null">defect_id,</if>
+            <if test="operChannel != null">oper_channel,</if>
+            <if test="clientName != null">client_name,</if>
         </trim>
         <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
             <if test="defectLogId != null">#{defectLogId},</if>
@@ -85,6 +91,8 @@
             <if test="receiveBy != null">#{receiveBy,typeHandler=com.cat2bug.system.mybatis.LongListJsonTypeHandler},</if>
             <if test="annexUrls != null">#{annexUrls},</if>
             <if test="defectId != null">#{defectId},</if>
+            <if test="operChannel != null">#{operChannel},</if>
+            <if test="clientName != null">#{clientName},</if>
         </trim>
     </insert>
 

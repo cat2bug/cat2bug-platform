@@ -19,6 +19,7 @@
         <java.version>17</java.version>
         <quarkus.platform.version>3.27.6</quarkus.platform.version>
         <quarkus.mybatis.version>2.4.1</quarkus.mybatis.version>
+        <quarkus.mcp.version>1.9.1</quarkus.mcp.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <bitwalker.version>1.21</bitwalker.version>
         <kaptcha.version>2.3.3</kaptcha.version>

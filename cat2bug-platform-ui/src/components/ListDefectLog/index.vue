@@ -18,6 +18,22 @@
           <span class="time">{{ parseTime(log.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </div>
       </el-col>
+      <el-col v-if="log.operChannel === 'mcp' || (log.commits && log.commits.length)" class="list-defect-log-extra" :span="24">
+        <el-tag v-if="log.operChannel === 'mcp'" size="small" type="warning" effect="plain">
+          {{ $i18n.t('defect-log.via-mcp', { client: log.clientName || 'MCP' }) }}
+        </el-tag>
+        <span v-for="c in (log.commits || [])" :key="c.commitLinkId || c.commitSha" class="list-defect-log-commit">
+          <span class="list-defect-log-commit__label">{{ $i18n.t('defect-log.commit') }}</span>
+          <router-link v-if="c.repositoryId" :to="`/project/git-repo/browse/${c.repositoryId}/commits/${c.commitSha}`">
+            <code>{{ c.repositoryName ? c.repositoryName + '@' : '' }}{{ (c.commitSha || '').slice(0, 8) }}</code>
+          </router-link>
+          <a v-else-if="c.commitUrl" :href="c.commitUrl" target="_blank" rel="noopener noreferrer">
+            <code>{{ (c.commitSha || '').slice(0, 8) }}</code>
+          </a>
+          <code v-else>{{ (c.commitSha || '').slice(0, 8) }}</code>
+          <span v-if="c.commitMessage" class="list-defect-log-commit__msg">{{ c.commitMessage }}</span>
+        </span>
+      </el-col>
       <comment-input ref="myCommentInput" v-show="log.visibleCommentInput" show-word-limit @submit="commentSubmitHandle(log,$event)" />
       <el-col v-if="showComment" class="list-comment-row" :key="comment.commentId" :span="24" v-for="comment in log.commentList">
         <comment-view :comment="comment" @delete="getLog" />
@@ -241,6 +257,30 @@ export default {
 }
 .list-comment-row {
   padding-left: 20px;
+}
+.list-defect-log-extra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 2px 0 4px;
+  font-size: 12px;
+}
+.list-defect-log-commit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+}
+.list-defect-log-commit__label,
+.list-defect-log-commit__msg {
+  color: #909399;
+}
+.list-defect-log-commit__msg {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 360px;
 }
 .list-defect-log-pager {
   display: flex;

@@ -2,6 +2,7 @@ package com.cat2bug.framework.security.token;
 
 import com.cat2bug.common.security.AccessTokens;
 import com.cat2bug.framework.web.ClientInfo;
+import com.cat2bug.framework.web.PublicUrlResolver;
 import io.quarkus.security.credential.TokenCredential;
 import io.quarkus.security.identity.IdentityProviderManager;
 import io.quarkus.security.identity.SecurityIdentity;
@@ -14,6 +15,7 @@ import io.quarkus.vertx.http.runtime.security.HttpSecurityUtils;
 import io.smallrye.mutiny.Uni;
 import io.vertx.ext.web.RoutingContext;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import java.util.Set;
 
@@ -25,8 +27,13 @@ import java.util.Set;
 public class AccessTokenAuthMechanism implements HttpAuthenticationMechanism {
 
     static final String CLIENT_IP_ATTRIBUTE = "cat2bug.clientIp";
+    static final String RESOURCE_ATTRIBUTE = "cat2bug.mcpResource";
+    public static final String PROTECTED_RESOURCE_METADATA_PATH = "/.well-known/oauth-protected-resource";
 
     private static final String BEARER = "Bearer ";
+
+    @Inject
+    PublicUrlResolver publicUrlResolver;
 
     @Override
     public Uni<SecurityIdentity> authenticate(RoutingContext context, IdentityProviderManager identityProviderManager) {
@@ -39,13 +46,16 @@ public class AccessTokenAuthMechanism implements HttpAuthenticationMechanism {
         }
         TokenAuthenticationRequest request = new TokenAuthenticationRequest(new TokenCredential(token, "bearer"));
         request.setAttribute(CLIENT_IP_ATTRIBUTE, ClientInfo.resolveIp(context.request()));
+        request.setAttribute(RESOURCE_ATTRIBUTE, publicUrlResolver.resolve(context.request()) + McpPaths.ROOT);
         HttpSecurityUtils.setRoutingContextAttribute(request, context);
         return identityProviderManager.authenticate(request);
     }
 
     @Override
     public Uni<ChallengeData> getChallenge(RoutingContext context) {
-        return Uni.createFrom().item(new ChallengeData(401, "WWW-Authenticate", "Bearer realm=\"cat2bug\""));
+        String metadata = publicUrlResolver.resolve(context.request()) + PROTECTED_RESOURCE_METADATA_PATH;
+        return Uni.createFrom().item(new ChallengeData(401, "WWW-Authenticate",
+                "Bearer realm=\"cat2bug\", resource_metadata=\"" + metadata + "\""));
     }
 
     @Override

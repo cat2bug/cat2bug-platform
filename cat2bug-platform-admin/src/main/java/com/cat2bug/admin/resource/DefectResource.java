@@ -100,6 +100,8 @@ public class DefectResource {
                               @QueryParam("defectState") Integer defectState,
                               @QueryParam("defectType") Integer defectType,
                               @QueryParam("moduleId") Long moduleId,
+                              @QueryParam("handleById") Long handleById,
+                              @QueryParam("projectNum") Long projectNum,
                               @QueryParam("pageNum") Integer pageNum,
                               @QueryParam("pageSize") Integer pageSize) {
         SysDefect query = new SysDefect();
@@ -108,6 +110,14 @@ public class DefectResource {
         query.setDefectState(defectState);
         query.setDefectType(defectType);
         query.setModuleId(moduleId);
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        if (handleById != null) {
+            params.put("handleById", handleById);
+        }
+        if (projectNum != null) {
+            params.put("projectNum", projectNum);
+        }
+        query.setParams(params);
         TableDataInfo table = sysDefectService.selectDefectPage(query, pageNum, pageSize);
         enrichDefectFocusList(table);
         return table;

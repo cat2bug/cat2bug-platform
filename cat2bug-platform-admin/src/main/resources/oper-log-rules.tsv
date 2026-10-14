@@ -226,3 +226,4 @@ GET	/tool/gen/genCode/{}	代码生成	8	1	1
 POST	/tool/gen/importTable	代码生成	6	1	1	
 GET	/tool/gen/synchDb/{}	代码生成	2	1	1	
 DELETE	/tool/gen/{}	代码生成	3	1	1	
+PUT	/system/project/{}/mcp	项目MCP设置	2	1	1	

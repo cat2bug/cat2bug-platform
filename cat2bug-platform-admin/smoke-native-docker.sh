@@ -128,6 +128,22 @@ if [[ "$FRESH" == "true" ]]; then
   else
     sleep 3
   fi
+else
+  # 复制来的库若落后于当前迁移脚本，先走升级流程（与用户升级路径一致）
+  UPGRADE_STATUS=$(curl -s http://127.0.0.1:2020/upgrade/status || true)
+  if echo "$UPGRADE_STATUS" | grep -q '"upgradeRequired":true'; then
+    UPGRADE=$(curl -s -X POST http://127.0.0.1:2020/upgrade/submit -H 'Content-Type: application/json' \
+      -d '{"adminUsername":"admin","adminPassword":"cat2bug","backupEnabled":false,"applyConfigChanges":false}' || true)
+    if ! echo "$UPGRADE" | grep -q '"code":200'; then
+      echo "upgrade submit: FAIL $(echo "$UPGRADE" | head -c 300)"
+      docker logs "$CONTAINER" 2>&1 | grep -iE 'error|exception|upgrade|flyway' -A3 | tail -40
+      exit 1
+    fi
+    echo "upgrade submit: OK"
+    docker restart "$CONTAINER" >/dev/null
+    sleep 2
+    wait_health
+  fi
 fi
 
 # SPA index
@@ -171,10 +187,44 @@ TID=$(echo "$INFO" | grep -o '"teamId":[0-9]*' | head -1 | cut -d: -f2 || true)
 TID="${TID:-1}"
 PROJECTS=$(curl -s "http://127.0.0.1:2020/system/project/list?teamId=$TID&pageNum=1&pageSize=5" -H "Authorization: Bearer $TOKEN" || true)
 PID=$(echo "$PROJECTS" | grep -o '"projectId":[0-9]*' | head -1 | cut -d: -f2 || true)
+if [[ -z "$PID" ]]; then
+  # 种子库没有项目：建一个冒烟用团队与项目（创建者自动成为成员）
+  TEAM=$(curl -s -X POST "http://127.0.0.1:2020/system/team" -H "Authorization: Bearer $TOKEN" \
+    -H 'Content-Type: application/json' -d '{"teamName":"冒烟团队","teamKey":"smoke"}' || true)
+  NEW_TID=$(echo "$TEAM" | grep -o '"teamId":[0-9]*' | head -1 | cut -d: -f2 || true)
+  if [[ -n "$NEW_TID" ]]; then
+    TID="$NEW_TID"
+    curl -s -X POST "http://127.0.0.1:2020/system/project" -H "Authorization: Bearer $TOKEN" \
+      -H 'Content-Type: application/json' \
+      -d "{\"teamId\":$TID,\"projectName\":\"冒烟项目\",\"projectKey\":\"smoke\"}" >/dev/null || true
+    PROJECTS=$(curl -s "http://127.0.0.1:2020/system/project/list?teamId=$TID&pageNum=1&pageSize=5" -H "Authorization: Bearer $TOKEN" || true)
+    PID=$(echo "$PROJECTS" | grep -o '"projectId":[0-9]*' | head -1 | cut -d: -f2 || true)
+  fi
+fi
 HAS_PROJECT=true
-[[ "$FRESH" == "true" && -z "$PID" ]] && HAS_PROJECT=false
+[[ -z "$PID" ]] && HAS_PROJECT=false
 PID="${PID:-1}"
 echo "teamId=$TID projectId=$PID"
+if [[ "$HAS_PROJECT" == "true" ]]; then
+  # 种子库里 admin 不是项目成员、也没有当前项目：导入模板与 MCP 都依赖这两项
+  curl -s -X POST "http://127.0.0.1:2020/system/project/$PID/member" -H "Authorization: Bearer $TOKEN" \
+    -H 'Content-Type: application/json' -d '{"memberIds":1}' >/dev/null || true
+  curl -s -X PUT "http://127.0.0.1:2020/system/user-config" -H "Authorization: Bearer $TOKEN" \
+    -H 'Content-Type: application/json' -d "{\"currentProjectId\":$PID}" >/dev/null || true
+  LOGIN=$(curl -sf -X POST http://127.0.0.1:2020/login -H 'Content-Type: application/json' \
+    -d '{"username":"admin","password":"cat2bug"}' || true)
+  TOKEN=$(echo "$LOGIN" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+  CASES=$(curl -s "http://127.0.0.1:2020/system/case/list?projectId=$PID&pageNum=1&pageSize=1" -H "Authorization: Bearer $TOKEN" || true)
+  if echo "$CASES" | grep -q '"total":0'; then
+    # 用例导出为空时导入检查无意义：先造一个模块和一条用例
+    MOD=$(curl -s -X POST "http://127.0.0.1:2020/system/module" -H "Authorization: Bearer $TOKEN" \
+      -H 'Content-Type: application/json' -d "{\"projectId\":$PID,\"modulePid\":0,\"moduleName\":\"冒烟模块\"}" || true)
+    MOD_ID=$(echo "$MOD" | grep -o '"moduleId":[0-9]*' | head -1 | cut -d: -f2 || true)
+    [[ -n "$MOD_ID" ]] && curl -s -X POST "http://127.0.0.1:2020/system/case/batch" -H "Authorization: Bearer $TOKEN" \
+      -H 'Content-Type: application/json' \
+      -d "[{\"projectId\":$PID,\"moduleId\":$MOD_ID,\"caseName\":\"冒烟用例\",\"caseType\":1,\"caseLevel\":1}]" >/dev/null || true
+  fi
+fi
 
 check "user info"     "/getInfo"
 check "routers"       "/getRouters"
@@ -307,6 +357,41 @@ if [[ "$HAS_PROJECT" == "true" && -s /tmp/native-case-export.xlsx ]]; then
   else
     echo "case excel import: FAIL $(echo "$IMP" | head -c 200)"
     FAILS=$((FAILS+1))
+  fi
+fi
+
+# MCP：令牌鉴权 → initialize → tools/list → 通用目录（反射读资源注解）→ 精做工具（回环转发）
+if [[ "$HAS_PROJECT" == "true" ]]; then
+  MCP_UNAUTH=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:2020/mcp -H 'Content-Type: application/json' -d '{}' || true)
+  [[ "$MCP_UNAUTH" == "401" ]] && echo "mcp unauthenticated 401: OK" || { echo "mcp unauthenticated: FAIL ($MCP_UNAUTH)"; FAILS=$((FAILS+1)); }
+  curl -s -X PUT "http://127.0.0.1:2020/system/project/$PID/mcp" -H "Authorization: Bearer $TOKEN" \
+    -H 'Content-Type: application/json' \
+    -d '{"enabled":true,"modules":["defect","case","plan","deliverable","report","document","code","dashboard","project"]}' >/dev/null || true
+  PAT=$(curl -s -X POST "http://127.0.0.1:2020/system/user/profile/tokens" -H "Authorization: Bearer $TOKEN" \
+    -H 'Content-Type: application/json' -d '{"name":"native-smoke","expireDays":1}' \
+    | grep -o '"token":"c2b_pat_[^"]*"' | cut -d'"' -f4 || true)
+  mcp_post() { # body [session]
+    curl -s -D /tmp/native-mcp-headers -X POST http://127.0.0.1:2020/mcp \
+      -H "Authorization: Bearer $PAT" -H 'Content-Type: application/json' \
+      -H 'Accept: application/json, text/event-stream' ${2:+-H "Mcp-Session-Id: $2"} -d "$1" || true
+  }
+  if [[ -z "$PAT" ]]; then
+    echo "mcp token: FAIL"; FAILS=$((FAILS+1))
+  else
+    mcp_post '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"native-smoke","version":"1"}}}' >/tmp/native-mcp-init
+    SID=$(grep -i '^mcp-session-id:' /tmp/native-mcp-headers | awk '{print $2}' | tr -d '\r' || true)
+    mcp_post '{"jsonrpc":"2.0","method":"notifications/initialized"}' "$SID" >/dev/null
+    mcp_check() { # name body expected
+      local out; out=$(mcp_post "$2" "$SID")
+      if echo "$out" | grep -q "$3" && ! echo "$out" | grep -q '"isError":true'; then
+        echo "$1: OK"
+      else
+        echo "$1: FAIL $(echo "$out" | head -c 300)"; FAILS=$((FAILS+1))
+      fi
+    }
+    mcp_check "mcp tools/list" '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' 'search_defects'
+    mcp_check "mcp list_operations" '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"list_operations","arguments":{"project":"'"$PID"'","module":"defect"}}}' 'defect.list'
+    mcp_check "mcp search_defects" '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"search_defects","arguments":{"project":"'"$PID"'"}}}' 'total'
   fi
 fi
 
