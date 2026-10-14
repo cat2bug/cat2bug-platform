@@ -17,6 +17,7 @@
    - 整类反射（构造器/方法/字段）前缀：`com.cat2bug.common.`、`com.cat2bug.system.git.browse.domain.`、`com.cat2bug.system.mybatis.`、`com.cat2bug.admin.domain.`、`com.cat2bug.framework.web.PageOrder`（Mapper OGNL 静态调用，见 [[列表排序与注入防护]]）、`io.jsonwebtoken.impl.`、`io.jsonwebtoken.jackson.`。
    - `org.eclipse.jgit.` 下只注册枚举（JGit `Config` 反射调 `values()`）。
    - ServiceLoader：扫描 classpath 中 JJWT `Serializer` / `Deserializer` / `CompressionCodec` 的 `META-INF/services` provider 并注册反射；对应资源由 `quarkus.native.resources.includes` 打入镜像。
+   - 方法替换：第三方库引用了项目没有的可选依赖时，在 `nativeimage/` 下用 `@TargetClass` / `@Substitute` 切断该路径。现有 `Target_CommonsCompressZipFile`（commons-compress 1.28 的 zstd 入口改为抛 `IOException`），见 [[Quarkus3.27下commons-compress引用zstd导致Native构建失败]]。
 3. 打包：`./deploy/build-native.sh arm64|amd64`，默认产出原始 ELF 与 UPX 压缩版；冒烟用 `cat2bug-platform-admin/smoke-native-docker.sh`。
 
 ### 操作日志
