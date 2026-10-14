@@ -25,9 +25,11 @@
 
 ## 4. 消息正文模版
 
-- [ ] 4.1 新增 `ImMessageTemplates`：移植 Spring 缺陷、报告、默认（通知）三种模版的 `text / markdown / html`
-- [ ] 4.2 `DefectImNoticeService` 现有 Markdown 正文改为调用该模版，保证站内通知内容不变（对比改动前后输出）
-- [ ] 4.3 模版单元测试：同一缺陷三种格式都包含编号与名称；HTML 对用户输入做转义
+- [x] 4.1 新增 `ImMessageTemplates`：移植 Spring 缺陷、报告、默认（通知）三种模版的 `text / markdown / html`
+  - 缺陷字段沿用 Quarkus 现有站内通知（编号、名称、状态、处理人、描述），未移植 Spring `DefectNoticeFieldSupport` 的「按项目字段布局列出全部字段」；文本 / HTML 额外带上缺陷编号名称、报告标题（Spring 的文本正文里没有，飞书 / 钉钉群收到的消息会看不出是哪个缺陷）
+- [x] 4.2 `DefectImNoticeService` 现有 Markdown 正文改为调用该模版，保证站内通知内容不变（对比改动前后输出）
+  - 结构逐字一致（`defectMarkdownKeepsPreviousSiteNoticeFormat`）；其中的链接按 1.3 改为 History 路由
+- [x] 4.3 模版单元测试：同一缺陷三种格式都包含编号与名称；HTML 对用户输入做转义（`ImMessageTemplatesTest`）
 
 ## 5. 多渠道分发
 

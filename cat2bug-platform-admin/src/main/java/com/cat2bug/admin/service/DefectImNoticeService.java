@@ -1,14 +1,13 @@
 package com.cat2bug.admin.service;
 
-import com.cat2bug.common.constant.DefectConstants;
+import com.cat2bug.admin.service.im.ImLinkBuilder;
+import com.cat2bug.admin.service.im.ImMessageTemplates;
 import com.cat2bug.common.domain.LoginUser;
 import com.cat2bug.common.domain.SysDefect;
 import com.cat2bug.common.domain.SysUserDefect;
 import com.cat2bug.common.domain.im.IMUserConfig;
-import com.cat2bug.common.domain.vo.EnumVo;
 import com.cat2bug.common.domain.vo.SendNotice;
 import com.cat2bug.common.util.ImNoticeDefaults;
-import com.cat2bug.common.util.StringUtils;
 import com.cat2bug.framework.security.AuthContext;
 import com.cat2bug.system.mapper.SysUserDefectMapper;
 import com.cat2bug.system.service.ImUserConfigService;
@@ -47,6 +46,9 @@ public class DefectImNoticeService {
     @Inject
     AuthContext authContext;
 
+    @Inject
+    ImLinkBuilder imLinkBuilder;
+
     public void sendDefectNotice(String srcHost, Long defectId) {
         try {
             if (defectId == null) {
@@ -67,10 +69,11 @@ public class DefectImNoticeService {
             SendNotice notice = new SendNotice();
             notice.setProjectId(projectId);
             notice.setGroupName(DEFECT_GROUP);
+            String link = imLinkBuilder.defect(srcHost, projectId, defectId);
             notice.setTitle(buildTitle(defect));
-            notice.setContent(buildMarkdownContent(defect, srcHost));
+            notice.setContent(ImMessageTemplates.defect(defect, link).markdown());
             notice.setReceiveIds(new ArrayList<>(receiverIds));
-            notice.setSrc(buildLink(defect, srcHost));
+            notice.setSrc(link);
             imNoticeDispatchService.sendNotice(resolveSenderId(), notice);
         } catch (Exception ex) {
             LOG.warnf(ex, "发送缺陷通知失败 defectId=%d", defectId);
@@ -146,73 +149,11 @@ public class DefectImNoticeService {
         return loginUser != null ? loginUser.getUserId() : null;
     }
 
-    private static String buildTitle(SysDefect defect) {
-        String stateLabel = resolveStateLabel(defect.getDefectState());
+    static String buildTitle(SysDefect defect) {
         return String.format("[%s]缺陷:#%d %s",
-                stateLabel,
+                ImMessageTemplates.defectStateLabel(defect.getDefectState()),
                 defect.getProjectNum() != null ? defect.getProjectNum() : 0,
                 blankToEmpty(defect.getDefectName()));
-    }
-
-    private static String resolveStateLabel(Integer defectState) {
-        if (defectState == null) {
-            return "";
-        }
-        for (EnumVo state : DefectConstants.getDefectStateList()) {
-            if (state.getKey() != null && state.getKey().intValue() == defectState) {
-                return state.getValue() != null ? state.getValue() : String.valueOf(defectState);
-            }
-        }
-        if (defectState >= 0 && defectState < DefectConstants.DEFECT_STATES.length) {
-            return DefectConstants.DEFECT_STATES[defectState];
-        }
-        return String.valueOf(defectState);
-    }
-
-    private static String buildMarkdownContent(SysDefect defect, String srcHost) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("## #%d %s \n\n",
-                defect.getProjectNum() != null ? defect.getProjectNum() : 0,
-                blankToEmpty(defect.getDefectName())));
-        String link = buildLink(defect, srcHost);
-        if (StringUtils.isNotEmpty(link)) {
-            sb.append(String.format("[查看缺陷详情](%s) \n\n", link));
-        }
-        if (StringUtils.isNotEmpty(defect.getDefectDescribe())) {
-            sb.append("**描述:** ").append(defect.getDefectDescribe()).append(" \n\n");
-        }
-        if (defect.getHandleByList() != null && !defect.getHandleByList().isEmpty()) {
-            sb.append("**处理人:** ").append(formatHandleByNames(defect)).append(" \n\n");
-        }
-        return sb.toString();
-    }
-
-    private static String formatHandleByNames(SysDefect defect) {
-        return defect.getHandleByList().stream()
-                .map(user -> {
-                    if (user == null) {
-                        return "";
-                    }
-                    if (StringUtils.isNotEmpty(user.getNickName())) {
-                        return user.getNickName();
-                    }
-                    return blankToEmpty(user.getUserName());
-                })
-                .filter(StringUtils::isNotEmpty)
-                .reduce((left, right) -> left + ", " + right)
-                .orElse("");
-    }
-
-    private static String buildLink(SysDefect defect, String srcHost) {
-        if (StringUtils.isEmpty(srcHost) || defect.getDefectId() == null) {
-            return "";
-        }
-        String host = srcHost.endsWith("/") ? srcHost.substring(0, srcHost.length() - 1) : srcHost;
-        if (defect.getProjectId() != null) {
-            return String.format("%s/#/project/defect?projectId=%d&defectId=%d",
-                    host, defect.getProjectId(), defect.getDefectId());
-        }
-        return String.format("%s/#/project/defect?defectId=%d", host, defect.getDefectId());
     }
 
     private static String blankToEmpty(String value) {
