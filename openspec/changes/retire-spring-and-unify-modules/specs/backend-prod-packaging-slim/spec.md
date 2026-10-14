@@ -18,7 +18,7 @@
 
 ### Requirement: embedded 生产 JAR 保留 SPA 与 system/doc 文档
 
-标准 Release 的 admin 产物（JVM fast-jar 与 Native 单文件）MUST 内嵌 Vue SPA 静态资源（`index.html`、js/css 等），以支持单进程部署。系统文档 `/system/doc` 以外链方式提供，不要求内嵌 `docs/**`。
+标准 Release 的 admin 产物（JVM 单 JAR 与 Native 单文件）MUST 内嵌 Vue SPA 静态资源（`index.html`、js/css 等），以支持单进程部署。系统文档 `/system/doc` 以外链方式提供，不要求内嵌 `docs/**`。
 
 #### Scenario: 单进程加载 SPA
 

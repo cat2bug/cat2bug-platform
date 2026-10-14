@@ -2,6 +2,7 @@ package com.cat2bug.admin.setup;
 
 import com.cat2bug.common.domain.setup.SetupDatabaseTestRequest;
 import com.cat2bug.common.setup.SetupMessages;
+import com.cat2bug.common.util.FlywaySchemaSupport;
 import com.cat2bug.common.util.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -91,8 +92,9 @@ public class SetupDatabaseTestService {
                     return result;
                 }
                 boolean exists = mysqlDatabaseExists(connection, database);
+                boolean migrated = exists && mysqlSchemaPresent(request);
                 result.put("success", true);
-                result.put("databaseMode", exists ? DatabaseExistenceProbe.MODE_EXISTING : DatabaseExistenceProbe.MODE_NEW);
+                result.put("databaseMode", migrated ? DatabaseExistenceProbe.MODE_EXISTING : DatabaseExistenceProbe.MODE_NEW);
                 result.put("message", exists
                         ? SetupMessages.msg("setup.test.connection.success")
                         : SetupMessages.msg("setup.test.database.mysql.server.ready"));
@@ -111,6 +113,15 @@ public class SetupDatabaseTestService {
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() && rs.getInt(1) > 0;
             }
+        }
+    }
+
+    private static boolean mysqlSchemaPresent(SetupDatabaseTestRequest request) {
+        try (Connection connection = DriverManager.getConnection(
+                resolveMysqlUrl(request), request.getUsername(), request.getPassword())) {
+            return FlywaySchemaSupport.hasSuccessfulMigration(connection);
+        } catch (Exception e) {
+            return false;
         }
     }
 

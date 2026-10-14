@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Sync ISO preset report templates into Spring admin classpath resources.
+# Sync ISO preset report templates into cat2bug-platform-admin classpath resources
+# (cat2bug-platform-admin/src/main/resources/报告/模版/).
 #
 # Usage (from repo root):
 #   ./scripts/sync-report-preset-templates.sh

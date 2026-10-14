@@ -54,8 +54,12 @@ if RUNTIME_FILE="$(resolve_runtime_file)"; then
   fi
 fi
 
+JAVA_OPTS_ARR=()
+if [[ -n "${INSTALL_FILE:-}" ]]; then
+  JAVA_OPTS_ARR+=("-Dcat2bug.install.config-path=$INSTALL_FILE")
+fi
 if [[ -n "$CONFIG_LOCATIONS" ]]; then
-  exec java "-Dquarkus.config.locations=$CONFIG_LOCATIONS" -jar "$JAR" "$@"
+  exec java "-Dquarkus.config.locations=$CONFIG_LOCATIONS" ${JAVA_OPTS_ARR[@]+"${JAVA_OPTS_ARR[@]}"} -jar "$JAR" "$@"
 fi
 
 exec java -jar "$JAR" "$@"

@@ -1,9 +1,11 @@
 FROM eclipse-temurin:17-jre
-MAINTAINER yuzhantao@qq.com
-# 创建目录
-RUN mkdir -p /home
-# 指定路径
+LABEL maintainer="yuzhantao@qq.com"
+# 工作目录即安装配置（./config/install）与默认存储根的相对基准
 WORKDIR /home
 COPY ./cat2bug-admin.jar .
-# 启动认证服务
-ENTRYPOINT ["java","-jar","cat2bug-admin.jar","--spring.database-type=mysql","--server.port=2020"]
+# JAR 以 -Dquarkus.profile=mysql 构建，运行期默认 profile 会沿用 mysql（%mysql 占位数据源会污染安装向导预填），须显式切回 prod
+ENV QUARKUS_PROFILE=prod \
+    CAT2BUG_IN_DOCKER=true
+EXPOSE 2020
+# 安装向导提交后进程以 0 退出，依赖容器 restart 策略拉起
+ENTRYPOINT ["java","-jar","cat2bug-admin.jar"]

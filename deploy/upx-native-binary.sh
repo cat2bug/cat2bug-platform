@@ -65,5 +65,5 @@ echo "raw:  $SRC ($(du -h "$SRC" | cut -f1))"
 echo "upx:  $OUT_UPX ($(du -h "$OUT_UPX" | cut -f1), ${UPX_RATIO}%)"
 
 if [[ "$BINARY_INFO" == *"Mach-O"* ]]; then
-  echo "[NOTE] macOS UPX 产物不可本地执行；验证请用: ./deploy/docker/run-native-spring-minimal.sh upx <elf> && run-bg"
+  echo "[NOTE] macOS UPX 产物不可本地执行；请对 Linux ELF 压缩后用 ./cat2bug-platform-admin/smoke-native-docker.sh <arm64|amd64> 验证"
 fi

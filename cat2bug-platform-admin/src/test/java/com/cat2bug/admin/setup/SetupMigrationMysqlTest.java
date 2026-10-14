@@ -1,11 +1,14 @@
 package com.cat2bug.admin.setup;
 
+import com.cat2bug.common.domain.setup.SetupDatabaseTestRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,6 +45,41 @@ class SetupMigrationMysqlTest {
                 assertTrue(rs.getInt(1) > 30, "应执行全部迁移脚本");
                 assertEquals(0, rs.getInt(2), "不应有失败的迁移");
             }
+        } finally {
+            try (Connection c = admin.getConnection(); Statement s = c.createStatement()) {
+                s.execute("DROP DATABASE IF EXISTS " + db);
+            }
+        }
+    }
+
+    @Test
+    void emptyExistingDatabaseIsProbedAsNewUntilMigrated() throws Exception {
+        String base = System.getenv("CAT2BUG_TEST_MYSQL_URL");
+        String user = System.getenv("CAT2BUG_TEST_MYSQL_USER");
+        String password = System.getenv("CAT2BUG_TEST_MYSQL_PASSWORD");
+        Matcher hostPort = Pattern.compile("//([^:/]+):(\\d+)").matcher(base);
+        assertTrue(hostPort.find(), "CAT2BUG_TEST_MYSQL_URL 须包含 host:port");
+        String db = "cat2bug_qk_probe_" + System.currentTimeMillis();
+        SimpleDataSource admin = new SimpleDataSource(DRIVER, base + PARAMS, user, password);
+        try (Connection c = admin.getConnection(); Statement s = c.createStatement()) {
+            s.execute("CREATE DATABASE " + db + " DEFAULT CHARACTER SET utf8mb4");
+        }
+        try {
+            SetupDatabaseTestRequest request = new SetupDatabaseTestRequest();
+            request.setDatabaseType("mysql");
+            request.setHost(hostPort.group(1));
+            request.setPort(Integer.parseInt(hostPort.group(2)));
+            request.setDatabase(db);
+            request.setUsername(user);
+            request.setPassword(password);
+            SetupDatabaseTestService service = new SetupDatabaseTestService();
+
+            assertEquals(DatabaseExistenceProbe.MODE_NEW, service.test(request).get("databaseMode"));
+
+            SimpleDataSource target = new SimpleDataSource(DRIVER, base + db + PARAMS, user, password);
+            new SetupMigrationService().migrate("mysql", target);
+
+            assertEquals(DatabaseExistenceProbe.MODE_EXISTING, service.test(request).get("databaseMode"));
         } finally {
             try (Connection c = admin.getConnection(); Statement s = c.createStatement()) {
                 s.execute("DROP DATABASE IF EXISTS " + db);

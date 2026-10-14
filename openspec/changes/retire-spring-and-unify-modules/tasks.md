@@ -30,13 +30,13 @@
 
 ## 5. 交付链修正
 
-- [ ] 5.1 前端：`package.json` 只保留 `build:embedded`（输出 `../cat2bug-platform-admin/src/main/resources/META-INF/resources`），合并 `.env.embedded-quarkus` 到 `.env.embedded`；`vite.config.js` 去掉 Spring `static` 分支
-- [ ] 5.2 `scripts/report-preset/*` 与 `scripts/sync-report-preset-templates.sh` 改写入 `cat2bug-platform-admin/src/main/resources/报告/模版/`，跑一次同步确认无差异
-- [ ] 5.3 Docker：`after-dockerfile` 改为运行 admin fast-jar，删除 `--spring.*` 参数；`docker-compose.yml` 环境变量改为后端实际读取的变量名，`cat2bug.profile` 与卷挂载点统一
-- [ ] 5.4 rpm：`build-rpm-spring.sh` 改为 `build-rpm.sh` 打包 Native ELF，`application.properties` 模板改为新配置键，`smoke-install.sh` 路径更新
-- [ ] 5.5 JVM 冒烟：`build-embedded.sh` + `run-jar.sh` 启动后登录、打开项目、Git 仓库浏览、报告预制模版可用
-- [ ] 5.6 Compose 冒烟：起栈 → 安装 → 上传附件 + 建 Git 仓库 → 重建后端容器后数据仍在
-- [ ] 5.7 提交「交付链改用统一 admin」
+- [x] 5.1 前端：`package.json` 只保留 `build:embedded`（输出 `../cat2bug-platform-admin/src/main/resources/META-INF/resources`），合并 `.env.embedded-quarkus` 到 `.env.embedded`；`vite.config.js` 去掉 Spring `static` 分支
+- [x] 5.2 `scripts/report-preset/*` 与 `scripts/sync-report-preset-templates.sh` 改写入 `cat2bug-platform-admin/src/main/resources/报告/模版/`，跑一次同步确认无差异
+- [x] 5.3 Docker：`after-dockerfile` 改为运行 admin 单 JAR（uber-jar），删除 `--spring.*` 参数；`docker-compose.yml` 环境变量改为后端实际读取的变量名，`cat2bug.profile` 与卷挂载点统一
+- [x] 5.4 rpm：`build-rpm-spring.sh` 改为 `build-rpm.sh` 打包 Native ELF，`application.properties` 模板改为新配置键，`smoke-install.sh` 路径更新
+- [x] 5.5 JVM 冒烟：`build-embedded.sh` + `run-jar.sh` 启动后登录、打开项目、Git 仓库浏览、报告预制模版可用
+- [x] 5.6 Compose 冒烟：起栈 → 安装 → 上传附件 + 建 Git 仓库 → 重建后端容器后数据仍在
+- [x] 5.7 提交「交付链改用统一 admin」
 
 ## 6. Native 验证
 
@@ -46,9 +46,9 @@
 
 ## 7. 内部资料与公开发布
 
-- [ ] 7.1 `.gitignore` 删除 `/docs/` 规则，保留 Obsidian 个人工作区忽略；确认 `.cursor/`、`.claude/`、`.github/`、`assets/`、`CLAUDE.md` 仍忽略
-- [ ] 7.2 新增 `deploy/public-release-exclude.txt`（`docs/`、`openspec/`、`readme/core/` 及确认后的其它内部目录）
-- [ ] 7.3 新增 `deploy/scripts/export-public.sh`：临时索引生成剔除后的提交，增量挂到 `public/master`，树级自检，打印推送命令且不推送
+- [x] 7.1 `.gitignore` 删除 `/docs/` 规则，保留 Obsidian 个人工作区忽略；确认 `.cursor/`、`.claude/`、`.github/`、`assets/`、`CLAUDE.md` 仍忽略
+- [x] 7.2 新增 `deploy/public-release-exclude.txt`（`docs/`、`openspec/`、`readme/core/` 及确认后的其它内部目录）
+- [x] 7.3 新增 `deploy/scripts/export-public.sh`：临时索引生成剔除后的提交，增量挂到 `public/master`，树级自检，打印推送命令且不推送
 - [ ] 7.4 运行导出脚本，`git ls-tree -r public/master` 核对无内部路径；再提交一次后重跑验证增量父提交
 
 ## 8. 文档

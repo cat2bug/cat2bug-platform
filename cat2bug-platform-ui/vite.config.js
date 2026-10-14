@@ -150,14 +150,13 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), ['VUE_APP', 'VITE', 'ENV', 'NODE'])
   const mergedEnv = {
     ...env,
-    NODE_ENV: (mode === 'embedded' || mode === 'embedded-quarkus')
+    NODE_ENV: mode === 'embedded'
       ? 'embedded'
       : (mode === 'development' ? 'development' : 'production')
   }
 
   const isDev = mode === 'development'
-  const isEmbeddedQuarkus = mode === 'embedded-quarkus'
-  const isEmbedded = mode === 'embedded' || isEmbeddedQuarkus
+  const isEmbedded = mode === 'embedded'
   const isAnalyze = process.env.ANALYZE === 'true'
   const devToolsEnabled = mergedEnv.VUE_APP_ENABLE_DEV_TOOLS === 'true'
   const port = Number(process.env.port || process.env.npm_config_port || 2222)
@@ -168,9 +167,7 @@ export default defineConfig(({ mode }) => {
 
   const outDir = isAnalyze
     ? 'analyze'
-    : (isEmbeddedQuarkus
-      ? '../cat2bug-platform-admin/src/main/resources/META-INF/resources'
-      : (mode === 'embedded' ? '../cat2bug-platform-admin/src/main/resources/static' : 'dist'))
+    : (isEmbedded ? '../cat2bug-platform-admin/src/main/resources/META-INF/resources' : 'dist')
 
   return {
     base: mergedEnv.VUE_PUBLIC_PATH || '/',
@@ -204,14 +201,14 @@ export default defineConfig(({ mode }) => {
         viteCompression({
           verbose: false,
           // Quarkus 静态资源不使用预压缩 .gz，嵌入只会增大 Native 体积
-          disable: isEmbeddedQuarkus,
+          disable: isEmbedded,
           threshold: 0,
           algorithm: 'gzip',
           ext: '.gz',
           deleteOriginFile: false
         }),
         // 帮助文档已迁至官网；Quarkus 嵌入包不再携带 /docs
-        ...(isEmbeddedQuarkus ? [] : [viteStaticCopy({
+        ...(isEmbedded ? [] : [viteStaticCopy({
           targets: [
             {
               src: docsStaticDir,
@@ -342,7 +339,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir,
       // Quarkus 嵌入目录为专用产物目录（已 gitignore），每次清空避免旧 hash 文件/残留 .gz 进入 Native
-      ...(isEmbeddedQuarkus ? { emptyOutDir: true } : {}),
+      ...(isEmbedded ? { emptyOutDir: true } : {}),
       assetsDir: mergedEnv.VUE_APP_STATIC_PATH || 'static',
       sourcemap: false,
       rollupOptions: {

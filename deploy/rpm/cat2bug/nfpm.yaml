@@ -1,4 +1,4 @@
-# Spring Native RPM 打包清单（nfpm）；二进制来自 build-rpm-spring.sh 的 stage 目录
+# Native RPM 打包清单（nfpm）；二进制来自 build-rpm.sh 的 stage 目录
 name: cat2bug-platform
 arch: ${NFPM_ARCH}
 platform: linux
@@ -6,12 +6,13 @@ version: ${NFPM_VERSION}
 section: default
 priority: optional
 maintainer: Cat2Bug Team <support@cat2bug.com>
-description: Cat2Bug 缺陷管理平台（Spring Native，无需 JRE）
+description: Cat2Bug 缺陷管理平台（Quarkus Native，内嵌前端，无需 JRE）
 vendor: Cat2Bug
 license: MIT
 homepage: https://www.cat2bug.com
 depends:
   - glibc >= 2.28
+  - zlib
 contents:
   - src: stage/usr/bin/cat2bug-admin
     dst: /usr/bin/cat2bug-admin
@@ -19,6 +20,7 @@ contents:
       mode: 0755
   - src: stage/etc/cat2bug/platform.properties
     dst: /etc/cat2bug/platform.properties
+    type: config|noreplace
     file_info:
       mode: 0644
   - src: stage/lib/systemd/system/cat2bug-platform.service
@@ -37,10 +39,17 @@ contents:
     type: dir
     file_info:
       mode: 0755
+  - dst: /var/lib/cat2bug-platform/config
+    type: dir
+    file_info:
+      mode: 0755
   - dst: /var/lib/cat2bug-platform/config/install
     type: dir
     file_info:
       mode: 0755
+  - src: /etc/cat2bug/platform.properties
+    dst: /var/lib/cat2bug-platform/config/application.properties
+    type: symlink
   - dst: /var/lib/cat2bug-platform/tmp
     type: dir
     file_info:

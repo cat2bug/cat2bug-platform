@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 在最小 Debian 容器内对 Linux ELF 执行 UPX（macOS 无 upx / 需与发布环境一致的 glibc UPX 时使用）
 #
-# 用法（由 upx-native-binary.sh / build-native-spring.sh 调用）:
+# 用法（由 upx-native-binary.sh / build-native.sh 调用）:
 #   upx_compress_in_docker /path/to/cat2bug-admin-linux-arm64 [/path/to/out.upx]
 #
 # 环境变量:

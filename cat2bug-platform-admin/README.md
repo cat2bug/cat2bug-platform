@@ -36,7 +36,7 @@ mvn -pl cat2bug-platform-admin -am test
 ./deploy/build-embedded.sh
 
 # 或分步
-cd cat2bug-platform-ui && npm run build:embedded-quarkus
+cd cat2bug-platform-ui && npm run build:embedded
 cd .. && mvn -Pembedded -pl cat2bug-platform-admin -am package -DskipTests
 java -jar cat2bug-platform-admin/target/quarkus-app/quarkus-run.jar
 ```

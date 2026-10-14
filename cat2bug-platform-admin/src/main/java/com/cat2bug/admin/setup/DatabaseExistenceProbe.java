@@ -100,7 +100,9 @@ public class DatabaseExistenceProbe {
     public String probeMysqlMode(SetupSubmitRequest request) {
         String database = request.getMysqlDatabase().trim();
         assertValidDatabaseName(database);
-        return setupMysqlDatabaseService.databaseExists(request, database) ? MODE_EXISTING : MODE_NEW;
+        boolean migrated = setupMysqlDatabaseService.databaseExists(request, database)
+                && setupMysqlDatabaseService.isSchemaPresent(request, database);
+        return migrated ? MODE_EXISTING : MODE_NEW;
     }
 
     public String probeMode(SetupSubmitRequest request) {

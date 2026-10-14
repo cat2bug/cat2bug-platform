@@ -1,0 +1,7 @@
+# build.sh 产物与 Compose 运行期数据（config/ 内含安装向导写入的数据库密码）
+/static/
+/cat2bug-admin.jar
+/config/
+/uploadPath/
+/mysql-data/
+/logs/

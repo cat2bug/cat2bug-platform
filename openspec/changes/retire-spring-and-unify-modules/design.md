@@ -49,7 +49,8 @@
 
 ### D4 Docker Compose 与 rpm 改用新 admin
 
-- `after-dockerfile`：基于 JRE 17，复制 Quarkus fast-jar 目录（`target/quarkus-app/`）并以 `java -jar quarkus-run.jar` 启动；数据库/Redis 通过安装配置或 `CAT2BUG_*` 环境变量注入（删除 `--spring.*` 参数与 `SPRING_*`/`REDIS_HOSTS` 变量，改为 Quarkus 实际读取的变量名）。
+- `after-dockerfile`：基于 JRE 17，复制 `deploy/docker/build.sh` 产出的单 JAR（`-Prelease` uber-jar，与 `run-jar.sh` 一致）并以 `java -jar cat2bug-admin.jar` 启动。数据源 `db-kind` 为构建期属性，镜像按 `-Dquarkus.profile=mysql` 打包、运行期 `QUARKUS_PROFILE=prod`，因此 Docker 镜像只支持 MySQL。删除 `--spring.*` 参数与 `SPRING_DATABASE_TYPE`/`SPRING_REDIS_*`/`REDIS_HOSTS`；安装向导 MySQL 预填仍只认 `SPRING_DATASOURCE_DRUID_MASTER_*` 三个变量（对应安装 YAML 键），改名需改 `SetupPreflightService`，不在本变更范围。
+- 安装向导：MySQL 库「存在但无成功 Flyway 迁移」按 `new` 处理（与 H2 一致），否则 Compose 预建的空库会被判为 `existing` 而拒绝安装。
 - 卷：后端 `cat2bug.profile` 默认路径与卷挂载点统一为同一目录（`/home/uploadPath`），确保上传与 `git/` 子目录持久化。
 - 前端 nginx 容器保持不变；`/prod-api` 前缀转发规则以 Compose 冒烟验证为准。
 - rpm：`build-rpm-spring.sh` 改为 `build-rpm.sh`，打包 Native ELF（无 JRE），`application.properties` 模板改为 Quarkus 配置键。

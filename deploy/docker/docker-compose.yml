@@ -1,4 +1,3 @@
-version: '3.4'
 name: cat2bug-platform
 services:
   cat2bug-platform-redis:
@@ -55,21 +54,27 @@ services:
     expose:
       - "2020"
     environment:
-      SPRING_DATABASE_TYPE: mysql
+      TZ: Asia/Shanghai
+      CAT2BUG_IN_DOCKER: "true"
+      # 存储根（上传、头像、Git bare 仓 git/ 子目录），须与下方卷挂载点一致
+      CAT2BUG_PROFILE: /home/uploadPath
+      # 运行期即生效：cache.type=redis 时必须同时给出 redis.hosts，否则启动失败
       CAT2BUG_CACHE_TYPE: redis
-      SPRING_DATASOURCE_DRUID_MASTER_URL: jdbc:mysql://cat2bug-platform-mysql:3306/cat2bug_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
+      CAT2BUG_REDIS_HOSTS: redis://cat2bug-platform-redis:6379
+      # 仅用于安装向导预填（GET /setup/preflight）。MySQL 连接只认这组变量名（对应 install YAML 的
+      # spring.datasource.druid.master.*），并据 jdbc:mysql 推断数据库类型；运行期数据源由向导写入 config/install
+      SPRING_DATASOURCE_DRUID_MASTER_URL: jdbc:mysql://cat2bug-platform-mysql:3306/cat2bug_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8
       SPRING_DATASOURCE_DRUID_MASTER_USERNAME: root
       SPRING_DATASOURCE_DRUID_MASTER_PASSWORD: cat2bug_password
-      REDIS_HOSTS: cat2bug-platform-redis:6379
-      SPRING_REDIS_HOST: cat2bug-platform-redis
-      SPRING_REDIS_PORT: 6379
+      CAT2BUG_SETUP_REDIS_HOST: cat2bug-platform-redis
       # 可选：安装向导 AI 步骤预填 Ollama 地址
       # CAT2BUG_AI_HOST: http://ollama:11434
       # 已 completed install + 换 JAR 有待执行 Flyway 时：跳过 /upgrade UI，启动期静默 migrate；失败则容器 exit 1
       # CAT2BUG_UPGRADE_SKIP: "true"
     volumes:
       - ./uploadPath:/home/uploadPath
-      - ./logs:/home/logs
+      # 安装向导写入的 application-install.yml / quarkus-runtime.properties；丢失则重建容器后回到 /setup
+      - ./config:/home/config
     links:
       - cat2bug-platform-mysql
       - cat2bug-platform-redis

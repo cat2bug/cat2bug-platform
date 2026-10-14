@@ -11,7 +11,6 @@
     "build:prod": "vite build --mode production",
     "build:cloud": "vite build --mode cloud",
     "build:embedded": "vite build --mode embedded",
-    "build:embedded-quarkus": "vite build --mode embedded-quarkus",
     "build:stage": "vite build --mode staging",
     "analyze": "ANALYZE=true vite build --mode embedded",
     "preview": "vite preview",

@@ -31,8 +31,8 @@ case "$ARCH" in
 esac
 
 if [[ "${SKIP_EMBEDDED:-false}" != "true" ]]; then
-  echo "==> 前端 build:embedded-quarkus"
-  (cd "$ROOT/cat2bug-platform-ui" && NODE_OPTIONS="${NODE_OPTIONS:---openssl-legacy-provider}" npm run build:embedded-quarkus)
+  echo "==> 前端 build:embedded"
+  (cd "$ROOT/cat2bug-platform-ui" && NODE_OPTIONS="${NODE_OPTIONS:---openssl-legacy-provider}" npm run build:embedded)
 fi
 
 echo "==> Native build (platform=$DOCKER_PLATFORM, container=$CONTAINER_BUILD)"
