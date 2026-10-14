@@ -3,11 +3,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-<!--    <parent>-->
-<!--        <groupId>org.springframework.boot</groupId>-->
-<!--        <artifactId>spring-boot-starter-parent</artifactId>-->
-<!--        <version>3.2.1</version>-->
-<!--    </parent>-->
 
     <groupId>com.cat2bug</groupId>
     <artifactId>cat2bug</artifactId>
@@ -16,47 +11,28 @@
     <name>cat2bug-platform</name>
     <url>https://www.cat2bug.com</url>
     <description>猫陪我改BUG</description>
-    
+
     <properties>
         <cat2bug.version>1.1.0</cat2bug.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <!-- Spring Boot 3.3 线最新补丁；CI/Dependabot 仅 bump 3.3.* -->
-        <spring-boot.version>3.3.13</spring-boot.version>
         <java.version>17</java.version>
-        <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
+        <quarkus.platform.version>3.15.7</quarkus.platform.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-        <druid.version>1.2.23</druid.version>
         <bitwalker.version>1.21</bitwalker.version>
-        <springdoc.version>2.6.0</springdoc.version>
-        <knife4j.version>4.5.0</knife4j.version>
         <kaptcha.version>2.3.3</kaptcha.version>
-        <pagehelper.boot.version>2.1.0</pagehelper.boot.version>
-        <mybatis-spring-boot.version>3.0.4</mybatis-spring-boot.version>
-        <dynamic-datasource.version>4.3.1</dynamic-datasource.version>
         <fastjson.version>2.0.60</fastjson.version>
         <oshi.version>6.4.6</oshi.version>
         <commons.io.version>2.19.0</commons.io.version>
         <commons.collections.version>3.2.2</commons.collections.version>
         <poi.version>5.4.1</poi.version>
-        <velocity.version>2.3</velocity.version>
         <jjwt.version>0.12.6</jjwt.version>
         <guava.version>32.1.3-jre</guava.version>
         <hutool.version>5.8.25</hutool.version>
         <jgit.version>6.10.0.202406032230-r</jgit.version>
         <okhttp.version>4.12.0</okhttp.version>
         <j2cache.core.version>2.8.5-release</j2cache.core.version>
-        <j2cache.spring-boot2-starter.version>2.8.0-release</j2cache.spring-boot2-starter.version>
-        <!-- GraalVM Native Build Tools（与 Spring Boot 3.3.x 配套） -->
-        <native-buildtools.version>0.10.5</native-buildtools.version>
-        <native.image.name>cat2bug-admin</native.image.name>
-        <native.image.jvmargs>-J-Xmx5g -H:DeadlockWatchdogInterval=7200</native.image.jvmargs>
-        <native.image.threads>4</native.image.threads>
         <fastexcel.version>0.20.1</fastexcel.version>
-        <excel.poi.scope>compile</excel.poi.scope>
-        <kaptcha.scope>compile</kaptcha.scope>
-        <!-- native profile 设为 exec，主 artifact 保持 thin JAR 供 native-image 使用 -->
-        <repackage.classifier></repackage.classifier>
     </properties>
 
     <!-- 依赖声明 -->
@@ -76,20 +52,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- Spring Boot 3.3.x BOM -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <!-- 阿里数据库连接池 -->
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>druid-spring-boot-3-starter</artifactId>
-                <version>${druid.version}</version>
-            </dependency>
 
             <!-- 解析客户端操作系统、浏览器等 -->
             <dependency>
@@ -98,53 +60,11 @@
                 <version>${bitwalker.version}</version>
             </dependency>
 
-            <!-- pagehelper 分页插件 -->
-            <dependency>
-                <groupId>com.github.pagehelper</groupId>
-                <artifactId>pagehelper-spring-boot-starter</artifactId>
-                <version>${pagehelper.boot.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
-                <version>${dynamic-datasource.version}</version>
-            </dependency>
-
-            <!-- MyBatis Spring Boot 3（覆盖 pagehelper 传递的 2.x，兼容 Spring Framework 6.2+） -->
-            <dependency>
-                <groupId>org.mybatis.spring.boot</groupId>
-                <artifactId>mybatis-spring-boot-starter</artifactId>
-                <version>${mybatis-spring-boot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mybatis</groupId>
-                <artifactId>mybatis-spring</artifactId>
-                <version>${mybatis-spring-boot.version}</version>
-            </dependency>
-
             <!-- 获取系统信息 -->
             <dependency>
                 <groupId>com.github.oshi</groupId>
                 <artifactId>oshi-core</artifactId>
                 <version>${oshi.version}</version>
-            </dependency>
-
-            <!-- OpenAPI 3（springdoc） -->
-            <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
-                <version>${springdoc.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-                <version>${springdoc.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.xiaoymin</groupId>
-                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
-                <version>${knife4j.version}</version>
             </dependency>
 
             <!-- io常用工具类 -->
@@ -164,12 +84,6 @@
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
                 <version>${poi.version}</version>
-            </dependency>
-            <!-- velocity代码生成使用模板 -->
-            <dependency>
-                <groupId>org.apache.velocity</groupId>
-                <artifactId>velocity-engine-core</artifactId>
-                <version>${velocity.version}</version>
             </dependency>
 
             <!-- 糊涂工具-->
@@ -231,45 +145,12 @@
                 <artifactId>j2cache-core</artifactId>
                 <version>${j2cache.core.version}</version>
             </dependency>
-            <dependency>
-                <groupId>net.oschina.j2cache</groupId>
-                <artifactId>j2cache-spring-boot2-starter</artifactId>
-                <version>${j2cache.spring-boot2-starter.version}</version>
-            </dependency>
 
             <!-- 验证码 -->
             <dependency>
                 <groupId>pro.fessional</groupId>
                 <artifactId>kaptcha</artifactId>
                 <version>${kaptcha.version}</version>
-            </dependency>
-
-            <!-- 定时任务-->
-            <dependency>
-                <groupId>com.cat2bug</groupId>
-                <artifactId>cat2bug-quartz</artifactId>
-                <version>${cat2bug.version}</version>
-            </dependency>
-
-            <!-- 代码生成-->
-            <dependency>
-                <groupId>com.cat2bug</groupId>
-                <artifactId>cat2bug-generator</artifactId>
-                <version>${cat2bug.version}</version>
-            </dependency>
-
-            <!-- 核心模块-->
-            <dependency>
-                <groupId>com.cat2bug</groupId>
-                <artifactId>cat2bug-framework</artifactId>
-                <version>${cat2bug.version}</version>
-            </dependency>
-
-            <!-- 系统模块-->
-            <dependency>
-                <groupId>com.cat2bug</groupId>
-                <artifactId>cat2bug-system</artifactId>
-                <version>${cat2bug.version}</version>
             </dependency>
 
             <!-- 网络工具-->
@@ -279,49 +160,31 @@
                 <version>${okhttp.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-pool2</artifactId>
+                <version>2.12.1</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.websocket</groupId>
+                <artifactId>jakarta.websocket-client-api</artifactId>
+                <version>2.1.1</version>
+            </dependency>
+
             <!-- 通用工具-->
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
-
-            <!-- 通用工具-->
-            <dependency>
-                <groupId>com.cat2bug</groupId>
-                <artifactId>cat2bug-common</artifactId>
-                <version>${cat2bug.version}</version>
-            </dependency>
-
-            <!-- API-->
-            <dependency>
-                <groupId>com.cat2bug</groupId>
-                <artifactId>cat2bug-api</artifactId>
-                <version>${cat2bug.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.cat2bug</groupId>
-                <artifactId>cat2bug-ai</artifactId>
-                <version>${cat2bug.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.cat2bug</groupId>
-                <artifactId>cat2bug-im</artifactId>
-                <version>${cat2bug.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <modules>
-        <module>cat2bug-platform-admin</module>
-        <module>cat2bug-platform-framework</module>
-        <module>cat2bug-platform-system</module>
-        <module>cat2bug-platform-quartz</module>
-        <module>cat2bug-platform-generator</module>
-        <module>cat2bug-platform-common</module>
-        <module>cat2bug-platform-api</module>
-        <module>cat2bug-platform-ai</module>
-        <module>cat2bug-platform-im</module>
+        <module>cat2bug-platform-quarkus-common</module>
+        <module>cat2bug-platform-quarkus-framework</module>
+        <module>cat2bug-platform-quarkus-system</module>
+        <module>cat2bug-platform-quarkus-admin</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -329,15 +192,9 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.graalvm.buildtools</groupId>
-                    <artifactId>native-maven-plugin</artifactId>
-                    <version>${native-buildtools.version}</version>
-                    <extensions>true</extensions>
-                    <configuration>
-                        <metadataRepository>
-                            <enabled>true</enabled>
-                        </metadataRepository>
-                    </configuration>
+                    <groupId>io.quarkus.platform</groupId>
+                    <artifactId>quarkus-maven-plugin</artifactId>
+                    <version>${quarkus.platform.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -362,7 +219,6 @@
                                         macOS Homebrew 示例:
                                         export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
                                         export PATH="$JAVA_HOME/bin:$PATH"
-                                        或使用: ./scripts/mvn-jdk17.sh clean install
                                     </message>
                                 </requireJavaVersion>
                             </rules>
@@ -387,44 +243,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>native</id>
-            <properties>
-                <repackage.classifier>exec</repackage.classifier>
-                <spring-boot.aot.enabled>true</spring-boot.aot.enabled>
-                <spring.profiles.active>native</spring.profiles.active>
-                <excel.poi.scope>provided</excel.poi.scope>
-                <kaptcha.scope>provided</kaptcha.scope>
-                <skip.jvm.excel.sources>true</skip.jvm.excel.sources>
-                <maven.main.skip.jvm.excel>true</maven.main.skip.jvm.excel>
-            </properties>
-        </profile>
-        <profile>
-            <id>quarkus</id>
-            <properties>
-                <quarkus.platform.version>3.15.7</quarkus.platform.version>
-            </properties>
-            <modules>
-                <module>cat2bug-platform-quarkus-common</module>
-                <module>cat2bug-platform-quarkus-framework</module>
-                <module>cat2bug-platform-quarkus-system</module>
-                <module>cat2bug-platform-quarkus-admin</module>
-            </modules>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>io.quarkus.platform</groupId>
-                            <artifactId>quarkus-maven-plugin</artifactId>
-                            <version>${quarkus.platform.version}</version>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
-        </profile>
-    </profiles>
 
     <repositories>
         <repository>

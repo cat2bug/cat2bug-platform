@@ -1,1 +1,0 @@
-ALTER TABLE `sys_defect_log` ALTER COLUMN `defect_log_describe` CLOB;

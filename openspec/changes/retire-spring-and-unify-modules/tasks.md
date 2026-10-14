@@ -1,16 +1,16 @@
 ## 1. 留档与准备
 
-- [ ] 1.1 确认工作区干净（除本变更与 `docs/` 外无未提交改动），记录当前 HEAD
-- [ ] 1.2 打 tag `spring-final-1.1.0` 指向删除前 HEAD（不推送）
-- [ ] 1.3 改名前检查 4 个 Quarkus 模块间无同名全限定类、无 `com.cat2bug.<sub>` 与第三方包冲突
+- [x] 1.1 确认工作区干净（除本变更与 `docs/` 外无未提交改动），记录当前 HEAD
+- [x] 1.2 打 tag `spring-final-1.1.0` 指向删除前 HEAD（不推送）
+- [x] 1.3 改名前检查 4 个 Quarkus 模块间无同名全限定类、无 `com.cat2bug.<sub>` 与第三方包冲突
 
 ## 2. 删除 Spring 线
 
-- [ ] 2.1 `git rm` 9 个 Spring 模块、`cat2bug-platform-quarkus-spike`、根 `META-INF/`
-- [ ] 2.2 删除 Spring 专属交付物：`deploy/build-native-spring.sh`、`deploy/ci/spring-native.yml`、`deploy/ci/quarkus-spike-native.yml`、`deploy/docker/native-spring-minimal/`、`build-cat2bug-spring-upx-image.sh`、`run-native-spring-minimal.sh`、`deploy/rpm/cat2bug/build-rpm-spring.sh`，以及其余仅服务 Spring 的 `deploy/scripts`、`deploy/test` 脚本（逐个确认）
-- [ ] 2.3 删除 `readme/spring-native-delivery/` 与 `cat2bug-platform-ui/vue.config.js`
-- [ ] 2.4 根 `pom.xml`：默认 `<modules>` 改为 4 个 Quarkus 模块（暂用旧目录名），删除 `quarkus` profile 包装与仅 Spring 使用的版本属性/依赖管理；`mvn -o -DskipTests install` 通过
-- [ ] 2.5 提交「删除 Spring 后端」
+- [x] 2.1 `git rm` 9 个 Spring 模块、`cat2bug-platform-quarkus-spike`、根 `META-INF/`
+- [x] 2.2 删除 Spring 专属交付物：`deploy/build-native-spring.sh`、`deploy/ci/spring-native.yml`、`deploy/ci/quarkus-spike-native.yml`、`deploy/docker/native-spring-minimal/`、`build-cat2bug-spring-upx-image.sh`、`run-native-spring-minimal.sh`、`deploy/rpm/cat2bug/build-rpm-spring.sh`，以及其余仅服务 Spring 的 `deploy/scripts`、`deploy/test` 脚本（逐个确认）
+- [x] 2.3 删除 `readme/spring-native-delivery/` 与 `cat2bug-platform-ui/vue.config.js`
+- [x] 2.4 根 `pom.xml`：默认 `<modules>` 改为 4 个 Quarkus 模块（暂用旧目录名），删除 `quarkus` profile 包装与仅 Spring 使用的版本属性/依赖管理；`mvn -o -DskipTests install` 通过
+- [x] 2.5 提交「删除 Spring 后端」
 
 ## 3. 目录与 artifactId 改名
 
