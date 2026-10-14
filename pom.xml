@@ -181,10 +181,10 @@
     </dependencyManagement>
 
     <modules>
-        <module>cat2bug-platform-quarkus-common</module>
-        <module>cat2bug-platform-quarkus-framework</module>
-        <module>cat2bug-platform-quarkus-system</module>
-        <module>cat2bug-platform-quarkus-admin</module>
+        <module>cat2bug-platform-common</module>
+        <module>cat2bug-platform-framework</module>
+        <module>cat2bug-platform-system</module>
+        <module>cat2bug-platform-admin</module>
     </modules>
     <packaging>pom</packaging>
 

@@ -22,7 +22,7 @@ public class RootResource {
                 "code", 200,
                 "msg", "Cat2Bug Quarkus API",
                 "data", Map.of(
-                        "ui", "完整界面：npm run dev（:2222）；或 deploy/build-embedded-quarkus.sh 单 JAR",
+                        "ui", "完整界面：npm run dev（:2222）；或 deploy/build-embedded.sh 单 JAR",
                         "endpoints", List.of(
                                 "GET /version",
                                 "POST /login",

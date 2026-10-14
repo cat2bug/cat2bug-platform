@@ -3,15 +3,15 @@
 # 需 Docker（Mandrel 容器构建）；内嵌 SPA 需 Node 构建前端。
 #
 # 用法:
-#   ./deploy/build-native-quarkus.sh              # 本机架构
-#   ./deploy/build-native-quarkus.sh x86_64       # linux/amd64
-#   ./deploy/build-native-quarkus.sh aarch64      # linux/arm64
-#   SKIP_EMBEDDED=true ./deploy/build-native-quarkus.sh   # 跳过前端（API-only）
-#   CONTAINER_BUILD=false ./deploy/build-native-quarkus.sh  # 本机 GraalVM（需已安装）
+#   ./deploy/build-native.sh              # 本机架构
+#   ./deploy/build-native.sh x86_64       # linux/amd64
+#   ./deploy/build-native.sh aarch64      # linux/arm64
+#   SKIP_EMBEDDED=true ./deploy/build-native.sh   # 跳过前端（API-only）
+#   CONTAINER_BUILD=false ./deploy/build-native.sh  # 本机 GraalVM（需已安装）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ADMIN="$ROOT/cat2bug-platform-quarkus-admin"
+ADMIN="$ROOT/cat2bug-platform-admin"
 ARCH="${1:-$(uname -m)}"
 CONTAINER_BUILD="${CONTAINER_BUILD:-true}"
 
@@ -37,8 +37,8 @@ fi
 
 echo "==> Native build (platform=$DOCKER_PLATFORM, container=$CONTAINER_BUILD)"
 MVN_ARGS=(
-  -Pquarkus -Pembedded -Prelease -Pnative
-  -pl cat2bug-platform-quarkus-admin -am
+  -Pembedded -Prelease -Pnative
+  -pl cat2bug-platform-admin -am
   package -DskipTests
   -Dnative
   -Dquarkus.native.container-build="$CONTAINER_BUILD"
@@ -96,5 +96,5 @@ fi
 
 echo ""
 echo "Done: $OUT"
-echo "Smoke: ./cat2bug-platform-quarkus-admin/smoke-native-docker.sh ${GOARCH}"
+echo "Smoke: ./cat2bug-platform-admin/smoke-native-docker.sh ${GOARCH}"
 echo "  or:  $OUT &  curl -sf http://127.0.0.1:2020/q/health/ready && curl -sf http://127.0.0.1:2020/version"

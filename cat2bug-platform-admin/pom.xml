@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>cat2bug-quarkus-admin</artifactId>
-    <name>cat2bug-quarkus-admin</name>
+    <artifactId>cat2bug-admin</artifactId>
+    <name>cat2bug-admin</name>
     <description>Cat2Bug Quarkus 主入口（自 Spike 演进）</description>
 
     <properties>
@@ -39,17 +39,17 @@
     <dependencies>
         <dependency>
             <groupId>com.cat2bug</groupId>
-            <artifactId>cat2bug-quarkus-common</artifactId>
+            <artifactId>cat2bug-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.cat2bug</groupId>
-            <artifactId>cat2bug-quarkus-framework</artifactId>
+            <artifactId>cat2bug-framework</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.cat2bug</groupId>
-            <artifactId>cat2bug-quarkus-system</artifactId>
+            <artifactId>cat2bug-system</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -190,7 +190,7 @@
     </build>
 
     <profiles>
-        <!-- 单 JAR / Native 发布：内嵌 SPA（需先 npm run build:embedded-quarkus） -->
+        <!-- 单 JAR / Native 发布：内嵌 SPA（需先 npm run build:embedded） -->
         <profile>
             <id>embedded</id>
             <build>
@@ -203,7 +203,6 @@
                 </resources>
             </build>
         </profile>
-        <!-- 发布物与 Spring cat2bug-admin.jar 同名，便于替换部署 -->
         <profile>
             <id>release</id>
             <properties>

@@ -3,12 +3,12 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-JAR="${1:-$ROOT/cat2bug-platform-quarkus-admin/target/cat2bug-admin.jar}"
+JAR="${1:-$ROOT/cat2bug-platform-admin/target/cat2bug-admin.jar}"
 shift || true
 
 if [[ ! -f "$JAR" ]]; then
   echo "[ERROR] 找不到 JAR: $JAR" >&2
-  echo "请先执行: ./deploy/build-embedded-quarkus.sh" >&2
+  echo "请先执行: ./deploy/build-embedded.sh" >&2
   exit 1
 fi
 

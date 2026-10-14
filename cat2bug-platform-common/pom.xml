@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>cat2bug-quarkus-common</artifactId>
-    <name>cat2bug-quarkus-common</name>
+    <artifactId>cat2bug-common</artifactId>
+    <name>cat2bug-common</name>
     <description>Quarkus 后端公共 DTO（无 Spring 依赖）</description>
 
     <properties>

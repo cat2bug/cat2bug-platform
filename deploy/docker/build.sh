@@ -12,15 +12,15 @@ echo "==> 拷贝 dist -> deploy/docker/static"
 rm -rf "$DOCKER_DIR/static"
 cp -R "$ROOT/cat2bug-platform-ui/dist" "$DOCKER_DIR/static"
 
-echo "==> 后端 mvn -Pquarkus -Prelease -pl cat2bug-platform-quarkus-admin -am package -DskipTests"
-(cd "$ROOT" && mvn -Pquarkus -Prelease -pl cat2bug-platform-quarkus-admin -am package -DskipTests)
+echo "==> 后端 mvn -Prelease -pl cat2bug-platform-admin -am package -DskipTests"
+(cd "$ROOT" && mvn -Prelease -pl cat2bug-platform-admin -am package -DskipTests)
 
-JAR="$ROOT/cat2bug-platform-quarkus-admin/target/cat2bug-admin-runner.jar"
+JAR="$ROOT/cat2bug-platform-admin/target/cat2bug-admin-runner.jar"
 if [[ ! -f "$JAR" ]]; then
-  JAR="$ROOT/cat2bug-platform-quarkus-admin/target/cat2bug-admin.jar"
+  JAR="$ROOT/cat2bug-platform-admin/target/cat2bug-admin.jar"
 fi
 if [[ ! -f "$JAR" ]]; then
-  JAR="$ROOT/cat2bug-platform-quarkus-admin/target/quarkus-app/quarkus-run.jar"
+  JAR="$ROOT/cat2bug-platform-admin/target/quarkus-app/quarkus-run.jar"
 fi
 
 echo "==> 拷贝 cat2bug-admin.jar (Quarkus)"

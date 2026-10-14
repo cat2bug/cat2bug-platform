@@ -17,7 +17,7 @@ if [[ "$USE_UPX" == "true" && -f "${BIN}.upx" ]]; then
   BIN="${BIN}.upx"
 fi
 if [[ ! -f "$BIN" ]]; then
-  echo "Missing $BIN — run ./deploy/build-native-quarkus.sh ${ARCH} first"
+  echo "Missing $BIN — run ./deploy/build-native.sh ${ARCH} first"
   exit 1
 fi
 
@@ -29,10 +29,10 @@ sleep 1
 DATA_DIR="${NATIVE_SMOKE_DATA:-/tmp/cat2bug-native-smoke}"
 mkdir -p "$DATA_DIR"
 # 复用 Gate A smoke 安装配置（若存在）
-INSTALL_YML="${NATIVE_SMOKE_INSTALL:-/tmp/cat2bug-quarkus-smoke/application-install.yml}"
-RUNTIME_PROPS="${NATIVE_SMOKE_RUNTIME:-/tmp/cat2bug-quarkus-smoke/quarkus-runtime.properties}"
+INSTALL_YML="${NATIVE_SMOKE_INSTALL:-/tmp/cat2bug-smoke/application-install.yml}"
+RUNTIME_PROPS="${NATIVE_SMOKE_RUNTIME:-/tmp/cat2bug-smoke/quarkus-runtime.properties}"
 
-CONTAINER="cat2bug-quarkus-native-smoke-$$"
+CONTAINER="cat2bug-native-smoke-$$"
 cleanup() {
   if [[ "${KEEP_CONTAINER:-false}" == "true" ]]; then
     echo "==> container kept: $CONTAINER"

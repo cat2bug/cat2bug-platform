@@ -1,16 +1,16 @@
-# Quarkus Native CI（复制到 .github/workflows/quarkus-native.yml 或 GitLab CI）
+# Quarkus Native CI（复制到 .github/workflows/native.yml 或 GitLab CI）
 
-name: quarkus-native
+name: native
 
 on:
   workflow_dispatch:
   push:
     branches: [main, master, develop]
     paths:
-      - 'cat2bug-platform-quarkus-admin/**'
-      - 'cat2bug-platform-quarkus-*/**'
+      - 'cat2bug-platform-admin/**'
+      - 'cat2bug-platform-*/**'
       - 'cat2bug-platform-ui/**'
-      - 'deploy/build-native-quarkus.sh'
+      - 'deploy/build-native.sh'
       - 'deploy/rpm/cat2bug/**'
 
 jobs:
@@ -42,14 +42,14 @@ jobs:
           cache-dependency-path: cat2bug-platform-ui/package-lock.json
 
       - name: JVM tests
-        run: mvn -Pquarkus -pl cat2bug-platform-quarkus-admin -am test
+        run: mvn -pl cat2bug-platform-admin -am test
 
       - name: Native build
-        run: ./deploy/build-native-quarkus.sh ${{ matrix.arch }}
+        run: ./deploy/build-native.sh ${{ matrix.arch }}
 
       - name: Smoke health
         run: |
-          BIN=./cat2bug-platform-quarkus-admin/target/cat2bug-admin-linux-${{ matrix.goarch }}
+          BIN=./cat2bug-platform-admin/target/cat2bug-admin-linux-${{ matrix.goarch }}
           "$BIN" &
           PID=$!
           for i in $(seq 1 60); do
@@ -63,7 +63,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cat2bug-admin-${{ matrix.arch }}
-          path: cat2bug-platform-quarkus-admin/target/cat2bug-admin-linux-*
+          path: cat2bug-platform-admin/target/cat2bug-admin-linux-*
 
   rpm-amd64:
     needs: native-matrix
@@ -74,7 +74,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: cat2bug-admin-x86_64
-          path: cat2bug-platform-quarkus-admin/target/
+          path: cat2bug-platform-admin/target/
       - name: Install nfpm
         run: |
           curl -sSL https://github.com/goreleaser/nfpm/releases/download/v2.41.2/nfpm_2.41.2_amd64.deb -o /tmp/nfpm.deb

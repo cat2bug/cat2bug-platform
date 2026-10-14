@@ -14,11 +14,11 @@
 
 ## 3. 目录与 artifactId 改名
 
-- [ ] 3.1 `git mv cat2bug-platform-quarkus-{admin,system,framework,common}` → `cat2bug-platform-{admin,system,framework,common}`
-- [ ] 3.2 各模块与根 `pom.xml` 的 `<module>`、`<artifactId>`、`<name>`、模块间依赖改为 `cat2bug-{admin,system,framework,common}`；`quarkus.application.name=cat2bug-admin`
-- [ ] 3.3 部署脚本改名并更新内部路径：`build-embedded.sh`、`build-native.sh`、`run-jar.sh`、`deploy/docker/build.sh`、`deploy/ci/native.yml`；`dev.sh`、`smoke-native-docker.sh` 内路径更新
-- [ ] 3.4 `.gitignore`（如 `config/install/`、`META-INF/resources` 产物规则）中旧目录名改为新目录名
-- [ ] 3.5 `mvn -o -DskipTests install` 通过后提交「模块去 quarkus 命名」
+- [x] 3.1 `git mv cat2bug-platform-quarkus-{admin,system,framework,common}` → `cat2bug-platform-{admin,system,framework,common}`
+- [x] 3.2 各模块与根 `pom.xml` 的 `<module>`、`<artifactId>`、`<name>`、模块间依赖改为 `cat2bug-{admin,system,framework,common}`；`quarkus.application.name=cat2bug-admin`
+- [x] 3.3 部署脚本改名并更新内部路径：`build-embedded.sh`、`build-native.sh`、`run-jar.sh`、`deploy/docker/build.sh`、`deploy/ci/native.yml`；`dev.sh`、`smoke-native-docker.sh` 内路径更新
+- [x] 3.4 `.gitignore`（如 `config/install/`、`META-INF/resources` 产物规则）中旧目录名改为新目录名
+- [x] 3.5 `mvn -o -DskipTests install` 通过后提交「模块去 quarkus 命名」
 
 ## 4. Java 包名改名
 

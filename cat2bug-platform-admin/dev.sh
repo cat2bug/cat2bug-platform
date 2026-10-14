@@ -34,7 +34,7 @@ resolve_install_config() {
   RUNTIME_PROPS=""
   for candidate in \
     "$ROOT/config/install/quarkus-runtime.properties" \
-    "$ROOT/cat2bug-platform-quarkus-admin/config/install/quarkus-runtime.properties"
+    "$ROOT/cat2bug-platform-admin/config/install/quarkus-runtime.properties"
   do
     if [[ -f "$candidate" ]]; then
       RUNTIME_PROPS="$candidate"
@@ -45,7 +45,7 @@ resolve_install_config() {
   INSTALL_YML=""
   for candidate in \
     "$ROOT/config/install/application-install.yml" \
-    "$ROOT/cat2bug-platform-quarkus-admin/config/install/application-install.yml"
+    "$ROOT/cat2bug-platform-admin/config/install/application-install.yml"
   do
     if [[ -f "$candidate" ]]; then
       INSTALL_YML="$candidate"
@@ -56,7 +56,7 @@ resolve_install_config() {
   PENDING_RESTART=""
   for candidate in \
     "$ROOT/config/install/.cat2bug-pending-restart" \
-    "$ROOT/cat2bug-platform-quarkus-admin/config/install/.cat2bug-pending-restart"
+    "$ROOT/cat2bug-platform-admin/config/install/.cat2bug-pending-restart"
   do
     if [[ -f "$candidate" ]]; then
       PENDING_RESTART="$candidate"
@@ -86,15 +86,15 @@ setup_build_env
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-ADMIN_POM="$ROOT/cat2bug-platform-quarkus-admin/pom.xml"
+ADMIN_POM="$ROOT/cat2bug-platform-admin/pom.xml"
 
 # install 阶段不加载 install 运行期配置（避免 build 期按 MySQL 解析但缺驱动）
-mvn -Pquarkus -pl cat2bug-platform-quarkus-admin -am install -DskipTests -q
+mvn -pl cat2bug-platform-admin -am install -DskipTests -q
 
 while true; do
   resolve_install_config
 
-  mvn -Pquarkus -f "$ADMIN_POM" quarkus:dev "$@"
+  mvn -f "$ADMIN_POM" quarkus:dev "$@"
   exit_code=$?
 
   if [[ $exit_code -ne 0 ]]; then

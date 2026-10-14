@@ -169,7 +169,7 @@ export default defineConfig(({ mode }) => {
   const outDir = isAnalyze
     ? 'analyze'
     : (isEmbeddedQuarkus
-      ? '../cat2bug-platform-quarkus-admin/src/main/resources/META-INF/resources'
+      ? '../cat2bug-platform-admin/src/main/resources/META-INF/resources'
       : (mode === 'embedded' ? '../cat2bug-platform-admin/src/main/resources/static' : 'dist'))
 
   return {

@@ -116,21 +116,21 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 ### 默认后端（Quarkus，推荐）
 
-需 **Java 17+**。日常开发与 JVM 发布以 Quarkus admin 为准（`-Pquarkus`）。模块说明见 [cat2bug-platform-quarkus-admin/README.md](cat2bug-platform-quarkus-admin/README.md)；本地配置见 `openspec/changes/restore-quarkus-full-delivery/LOCAL-RUN.md`。
+需 **Java 17+**。日常开发与 JVM 发布以 Quarkus admin 为准（`-Pquarkus`）。模块说明见 [cat2bug-platform-admin/README.md](cat2bug-platform-admin/README.md)；本地配置见 `openspec/changes/restore-quarkus-full-delivery/LOCAL-RUN.md`。
 
 ```bash
 # 开发（推荐）
-./cat2bug-platform-quarkus-admin/dev.sh
+./cat2bug-platform-admin/dev.sh
 # 或
-mvn -Pquarkus -pl cat2bug-platform-quarkus-admin -am quarkus:dev
+mvn -pl cat2bug-platform-admin -am quarkus:dev
 
 # 打包 / 运行 JVM JAR
-mvn -Pquarkus -pl cat2bug-platform-quarkus-admin -am package -DskipTests
-./deploy/run-quarkus-jar.sh
+mvn -pl cat2bug-platform-admin -am package -DskipTests
+./deploy/run-jar.sh
 
 # 嵌入式前端 + Quarkus JAR
-./deploy/build-embedded-quarkus.sh
-./deploy/run-quarkus-jar.sh
+./deploy/build-embedded.sh
+./deploy/run-jar.sh
 ```
 
 前端独立开发仍可：`cd cat2bug-platform-ui && npm run dev`（代理到 `:2020`）。
