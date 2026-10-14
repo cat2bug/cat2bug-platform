@@ -73,7 +73,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 2. 主框架
 
-* Quarkus 3.15（RESTEasy Reactive、Vert.x、Scheduler、WebSockets）
+* Quarkus 3.27 LTS（RESTEasy Reactive、Vert.x、Scheduler、WebSockets）
 * JGit 6.10（Git 仓库托管与 Smart HTTP）
 
 3. 持久层

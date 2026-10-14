@@ -13,18 +13,18 @@
 
 ## 3. MCP 扩展引入验证
 
-- [ ] 3.1 临时引入 `quarkus-mcp-server-http`，加一个最小工具，确认 JVM 启动、`/mcp` 可被 MCP 客户端列出工具
-- [ ] 3.2 同一配置做一次 Native 构建，确认可构建可启动；记录结论后移除临时依赖与代码
+- [x] 3.1 临时引入 `quarkus-mcp-server-http`，加一个最小工具，确认 JVM 启动、`/mcp` 可被 MCP 客户端列出工具
+- [x] 3.2 同一配置做一次 Native 构建，确认可构建可启动；记录结论后移除临时依赖与代码
 
 ## 4. 交付回归
 
-- [ ] 4.1 更新 `deploy/build-native.sh` 中的 Mandrel 构建镜像版本（如需要），重建 arm64 Native，记录 UPX 前后体积并与基线对比
-- [ ] 4.2 `smoke-native-docker.sh arm64` 默认模式与 `FRESH=true` 两种冒烟通过
-- [ ] 4.3 JVM 单 JAR（H2 与 MySQL profile）、Docker Compose 构建并启动，安装向导、登录正常
-- [ ] 4.4 浏览器回归主流程：登录、项目切换、缺陷新建与流转、用例、报告、Git 克隆与推送、在线浏览、通知、WebSocket 消息
+- [x] 4.1 更新 `deploy/build-native.sh` 中的 Mandrel 构建镜像版本（如需要），重建 arm64 Native，记录 UPX 前后体积并与基线对比
+- [x] 4.2 `smoke-native-docker.sh arm64` 默认模式与 `FRESH=true` 两种冒烟通过
+- [x] 4.3 JVM 单 JAR（H2 与 MySQL profile）、Docker Compose 构建并启动，安装向导、登录正常
+- [x] 4.4 浏览器回归主流程：登录、项目切换、缺陷新建与流转、用例、报告、Git 克隆与推送、在线浏览、通知、WebSocket 消息
 
 ## 5. 回写长期知识
 
-- [ ] 5.1 更新 `docs/00-项目总览.md`、`docs/02-系统架构/整体架构.md` 中的 Quarkus 版本号；`docs/02-系统架构/部署.md` 如构建镜像变化同步修改
-- [ ] 5.2 升级中遇到的可复用问题写入 `docs/06-踩坑记录/`（没有则注明无）；`docs/08-版本记录/2026-10.md` 记录本变更与新的 Native 体积
-- [ ] 5.3 如 Native 体积口径或交付形态被迫改变，补 ADR（没有则注明无）；`check_links.py` 坏链为 0
+- [x] 5.1 更新 `docs/00-项目总览.md`、`docs/02-系统架构/整体架构.md` 中的 Quarkus 版本号；`docs/02-系统架构/部署.md` 如构建镜像变化同步修改（构建镜像未变，部署.md 无需改）
+- [x] 5.2 升级中遇到的可复用问题写入 `docs/06-踩坑记录/`（没有则注明无）；`docs/08-版本记录/2026-10.md` 记录本变更与新的 Native 体积
+- [x] 5.3 如 Native 体积口径或交付形态被迫改变，补 ADR（没有则注明无）；`check_links.py` 坏链为 0（无 ADR：体积 +3.6%，交付形态未变）
