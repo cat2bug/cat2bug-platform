@@ -1,0 +1,9 @@
+{
+  "newLinkFormat": "shortest",
+  "alwaysUpdateLinks": true,
+  "showLineNumber": true,
+  "readableLineLength": true,
+  "promptDelete": true,
+  "newFileLocation": "current",
+  "attachmentFolderPath": "_attachments"
+}
