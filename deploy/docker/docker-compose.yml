@@ -61,11 +61,11 @@ services:
       # 运行期即生效：cache.type=redis 时必须同时给出 redis.hosts，否则启动失败
       CAT2BUG_CACHE_TYPE: redis
       CAT2BUG_REDIS_HOSTS: redis://cat2bug-platform-redis:6379
-      # 仅用于安装向导预填（GET /setup/preflight）。MySQL 连接只认这组变量名（对应 install YAML 的
-      # spring.datasource.druid.master.*），并据 jdbc:mysql 推断数据库类型；运行期数据源由向导写入 config/install
-      SPRING_DATASOURCE_DRUID_MASTER_URL: jdbc:mysql://cat2bug-platform-mysql:3306/cat2bug_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8
-      SPRING_DATASOURCE_DRUID_MASTER_USERNAME: root
-      SPRING_DATASOURCE_DRUID_MASTER_PASSWORD: cat2bug_password
+      # 仅用于安装向导预填（GET /setup/preflight），并据 jdbc:mysql 推断数据库类型；运行期数据源由向导写入 config/install。
+      # 旧部署里的 SPRING_DATASOURCE_DRUID_MASTER_* 仍可识别，同时设置时以 CAT2BUG_SETUP_* 为准
+      CAT2BUG_SETUP_MYSQL_URL: jdbc:mysql://cat2bug-platform-mysql:3306/cat2bug_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8
+      CAT2BUG_SETUP_MYSQL_USERNAME: root
+      CAT2BUG_SETUP_MYSQL_PASSWORD: cat2bug_password
       CAT2BUG_SETUP_REDIS_HOST: cat2bug-platform-redis
       # 可选：安装向导 AI 步骤预填 Ollama 地址
       # CAT2BUG_AI_HOST: http://ollama:11434

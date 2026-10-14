@@ -54,4 +54,6 @@
 - [x] 8.3 H2 下 `CAST(x AS CHAR)` 被截成一个字符：通知正文去掉 cast，仪表盘动态改为 `CHAR(255)`；`SysNotice` 时间改为 `Date` + `@JsonFormat`，消除 H2 带微秒导致前端显示 `0-0-0 0:0:0`
 - [x] 8.4 缺陷通知标题的状态改为 i18n 文案（「[处理中]」而非「[PROCESSING]」），并从 Spring 补回代码中用到但缺失的 8 个词条与 5 个状态词条
 - [x] 8.5 测试：`QuarkusDefectLogTest`、`QuarkusDefectImNoticeTest`、`ImMessageTemplatesTest` 补用例；全量 213 个通过（跳过 2）；Native 重建后两种冒烟通过，H2 下通知正文完整、仪表盘 ID 正确
+- [x] 8.6 安装预检优先读 `CAT2BUG_SETUP_*`（数据库类型、MySQL URL / 用户名 / 密码、Redis 端口 / 密码 / 库号），`SPRING_*` 旧名保留为兼容回退；`docker-compose.yml` 改用新名；`SetupPreflightServiceTest` 补用例；同步 `deploy/docker/README.md`、`docs/02`、`docs/03`、ADR-010
+- [x] 8.7 仪表盘标题过大：Chrome 136+ 删除 `section` 内 `h1` 缩小的 UA 规则，在全局样式用 `:where()` 补回（见 `docs/06-踩坑记录/新版Chrome中section里的h1不再自动缩小.md`）
 

@@ -66,6 +66,38 @@ class SetupPreflightServiceTest {
     }
 
     @Test
+    void cat2bugSetupVariablesTakePrecedenceOverLegacySpringNames() {
+        Map<String, String> env = Map.of(
+                "CAT2BUG_SETUP_MYSQL_URL", "jdbc:mysql://new.internal:3308/cat2bug_new",
+                "SPRING_DATASOURCE_DRUID_MASTER_URL", "jdbc:mysql://old.internal:3306/cat2bug_old",
+                "CAT2BUG_SETUP_MYSQL_USERNAME", "new_user",
+                "SPRING_DATASOURCE_DRUID_MASTER_USERNAME", "old_user",
+                "CAT2BUG_SETUP_MYSQL_PASSWORD", "new_pass",
+                "CAT2BUG_SETUP_REDIS_PORT", "6390",
+                "CAT2BUG_SETUP_REDIS_PASSWORD", "redis_pass",
+                "CAT2BUG_SETUP_REDIS_DATABASE", "2");
+        Map<String, Object> result = SetupPreflightService.buildPreflight(
+                new HashMap<>(), config(Map.of()), env::get, false);
+        assertEquals("mysql", result.get("databaseType"));
+        assertEquals("new.internal", result.get("mysqlHost"));
+        assertEquals(3308, result.get("mysqlPort"));
+        assertEquals("cat2bug_new", result.get("mysqlDatabase"));
+        assertEquals("new_user", result.get("mysqlUsername"));
+        assertEquals("new_pass", result.get("mysqlPassword"));
+        assertEquals(6390, result.get("redisPort"));
+        assertEquals("redis_pass", result.get("redisPassword"));
+        assertEquals(2, result.get("redisDatabase"));
+    }
+
+    @Test
+    void cat2bugSetupDatabaseTypeSelectsH2() {
+        Map<String, String> env = Map.of("CAT2BUG_SETUP_DATABASE_TYPE", "H2");
+        Map<String, Object> result = SetupPreflightService.buildPreflight(
+                new HashMap<>(), config(Map.of()), env::get, false);
+        assertEquals("h2", result.get("databaseType"));
+    }
+
+    @Test
     void explicitH2InDockerKeepsDatabaseTypeUnset() {
         Map<String, Object> result = SetupPreflightService.buildPreflight(
                 new HashMap<>(), config(Map.of("spring.database-type", "h2", "cat2bug.cache.type", "local")),

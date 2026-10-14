@@ -63,4 +63,4 @@
 - 改目录名必须先改 `.gitignore`，否则含密码的 `config/install` 会变成未跟踪文件，见 [[改目录名后gitignore旧规则失效导致敏感配置暴露]]。
 - 包结构变更必须同步 Native 反射前缀，见 [[Native镜像与操作日志对等]]。
 - 操作日志规则表 `oper-log-rules.tsv` 原本由 Spring `@Log` 生成，此后只能手工维护。
-- 安装向导预填仍沿用 `SPRING_DATASOURCE_DRUID_MASTER_*` 等变量名（安装 YAML 键的历史命名），改名需改 `SetupPreflightService`，未纳入本次范围。
+- 安装向导预填原沿用 `SPRING_DATASOURCE_DRUID_MASTER_*` 等变量名；2026-10-14 起改为优先读 `CAT2BUG_SETUP_*`，旧名保留为兼容回退（见 [[安装向导预检与环境变量预填]]）。

@@ -182,10 +182,11 @@ public class SetupPreflightService {
         return value != null && type.equalsIgnoreCase(value.trim());
     }
 
-    // ---------- compose / K8s 环境变量（优先级最高） ----------
+    // ---------- compose / K8s 环境变量（优先级最高；CAT2BUG_SETUP_* 优先，SPRING_* 为旧部署兼容） ----------
 
     static void applyExplicitConfiguration(Map<String, Object> result, Config config, Function<String, String> env) {
-        String databaseType = resolve(config, env, "spring.database-type", "SPRING_DATABASE_TYPE");
+        String databaseType = resolve(config, env, "spring.database-type",
+                "CAT2BUG_SETUP_DATABASE_TYPE", "SPRING_DATABASE_TYPE");
         if (databaseType != null) {
             result.put("databaseType", databaseType.toLowerCase(Locale.ROOT));
         }
@@ -195,7 +196,7 @@ public class SetupPreflightService {
         }
 
         String jdbcUrl = resolve(config, env, "spring.datasource.druid.master.url",
-                "SPRING_DATASOURCE_DRUID_MASTER_URL", "SPRING_DATASOURCE_URL");
+                "CAT2BUG_SETUP_MYSQL_URL", "SPRING_DATASOURCE_DRUID_MASTER_URL", "SPRING_DATASOURCE_URL");
         if (jdbcUrl != null && jdbcUrl.contains("jdbc:mysql")) {
             Map<String, Object> parsed = new LinkedHashMap<>();
             parseMysqlJdbcUrl(jdbcUrl, parsed);
@@ -207,21 +208,26 @@ public class SetupPreflightService {
             result.put("databaseType", "mysql");
         }
         putIfResolved(result, "mysqlUsername", resolve(config, env,
-                "spring.datasource.druid.master.username", "SPRING_DATASOURCE_DRUID_MASTER_USERNAME"));
+                "spring.datasource.druid.master.username",
+                "CAT2BUG_SETUP_MYSQL_USERNAME", "SPRING_DATASOURCE_DRUID_MASTER_USERNAME"));
         putIfResolved(result, "mysqlPassword", resolve(config, env,
-                "spring.datasource.druid.master.password", "SPRING_DATASOURCE_DRUID_MASTER_PASSWORD"));
+                "spring.datasource.druid.master.password",
+                "CAT2BUG_SETUP_MYSQL_PASSWORD", "SPRING_DATASOURCE_DRUID_MASTER_PASSWORD"));
 
         String redisHost = resolve(config, env, "spring.redis.host", "SPRING_REDIS_HOST");
         if (redisHost != null) {
             result.put("redisHost", redisHost);
             result.put("cacheType", "redis");
         }
-        String redisPort = resolve(config, env, "spring.redis.port", "SPRING_REDIS_PORT");
+        String redisPort = resolve(config, env, "spring.redis.port",
+                "CAT2BUG_SETUP_REDIS_PORT", "SPRING_REDIS_PORT");
         if (redisPort != null) {
             result.put("redisPort", parseInteger(redisPort));
         }
-        putIfResolved(result, "redisPassword", resolve(config, env, "spring.redis.password", "SPRING_REDIS_PASSWORD"));
-        String redisDatabase = resolve(config, env, "spring.redis.database", "SPRING_REDIS_DATABASE");
+        putIfResolved(result, "redisPassword", resolve(config, env, "spring.redis.password",
+                "CAT2BUG_SETUP_REDIS_PASSWORD", "SPRING_REDIS_PASSWORD"));
+        String redisDatabase = resolve(config, env, "spring.redis.database",
+                "CAT2BUG_SETUP_REDIS_DATABASE", "SPRING_REDIS_DATABASE");
         if (redisDatabase != null) {
             result.put("redisDatabase", parseInteger(redisDatabase));
         }

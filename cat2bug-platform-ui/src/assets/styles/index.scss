@@ -25,6 +25,13 @@ label {
   font-weight: 700;
 }
 
+/* Chrome 136+ 删除了 section/article/aside/nav 内 h1 的 UA 缩小规则（1.5em），
+   仪表盘等未写字号的 h1 依赖它；:where 零优先级，组件自身字号仍优先 */
+:where(article, aside, nav, section) :where(h1) {
+  margin-block: 0.83em;
+  font-size: 1.5em;
+}
+
 html {
   height: 100%;
   box-sizing: border-box;
