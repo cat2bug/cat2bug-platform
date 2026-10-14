@@ -86,8 +86,11 @@ public class UserProfileResource {
                                 @QueryParam("newPassword") String newPassword) {
         LoginUser loginUser = requireLoginUser();
         String password = loginUser.getUser().getPassword();
-        if (!BCrypt.verifyer().verify(oldPassword.toCharArray(), password).verified) {
+        if (oldPassword == null || !BCrypt.verifyer().verify(oldPassword.toCharArray(), password).verified) {
             return AjaxResult.error("修改密码失败，旧密码错误");
+        }
+        if (newPassword == null || newPassword.isEmpty()) {
+            return AjaxResult.error("新密码不能为空");
         }
         if (BCrypt.verifyer().verify(newPassword.toCharArray(), password).verified) {
             return AjaxResult.error("新密码不能与旧密码相同");
