@@ -47,6 +47,7 @@
 
 - 监听 `StartupEvent`：`cat2bug.ai.enabled` 为真且 `cat2bug.ai.default-business-model` 非空时，在后台线程调用 `OllamaModelService` 查询模型列表，缺失则调用已有的 `pullModule(model, true)`。
 - Ollama 不可达或拉取失败只记 `WARN`，不重试、不阻塞启动。
+- 实施补充：`OllamaAvailabilityService` 抽出会抛异常的 `fetchDownloadedModels()`，原 `listDownloadedModels()` 吞异常返回空列表，无法区分「没有模型」和「连不上」。默认模型名不带 tag 时，已存在 `name:latest` 也视为已下载。
 
 ### D4 用例提示词导出
 

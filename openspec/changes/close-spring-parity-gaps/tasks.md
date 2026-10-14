@@ -25,8 +25,8 @@
 
 ## 4. AI 默认模型
 
-- [ ] 4.1 `StartupEvent` 后台检查并拉取默认业务模型（AI 未启用不访问 Ollama；不可达只记警告）
-- [ ] 4.2 单元测试：用本地 HTTP 桩模拟 Ollama「模型缺失 / 已存在 / 不可达」三种情况
+- [x] 4.1 `StartupEvent` 后台检查并拉取默认业务模型（AI 未启用不访问 Ollama；不可达只记警告）（`OllamaDefaultModelBootstrap`；不带 tag 的模型名同时认 `:latest`）
+- [x] 4.2 单元测试：用本地 HTTP 桩模拟 Ollama「模型缺失 / 已存在 / 不可达」三种情况（`OllamaDefaultModelBootstrapTest`，另含 AI 未启用不访问）
 
 ## 5. 用例提示词导出
 

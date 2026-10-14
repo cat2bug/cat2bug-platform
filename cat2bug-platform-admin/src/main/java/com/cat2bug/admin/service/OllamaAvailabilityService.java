@@ -74,40 +74,46 @@ public class OllamaAvailabilityService {
         if (!isAvailable()) {
             return Collections.emptyList();
         }
-        String base = normalizeHost(host.orElse(""));
-        String url = base + MODULE_LIST_PATH;
         try {
-            HttpClient client = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .timeout(TIMEOUT)
-                    .GET()
-                    .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                return Collections.emptyList();
-            }
-            JsonNode root = objectMapper.readTree(response.body());
-            JsonNode modelsNode = root.path("models");
-            if (!modelsNode.isArray()) {
-                return Collections.emptyList();
-            }
-            List<Map<String, Object>> rows = new ArrayList<>();
-            for (JsonNode item : modelsNode) {
-                String name = item.path("name").asText(null);
-                if (StringUtils.isEmpty(name)) {
-                    continue;
-                }
-                Map<String, Object> row = new LinkedHashMap<>();
-                row.put("name", name);
-                row.put("size", item.path("size").asLong(0L));
-                row.put("state", "COMPLETED");
-                rows.add(row);
-            }
-            return rows;
+            return fetchDownloadedModels();
         } catch (Exception ignored) {
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * 与 {@link #listDownloadedModels()} 相同，但 Ollama 不可达或返回非 2xx 时抛异常，供调用方区分「没有模型」与「连不上」。
+     */
+    public List<Map<String, Object>> fetchDownloadedModels() throws Exception {
+        String url = normalizeHost(host.orElse("")) + MODULE_LIST_PATH;
+        HttpClient client = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(TIMEOUT)
+                .GET()
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new IllegalStateException("HTTP " + response.statusCode());
+        }
+        JsonNode root = objectMapper.readTree(response.body());
+        JsonNode modelsNode = root.path("models");
+        if (!modelsNode.isArray()) {
+            return Collections.emptyList();
+        }
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (JsonNode item : modelsNode) {
+            String name = item.path("name").asText(null);
+            if (StringUtils.isEmpty(name)) {
+                continue;
+            }
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("name", name);
+            row.put("size", item.path("size").asLong(0L));
+            row.put("state", "COMPLETED");
+            rows.add(row);
+        }
+        return rows;
     }
 
     private static String normalizeHost(String raw) {
