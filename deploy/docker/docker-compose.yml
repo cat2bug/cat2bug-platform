@@ -71,6 +71,15 @@ services:
       # CAT2BUG_AI_HOST: http://ollama:11434
       # 已 completed install + 换 JAR 有待执行 Flyway 时：跳过 /upgrade UI，启动期静默 migrate；失败则容器 exit 1
       # CAT2BUG_UPGRADE_SKIP: "true"
+      # 可选：IM 邮件渠道（默认关闭）。启用时 ENABLED / HOST / FROM 必填，账号密码请用 .env 或密钥管理注入，勿写入本文件
+      # CAT2BUG_MAIL_ENABLED: "true"
+      # QUARKUS_MAILER_HOST: smtp.example.com
+      # QUARKUS_MAILER_PORT: "465"
+      # QUARKUS_MAILER_FROM: noreply@example.com
+      # QUARKUS_MAILER_USERNAME: noreply@example.com
+      # QUARKUS_MAILER_PASSWORD: ${CAT2BUG_MAIL_PASSWORD}
+      # QUARKUS_MAILER_TLS: "true"              # 465 隐式 TLS
+      # QUARKUS_MAILER_START_TLS: REQUIRED      # 587 STARTTLS，与上一行二选一
     volumes:
       - ./uploadPath:/home/uploadPath
       # 安装向导写入的 application-install.yml / quarkus-runtime.properties；丢失则重建容器后回到 /setup

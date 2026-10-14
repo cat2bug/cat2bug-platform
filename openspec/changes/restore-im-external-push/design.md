@@ -82,7 +82,7 @@
 ### D6 邮件：Quarkus Mailer + 运行期配置
 
 - 依赖 `io.quarkus:quarkus-mailer`（Vert.x Mail，官方支持 Native）。
-- 配置项（全部运行期）：`quarkus.mailer.host / port / username / password / from / tls / start-tls`（Quarkus 3.15 中 `ssl` 已弃用，改用 `tls`），以及 `cat2bug.mail.enabled`（默认 `false`；`host` 与 `from` 都非空时才生效）。环境变量示例写入 `deploy/docker/docker-compose.yml` 注释与部署文档。
+- 配置项（全部运行期）：`quarkus.mailer.host / port / username / password / from / tls / start-tls`（Quarkus 3.15 中 `ssl` 已弃用，改用 `tls`），以及 `cat2bug.mail.enabled`（默认 `false`；`host` 与 `from` 都非空时才生效。注意 `quarkus.mailer.host` 内置默认值 `localhost`，实际起拦截作用的是 `enabled` 与 `from`，漏配 host 表现为发信 WARN）。环境变量示例写入 `deploy/docker/docker-compose.yml` 注释与部署文档。
 - 未启用时邮件渠道直接跳过，启动时 `INFO` 记录一次「邮件未配置」。
 - **备选**：Jakarta Mail（Angus）直接用。否决：Native 需要大量反射配置，Quarkus Mailer 已处理好。
 

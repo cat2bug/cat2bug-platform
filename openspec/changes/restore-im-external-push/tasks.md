@@ -55,6 +55,7 @@
 
 ## 7. 文档与回写长期知识
 
-- [ ] 7.1 `docs/02-系统架构/整体架构.md` 更正「im 能力已合并」的说法；`docs/02-系统架构/部署.md` 补邮件配置项；`deploy/docker/docker-compose.yml` 加邮件环境变量注释示例（占位符）
-- [ ] 7.2 新增 `docs/03-技术方案/IM多渠道推送.md`（渠道规则、群消息去重、token 缓存、邮件配置），加入总览与目录说明
-- [ ] 7.3 可复用的坑写入 `docs/06-踩坑记录/`（没有则注明无）；`docs/08-版本记录/2026-10.md` 记录本变更与 Native 新体积；`check_links.py` 坏链为 0
+- [x] 7.1 `docs/02-系统架构/整体架构.md` 更正「im 能力已合并」的说法；`docs/02-系统架构/部署.md` 补邮件配置项；`deploy/docker/docker-compose.yml` 加邮件环境变量注释示例（占位符）
+- [x] 7.2 新增 `docs/03-技术方案/IM多渠道推送.md`（渠道规则、群消息去重、token 缓存、邮件配置），加入总览与目录说明
+- [x] 7.3 可复用的坑写入 `docs/06-踩坑记录/`（没有则注明无）；`docs/08-版本记录/2026-10.md` 记录本变更与 Native 新体积；`check_links.py` 坏链为 0
+  - 新增踩坑：`Quarkus-Mailer的host默认localhost`、`后端拼的Hash链接在History路由下落到首页`；Native 体积未记录（6.4 合并后由主 agent 执行时补）；`check_links.py`：75 篇、252 链接、坏链 0
