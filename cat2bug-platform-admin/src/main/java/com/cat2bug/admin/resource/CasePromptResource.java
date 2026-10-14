@@ -1,5 +1,6 @@
 package com.cat2bug.admin.resource;
 
+import com.cat2bug.admin.service.SystemExcelExportService;
 import com.cat2bug.common.api.AjaxResult;
 import com.cat2bug.common.api.TableDataInfo;
 import com.cat2bug.common.domain.SysCasePrompt;
@@ -16,6 +17,8 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import org.jboss.resteasy.reactive.RestForm;
 
 import java.util.Arrays;
 
@@ -23,8 +26,14 @@ import java.util.Arrays;
 @Produces(MediaType.APPLICATION_JSON)
 public class CasePromptResource {
 
+    static final String SPREADSHEET_MEDIA_TYPE =
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
     @Inject
     SysCasePromptService sysCasePromptService;
+
+    @Inject
+    SystemExcelExportService systemExcelExportService;
 
     @GET
     @Path("/list")
@@ -39,6 +48,22 @@ public class CasePromptResource {
         query.setProjectId(projectId);
         query.setCreateById(createById);
         return sysCasePromptService.selectCasePromptPage(query, pageNum, pageSize);
+    }
+
+    @POST
+    @Path("/export")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(SPREADSHEET_MEDIA_TYPE)
+    @RequiresPermissions("system:case:add")
+    public Response export(@RestForm("casePromptContent") String casePromptContent,
+                           @RestForm("projectId") Long projectId,
+                           @RestForm("createById") Long createById) {
+        SysCasePrompt query = new SysCasePrompt();
+        query.setCasePromptContent(casePromptContent);
+        query.setProjectId(projectId);
+        query.setCreateById(createById);
+        byte[] workbook = systemExcelExportService.exportCasePrompts(query);
+        return Response.ok(workbook).type(SPREADSHEET_MEDIA_TYPE).build();
     }
 
     @GET

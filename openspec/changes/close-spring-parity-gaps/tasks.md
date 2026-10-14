@@ -30,8 +30,8 @@
 
 ## 5. 用例提示词导出
 
-- [ ] 5.1 `CasePromptResource` 新增 `POST /system/CasePrompt/export`，列与权限对齐 Spring
-- [ ] 5.2 接口测试：有权限返回 xlsx 且行数正确，无权限 403
+- [x] 5.1 `CasePromptResource` 新增 `POST /system/CasePrompt/export`，列与权限对齐 Spring（Spring 线该方法是注释掉的代码，按注释中的权限 `system:case:add`、实体 `@Excel` 列「提示词内容」「创建人ID」、表名「测试用例提示词数据」实现）
+- [x] 5.2 接口测试：有权限返回 xlsx 且行数正确，无权限 403（`QuarkusCasePromptExportTest`；403 与项目其它接口一致，为 HTTP 200 + `code: 403`）
 
 ## 6. 验证
 

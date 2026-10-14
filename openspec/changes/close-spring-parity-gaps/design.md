@@ -51,7 +51,8 @@
 
 ### D4 用例提示词导出
 
-- 按 Spring `SysCasePromptController#export` 的列与权限（`system:prompt:export` 或对应权限字符，以 Spring 代码为准）实现，使用现有 FastExcel 导出工具。
+- 按 Spring `SysCasePromptController#export` 的列与权限实现，使用现有 FastExcel 导出工具（`SystemExcelExportService`）。
+- 实施核实：Spring 线该方法在 `spring-final-1.1.0` 中是**注释掉的**，从未真正对外提供。仍按注释代码补齐：权限 `system:case:add`（与该控制器其它接口相同），列取实体 `@Excel` 的「提示词内容」「创建人ID」，表名「测试用例提示词数据」；查询条件以表单参数 `casePromptContent` / `projectId` / `createById` 传入，与其它导出接口一致。
 
 ## Risks / Trade-offs
 
