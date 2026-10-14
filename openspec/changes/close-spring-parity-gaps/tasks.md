@@ -18,10 +18,10 @@
 
 ## 3. 数据权限
 
-- [ ] 3.1 新增 `DataScopeSqlBuilder`，逻辑对齐若依 `DataScopeAspect#dataScopeFilter`（五种范围、多角色并集、权限字符过滤）；单元测试覆盖五种范围与并集
-- [ ] 3.2 用户 / 部门 / 角色列表：服务层先清除外部传入的 `params.dataScope`，非超级管理员时写入生成的片段；`SysUserMapper.xml`、`SysDeptMapper.xml`、`SysRoleMapper.xml` 列表查询拼接 `${params.dataScope}`（别名与 Spring 一致）
-- [ ] 3.3 `checkUserDataScope`、`checkDeptDataScope`、`checkRoleDataScope` 在非管理员时真正校验，删除「DataScope AOP not ported」注释
-- [ ] 3.4 集成测试：H2 下建两个部门、「本部门」角色用户，验证列表过滤、越权修改被拒、伪造 `params[dataScope]` 无效
+- [x] 3.1 新增 `DataScopeSqlBuilder`，逻辑对齐若依 `DataScopeAspect#dataScopeFilter`（五种范围、多角色并集、权限字符过滤）；单元测试覆盖五种范围与并集（`DataScopeSqlBuilderTest`，13 例；另含 `*:*:*`、无部门、非法别名）
+- [x] 3.2 用户 / 部门 / 角色列表：服务层先清除外部传入的 `params.dataScope`，非超级管理员时写入生成的片段；`SysUserMapper.xml`、`SysDeptMapper.xml`、`SysRoleMapper.xml` 列表查询拼接 `${params.dataScope}`（别名与 Spring 一致）——实施偏离：改用 Mapper 独立参数 `${dataScope}`（请求无法注入，无需清除）；角色列表不过滤（Spring XML 中该片段本就被注释），见 design D2
+- [x] 3.3 `checkUserDataScope`、`checkDeptDataScope`、`checkRoleDataScope` 在非管理员时真正校验，删除「DataScope AOP not ported」注释（角色只校验存在；补上用户详情与批量删除的校验）
+- [x] 3.4 集成测试：H2 下建两个部门、「本部门」角色用户，验证列表过滤、越权修改被拒、伪造 `params[dataScope]` 无效（`QuarkusDataScopeTest`；注：项目 `%test` 配置实际连本机 MySQL 测试库 `cat2bug_platform_test`，不是 H2，测试结束自动删除所建数据）
 
 ## 4. AI 默认模型
 

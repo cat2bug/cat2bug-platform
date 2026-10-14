@@ -34,10 +34,14 @@
 
 ### D2 数据范围：服务层生成片段，XML 拼接
 
-- 新增 `DataScopeSqlBuilder`（system 模块），输入当前用户、部门别名、用户别名、权限字符，输出与若依 `DataScopeAspect#dataScopeFilter` 相同的 SQL 片段（`AND (...)`），只拼接数字 ID 与固定别名，不拼接用户输入。
-- 在 `SysUserService` / `SysDeptService` / `SysRoleService` 的列表方法里，非超级管理员时把片段放入 `params.dataScope`；XML 列表查询末尾加 `${params.dataScope}`（与若依写法一致）。
-- `check*DataScope`：非管理员时按带数据范围的列表查询目标 ID，查不到就抛「没有权限访问数据」。
-- **备选**：MyBatis 拦截器自动改写 SQL。否决：Quarkus MyBatis 拦截器在 Native 下需额外注册，且改写 SQL 不透明；显式 `${params.dataScope}` 与 Spring 完全一致、易审查。
+- 新增 `DataScopeSqlBuilder`（system 模块 `com.cat2bug.system.security`），输入当前用户、部门别名、用户别名、权限字符，输出与若依 `DataScopeAspect#dataScopeFilter` 相同语义的 SQL 片段（`AND (...)`），只拼接数字 ID 与校验过的固定别名，不拼接用户输入。
+- **修订（实施时）**：片段不经实体 `params.dataScope` 传递，而是作为 Mapper 的独立参数 `@Param("dataScope")`，XML 写 `${dataScope}`。请求参数根本无法到达这个参数，比「先清除再写入」更难出错。部门 `selectDeptList` 因此改为 `(@Param("dept"), @Param("dataScope"))`，XML 字段引用改为 `dept.xxx`。
+- **修订（实施时）**：「本部门及以下」不用 `find_in_set`（H2 没有），改为 `CONCAT(',', ancestors, ',') LIKE '%,{id},%'`；用户无部门时该范围不匹配任何数据（避免 `'%,0,%'` 命中所有一级部门）。
+- **修订（实施时）**：角色列表**不按数据范围过滤**。原 Spring 线 `SysRoleMapper.xml` 中的 `${params.dataScope}` 实际是被注释掉的；且团队 / 项目角色没有 `sys_user_role` 归属，按部门过滤会把它们全部藏掉。`checkRoleDataScope` 对非管理员只校验角色存在。
+- 权限字符筛选：`PermissionAuthorizationFilter` 校验通过后把 `@RequiresPermissions` 的权限串（逗号连接）写入请求级 `AuthContext.permissionContext`；登录时为每个角色记录其菜单权限（`SysRole.permissions`），角色权限不含本次权限串中任何一个时不参与数据范围；角色带 `*:*:*` 视为匹配。
+- 角色来源：数据范围使用登录用户当前生效的角色（`user.roles`）。用户尚未选择团队 / 项目（无 `sys_user_config`）时，原实现 `roles` 为空、菜单权限按 `sys_user_role` 计算，此时数据范围也改用 `sys_user_role` 中启用的系统角色，否则会退化为「看不到任何数据」。
+- `check*DataScope`：非管理员时按带数据范围的列表查询目标 ID，查不到就抛「没有权限访问用户数据！」/「没有权限访问部门数据！」。用户详情 `GET /system/user/{id}`、批量删除也补上校验（Spring 有，Quarkus 原来漏了）。
+- **备选**：MyBatis 拦截器自动改写 SQL。否决：Quarkus MyBatis 拦截器在 Native 下需额外注册，且改写 SQL 不透明；显式 `${dataScope}` 易审查。
 
 ### D3 AI 默认模型：启动后异步拉取
 

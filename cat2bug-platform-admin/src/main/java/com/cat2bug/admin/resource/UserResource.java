@@ -108,6 +108,7 @@ public class UserResource {
     @Path("{userId}")
     @RequiresPermissions("system:user:query")
     public AjaxResult getInfo(@PathParam("userId") Long userId) {
+        sysUserService.checkUserDataScope(userId);
         return buildUserInfo(userId);
     }
 

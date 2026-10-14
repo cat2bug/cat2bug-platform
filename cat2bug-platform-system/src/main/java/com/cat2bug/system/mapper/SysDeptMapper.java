@@ -12,7 +12,7 @@ import java.util.List;
 @MapperDataSource(QuarkusMapperDataSources.RUNTIME_MYSQL)
 public interface SysDeptMapper {
 
-    List<SysDept> selectDeptList(SysDept dept);
+    List<SysDept> selectDeptList(@Param("dept") SysDept dept, @Param("dataScope") String dataScope);
 
     SysDept selectDeptById(Long deptId);
 

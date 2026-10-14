@@ -5,7 +5,9 @@ import com.cat2bug.common.domain.SysDept;
 import com.cat2bug.common.domain.TreeSelect;
 import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.common.util.StringUtils;
+import com.cat2bug.framework.security.SecurityUtils;
 import com.cat2bug.system.mapper.SysDeptMapper;
+import com.cat2bug.system.security.DataScopeSqlBuilder;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -19,8 +21,11 @@ public class SysDeptService {
     @Inject
     SysDeptMapper sysDeptMapper;
 
+    @Inject
+    DataScopeSqlBuilder dataScopeSqlBuilder;
+
     public List<SysDept> selectDeptList(SysDept dept) {
-        return sysDeptMapper.selectDeptList(dept);
+        return sysDeptMapper.selectDeptList(dept, dataScopeSqlBuilder.forCurrentUser("d", null));
     }
 
     public List<TreeSelect> selectDeptTreeList(SysDept dept) {
@@ -49,8 +54,16 @@ public class SysDeptService {
         return info == null || info.getDeptId().longValue() == deptId.longValue();
     }
 
+    /** 按当前登录用户的数据范围校验目标部门可见；超级管理员不受限 */
     public void checkDeptDataScope(Long deptId) {
-        // DataScope AOP not ported; admin-only operations in tests.
+        if (deptId == null || SecurityUtils.isAdmin()) {
+            return;
+        }
+        SysDept query = new SysDept();
+        query.setDeptId(deptId);
+        if (selectDeptList(query).isEmpty()) {
+            throw new ApiException("没有权限访问部门数据！");
+        }
     }
 
     public int insertDept(SysDept dept) {

@@ -2,6 +2,8 @@ package com.cat2bug.common.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.Set;
+
 public class SysRole {
 
     private Long roleId;
@@ -18,6 +20,8 @@ public class SysRole {
     private Boolean isProjectRole;
     private Long[] menuIds;
     private Long[] deptIds;
+    /** 该角色的菜单权限字符，供数据范围按权限字符筛选角色 */
+    private Set<String> permissions;
     private String createBy;
     private String updateBy;
 
@@ -146,6 +150,14 @@ public class SysRole {
 
     public void setDeptIds(Long[] deptIds) {
         this.deptIds = deptIds;
+    }
+
+    public Set<String> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(Set<String> permissions) {
+        this.permissions = permissions;
     }
 
     public String getCreateBy() {

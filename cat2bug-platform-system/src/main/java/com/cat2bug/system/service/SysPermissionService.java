@@ -38,14 +38,7 @@ public class SysPermissionService {
         if (loginUser == null || loginUser.getUser() == null) {
             return;
         }
-        SysUser user = loginUser.getUser();
-        Set<SysRole> roles = getRole(user).stream()
-                .filter(SysRole::isFlag)
-                .collect(Collectors.toSet());
-        user.setRoleIds(roles.stream().map(SysRole::getRoleId).toArray(Long[]::new));
-        user.setRoles(new ArrayList<>(roles));
-        loginUser.setPermissions(getMenuPermission(user));
-        loginUser.setContextPermissionsMerged(true);
+        applyRolesAndPermissions(loginUser, loginUser.getUser());
         tokenService.updateLoginUser(loginUser);
     }
 
@@ -61,7 +54,10 @@ public class SysPermissionService {
                 if (!role.isFlag()) {
                     continue;
                 }
-                addPermsFromRole(role.getRoleId(), perms);
+                Set<String> rolePerms = new HashSet<>();
+                addPermsFromRole(role.getRoleId(), rolePerms);
+                role.setPermissions(rolePerms);
+                perms.addAll(rolePerms);
             }
         } else {
             addRawPerms(menuMapper.selectMenuPermsByUserId(user.getUserId()), perms);
@@ -81,7 +77,11 @@ public class SysPermissionService {
         loginUser.setUserId(user.getUserId());
         loginUser.setDeptId(user.getDeptId());
         loginUser.setUser(user);
+        applyRolesAndPermissions(loginUser, user);
+        return loginUser;
+    }
 
+    private void applyRolesAndPermissions(LoginUser loginUser, SysUser user) {
         Set<SysRole> roles = getRole(user).stream()
                 .filter(SysRole::isFlag)
                 .collect(Collectors.toSet());
@@ -89,7 +89,10 @@ public class SysPermissionService {
         user.setRoles(new ArrayList<>(roles));
         loginUser.setPermissions(getMenuPermission(user));
         loginUser.setContextPermissionsMerged(true);
-        return loginUser;
+        if (roles.isEmpty() && !user.isAdmin()) {
+            // 未选团队/项目时菜单权限按 sys_user_role 计算，数据范围也须按同一批角色，否则会退化为「无数据」
+            user.setRoles(roleService.selectSystemRolesByUserId(user.getUserId()));
+        }
     }
 
     public Set<SysRole> getRole(SysUser user) {

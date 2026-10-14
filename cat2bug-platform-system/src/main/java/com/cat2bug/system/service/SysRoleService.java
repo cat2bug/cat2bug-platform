@@ -8,6 +8,7 @@ import com.cat2bug.common.domain.SysRoleMenu;
 import com.cat2bug.common.domain.SysUserConfig;
 import com.cat2bug.common.domain.SysUserRole;
 import com.cat2bug.common.exception.ApiException;
+import com.cat2bug.framework.security.SecurityUtils;
 import com.cat2bug.system.mapper.SysDeptMapper;
 import com.cat2bug.system.mapper.SysRoleDeptMapper;
 import com.cat2bug.system.mapper.SysRoleMapper;
@@ -90,6 +91,18 @@ public class SysRoleService {
         return roles;
     }
 
+    /** 用户在 sys_user_role 中直接分配且未停用的系统角色 */
+    public List<SysRole> selectSystemRolesByUserId(Long userId) {
+        List<SysRole> roles = new ArrayList<>();
+        for (SysRole role : sysRoleMapper.selectRolePermissionByUserId(null, null, userId)) {
+            if ("0".equals(role.getStatus())) {
+                role.setFlag(true);
+                roles.add(role);
+            }
+        }
+        return roles;
+    }
+
     public Set<String> selectRolePermissionByUserId(Long userId) {
         SysUserConfig userConfig = userConfigMapper.selectSysUserConfigByUserId(userId);
         List<SysRole> perms;
@@ -126,8 +139,17 @@ public class SysRoleService {
         }
     }
 
+    /**
+     * 角色列表不按数据范围过滤（团队/项目角色没有用户归属，过滤会把它们隐藏），
+     * 因此这里只校验角色存在，与原 Spring 线的实际行为一致。
+     */
     public void checkRoleDataScope(Long roleId) {
-        // DataScope AOP not ported; admin-only operations in tests.
+        if (roleId == null || SecurityUtils.isAdmin()) {
+            return;
+        }
+        if (sysRoleMapper.selectRoleById(roleId) == null) {
+            throw new ApiException("没有权限访问角色数据！");
+        }
     }
 
     public int countUserRoleByRoleId(Long roleId) {
