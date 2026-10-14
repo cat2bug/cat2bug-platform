@@ -17,9 +17,11 @@
 
 ## 3. 邮件
 
-- [ ] 3.1 新增 `ImMailSender`（Quarkus Mailer）：`cat2bug.mail.enabled` 为假或 `host` / `from` 为空时跳过；启动时记录一次「邮件未配置」
-- [ ] 3.2 `application.properties` 只放不含凭据的默认值（`cat2bug.mail.enabled=false`、`quarkus.mailer.mock=false` 等）；测试 profile 用 Mailer mock
-- [ ] 3.3 单元测试：未配置时跳过不抛异常；已配置（mock）时收件人、主题、HTML 正文正确
+- [x] 3.1 新增 `ImMailSender`（Quarkus Mailer）：`cat2bug.mail.enabled` 为假或 `host` / `from` 为空时跳过；启动时记录一次「邮件未配置」
+  - Quarkus Mailer 的 `host` 自带默认值 `localhost`，实际开关是 `cat2bug.mail.enabled` 与 `from`
+- [x] 3.2 `application.properties` 只放不含凭据的默认值（`cat2bug.mail.enabled=false`、`quarkus.mailer.mock=false` 等）；测试 profile 用 Mailer mock
+  - Quarkus 3.15 里隐式 TLS 用 `quarkus.mailer.tls`（`ssl` 已弃用），STARTTLS 用 `quarkus.mailer.start-tls`
+- [x] 3.3 单元测试：未配置时跳过不抛异常；已配置（mock）时收件人、主题、HTML 正文正确（`ImMailSenderTest`，用记录型 `Mailer` 替身）
 
 ## 4. 消息正文模版
 
