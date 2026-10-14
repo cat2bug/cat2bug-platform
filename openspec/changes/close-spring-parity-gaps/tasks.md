@@ -35,12 +35,12 @@
 
 ## 6. 验证
 
-- [ ] 6.1 `unset QUARKUS_CONFIG_LOCATIONS CAT2BUG_INSTALL_CONFIG_PATH && mvn install` 全量测试通过
-- [ ] 6.2 重新运行 `/tmp/c2b-parity.py` 接口比对，除有意删除项外缺失为 0
-- [ ] 6.3 `deploy/build-native.sh` 重建并跑 `smoke-native-docker.sh arm64` 与 `FRESH=true`，记录体积
+- [x] 6.1 `unset QUARKUS_CONFIG_LOCATIONS CAT2BUG_INSTALL_CONFIG_PATH && mvn install` 全量测试通过（worktree 内改用 `mvn verify -Dquarkus.http.test-port=0`，避免写 `~/.m2`：181 个测试，0 失败，2 个跳过）
+- [x] 6.2 重新运行 `/tmp/c2b-parity.py` 接口比对，除有意删除项外缺失为 0（以本 worktree 为根运行：`/system/CasePrompt/export` 已不再缺失；剩余 33 条均为有意删除的 `/tool/gen`、`/test/user`、若依 `/index`，或脚本解析误报：`ApiDefectController` 类级路径为常量、Git Smart HTTP 的 `produces/consumes` 被当成路径、`/cat2ai/**` 的 ANY 方法，Quarkus 均有对应资源）
+- [ ] 6.3 `deploy/build-native.sh` 重建并跑 `smoke-native-docker.sh arm64` 与 `FRESH=true`，记录体积（合并后由主 agent 执行）
 
 ## 7. 文档与回写长期知识
 
-- [ ] 7.1 新增 `docs/07-技术决策/ADR-012-用户内容在前端渲染时清洗而非后端转义.md`，加入 ADR 说明与总览
-- [ ] 7.2 `docs/03-技术方案/权限模型与鉴权链路.md` 删除 dataScope 已知缺口并写明实现；本机 `CLAUDE.md` 同步
-- [ ] 7.3 可复用的坑写入 `docs/06-踩坑记录/`（没有则注明无）；`docs/08-版本记录/2026-10.md` 记录本变更（含「数据范围受限角色列表变少」的行为说明）；`check_links.py` 坏链为 0
+- [x] 7.1 新增 `docs/07-技术决策/ADR-012-用户内容在前端渲染时清洗而非后端转义.md`，加入 ADR 说明与总览
+- [x] 7.2 `docs/03-技术方案/权限模型与鉴权链路.md` 删除 dataScope 已知缺口并写明实现；本机 `CLAUDE.md` 同步（`CLAUDE.md` 不入库，按要求本 worktree 不改，由主 agent 合并后删去「已知缺口：Mapper 未拼接 dataScope 数据权限」一句；另同步了 `02-系统架构/整体架构.md` 与两份接口清单）
+- [x] 7.3 可复用的坑写入 `docs/06-踩坑记录/`（没有则注明无）；`docs/08-版本记录/2026-10.md` 记录本变更（含「数据范围受限角色列表变少」的行为说明）；`check_links.py` 坏链为 0（新增两篇踩坑；坏链 0）
