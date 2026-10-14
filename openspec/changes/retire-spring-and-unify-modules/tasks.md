@@ -49,17 +49,17 @@
 - [x] 7.1 `.gitignore` 删除 `/docs/` 规则，保留 Obsidian 个人工作区忽略；确认 `.cursor/`、`.claude/`、`.github/`、`assets/`、`CLAUDE.md` 仍忽略
 - [x] 7.2 新增 `deploy/public-release-exclude.txt`（`docs/`、`openspec/`、`readme/core/` 及确认后的其它内部目录）
 - [x] 7.3 新增 `deploy/scripts/export-public.sh`：临时索引生成剔除后的提交，增量挂到 `public/master`，树级自检，打印推送命令且不推送
-- [ ] 7.4 运行导出脚本，`git ls-tree -r public/master` 核对无内部路径；再提交一次后重跑验证增量父提交
+- [x] 7.4 运行导出脚本，`git ls-tree -r public/master` 核对无内部路径；再提交一次后重跑验证增量父提交
 
 ## 8. 文档
 
-- [ ] 8.1 `README.md`、`deploy/README.md`、`deploy/docker/README.md` 改为单后端与新脚本名
-- [ ] 8.2 本机 `CLAUDE.md`（不入库）同步：技术栈、模块、命令、Native 体积
+- [x] 8.1 `README.md`、`deploy/README.md`、`deploy/docker/README.md` 改为单后端与新脚本名
+- [x] 8.2 本机 `CLAUDE.md`（不入库）同步：技术栈、模块、命令、Native 体积
 
 ## 9. 本机清理（不入库）
 
-- [ ] 9.1 删除根 `node_modules`、`tmp-pw-*`（含 zip）、`cat2bug-platform-automation`、`cat2bug-platform-cloud`
-- [ ] 9.2 删除 `backup/`、`venv/`、`logs/`、`uploadPath/`；`.worktree/`、`data/`、`upload/`、`config/` 保留
+- [x] 9.1 删除根 `node_modules`、`tmp-pw-*`（含 zip）、`cat2bug-platform-automation`、`cat2bug-platform-cloud`
+- [x] 9.2 删除 `backup/`、`venv/`、`logs/`、`uploadPath/`；`.worktree/`、`data/`、`upload/`、`config/` 保留
 
 ## 10. 回写长期知识
 

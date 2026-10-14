@@ -1,80 +1,60 @@
 # Docker Compose 部署说明
 
-## 环境变量
+## 构建与启动
 
-### `CAT2BUG_UPGRADE_SKIP=true`
-
-等价于配置 `cat2bug.upgrade.skip=true`。用于 Docker / CI 等无需人工进入升级向导的场景。
-
-| 场景 | 行为 |
-|------|------|
-| 无 `application-install.yml` 的 legacy 实例 | 启动时自动从当前 Environment 写出 completed install 文件 |
-| **install 已完成**且存在待执行 Flyway 脚本 | **不**进入 `/upgrade` UI；启动时后台静默执行 Flyway migrate |
-| 静默 migrate **失败** | 进程以**非零状态退出**（`System.exit(1)`），容器应重启或告警，避免半升级状态继续服务 |
-
-换 JAR / 镜像升级且已挂载 completed install 时，推荐在 `cat2bug-platform-web-after` 服务中设置：
-
-```yaml
-environment:
-  CAT2BUG_UPGRADE_SKIP: "true"
+```bash
+./deploy/docker/build.sh          # 前端 build:prod → static/；后端 MySQL 版单 JAR → cat2bug-admin.jar
+cd deploy/docker
+docker compose build
+docker compose up -d
 ```
 
-### `CAT2BUG_INSTALL_SKIP=true`
+默认端口 `8022`（nginx 反代后端 `2020`）。首次访问进入 `/setup` 安装向导；提交后后端进程退出，由 `restart: always` 拉起，容器重启一次属正常现象。
 
-跳过首次 `/setup` 向导（预配置 install 文件或 Environment 数据源时使用）。
+`SKIP_FRONTEND=true ./deploy/docker/build.sh` 只重打后端。
 
-### 安装向导环境变量预填
+后端镜像按 `-Dquarkus.profile=mysql` 打包（数据源驱动类型为构建期属性），运行期 `QUARKUS_PROFILE=prod`，因此 **Compose 镜像只支持 MySQL**，安装向导中不要选 H2。
 
-首次进入 `/setup` 时，后端 `GET /setup/preflight` 从容器/进程环境变量读取基础设施默认值并写入表单。未设置的环境项保留向导内置默认（如 H2、127.0.0.1）；既无环境变量也无内置默认的字段（如数据库密码）留空。
+## 持久化
 
-| 向导字段 | 推荐环境变量 |
-|----------|----------------|
-| 数据库类型 | `SPRING_DATABASE_TYPE`（未设置时可根据 JDBC URL 含 `jdbc:mysql` 推断为 mysql） |
+| 宿主目录 | 容器路径 | 内容 |
+|----------|----------|------|
+| `./uploadPath` | `/home/uploadPath` | `cat2bug.profile`：附件、头像、Git bare 仓（`git/` 子目录，含隐藏文档仓） |
+| `./config` | `/home/config` | 安装向导写入的 `install/application-install.yml`、`install/quarkus-runtime.properties`（含数据库密码） |
+| `./mysql-data` | `/var/lib/mysql` | MySQL 数据 |
+
+三者都必须持久化：丢 `uploadPath` 会出现「数据库里有记录但 Git 仓库/附件读不到」；丢 `config` 则重建容器后回到 `/setup`。`CAT2BUG_PROFILE` 必须与 `uploadPath` 的容器挂载点一致。
+
+## 环境变量
+
+### 运行期
+
+| 变量 | 说明 |
+|------|------|
+| `CAT2BUG_IN_DOCKER=true` | 容器模式：安装完成后不自行重启进程，交给容器重启策略 |
+| `CAT2BUG_PROFILE` | 存储根目录 |
+| `CAT2BUG_CACHE_TYPE` | `redis` 时必须同时设置 `CAT2BUG_REDIS_HOSTS`，否则启动失败 |
+| `CAT2BUG_REDIS_HOSTS` | 如 `redis://cat2bug-platform-redis:6379` |
+| `CAT2BUG_UPGRADE_SKIP=true` | 已完成安装且有待执行 Flyway 脚本时，不进入 `/upgrade` 页面，启动期静默迁移；失败则进程非零退出 |
+| `CAT2BUG_INSTALL_SKIP=true` | 跳过首次 `/setup`（已预置安装配置时使用） |
+
+### 安装向导预填
+
+`GET /setup/preflight` 从环境变量读取默认值填入向导表单，未设置的项保留向导内置默认。
+
+| 向导字段 | 环境变量 |
+|----------|----------|
+| 数据库类型 | `SPRING_DATABASE_TYPE`；未设置时按 JDBC URL 是否含 `jdbc:mysql` 推断 |
 | MySQL 连接 | `SPRING_DATASOURCE_DRUID_MASTER_URL`、`SPRING_DATASOURCE_DRUID_MASTER_USERNAME`、`SPRING_DATASOURCE_DRUID_MASTER_PASSWORD` |
-| 缓存类型 | `CAT2BUG_CACHE_TYPE`（未设置时若存在 `SPRING_REDIS_HOST` 则推断为 redis） |
-| Redis 连接 | `SPRING_REDIS_HOST`、`SPRING_REDIS_PORT`、`SPRING_REDIS_PASSWORD`、`SPRING_REDIS_DATABASE` |
-| 上传/日志路径 | `CAT2BUG_PROFILE`、`CAT2BUG_TEMP`、`LOGGING_FILE_PATH` |
+| MySQL 主机/库名覆盖 | `CAT2BUG_SETUP_MYSQL_HOST`、`CAT2BUG_SETUP_MYSQL_DATABASE` |
+| 缓存类型 | `CAT2BUG_CACHE_TYPE` |
+| Redis 连接 | `CAT2BUG_SETUP_REDIS_HOST`，或 `SPRING_REDIS_HOST`、`SPRING_REDIS_PORT`、`SPRING_REDIS_PASSWORD`、`SPRING_REDIS_DATABASE` |
+| 存储/临时/日志路径 | `CAT2BUG_PROFILE`、`CAT2BUG_TEMP`、`LOGGING_FILE_PATH` |
 | AI / Ollama | `CAT2BUG_AI_ENABLED`、`CAT2BUG_AI_HOST` |
-| Docker 服务名兜底 | `CAT2BUG_IN_DOCKER=true`（或容器内存在 `/.dockerenv`）时，未配置的主机默认可填 `mysql` / `redis`；也可用 `CAT2BUG_SETUP_MYSQL_HOST`、`CAT2BUG_SETUP_REDIS_HOST` 覆盖 |
 
-`docker-compose.yml` 中 `cat2bug-platform-web-after` 已示例上述 MySQL/Redis 变量；配置完成后打开安装向导通常无需再手改连接信息，核对并提交即可。
+`SPRING_*` 前缀是安装配置 YAML 键的历史命名，只用于预填，与运行期框架无关。
 
 ## 首次安装与附着旧库
 
-- **全新空库**：无 install 文件 → 浏览器进入 `/setup`
-- **已有 H2 `.mv.db` 或 MySQL schema**：无 install 文件 → 仍进入 `/setup`（`databaseMode: existing`），setup 阶段不 Flyway；install 完成后若 schema 落后，再进入 `/upgrade` 或由 `CAT2BUG_UPGRADE_SKIP` 静默 migrate
-
-## Spring Native 最小镜像（4.3）
-
-默认 Release 冒烟使用 **Spring Native ELF**，非 Compose 全栈：
-
-| 脚本 | 说明 |
-|------|------|
-| [`run-native-spring-minimal.sh`](../run-native-spring-minimal.sh) | **主入口**：Debian/Distroless 运行 UPX 或未压缩二进制 |
-| [`run-native-minimal.sh`](../run-native-minimal.sh) | **OpenSpec 兼容别名**，`exec` 委托 spring 脚本 |
-
-```bash
-# 构建（示例 arm64）
-./deploy/build-native-spring.sh aarch64
-
-# 二者等价
-PORT=2020 ./deploy/docker/run-native-spring-minimal.sh run-bg debian
-PORT=2020 ./deploy/docker/run-native-minimal.sh run-bg debian
-
-# 冒烟
-./deploy/test/native-api-smoke.sh http://127.0.0.1:2020
-./deploy/test/native-h2-sql-smoke.sh http://127.0.0.1:2020
-./deploy/test/native-parity-smoke.sh http://127.0.0.1:2020
-./deploy/test/native-upgrade-smoke.sh   # 隔离卷 @2028，勿设 CAT2BUG_UPGRADE_SKIP
-```
-
-更多脚本见 [`deploy/README.md`](../README.md)。
-
-## Compose 全栈启动
-
-```bash
-cd deploy/docker
-docker-compose up -d
-```
-
-默认端口：`8022`（经 nginx 反代后端 `2020`）。
+- MySQL 库不存在，或库存在但没有成功的 Flyway 迁移记录（例如 Compose 预建的空库）：向导按 `new` 处理，提交时执行 Flyway 建表。
+- 库里已有 Flyway 迁移记录：按 `existing` 附着，安装阶段不迁移；若 schema 落后，安装完成后进入 `/upgrade`，或用 `CAT2BUG_UPGRADE_SKIP` 静默迁移。

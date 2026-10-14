@@ -28,7 +28,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 当前最新版本是1.1.0
 
-**运行时要求（1.1.0 后端）**：构建与运行需 **JDK 17+**。**产品默认后端为 Quarkus**（Maven `-Pquarkus`）；Spring Boot admin 仅作对照 / 紧急回滚。Maven 版本号为 1.1.0。详见 [CHANGELOG.md](CHANGELOG.md)；Spring 栈说明见 [docs/backend-spring-boot-3.md](docs/backend-spring-boot-3.md)。
+**运行时要求（1.1.0 后端）**：构建与运行需 **JDK 17+**。后端基于 **Quarkus**（默认 Maven 构建，无需 profile），原 Spring Boot 后端已移除，最后版本保留在 tag `spring-final-1.1.0`。Maven 版本号为 1.1.0。详见 [CHANGELOG.md](CHANGELOG.md)。
 
 * 添加系统快捷键体系
 * 缺陷 Excel 暗色主题与 Safari 行号列滚动体验优化
@@ -73,15 +73,14 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 2. 主框架
 
-* Spring Boot 3.3.x
-* Spring Framework 6.x
-* Spring Security 6.x
+* Quarkus 3.15（RESTEasy Reactive、Vert.x、Scheduler、WebSockets）
+* JGit 6.10（Git 仓库托管与 Smart HTTP）
 
 3. 持久层
 
-* Apache MyBatis 3.5.x
-* Hibernate Validation 6.0.x
-* Alibaba Druid 1.2.x
+* Apache MyBatis 3.5.x（quarkus-mybatis）
+* Agroal 连接池
+* Flyway 数据库迁移（H2 / MySQL）
 
 4. 视图层
 
@@ -95,80 +94,39 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 ````
 --cat2bug-platform
-------|----cat2bug-platform-admin       # 主程序模块
-------|----cat2bug-platform-ai          # 人工智能模块
-------|----cat2bug-platform-im          # 通讯模块
-------|----cat2bug-platform-api         # Open API模块
+------|----cat2bug-platform-admin       # 主程序模块（Quarkus 应用、REST 资源、安装向导、Native 配置）
+------|----cat2bug-platform-system      # 业务模块（Service、Mapper、Git 仓库）
+------|----cat2bug-platform-framework   # 系统框架（安全、Web、缓存）
 ------|----cat2bug-platform-common      # 通用模块
-------|----cat2bug-platform-framework   # 系统框架
-------|----cat2bug-platform-generator   # 代码生成
-------|----cat2bug-platform-quartz      # 定时任务
-------|----cat2bug-platform-system      # 业务模块
-------|----cat2bug-platform-ui          # 前端VUE工程
-------|----deploy                       # 部署相关文件
+------|----cat2bug-platform-ui          # 前端 Vue 工程
+------|----deploy                       # 部署脚本（JVM、Native、Docker、rpm）
 ------|----sql                          # 数据库文件
 ------|----readme                       # 文档
 --------------|----development          # 项目开发文档
---------------|----production           # 生成环境使用文档
+--------------|----production           # 生产环境使用文档
 ````
 
 ## 部署
 
-### 默认后端（Quarkus，推荐）
+### 源码构建与运行
 
-需 **Java 17+**。日常开发与 JVM 发布以 Quarkus admin 为准（`-Pquarkus`）。模块说明见 [cat2bug-platform-admin/README.md](cat2bug-platform-admin/README.md)；本地配置见 `openspec/changes/restore-quarkus-full-delivery/LOCAL-RUN.md`。
+需 **Java 17+**、Maven 3。模块说明见 [cat2bug-platform-admin/README.md](cat2bug-platform-admin/README.md)，部署脚本见 [deploy/README.md](deploy/README.md)。
 
 ```bash
-# 开发（推荐）
+# 开发模式
 ./cat2bug-platform-admin/dev.sh
 # 或
 mvn -pl cat2bug-platform-admin -am quarkus:dev
 
-# 打包 / 运行 JVM JAR
-mvn -pl cat2bug-platform-admin -am package -DskipTests
-./deploy/run-jar.sh
-
-# 嵌入式前端 + Quarkus JAR
+# 嵌入式前端 + 单 JAR（端口 2020）
 ./deploy/build-embedded.sh
 ./deploy/run-jar.sh
+
+# Native 单文件（含前端，UPX 压缩）
+./deploy/build-native.sh
 ```
 
-前端独立开发仍可：`cd cat2bug-platform-ui && npm run dev`（代理到 `:2020`）。
-
-Quarkus Native（约 20MB，默认按 UPX 后计）为 **Gate B**，须在 JVM 功能验收（Gate A）通过后再做；门禁说明见 `openspec/changes/restore-quarkus-full-delivery/GATE-NOTES.md`。
-
-### Spring Boot admin（对照 / 紧急回滚，非推荐）
-
-以下命令**保留但不作为产品默认路径**，仅用于对照现网行为或紧急回滚。
-
-**JVM：**
-
-```bash
-# 开发
-mvn spring-boot:run -pl cat2bug-platform-admin
-# 使用 MySQL
-mvn spring-boot:run -pl cat2bug-platform-admin -Dspring-boot.run.profiles=mysql
-
-# 打包运行
-mvn -pl cat2bug-platform-admin -am package -DskipTests
-java -jar cat2bug-platform-admin/target/cat2bug-admin.jar
-```
-
-**Spring Native（对照，非推荐默认 Release）：** 无需 JRE，单文件 Native ELF（含 embedded Vue SPA）。见 [readme/spring-native-delivery/README.md](readme/spring-native-delivery/README.md)。
-
-```bash
-./deploy/build-native-spring.sh x86_64
-PORT=2020 ./deploy/docker/run-native-spring-minimal.sh run-bg debian
-./deploy/test/native-api-smoke.sh http://127.0.0.1:2020
-```
-
-**手动批处理（Spring JVM JAR）：** 将 `deploy` 目录中的 `cat2bug-service.sh` / `cat2bug-service.bat` 与 `cat2bug-admin.jar` 拷到同一目录后执行：
-
-```shell
-cat2bug-service.sh start   # 启动
-cat2bug-service.sh stop    # 停止
-cat2bug-service.sh status  # 状态
-```
+前端独立开发：`cd cat2bug-platform-ui && npm run dev`（代理到 `:2020`）。
 
 ### Docker单容器部署
 
@@ -180,11 +138,16 @@ docker run -it -d -p 8022:8022 --name cat2bug-platform docker.cat2bug.com/cat2bu
 
 ### 本地通过Docker-Compose容器化部署
 
-将后台服务./cat2bug-platform-admin/target/cat2bug-admin.jar、前台打包后的文件夹./cat2bug-platform-admin/src/main/resources/static、数据库sql文件./data/cat2bug_platform.sql拷贝到./deploy/docker目录下，执行以下命令：
+先构建前端与后端产物，再启动：
 
 ```shell
-docker-compose up -d
+./deploy/docker/build.sh
+cd deploy/docker
+docker compose build
+docker compose up -d
 ```
+
+数据卷、环境变量与升级说明见 [deploy/docker/README.md](deploy/docker/README.md)。
 
 部署成功后，打开浏览器访问 [http://127.0.0.1:8022](http://127.0.0.1:8022)，系统在首次启动时会引导至 **图形化首次安装向导 (`/setup`)**：
 
