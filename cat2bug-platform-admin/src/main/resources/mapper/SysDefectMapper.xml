@@ -61,6 +61,10 @@
         <if test="defect != null and defect.defectState != null">
             AND d.defect_state = #{defect.defectState}
         </if>
+        <if test="defect != null and defect.params != null and defect.params.defectStates != null">
+            AND d.defect_state IN
+            <foreach collection="defect.params.defectStates" item="state" open="(" separator="," close=")">#{state}</foreach>
+        </if>
         <if test="defect != null and defect.defectType != null">
             AND d.defect_type = #{defect.defectType}
         </if>

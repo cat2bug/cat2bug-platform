@@ -1,6 +1,10 @@
 package com.cat2bug.common.domain;
 
+import com.cat2bug.common.constant.DefectConstants;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -8,16 +12,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@JsonIgnoreProperties(value = {"defectTypeName", "defectStateName"}, allowGetters = true)
 public class SysDefect {
 
     private Long defectId;
     private Long projectNum;
+    @JsonSerialize(using = DefectEnumJson.TypeSerializer.class)
+    @JsonDeserialize(using = DefectEnumJson.TypeDeserializer.class)
     private Integer defectType;
     private String defectName;
     /** 缺陷列表合并关键字（名称/编号/版本/交付物/处理人昵称） */
     private String nameVersionKeyword;
     private String defectDescribe;
     private String defectLevel;
+    @JsonDeserialize(using = DefectEnumJson.StateDeserializer.class)
     private Integer defectState;
     private Long moduleId;
     private String moduleName;
@@ -85,6 +93,14 @@ public class SysDefect {
 
     public void setDefectType(Integer defectType) {
         this.defectType = defectType;
+    }
+
+    public String getDefectTypeName() {
+        return DefectConstants.typeName(defectType);
+    }
+
+    public String getDefectStateName() {
+        return DefectConstants.stateName(defectState);
     }
 
     public String getDefectName() {

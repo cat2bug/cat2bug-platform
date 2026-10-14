@@ -5,6 +5,7 @@ import com.cat2bug.admin.service.DefectImNoticeService;
 import com.cat2bug.admin.service.DefectImportTemplateService;
 import com.cat2bug.common.api.AjaxResult;
 import com.cat2bug.common.api.TableDataInfo;
+import com.cat2bug.common.constant.DefectConstants;
 import com.cat2bug.common.domain.ImportDefectResult;
 import com.cat2bug.common.domain.LoginUser;
 import com.cat2bug.common.domain.SysDefect;
@@ -12,6 +13,7 @@ import com.cat2bug.common.domain.SysDefectLog;
 import com.cat2bug.common.domain.SysDefectShard;
 import com.cat2bug.common.domain.SysUserDefect;
 import com.cat2bug.common.excel.ExcelColumnExportSupport;
+import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.common.util.LocaleUtils;
 import com.cat2bug.common.util.StringUtils;
 import com.cat2bug.framework.security.LoginUserResolver;
@@ -41,7 +43,9 @@ import jakarta.ws.rs.DefaultValue;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import jakarta.ws.rs.core.Response;
@@ -97,8 +101,9 @@ public class DefectResource {
     @RequiresPermissions("system:defect:list")
     public TableDataInfo list(@QueryParam("projectId") Long projectId,
                               @QueryParam("defectName") String defectName,
-                              @QueryParam("defectState") Integer defectState,
-                              @QueryParam("defectType") Integer defectType,
+                              @QueryParam("defectState") String defectState,
+                              @QueryParam("defectType") String defectType,
+                              @QueryParam("params[defectStates]") String defectStates,
                               @QueryParam("moduleId") Long moduleId,
                               @QueryParam("handleById") Long handleById,
                               @QueryParam("projectNum") Long projectNum,
@@ -107,8 +112,8 @@ public class DefectResource {
         SysDefect query = new SysDefect();
         query.setProjectId(projectId);
         query.setDefectName(defectName);
-        query.setDefectState(defectState);
-        query.setDefectType(defectType);
+        query.setDefectState(enumParam(DefectConstants::parseState, defectState));
+        query.setDefectType(enumParam(DefectConstants::parseType, defectType));
         query.setModuleId(moduleId);
         java.util.Map<String, Object> params = new java.util.HashMap<>();
         if (handleById != null) {
@@ -116,6 +121,10 @@ public class DefectResource {
         }
         if (projectNum != null) {
             params.put("projectNum", projectNum);
+        }
+        List<Integer> states = parseStates(defectStates);
+        if (!states.isEmpty()) {
+            params.put("defectStates", states);
         }
         query.setParams(params);
         TableDataInfo table = sysDefectService.selectDefectPage(query, pageNum, pageSize);
@@ -326,16 +335,16 @@ public class DefectResource {
     public Response export(@Context HttpHeaders headers,
                            @RestForm("projectId") Long projectId,
                            @RestForm("defectName") String defectName,
-                           @RestForm("defectState") Integer defectState,
-                           @RestForm("defectType") Integer defectType,
+                           @RestForm("defectState") String defectState,
+                           @RestForm("defectType") String defectType,
                            @RestForm("moduleId") Long moduleId,
                            @RestForm("params[exportScope]") String exportScope,
                            @RestForm("params[exportColumns]") String exportColumns) {
         SysDefect query = new SysDefect();
         query.setProjectId(projectId);
         query.setDefectName(defectName);
-        query.setDefectState(defectState);
-        query.setDefectType(defectType);
+        query.setDefectState(enumParam(DefectConstants::parseState, defectState));
+        query.setDefectType(enumParam(DefectConstants::parseType, defectType));
         query.setModuleId(moduleId);
         Map<String, Object> params = buildExportParams(exportScope, exportColumns);
         byte[] workbook = defectExcelService.buildExportWorkbook(query, params, resolveLocale(headers));
@@ -369,6 +378,28 @@ public class DefectResource {
             dispatchDefectNotice(null, defectId);
         }
         return AjaxResult.success(String.format("导入成功,共导入%d条数据", defectList.size()), null);
+    }
+
+    static Integer enumParam(java.util.function.Function<String, Integer> parser, String value) {
+        try {
+            return parser.apply(value);
+        } catch (IllegalArgumentException e) {
+            throw new ApiException(400, e.getMessage());
+        }
+    }
+
+    private static List<Integer> parseStates(String value) {
+        List<Integer> states = new ArrayList<>();
+        if (StringUtils.isEmpty(value)) {
+            return states;
+        }
+        for (String part : value.split(",")) {
+            Integer state = enumParam(DefectConstants::parseState, part);
+            if (state != null && !states.contains(state)) {
+                states.add(state);
+            }
+        }
+        return states;
     }
 
     private Map<String, Object> buildExportParams(String exportScope, String exportColumns) {

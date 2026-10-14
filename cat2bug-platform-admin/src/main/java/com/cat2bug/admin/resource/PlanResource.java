@@ -3,6 +3,7 @@ package com.cat2bug.admin.resource;
 import com.cat2bug.admin.service.SystemExcelExportService;
 import com.cat2bug.common.api.AjaxResult;
 import com.cat2bug.common.api.TableDataInfo;
+import com.cat2bug.common.constant.DefectConstants;
 import com.cat2bug.common.domain.SysDefect;
 import com.cat2bug.common.domain.SysPlan;
 import com.cat2bug.framework.security.RequiresPermissions;
@@ -98,8 +99,8 @@ public class PlanResource {
                                           @QueryParam("moduleId") Long moduleId,
                                           @QueryParam("defectName") String defectName,
                                           @QueryParam("nameVersionKeyword") String nameVersionKeyword,
-                                          @QueryParam("defectState") Integer defectState,
-                                          @QueryParam("defectType") Integer defectType,
+                                          @QueryParam("defectState") String defectState,
+                                          @QueryParam("defectType") String defectType,
                                           @QueryParam("defectLevel") String defectLevel,
                                           @QueryParam("caseId") Long caseId,
                                           @QueryParam("pageNum") Integer pageNum,
@@ -109,8 +110,8 @@ public class PlanResource {
         query.setModuleId(moduleId);
         query.setDefectName(defectName);
         query.setNameVersionKeyword(nameVersionKeyword);
-        query.setDefectState(defectState);
-        query.setDefectType(defectType);
+        query.setDefectState(DefectResource.enumParam(DefectConstants::parseState, defectState));
+        query.setDefectType(DefectResource.enumParam(DefectConstants::parseType, defectType));
         query.setDefectLevel(defectLevel);
         query.setCaseId(caseId);
         return sysPlanService.selectPlanDefectPage(planId, query, pageNum, pageSize);
