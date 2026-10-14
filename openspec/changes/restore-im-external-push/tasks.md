@@ -9,10 +9,11 @@
 
 ## 2. 平台客户端与 token 缓存
 
-- [ ] 2.1 新增 `ImTokenCache`：按「平台 + 应用标识」缓存 token 与到期时间，到期前 5 分钟视为过期，支持主动失效
-- [ ] 2.2 从 `ImConfigTestService` 抽出 `DingClient`、`FeishuClient`、`WeComClient`（取 token、手机号查用户、个人消息、群 Webhook、签名），基础 URL 可注入；token 无效类错误码清缓存并重试一次
-- [ ] 2.3 `ImConfigTestService` 改为调用三个客户端，对外方法签名不变；配置页六个测试接口行为不变
-- [ ] 2.4 客户端单元测试：用本地 HTTP 桩验证钉钉 / 飞书签名、请求体、token 过期重取、token 失效重试一次
+- [x] 2.1 新增 `ImTokenCache`：按「平台 + 应用标识」缓存 token 与到期时间，到期前 5 分钟视为过期，支持主动失效
+- [x] 2.2 从 `ImConfigTestService` 抽出 `DingClient`、`FeishuClient`、`WeComClient`（取 token、手机号查用户、个人消息、群 Webhook、签名），基础 URL 可注入；token 无效类错误码清缓存并重试一次
+- [x] 2.3 `ImConfigTestService` 改为调用三个客户端，对外方法签名不变；配置页六个测试接口行为不变
+  - 签名与成功路径不变；平台返回错误码（如群关键词不匹配、手机号查不到人）时，测试接口现在返回「测试消息发送失败: …」，原先会静默返回成功
+- [x] 2.4 客户端单元测试：用本地 HTTP 桩验证钉钉 / 飞书签名、请求体、token 过期重取、token 失效重试一次（`ImClientsTest`，桩为 JDK `HttpServer`）
 
 ## 3. 邮件
 
