@@ -30,6 +30,8 @@
 </template>
 
 <script>
+import { escapeHtml } from '@/utils/sanitize-html'
+
 export default {
   emits: ['update:url', 'input'],
   name: "BrowserInput",
@@ -55,7 +57,7 @@ export default {
     html: function() {
       return function (value){
         if(!this.selectUrl || !value){
-          return value;
+          return escapeHtml(value);
         }
         let posList = [];
         let len = value.length;
@@ -71,14 +73,14 @@ export default {
         let index = 0;
         if(posList.length>0){
           for(let i=0;i<posList.length;i++){
-            html.push('<span>'+value.substring(index,posList[i])+'</span>');
-            html.push('<span style="color:red;">'+value.substring(posList[i],posList[i]+this.selectUrl.length)+'</span>');
+            html.push('<span>'+escapeHtml(value.substring(index,posList[i]))+'</span>');
+            html.push('<span style="color:red;">'+escapeHtml(value.substring(posList[i],posList[i]+this.selectUrl.length))+'</span>');
             index=posList[i];
           }
-          html.push('<span>'+value.substring(posList[posList.length-1]+this.selectUrl.length)+'</span>');
+          html.push('<span>'+escapeHtml(value.substring(posList[posList.length-1]+this.selectUrl.length))+'</span>');
           return html.join('');
         } else {
-          return value;
+          return escapeHtml(value);
         }
       }
     }

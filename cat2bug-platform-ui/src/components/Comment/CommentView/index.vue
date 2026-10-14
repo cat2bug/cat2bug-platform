@@ -18,6 +18,7 @@
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import {delComment} from "@/api/system/comment";
 import { defaultEmojiMap } from '@/utils/emoji-assets'
+import { commentToHtml } from '@/utils/comment-html'
 import { pinia } from '@/store/pinia.js'
 import { useUserStore } from '@/stores/user'
 
@@ -46,24 +47,7 @@ export default {
   },
   methods: {
     toHtml(str) {
-      let html = str.split('\n').map(h=>{
-        return `<div style="flex:1;display: flex;flex-direction: row;align-items: center;flex-wrap: wrap;">${h}</div>`
-      }).join('');
-      const divRegex = /\[.*?\]/gi;
-      const divs = Array.from(new Set(str.match(divRegex)));
-      divs.forEach(flag=>{
-        let tempImg = flag.substring(1, flag.length - 1);
-        let imgParams = tempImg.split(':');
-        if(imgParams.length==1) {
-          imgParams = ['img',tempImg];
-        }
-        const type = imgParams[0];
-        const img = imgParams[1];
-        if(imgMap.has(img)) {
-          html = html.replaceAll(flag, `<img alt="${img}" style="width:30px;" @click="handleTag" src="${imgMap.get(img)}" />`);
-        }
-      })
-      return html;
+      return commentToHtml(str, imgMap);
     },
     deleteHandle(comment){
       const self = this;

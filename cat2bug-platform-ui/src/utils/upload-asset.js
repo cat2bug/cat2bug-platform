@@ -216,6 +216,20 @@ export function buildNativeImageOnerrorScript(defaultSrc = DEFAULT_IMAGE) {
 }
 
 /**
+ * 在容器上以捕获阶段监听 error，给 v-html 内的 img 回退占位图（清洗后的 HTML 不含 onerror 属性）。
+ * @param {Event} event
+ * @param {string} [defaultSrc]
+ */
+export function handleImageErrorEvent(event, defaultSrc = DEFAULT_IMAGE) {
+  const img = event && event.target
+  if (!img || img.tagName !== 'IMG' || img.getAttribute('src') === defaultSrc) {
+    return
+  }
+  img.classList.add(IMAGE_ERROR_IMG_CLASS)
+  img.src = defaultSrc
+}
+
+/**
  * 为原生 img 绑定加载失败时回退占位图。
  * @param {HTMLImageElement | null | undefined} imgEl
  * @param {string} [defaultSrc]

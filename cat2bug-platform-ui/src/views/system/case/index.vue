@@ -337,6 +337,7 @@ import caseImportDialogKbd from '@/mixins/case-import-dialog-kbd'
 import { shortcutOpenSplitDropdown } from '@/utils/split-dropdown-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { useUserStore } from '@/stores/user'
+import { sanitizeHtml } from '@/utils/sanitize-html'
 import {
   assignRowHintLetters,
   collectHintLettersFromToolbar,
@@ -1185,7 +1186,7 @@ export default {
         html += '</div></div>'
       })
       html += '</div>'
-      this.$alert(html, this.$i18n.t('case.import-result').toString(), { dangerouslyUseHTMLString: true, customClass: 'case-upload-alert' })
+      this.$alert(sanitizeHtml(html), this.$i18n.t('case.import-result').toString(), { dangerouslyUseHTMLString: true, customClass: 'case-upload-alert' })
       this.getList()
     },
     /** 提交上传文件 */

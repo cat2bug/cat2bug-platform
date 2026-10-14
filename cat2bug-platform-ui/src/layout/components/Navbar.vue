@@ -76,6 +76,7 @@ import LangSelect from '@/components/LangSelect'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { groupStatisticsNotice } from '@/api/system/notice'
 import { checkPermi } from '@/utils/permission'
+import { escapeHtml, sanitizeHtml } from '@/utils/sanitize-html'
 
 const noticeSoundUrls = import.meta.glob('@/assets/sound/*', { eager: true, query: '?url', import: 'default' })
 
@@ -169,7 +170,7 @@ export default {
             dangerouslyUseHTMLString: true,
             type: 'success',
             offset: 50,
-            message: `<a target="_blank" style="color: #409eff;" href="${host}/notice/index?noticeId=${msg.noticeId}">${msg.title}<\a>`
+            message: sanitizeHtml(`<a target="_blank" style="color: #409eff;" href="${host}/notice/index?noticeId=${encodeURIComponent(msg.noticeId)}">${escapeHtml(msg.title)}</a>`)
           })
         }
       }

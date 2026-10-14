@@ -21,7 +21,7 @@
       <div ref="caseHistory" v-show="promptHistoryList && promptHistoryList.length>0" class="case-history">
         <el-row class="case-history-row" v-for="(prompt,index) in promptHistoryList" :key="index" @click="selectHistoryHandle(prompt)">
           <el-tag type="success" effect="dark">{{$t('DEMAND') + ' ' + (index+1).toString().padStart(2,'0')}}</el-tag>
-          <span class="case-history-prompt" v-html="prompt.prompt"></span>
+          <span class="case-history-prompt">{{ prompt.prompt }}</span>
         </el-row>
       </div>
       <div ref="caseSearch" class="case-search">
@@ -339,6 +339,7 @@ import { Multipane, MultipaneResizer } from 'vue-multipane';
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 import {addCase, batchAddCase, updateCase} from "@/api/system/case";
 import {strFormat} from "@/utils";
+import { escapeHtml, sanitizeHtml } from "@/utils/sanitize-html";
 import {makeCaseList} from "@/api/ai/AiCase";
 import i18n from "@/utils/i18n/i18n";
 import {delCasePrompt, listCasePrompt} from "@/api/system/CasePrompt";
@@ -420,9 +421,10 @@ export default {
     renderCasePromptContent: function () {
       return function (content) {
         if(!content) return null;
-        const matches = content.match(PATTERN);
+        const text = escapeHtml(content);
+        const matches = text.match(PATTERN);
         if(matches && matches.length>0) {
-          let html = content;
+          let html = text;
           matches.forEach(m=>{
             html = html.replace(m,`<span style="
                 background-color: #ecf5ff;
@@ -438,9 +440,9 @@ export default {
                 box-sizing: border-box;
                 white-space: nowrap;">${m}</span>`);
           });
-          return html;
+          return sanitizeHtml(html);
         }
-        return content;
+        return text;
       }
     },
     importStateName() {

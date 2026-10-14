@@ -1,7 +1,7 @@
 <template>
   <el-tooltip effect="dark" :placement="tooltipPosition">
     <template #content>
-      <div v-if="type === 'down'" v-html="fileName(tooltip)" />
+      <div v-if="type === 'down'" v-html="fileNameHtml(tooltip)" />
       <div v-else v-html="text(tooltip)" />
     </template>
     <span class="cat2bug-text-trigger">
@@ -13,6 +13,8 @@
 </template>
 
 <script>
+import { escapeHtml, textToHtml } from '@/utils/sanitize-html'
+
 export default {
   emits: ['click'],
   name: "Cat2BugText",
@@ -37,7 +39,7 @@ export default {
   computed: {
     text: function () {
       return function (value) {
-        return value?value.replace('\n', '<br />'):'';
+        return textToHtml(value);
       }
     },
     fileName: function () {
@@ -47,6 +49,9 @@ export default {
         const ret = arr[arr.length-1].replaceAll(/_[0-9a-zA-Z]+\./g,'.');
         return ret;
       }
+    },
+    fileNameHtml: function () {
+      return (url) => escapeHtml(this.fileName(url) || '');
     },
   },
   methods: {

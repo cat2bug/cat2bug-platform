@@ -1,16 +1,20 @@
 ## 1. 准备
 
-- [ ] 1.1 确认工作区干净，记录当前 HEAD；从 tag `spring-final-1.1.0` 取出参照：`DataScopeAspect`、`XssFilter` 配置、`OllamaAiServieImpl#init`、`SysCasePromptController#export`
-- [ ] 1.2 列出前端全部 `v-html` 与 `innerHTML` 使用点，逐个标注「用户内容 / 受控文案」，确认 `vendor/vue-excel-editor` 的 `cellHtml` 调用方
+- [x] 1.1 确认工作区干净，记录当前 HEAD；从 tag `spring-final-1.1.0` 取出参照：`DataScopeAspect`、`XssFilter` 配置、`OllamaAiServieImpl#init`、`SysCasePromptController#export`
+  - HEAD `1dbb658a`。参照中的两处意外：`SysCasePromptController#export` 在 Spring 中整段被注释（见任务 5 说明）；`SysRoleMapper.xml` 的 `${params.dataScope}` 也被注释（见任务 3 说明）
+- [x] 1.2 列出前端全部 `v-html` 与 `innerHTML` 使用点，逐个标注「用户内容 / 受控文案」，确认 `vendor/vue-excel-editor` 的 `cellHtml` 调用方（结果见 design.md「v-html / innerHTML 盘点结果」）
 
 ## 2. 前端 HTML 清洗
 
-- [ ] 2.1 `cat2bug-platform-ui` 加依赖 `dompurify`；新增 `utils/sanitize-html.js`（白名单、`style` 只留颜色与对齐、外链加 `rel`）
-- [ ] 2.2 Markdown 渲染组件（`MarkdownContent`、`MarkdownItVueCompat`、`Cat2BugMarkdown`、`Report/ViewReport.vue`）输出经清洗
-- [ ] 2.3 评论（`Comment/CommentView`、`Report/ReportDetailComments.vue`）`toHtml` 先转义再格式化再清洗
-- [ ] 2.4 `Cat2BugText`、`Cloud/CloudCase`、`Shortcut/CommandPalette.vue` 及 1.2 中其余用户内容点改为清洗后渲染
-- [ ] 2.5 单元测试（Vitest 或现有前端测试方式）：脚本、事件属性、`javascript:` 链接被移除，对齐 / 颜色保留；`npm run lint`、`npm run build:prod` 通过
+- [x] 2.1 `cat2bug-platform-ui` 加依赖 `dompurify`；新增 `utils/sanitize-html.js`（白名单、`style` 走 CSS 属性白名单（修订，见 design D1）、外链加 `rel`）
+- [x] 2.2 Markdown 渲染组件（`MarkdownContent`、`MarkdownItVueCompat`、`Cat2BugMarkdown`、`Report/ViewReport.vue`）输出经清洗（后两者经 `MarkdownItVueCompat` 渲染；图片占位改为捕获阶段 `error` 监听）
+- [x] 2.3 评论（`Comment/CommentView`、`Report/ReportDetailComments.vue`）`toHtml` 先转义再格式化再清洗（共用 `utils/comment-html.js`，保留 contenteditable 产生的实体，见 design D1）
+- [x] 2.4 `Cat2BugText`、`Cloud/CloudCase`、`Shortcut/CommandPalette.vue` 及 1.2 中其余用户内容点改为清洗后渲染
+- [x] 2.5 单元测试（Vitest 或现有前端测试方式）：脚本、事件属性、`javascript:` 链接被移除，对齐 / 颜色保留；`npm run lint`、`npm run build:prod` 通过
+  - Jest `tests/unit/utils/sanitize-html.spec.js` 12 例通过，全量 78 套件 448 例通过；`build:prod` 通过
+  - `npm run lint` 在本变更前就不可用：`.eslintrc.js` 的 `vue/max-attributes-per-line` 旧写法与 eslint-plugin-vue 9 不兼容，且 `.eslintignore` 的 `*.js`/`*.vue` 实际忽略了全部文件。改用临时修正配置逐文件对比改前改后错误数：未引入新的实质问题（增量仅为沿用文件原有双引号/分号风格）
 - [ ] 2.6 浏览器验证：缺陷描述、评论、通知、报告各写入一条 XSS 载荷，页面不执行；现有报告样例前后截图一致
+  - 未做：需要完整后端与测试数据，且不能往开发库写数据；以 2.5 的单测（载荷与 markdown-it 实际渲染结果）替代，合并后建议主 agent 在浏览器补一次
 
 ## 3. 数据权限
 

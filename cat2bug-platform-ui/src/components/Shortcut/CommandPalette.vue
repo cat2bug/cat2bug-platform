@@ -62,6 +62,7 @@ import ShortcutBadge from './ShortcutBadge.vue'
 import { shortcutService } from '@/plugins/shortcut'
 import { normalizeKey } from '@/plugins/shortcut/keymap'
 import { SYSTEM_DOC_URL } from '@/utils/system-doc-url'
+import { escapeHtml } from '@/utils/sanitize-html'
 import { useSettingsStore } from '@/stores/settings'
 import { useUserStore } from '@/stores/user'
 
@@ -216,23 +217,17 @@ export default {
     },
     renderTitle(title) {
       const q = (this.query || '').trim()
-      const safe = this.escapeHtml(title)
-      if (!q) return safe
-      const idx = safe.toLowerCase().indexOf(q.toLowerCase())
-      if (idx < 0) return safe
+      const raw = String(title == null ? '' : title)
+      if (!q) return escapeHtml(raw)
+      const idx = raw.toLowerCase().indexOf(q.toLowerCase())
+      if (idx < 0) return escapeHtml(raw)
       return (
-        safe.slice(0, idx) +
+        escapeHtml(raw.slice(0, idx)) +
         '<mark class="cmdp__hl">' +
-        safe.slice(idx, idx + q.length) +
+        escapeHtml(raw.slice(idx, idx + q.length)) +
         '</mark>' +
-        safe.slice(idx + q.length)
+        escapeHtml(raw.slice(idx + q.length))
       )
-    },
-    escapeHtml(s) {
-      return String(s == null ? '' : s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
     },
 
     /** 执行被激活的叶子项（与 Vue 上下文相关的副作用集中在此） */

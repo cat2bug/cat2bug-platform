@@ -1,9 +1,11 @@
 <template>
-  <div class="markdown-it-vue md-body markdown-body" v-html="html" />
+  <div class="markdown-it-vue md-body markdown-body" v-html="html" @error.capture="handleImageErrorEvent" />
 </template>
 
 <script>
 import MarkdownIt from 'markdown-it'
+import { escapeHtml, sanitizeHtml } from '@/utils/sanitize-html'
+import { handleImageErrorEvent } from '@/utils/upload-asset'
 
 export default {
   name: 'MarkdownItVueCompat',
@@ -47,6 +49,7 @@ export default {
     }
   },
   methods: {
+    handleImageErrorEvent,
     use(plugin, pluginOptions) {
       if (this.md && plugin) {
         this.md.use(plugin, pluginOptions)
@@ -74,9 +77,9 @@ export default {
     render() {
       if (!this.md) return
       try {
-        this.html = this.md.render(this.content || '')
+        this.html = sanitizeHtml(this.md.render(this.content || ''))
       } catch (e) {
-        this.html = `<pre>${(this.content || '').replace(/</g, '&lt;')}</pre>`
+        this.html = `<pre>${escapeHtml(this.content || '')}</pre>`
       }
     }
   }

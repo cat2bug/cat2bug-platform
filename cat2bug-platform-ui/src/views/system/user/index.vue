@@ -359,6 +359,7 @@
 import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, changeUserStatus, deptTreeSelect } from "@/api/system/user";
 import { getToken } from "@/utils/auth";
 import {setHeader} from "@/utils/request";
+import { sanitizeHtml } from "@/utils/sanitize-html";
 
 export default {
   name: "User",
@@ -675,7 +676,7 @@ export default {
       this.upload.open = false;
       this.upload.isUploading = false;
       this.$refs.upload.clearFiles();
-      this.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>", "导入结果", { dangerouslyUseHTMLString: true });
+      this.$alert(sanitizeHtml("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>"), "导入结果", { dangerouslyUseHTMLString: true });
       this.getList();
     },
     // 提交上传文件

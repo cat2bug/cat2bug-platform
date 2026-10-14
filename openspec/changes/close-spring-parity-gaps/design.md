@@ -24,9 +24,11 @@
 
 ### D1 XSS 在渲染端清洗，不在后端转义
 
-- 新增 `utils/sanitize-html.js`：封装 DOMPurify，统一白名单（允许 Markdown 常见标签、`img` 的 `src`/`alt`、`a` 的 `href`/`title`/`target`，禁止 `script`、`style`、`iframe`、`on*` 属性、`javascript:` 链接；`target=_blank` 自动加 `rel="noopener noreferrer"`）。
-- Markdown 组件保留 `html: true`（报告模版与已有内容依赖内联 HTML），渲染结果统一经过清洗再交给 `v-html`。
-- 评论 `toHtml`：先对原文做 HTML 转义，再做换行、`[...]` 提及等格式化，最后清洗。
+- 新增 `utils/sanitize-html.js`：封装 DOMPurify（独立实例，不污染全局），统一白名单（允许 Markdown 常见标签、`img` 的 `src`/`alt`、`a` 的 `href`/`title`/`target`，禁止 `script`、`style`、`iframe`、`object`、`embed`、`form` 等元素、`on*` 属性、`javascript:`/`vbscript:` 及非图片 `data:` 链接；`target=_blank` 自动加 `rel="noopener noreferrer"`）。另提供 `escapeHtml`、`textToHtml`（纯文本转义后换行变 `<br />`）。
+- **内联样式按 CSS 属性白名单过滤**（实施时修订）：原计划只留 `color`/`background-color`/`text-align`，但报告图片序列化为 `<img style="width;height;object-fit;transform: rotate()">`，DSL 插件（居中、用例卡片）用 `display`/`flex`/`padding`/`border`/`vertical-align` 等，只留三项会破坏现有报告。白名单为颜色、对齐、字体、尺寸、内外边距、边框、`display`/flex 布局、`object-fit`、`float` 等；值含 `url(`、`expression(`、`javascript:`、`@import`、`\`、`<`、`>` 的声明丢弃；`transform` 只允许 `rotate(...deg)`；不允许 `position`。
+- Markdown 组件保留 `html: true`（报告模版与已有内容依赖内联 HTML），渲染结果统一经过清洗再交给 `v-html`。`ImagePlugin` 生成的 `onerror` 占位图脚本会被清洗掉，改为在渲染容器上用捕获阶段的 `error` 监听（`handleImageErrorEvent`）回退占位图。
+- 评论 `toHtml`（`utils/comment-html.js`，实施时修订）：评论输入框是 contenteditable，提交的是 `innerHTML`（已含 `&lt;`、`&nbsp;` 等实体，换行可能是 `<div>`/`<br>`）。若对原文整体转义，历史评论会显示出字面量 `&nbsp;`。因此先把无属性的 `<div>`/`</div>`/`<br>` 规整为换行，再转义 `<`、`>`、`"` 和「不构成实体的 `&`」，保留已有实体；然后按行包装、替换 `[img:名称]` 表情，最后清洗。直接调 API 写入的原始 `<script>` 会以文本显示。
+- 纯文本字段（`Cat2BugText`、云端用例提示词、命令面板标题、导入结果弹窗、新通知提醒、Excel 滚动提示）转义后再拼接 HTML；`utils/index.js#html2Text` 改用 `DOMParser` 惰性解析（当前文档的游离节点仍会加载 `<img>` 并触发 `onerror`）。
 - **备选 A**：恢复后端 `XssFilter`。否决：会把 Markdown、报告 DSL、JSON 中的引号转义坏掉，Spring 正是因此排除了通知、评论、报告，留下了缺口。
 - **备选 B**：把 `markdown-it` 改为 `html: false`。否决：会破坏报告模版与已保存内容中的内联 HTML（对齐、颜色等）。
 
@@ -48,7 +50,7 @@
 
 ## Risks / Trade-offs
 
-- [清洗白名单过严导致现有报告 / 文档样式丢失] → 白名单保留 `style` 属性中的颜色与对齐（用 DOMPurify `ALLOWED_ATTR` + CSS 过滤钩子只留 `color`、`background-color`、`text-align`），用现有报告样例做前后截图对比。
+- [清洗白名单过严导致现有报告 / 文档样式丢失] → `style` 走 CSS 属性白名单（见 D1，覆盖报告图片尺寸 / 旋转与 DSL 插件布局），单测覆盖颜色、对齐、图片尺寸与旋转保留；用现有报告样例做前后截图对比。
 - [数据范围恢复后，部分用户「看不到人」] → 这是恢复 Spring 行为；在版本记录中写明，超级管理员不受影响。
 - [`${params.dataScope}` 是字符串拼接] → 片段只由服务端用数字 ID 和常量别名生成，外部传入的 `params.dataScope` 必须在进入服务前清除（Controller 层统一覆盖），单元测试覆盖「请求参数伪造 dataScope 被忽略」。
 - [Native 下新增代码] → 实现后跑 Native 冒烟。
@@ -59,7 +61,12 @@
 
 ## Open Questions
 
-- `vendor/vue-excel-editor` 的 `cellHtml` 是否会渲染缺陷 / 用例里的用户字段：实现时检查调用方，若会则同样清洗。
+- ~~`vendor/vue-excel-editor` 的 `cellHtml` 是否会渲染缺陷 / 用例里的用户字段~~：已核实。唯一调用方 `views/system/defect/list/excel.vue` 的图片/附件列与表头标签都已对路径、字段名做属性转义，属受控 HTML；但组件自带的纵向滚动提示 `vScroller.runner` 会把列名与单元格原值拼进 `v-html`，已改为转义。
+
+### v-html / innerHTML 盘点结果（任务 1.2）
+
+- 用户内容（已处理）：`Markdown/MarkdownContent`（缺陷描述、通知）、`Markdown/MarkdownItVueCompat`（报告、`Cat2BugMarkdown` 预览、Git README / PR / 发行版）、`Comment/CommentView`、`Report/ReportDetailComments`、`Cat2BugText`、`Cloud/CloudCase`（提示词列表、历史需求）、`Shortcut/CommandPalette`、`views/tool/project/browser/BrowserInput`、`vendor/vue-excel-editor` 滚动提示、`layout/components/Navbar` 新通知提醒（`dangerouslyUseHTMLString`）、用户/缺陷/用例导入结果弹窗、注册成功弹窗、`utils/index.js#html2Text`。
+- 受控文案（不处理）：`vendor/vue-excel-editor` 的本地化标签与 `headerLabel`、`excel.vue` 的 `cellHtml` 与拖曳幽灵（均已转义）、`views/member/keyboard` 的 i18n 说明、`views/tool/gen` 的 highlight.js 输出、`PersonalRemindTimer` 倒计时数字、`report-block-add-overlay` 菜单、表格单元格工具栏 SVG、`capture-template-preview`（自带转义）、报告导出（`report-export-surface`、`report-word-export` 读取的是已清洗的预览 DOM）、`CommentInput` 自身的 contenteditable。
 
 ## 相关长期文档
 

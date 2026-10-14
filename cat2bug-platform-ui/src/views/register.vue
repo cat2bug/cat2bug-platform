@@ -115,6 +115,7 @@ import pageActionHints from '@/mixins/page-action-hints'
 import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { mapElementPlusSize } from '@/utils/element-plus-size'
+import { escapeHtml } from '@/utils/sanitize-html'
 
 const REGISTER_KBD_SCOPE = 'register'
 
@@ -360,7 +361,7 @@ export default {
             const username = this.registerForm.username;
             this.loading = false;
             this.skipLeaveConfirm = true;
-            this.$alert("<font color='red'>"+strFormat(this.$i18n.t('account-successfully-registered'),username)+"</font>", this.$i18n.t('prompted').toString(), {
+            this.$alert("<font color='red'>"+strFormat(this.$i18n.t('account-successfully-registered'),escapeHtml(username))+"</font>", this.$i18n.t('prompted').toString(), {
               dangerouslyUseHTMLString: true,
               type: 'success'
             }).then(() => {

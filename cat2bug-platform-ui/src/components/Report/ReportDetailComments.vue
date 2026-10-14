@@ -131,6 +131,7 @@
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import CommentInput from '@/components/Comment/CommentInput'
 import { defaultEmojiMap } from '@/utils/emoji-assets'
+import { commentToHtml } from '@/utils/comment-html'
 
 const imgMap = defaultEmojiMap
 
@@ -276,23 +277,7 @@ export default {
     },
     /** 与 CommentView 一致的表情/换行渲染，避免耦合 CommentView 的删除权限逻辑 */
     toHtml(str) {
-      let html = (str || '').split('\n').map(h => {
-        return `<div style="flex:1;display: flex;flex-direction: row;align-items: center;flex-wrap: wrap;">${h}</div>`
-      }).join('')
-      const divRegex = /\[.*?\]/gi
-      const divs = Array.from(new Set((str || '').match(divRegex) || []))
-      divs.forEach(flag => {
-        const tempImg = flag.substring(1, flag.length - 1)
-        let imgParams = tempImg.split(':')
-        if (imgParams.length === 1) {
-          imgParams = ['img', tempImg]
-        }
-        const img = imgParams[1]
-        if (imgMap.has(img)) {
-          html = html.replaceAll(flag, `<img alt="${img}" style="width:30px;" src="${imgMap.get(img)}" />`)
-        }
-      })
-      return html
+      return commentToHtml(str, imgMap)
     }
   }
 }
