@@ -1,12 +1,12 @@
 package com.cat2bug.admin.service;
 
+import com.cat2bug.admin.service.im.ImEvent;
 import com.cat2bug.admin.service.im.ImLinkBuilder;
 import com.cat2bug.admin.service.im.ImMessageTemplates;
 import com.cat2bug.common.domain.LoginUser;
 import com.cat2bug.common.domain.SysDefect;
 import com.cat2bug.common.domain.SysUserDefect;
 import com.cat2bug.common.domain.im.IMUserConfig;
-import com.cat2bug.common.domain.vo.SendNotice;
 import com.cat2bug.common.util.ImNoticeDefaults;
 import com.cat2bug.framework.security.AuthContext;
 import com.cat2bug.system.mapper.SysUserDefectMapper;
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 缺陷变更后向处理人/关注人推送 IM 站内通知（对齐 Spring {@code SysDefectServiceImpl#sendDefectNotice}）。
+ * 缺陷变更后向处理人/关注人推送 IM 通知（对齐 Spring {@code SysDefectServiceImpl#sendDefectNotice}）。
  */
 @ApplicationScoped
 public class DefectImNoticeService {
@@ -66,15 +66,11 @@ public class DefectImNoticeService {
                 return;
             }
 
-            SendNotice notice = new SendNotice();
-            notice.setProjectId(projectId);
-            notice.setGroupName(DEFECT_GROUP);
             String link = imLinkBuilder.defect(srcHost, projectId, defectId);
-            notice.setTitle(buildTitle(defect));
-            notice.setContent(ImMessageTemplates.defect(defect, link).markdown());
-            notice.setReceiveIds(new ArrayList<>(receiverIds));
-            notice.setSrc(link);
-            imNoticeDispatchService.sendNotice(resolveSenderId(), notice);
+            imNoticeDispatchService.dispatch(new ImEvent(projectId, DEFECT_GROUP, resolveSenderId(),
+                    new ArrayList<>(receiverIds), buildTitle(defect), link,
+                    ImMessageTemplates.defect(defect, link), DEFECT_GROUP,
+                    ImNoticeDefaults.defaultDefectNoticeOption()));
         } catch (Exception ex) {
             LOG.warnf(ex, "发送缺陷通知失败 defectId=%d", defectId);
         }

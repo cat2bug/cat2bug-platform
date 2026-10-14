@@ -33,12 +33,14 @@
 
 ## 5. 多渠道分发
 
-- [ ] 5.1 新增 `imPushTaskExecutor`（固定 3 线程、守护线程，参照 `GitWebhookAsyncConfig`）
-- [ ] 5.2 `ImNoticeDispatchService` 扩展为 `dispatch(ImEvent)`：同步写站内通知与面板推送（行为不变），再按 design D2 规则提交外部渠道任务；群消息每事件一次，取第一个接收人配置
-- [ ] 5.3 钉钉 / 飞书 / 企业微信个人消息与群消息、邮件五个渠道的发送任务；日志带流水号、渠道、projectId，不输出 token、secret、完整手机号
-- [ ] 5.4 `DefectImNoticeService`、`NoticeResource#send` 改走 `dispatch`
-- [ ] 5.5 报告新建成功后触发：接收人为项目未锁定成员中 `modules.report.event.new` 为真者，标题「报告:<报告标题>」
-- [ ] 5.6 分发单元测试：渠道开关组合、群消息只发一次、企业微信群不依赖应用配置、某渠道抛异常不影响其它渠道、报告接收人过滤
+- [x] 5.1 新增 `imPushTaskExecutor`（固定 3 线程、守护线程，参照 `GitWebhookAsyncConfig`）（`ImPushAsyncConfig`，线程名 `im-push-N`）
+- [x] 5.2 `ImNoticeDispatchService` 扩展为 `dispatch(ImEvent)`：同步写站内通知与面板推送（行为不变），再按 design D2 规则提交外部渠道任务；群消息每事件一次，取第一个接收人配置
+  - 与 Spring 一致：事件带 `moduleKey` 时要求接收人 `modules.<module>.option.realtime.switch` 为真；个人配置读取失败的接收人记 WARN 后跳过
+- [x] 5.3 钉钉 / 飞书 / 企业微信个人消息与群消息、邮件五个渠道的发送任务；日志带流水号、渠道、projectId，不输出 token、secret、完整手机号
+  - 邮件收件人优先 `mail.receiver`，为空时用 `sys_user.email`；钉钉个人卡片链接追加 `screen=full`；项目缺应用配置时 WARN 跳过对应个人渠道
+- [x] 5.4 `DefectImNoticeService`、`NoticeResource#send` 改走 `dispatch`（`NoticeResource` 未改，仍调 `sendNotice`，后者内部走 `dispatch`）
+- [x] 5.5 报告新建成功后触发：接收人为项目未锁定成员中 `modules.report.event.new` 为真者，标题「报告:<报告标题>」（`ReportImNoticeService`，`SysReport.srcHost` 不落库）
+- [x] 5.6 分发单元测试：渠道开关组合、群消息只发一次、企业微信群不依赖应用配置、某渠道抛异常不影响其它渠道、报告接收人过滤（`ImNoticeDispatchServiceTest` 8 个、`ReportImNoticeServiceTest` 1 个、集成测试 `QuarkusReportImNoticeTest`）
 
 ## 6. 验证
 
