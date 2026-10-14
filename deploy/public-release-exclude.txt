@@ -1,0 +1,8 @@
+# 公开发布（github / public-gitee）时从导出树中剔除的路径，由 deploy/scripts/export-public.sh 读取。
+# 每行一个相对仓库根的路径；以 / 结尾表示目录（剔除其下全部文件），否则为单个文件。
+# 空行与 # 开头的行忽略。
+
+docs/
+openspec/
+readme/core/
+readme/development/skills/_sources/
