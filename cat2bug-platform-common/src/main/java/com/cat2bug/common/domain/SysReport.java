@@ -24,6 +24,8 @@ public class SysReport {
     private Long projectId;
     private String reportKey;
     private List<SysUser> focusList;
+    /** 前端访问地址（协议 + 主机），只用于生成通知链接，不落库。 */
+    private String srcHost;
 
     public Long getReportId() {
         return reportId;
@@ -135,5 +137,13 @@ public class SysReport {
 
     public void setFocusList(List<SysUser> focusList) {
         this.focusList = focusList;
+    }
+
+    public String getSrcHost() {
+        return srcHost;
+    }
+
+    public void setSrcHost(String srcHost) {
+        this.srcHost = srcHost;
     }
 }

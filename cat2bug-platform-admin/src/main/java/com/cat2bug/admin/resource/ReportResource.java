@@ -1,5 +1,6 @@
 package com.cat2bug.admin.resource;
 
+import com.cat2bug.admin.service.ReportImNoticeService;
 import com.cat2bug.admin.service.SystemExcelExportService;
 import com.cat2bug.common.api.AjaxResult;
 import com.cat2bug.common.api.TableDataInfo;
@@ -52,6 +53,9 @@ public class ReportResource {
 
     @Inject
     SystemExcelExportService systemExcelExportService;
+
+    @Inject
+    ReportImNoticeService reportImNoticeService;
 
     @GET
     @Path("/list")
@@ -149,7 +153,9 @@ public class ReportResource {
     @RequiresPermissions("system:report:add")
     public AjaxResult add(SysReport sysReport, @Context HttpHeaders headers) {
         sysReport.setReportSource(resolveClientIp(headers));
-        return AjaxResult.success(sysReportService.insertSysReport(sysReport));
+        SysReport saved = sysReportService.insertSysReport(sysReport);
+        reportImNoticeService.sendReportNotice(saved);
+        return AjaxResult.success(saved);
     }
 
     @PUT
