@@ -1,6 +1,6 @@
 # 接口清单：Open API 与 AI
 
-面向第三方的 Open API（`/api/**`，API Key 鉴权）、项目 API Key 管理、个人访问令牌与 OAuth（AI 客户端接入 MCP），以及 AI 模型/账号、AI 生成缺陷与用例、Cat2AI 代理接口速查；约定见 [[接口约定]]。
+面向第三方的 Open API（`/api/**`，API Key 鉴权）、项目 API Key 管理、OAuth（AI 客户端登录接入 MCP），以及 AI 模型/账号、AI 生成缺陷与用例、Cat2AI 代理接口速查；约定见 [[接口约定]]。
 
 资源类目录：`cat2bug-platform-admin/src/main/java/com/cat2bug/admin/resource/`（Open API 在其 `open/` 子目录）。
 
@@ -41,17 +41,7 @@
 | DELETE | `/system/api/{apiIds}` | 删除 | `system:api:remove` |
 | POST | `/system/api/export` | 导出 | `system:api:export` |
 
-## 个人访问令牌（`UserAccessTokenResource`，`/system/user/profile/tokens`，JWT）
-
-只操作当前登录用户自己的令牌，无权限注解。令牌只能用于 MCP 路径，鉴权链路见 [[权限模型与鉴权链路]]。
-
-| 方法 | 路径 | 说明 |
-|---|---|---|
-| GET | `/system/user/profile/tokens` | 本人未吊销的令牌：个人令牌（`manual`），以及每个 OAuth 授权各一条（以其刷新令牌 `oauth_refresh` 代表，短期访问令牌不列出） |
-| POST | `/system/user/profile/tokens` | 创建个人令牌：`name`（≤ 128 字）、`expireDays`（1～3650，空为永不过期）；明文 `token` 只在本次响应返回 |
-| DELETE | `/system/user/profile/tokens/{tokenId}` | 吊销；OAuth 条目按 `grant_id` 连带吊销同一授权的访问令牌与刷新令牌 |
-
-## MCP（`/mcp`，个人访问令牌 / OAuth 访问令牌）
+## MCP（`/mcp`，OAuth 访问令牌，绑定授权项目）
 
 Streamable HTTP 的 MCP 端点，工具清单、权限计算、通用通道与客户端配置见 [[MCP接入与权限]]。
 
@@ -60,6 +50,13 @@ Streamable HTTP 的 MCP 端点，工具清单、权限计算、通用通道与�
 | POST / GET | `/mcp` | MCP 协议端点；未认证 401，`WWW-Authenticate` 带 `resource_metadata` |
 | GET | `/.well-known/oauth-protected-resource`（及 `/mcp` 子路径） | 受保护资源元数据（RFC 9728）：`resource`、`authorization_servers` |
 
+使用指南与引导命令（同一端点内的 MCP 方法）：
+
+| MCP 方法 | 名称 | 说明 |
+|---|---|---|
+| `tools/call` | `get_guide` | 使用指南，`topic` 取 `overview`（默认）/ `roles` / `defect` / `case` / `plan` / `deliverable` / `report` / `document` / `code`；返回 Markdown（本项目实况 + 主题正文） |
+| `prompts/list`、`prompts/get` | `report_defect`、`fix_defect`、`review_defect`、`run_test_plan`、`write_test_cases`、`project_status` | 引导命令，参数全部可选（`summary`、`defect_num`、`plan_name`、`module_name`、`requirement`），返回一条 user 消息 |
+
 ## OAuth 2.1 授权服务器（公开路径，HTTP 状态码按 OAuth 规范返回）
 
 | 方法 | 路径 | 说明 |
@@ -67,8 +64,8 @@ Streamable HTTP 的 MCP 端点，工具清单、权限计算、通用通道与�
 | GET | `/.well-known/oauth-authorization-server` | 授权服务器元数据（RFC 8414），issuer 取自 `cat2bug.public-url` 或请求头 |
 | POST | `/oauth/register` | 动态客户端注册（RFC 7591），只接受公开客户端；成功 201；IP 限流，超限 429 |
 | GET | `/oauth/authorize` | 校验 client_id、redirect_uri、`code_challenge_method=S256` 等后 302 到前端 `/oauth/consent`；client 或 redirect_uri 不合法时直接显示错误，不跳回 |
-| POST | `/oauth/authorize/check` | 确认页用（JWT）：校验参数并返回客户端名、回调主机 |
-| POST | `/oauth/authorize/decision` | 确认页用（JWT）：`approve=true` 生成授权码，否则 `error=access_denied`；返回回调地址 `redirect` |
+| POST | `/oauth/authorize/check` | 确认页用（JWT）：校验参数并返回客户端名、回调主机、可选项目 `teams`（`[{teamId, teamName, teamKey, projects:[{projectId, projectName, projectKey}]}]`，只含本人是成员且已开启 MCP 的项目；系统管理员为全部已开启 MCP 的项目） |
+| POST | `/oauth/authorize/decision` | 确认页用（JWT）：`approve=true` 时须带 `project_id`（必须在 `check` 返回的列表内）并生成绑定该项目的授权码，否则 `error=access_denied`；返回回调地址 `redirect` |
 | POST | `/oauth/token` | 表单提交；`grant_type=authorization_code`（需 `code_verifier`）或 `refresh_token`（轮换）；错误 400 + `error`（如 `invalid_grant`）；IP 限流 |
 | POST | `/oauth/revoke` | 吊销访问令牌或刷新令牌（RFC 7009），总是返回 200；IP 限流 |
 

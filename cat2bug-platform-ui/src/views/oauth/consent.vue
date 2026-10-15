@@ -26,14 +26,39 @@
               <dd>{{ client.redirectHost }}<span v-if="isLoopback" class="oauth-consent-muted">（{{ $t('oauth.local-app') }}）</span></dd>
             </div>
           </dl>
+          <div class="oauth-consent-project">
+            <div class="oauth-consent-project__title">{{ $t('oauth.select-project') }}</div>
+            <template v-if="teams.length">
+              <div class="oauth-consent-project__list" role="radiogroup" :aria-label="$t('oauth.select-project')">
+                <div v-for="t in teams" :key="String(t.teamId)" class="oauth-consent-project__group">
+                  <div class="oauth-consent-project__team">{{ t.teamName || $t('oauth.no-team') }}</div>
+                  <button
+                    v-for="p in t.projects || []"
+                    :key="p.projectId"
+                    type="button"
+                    role="radio"
+                    :aria-checked="projectId === p.projectId"
+                    class="oauth-consent-project__item"
+                    :class="{ 'is-active': projectId === p.projectId }"
+                    @click="projectId = p.projectId"
+                  >
+                    <span class="oauth-consent-project__radio" />
+                    <span class="oauth-consent-project__name">{{ p.projectName }}</span>
+                    <span v-if="t.teamKey && p.projectKey" class="oauth-consent-project__key">{{ t.teamKey }}/{{ p.projectKey }}</span>
+                  </button>
+                </div>
+              </div>
+              <p class="oauth-consent-muted oauth-consent-project__hint">{{ $t('oauth.project-hint') }}</p>
+            </template>
+            <p v-else class="oauth-consent-warn">{{ $t('oauth.no-project') }}</p>
+          </div>
           <ul class="oauth-consent-scopes">
             <li>{{ $t('oauth.scope-mcp') }}</li>
             <li>{{ $t('oauth.scope-same-permission') }}</li>
-            <li>{{ $t('oauth.scope-revoke') }}</li>
           </ul>
           <div class="oauth-consent-actions">
             <el-button :disabled="submitting" @click="decide(false)">{{ $t('oauth.deny') }}</el-button>
-            <el-button type="primary" :loading="submitting" @click="decide(true)">{{ $t('oauth.allow') }}</el-button>
+            <el-button type="primary" :loading="submitting" :disabled="!projectId" @click="decide(true)">{{ $t('oauth.allow') }}</el-button>
           </div>
         </template>
       </div>
@@ -43,7 +68,7 @@
 
 <script>
 import LangSelect from '@/components/LangSelect'
-import { checkOAuthAuthorize, decideOAuthAuthorize } from '@/api/system/access-token'
+import { checkOAuthAuthorize, decideOAuthAuthorize } from '@/api/system/oauth'
 import { useUserStore } from '@/stores/user'
 
 const PARAMS = ['response_type', 'client_id', 'redirect_uri', 'code_challenge', 'code_challenge_method', 'state', 'resource']
@@ -65,7 +90,9 @@ export default {
       loading: true,
       submitting: false,
       loadError: '',
-      client: null
+      client: null,
+      teams: [],
+      projectId: null
     }
   },
   computed: {
@@ -92,6 +119,8 @@ export default {
     }
     checkOAuthAuthorize(this.authorizeParams).then(res => {
       this.client = res.data
+      this.teams = (res.data && res.data.teams) || []
+      this.selectDefault()
     }).catch(err => {
       this.loadError = (err && (err.msg || err.message)) || this.$t('oauth.invalid-request')
     }).finally(() => {
@@ -99,9 +128,21 @@ export default {
     })
   },
   methods: {
+    /** 只有一个项目时直接选中；多个项目时预选网页当前所在项目，否则留给用户自己选 */
+    selectDefault() {
+      const projects = this.teams.flatMap(t => t.projects || [])
+      if (projects.length === 1) {
+        this.projectId = projects[0].projectId
+        return
+      }
+      const current = Number(useUserStore().config?.currentProjectId)
+      if (projects.some(p => p.projectId === current)) this.projectId = current
+    },
     decide(approve) {
       this.submitting = true
-      decideOAuthAuthorize({ ...this.authorizeParams, approve }).then(res => {
+      const data = { ...this.authorizeParams, approve }
+      if (approve) data.project_id = this.projectId
+      decideOAuthAuthorize(data).then(res => {
         window.location.href = res.data.redirect
       }).catch(() => {
         this.submitting = false
@@ -122,6 +163,7 @@ export default {
   --consent-text-primary: #303133;
   --consent-text-secondary: #909399;
   --consent-details-bg: #f5f7fa;
+  --consent-item-border: #dcdfe6;
 
   min-height: 100vh;
   display: flex;
@@ -142,6 +184,7 @@ html.dark .oauth-consent-page {
   --consent-text-primary: #ffffff;
   --consent-text-secondary: #9ca3af;
   --consent-details-bg: #141416;
+  --consent-item-border: #2a2a2c;
 }
 
 .oauth-consent-card {
@@ -228,6 +271,91 @@ html.dark .oauth-consent-page {
 
 .oauth-consent-muted {
   color: var(--consent-text-secondary);
+}
+
+.oauth-consent-project {
+  margin: 0 0 16px;
+}
+
+.oauth-consent-project__title {
+  margin-bottom: 8px;
+  color: var(--consent-text-primary);
+  font-weight: 600;
+}
+
+.oauth-consent-project__list {
+  max-height: 240px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+
+.oauth-consent-project__group + .oauth-consent-project__group {
+  margin-top: 12px;
+}
+
+.oauth-consent-project__team {
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--consent-text-secondary);
+}
+
+.oauth-consent-project__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border: 1px solid var(--consent-item-border);
+  border-radius: 8px;
+  background: var(--consent-details-bg);
+  color: var(--consent-text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--consent-accent);
+    outline: none;
+  }
+
+  &.is-active {
+    border-color: var(--consent-accent);
+  }
+}
+
+.oauth-consent-project__radio {
+  flex: 0 0 14px;
+  height: 14px;
+  border: 1px solid var(--consent-text-secondary);
+  border-radius: 50%;
+
+  .is-active > & {
+    border: 4px solid var(--consent-accent);
+  }
+}
+
+.oauth-consent-project__name {
+  flex: 1;
+  word-break: break-word;
+}
+
+.oauth-consent-project__key {
+  font-size: 12px;
+  color: var(--consent-text-secondary);
+}
+
+.oauth-consent-project__hint {
+  margin: 0;
+  font-size: 12px;
+}
+
+.oauth-consent-warn {
+  margin: 0;
+  color: var(--el-color-warning);
+  word-break: break-word;
 }
 
 .oauth-consent-scopes {

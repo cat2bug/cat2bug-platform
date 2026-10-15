@@ -24,5 +24,8 @@ public interface SysProjectMcpMapper
     /** 用户所在、未删除且已开启 MCP 的项目（含团队路径键） */
     List<SysProject> selectEnabledProjectsOfUser(@Param("userId") Long userId);
 
+    /** 全部未删除且已开启 MCP 的项目（系统管理员用，含团队路径键） */
+    List<SysProject> selectEnabledProjects();
+
     int countMember(@Param("projectId") Long projectId, @Param("userId") Long userId);
 }

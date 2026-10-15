@@ -5,7 +5,17 @@
         <section class="git-pr-detail__summary">
           <div class="git-pr-detail__summary-head">
             <div class="git-pr-detail__summary-main">
-              <h1>{{ pull.title }}</h1>
+              <h1 class="git-pr-detail__title">
+                <template v-for="(seg, idx) in titleSegments" :key="'t-' + idx">
+                  <a
+                    v-if="seg.type === 'mention'"
+                    href="javascript:;"
+                    class="git-pr-defect-mention"
+                    @click.prevent="openDefectByProjectNum(seg.num)"
+                  >{{ seg.value }}</a>
+                  <span v-else>{{ seg.value }}</span>
+                </template>
+              </h1>
               <div class="git-pr-detail__meta">
                 <el-tag
                   size="small"
@@ -36,25 +46,36 @@
               >{{ $t('git.repo.pr.merge') }}</el-button>
             </div>
           </div>
-          <pre v-if="pull.body" class="git-pr-detail__body">{{ pull.body }}</pre>
+          <div
+            v-if="pull.body"
+            class="git-pr-detail__body markdown-body"
+            @click="onPrBodyClick"
+          >
+            <markdown-renderer :content="linkedPrBody" />
+          </div>
         </section>
 
         <el-tabs v-model="activeTab" class="git-pr-detail__tabs">
           <el-tab-pane name="commits" :label="$t('git.repo.pr.commits', { n: commits.length })">
             <div v-loading="commitsLoading" class="git-pr-detail__card">
               <div v-for="commit in commits" :key="commit.id" class="git-pr-detail__commit">
-                <a
-                  href="javascript:;"
-                  class="git-pr-detail__commit-message is-link"
-                  @click.prevent="openCommitDetail(commit.id || commit.shortId)"
-                >{{ commit.message }}</a>
-                <div class="git-pr-detail__commit-meta">
-                  {{ commit.authorName || '-' }} · {{ relativeTime(commit.commitTime) }} ·
-                  <a
-                    href="javascript:;"
-                    class="git-pr-detail__commit-hash is-link"
-                    @click.prevent="openCommitDetail(commit.id || commit.shortId)"
-                  >{{ commit.shortId || shortId(commit.id) }}</a>
+                <div class="git-pr-detail__commit-row">
+                  <cat2-bug-avatar :member="memberForAuthor(commit)" :size="28" />
+                  <div class="git-pr-detail__commit-main">
+                    <a
+                      href="javascript:;"
+                      class="git-pr-detail__commit-message is-link"
+                      @click.prevent="openCommitDetail(commit.id || commit.shortId)"
+                    >{{ commit.message }}</a>
+                    <div class="git-pr-detail__commit-meta">
+                      {{ commit.authorName || '-' }} · {{ relativeTime(commit.commitTime) }} ·
+                      <a
+                        href="javascript:;"
+                        class="git-pr-detail__commit-hash is-link"
+                        @click.prevent="openCommitDetail(commit.id || commit.shortId)"
+                      >{{ commit.shortId || shortId(commit.id) }}</a>
+                    </div>
+                  </div>
                 </div>
               </div>
               <el-empty v-if="!commitsLoading && !commits.length" :description="$t('git.repo.pr.no-commits')" :image-size="72" />
@@ -143,6 +164,12 @@
         </el-tabs>
       </template>
     </git-repo-shell>
+    <handle-defect
+      v-if="projectId"
+      ref="handleDefect"
+      :project-id="projectId"
+      :append-to-body="true"
+    />
   </div>
 </template>
 
@@ -150,6 +177,7 @@
 import { ArrowDown, ArrowRight } from '@element-plus/icons-vue'
 import { getGitRepo, gitRepoCommitDetailRoute } from '@/api/system/gitRepo'
 import { listMemberOfProject } from '@/api/system/project'
+import { listDefect } from '@/api/system/defect'
 import {
   closeGitPullRequest, createGitPullRequestComment, getGitPullRequest, listGitPullRequestComments,
   listGitPullRequestCommits, listGitPullRequestFiles, mergeGitPullRequest
@@ -158,14 +186,23 @@ import { checkPermi } from '@/utils/permission'
 import { useUserStore } from '@/stores/user'
 import { formatTime } from '@/utils/index'
 import { parseTime } from '@/utils/ruoyi'
+import { memberForGitCommitAuthor } from '@/utils/git-commit-author-member'
+import {
+  linkDefectMentionsInMarkdown,
+  parseDefectMentionHref,
+  splitDefectMentions
+} from '@/utils/defect-mention'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import Cat2BugMarkdown from '@/components/Cat2BugMarkdown'
 import { MarkdownRenderer } from '@/components/Markdown'
+import HandleDefect from '@/components/Defect/HandleDefect'
 import GitRepoShell from './GitRepoShell.vue'
 
 export default {
   name: 'GitRepoPullRequestDetail',
-  components: { ArrowDown, ArrowRight, Cat2BugAvatar, Cat2BugMarkdown, MarkdownRenderer, GitRepoShell },
+  components: {
+    ArrowDown, ArrowRight, Cat2BugAvatar, Cat2BugMarkdown, MarkdownRenderer, HandleDefect, GitRepoShell
+  },
   data() {
     return {
       repositoryId: Number(this.$route.params.repositoryId),
@@ -175,7 +212,8 @@ export default {
       projectMembers: [],
       pull: null, commits: [], files: [], comments: [], activeTab: 'commits',
       loading: false, commitsLoading: false, filesLoading: false, commentsLoading: false,
-      merging: false, closing: false, commenting: false, commentBody: '', replyBody: '', replyingTo: null,
+      merging: false, closing: false, commenting: false, openingDefect: false,
+      commentBody: '', replyBody: '', replyingTo: null,
       expandedFiles: {},
       commentMarkdownExcludeTools: ['siding-9899', 'project', 'case', 'defect', 'member', 'save', 'plan']
     }
@@ -188,7 +226,13 @@ export default {
       const user = useUserStore()
       return !!(this.pull && this.pull.state === 'open' && (this.canManage || (this.canPush && Number(this.pull.authorId) === Number(user.id))))
     },
-    rootComments() { return this.comments.filter(comment => !comment.parentId) }
+    rootComments() { return this.comments.filter(comment => !comment.parentId) },
+    titleSegments() {
+      return splitDefectMentions(this.pull && this.pull.title ? this.pull.title : '')
+    },
+    linkedPrBody() {
+      return linkDefectMentionsInMarkdown(this.pull && this.pull.body ? this.pull.body : '')
+    }
   },
   created() {
     this.loadRepo()
@@ -245,6 +289,54 @@ export default {
     openCommitDetail(commitId) {
       if (!commitId || !this.repositoryId) return
       this.$router.push(gitRepoCommitDetailRoute(this.$route, commitId)).catch(() => {})
+    },
+    memberForAuthor(commit) {
+      const userStore = useUserStore()
+      return memberForGitCommitAuthor(commit, this.projectMembers, {
+        id: userStore.id,
+        name: userStore.name,
+        nickName: userStore.nickName,
+        avatar: userStore.avatar
+      })
+    },
+    onPrBodyClick(event) {
+      const a = event.target && event.target.closest ? event.target.closest('a') : null
+      if (!a) return
+      const num = parseDefectMentionHref(a.getAttribute('href'))
+      if (num == null) return
+      event.preventDefault()
+      this.openDefectByProjectNum(num)
+    },
+    openDefectByProjectNum(projectNum) {
+      const num = Number(projectNum)
+      if (!Number.isFinite(num) || num <= 0) return
+      if (!this.projectId) {
+        this.$modal.msgWarning(this.$t('git.repo.pr.defect-project-missing'))
+        return
+      }
+      if (this.openingDefect) return
+      this.openingDefect = true
+      listDefect({
+        projectId: this.projectId,
+        projectNum: num,
+        pageNum: 1,
+        pageSize: 1
+      }).then((res) => {
+        const rows = res.rows || []
+        const defect = rows.find((r) => Number(r.projectNum) === num) || rows[0]
+        if (!defect || defect.defectId == null) {
+          this.$modal.msgWarning(this.$t('git.repo.pr.defect-not-found', { num }))
+          return
+        }
+        const drawer = this.$refs.handleDefect
+        if (drawer && typeof drawer.open === 'function') {
+          drawer.open(defect.defectId)
+        }
+      }).catch(() => {
+        this.$modal.msgWarning(this.$t('git.repo.pr.defect-load-failed', { num }))
+      }).finally(() => {
+        this.openingDefect = false
+      })
     },
     relativeTime(value) { if (!value) return '—'; const time = new Date(value).getTime(); return Number.isNaN(time) ? (parseTime(value) || '—') : formatTime(time) },
     stateType(state) { return state === 'open' ? 'success' : (state === 'merged' ? 'warning' : 'info') },
@@ -332,10 +424,21 @@ export default {
   flex: 1;
 }
 
-.git-pr-detail__summary h1 {
+.git-pr-detail__summary h1,
+.git-pr-detail__title {
   margin: 0 0 9px;
   font-size: 20px;
   color: var(--text-color-primary);
+  word-break: break-word;
+}
+
+.git-pr-defect-mention {
+  color: var(--el-color-primary);
+  text-decoration: none;
+  cursor: pointer;
+}
+.git-pr-defect-mention:hover {
+  text-decoration: underline;
 }
 
 .git-pr-detail__meta {
@@ -376,12 +479,84 @@ export default {
   border-color: rgba(144, 147, 153, 0.35) !important;
 }
 
+.git-pr-detail__commit-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.git-pr-detail__commit-main {
+  min-width: 0;
+  flex: 1;
+}
+.git-pr-detail__commit-row :deep(.member-avatar) {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
 .git-pr-detail__body {
   margin: 16px 0 0;
-  white-space: pre-wrap;
   font: inherit;
   line-height: 1.6;
-  color: var(--text-color-regular);
+  color: var(--text-color-primary);
+
+  /* 正文 Markdown：字色 / 标题尺度 / 分割线走主题 token（勿用 github #eaecef） */
+  :deep(.markdown-body),
+  :deep(.markdown-it-vue) {
+    color: var(--text-color-regular);
+    background: transparent;
+    font-size: 14px;
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-color-primary);
+    }
+
+    h1 {
+      font-size: 1.2em;
+      border-bottom: 1px solid var(--divider-color, var(--border-color-light));
+    }
+
+    h2 {
+      font-size: 1.08em;
+      border-bottom: 1px solid var(--divider-color, var(--border-color-light));
+    }
+
+    h3 {
+      font-size: 1.02em;
+    }
+
+    p, li, span, strong, em, blockquote {
+      color: var(--text-color-regular);
+    }
+
+    a {
+      color: var(--el-color-primary);
+    }
+
+    code {
+      background: var(--bg-color-block, rgba(127, 127, 127, 0.12));
+      color: var(--text-color-regular);
+    }
+
+    pre {
+      background: var(--bg-color-base, rgba(127, 127, 127, 0.1));
+      color: var(--text-color-regular);
+    }
+
+    table tr,
+    table th,
+    table td {
+      color: var(--text-color-primary);
+      border-color: var(--border-color-light);
+    }
+  }
+
+  :deep(a[href^="#cat2bug-defect-"]) {
+    color: var(--el-color-primary);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  :deep(a[href^="#cat2bug-defect-"]:hover) {
+    text-decoration: underline;
+  }
 }
 
 @media (max-width: 680px) {
@@ -429,16 +604,28 @@ export default {
 
   :deep(.markdown-body),
   :deep(.markdown-it-vue) {
-    color: var(--text-color-primary);
+    color: var(--text-color-regular);
     background: transparent;
+    font-size: 14px;
 
-    h1, h2, h3, h4, h5, h6,
-    p, li, span, strong, em, blockquote {
+    h1, h2, h3, h4, h5, h6 {
       color: var(--text-color-primary);
     }
 
+    h1, h2 {
+      border-bottom: 1px solid var(--divider-color, var(--border-color-light));
+    }
+
+    h1 { font-size: 1.2em; }
+    h2 { font-size: 1.08em; }
+    h3 { font-size: 1.02em; }
+
+    p, li, span, strong, em, blockquote {
+      color: var(--text-color-regular);
+    }
+
     a {
-      color: var(--el-color-primary, #ffc107);
+      color: var(--el-color-primary);
     }
 
     code {
@@ -460,7 +647,8 @@ export default {
     }
 
     hr {
-      border-color: var(--border-color-light);
+      border-color: var(--divider-color, var(--border-color-light));
+      background-color: var(--divider-color, var(--border-color-light));
     }
   }
 }

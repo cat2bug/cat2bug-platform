@@ -16,9 +16,9 @@ public class McpWhoAmITestRoute {
 
     void register(@Observes Router router) {
         router.get("/mcp/__whoami").handler(rc -> {
-            LoginUser user = rc.user() instanceof QuarkusHttpUser http
-                    ? AccessTokenIdentities.loginUser(http.getSecurityIdentity())
-                    : null;
+            QuarkusHttpUser http = rc.user() instanceof QuarkusHttpUser u ? u : null;
+            LoginUser user = http != null ? AccessTokenIdentities.loginUser(http.getSecurityIdentity()) : null;
+            Long projectId = http != null ? AccessTokenIdentities.projectId(http.getSecurityIdentity()) : null;
             if (user == null) {
                 rc.response().setStatusCode(500).end("no login user");
                 return;
@@ -26,6 +26,7 @@ public class McpWhoAmITestRoute {
             rc.response().putHeader("Content-Type", "application/json").end(new JsonObject()
                     .put("userId", user.getUserId())
                     .put("userName", user.getUsername())
+                    .put("projectId", projectId)
                     .encode());
         });
     }

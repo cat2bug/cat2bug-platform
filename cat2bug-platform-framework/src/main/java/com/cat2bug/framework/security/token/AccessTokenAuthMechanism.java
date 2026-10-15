@@ -20,7 +20,7 @@ import jakarta.inject.Inject;
 import java.util.Set;
 
 /**
- * MCP 路径上的 Bearer 令牌鉴权（个人访问令牌 {@code c2b_pat_} 与 OAuth 访问令牌 {@code c2b_oat_}）。
+ * MCP 路径上的 Bearer 令牌鉴权（OAuth 访问令牌 {@code c2b_oat_}）。
  * 其它路径直接返回匿名，网页接口仍由 JAX-RS {@code JwtAuthFilter} 处理。
  */
 @ApplicationScoped

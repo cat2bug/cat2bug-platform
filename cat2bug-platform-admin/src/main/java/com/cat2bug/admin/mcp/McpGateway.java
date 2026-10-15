@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkiverse.mcp.server.ToolCallException;
 import io.quarkus.runtime.LaunchMode;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -23,11 +24,18 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.StringJoiner;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
- * 把 MCP 工具调用转发到本进程的网页接口：为（用户，项目）建一个短时内部会话，
+ * 把 MCP 工具调用转发到同进程的网页接口：为（用户，项目）建一个短时内部会话，
  * 让权限注解、数据范围、操作日志与网页走完全相同的路径。会话用完即删。
+ *
+ * <p>回环是「工作线程 A 阻塞等待 → 嵌套 REST 还要再占工作线程 B」。并发工具调用
+ * 占满线程池时会自死锁（端口仍监听、CPU≈0）。因此用信号量限制在途回环数，
+ * 为嵌套 REST 预留线程；详见踩坑「MCP回环占满工作线程导致Quarkus假死」。
  */
 @ApplicationScoped
 public class McpGateway {
@@ -37,6 +45,8 @@ public class McpGateway {
     static final long SESSION_TTL_SECONDS = 120;
     static final Duration TIMEOUT = Duration.ofSeconds(60);
     static final String CHANNEL = "mcp";
+    /** Quarkus 未显式配置时的常见默认上限，仅用于推算回环并发。 */
+    static final int DEFAULT_THREAD_POOL_MAX = 200;
 
     @ConfigProperty(name = "quarkus.http.port", defaultValue = "8080")
     int httpPort;
@@ -50,6 +60,13 @@ public class McpGateway {
     @ConfigProperty(name = "cat2bug.mcp.loopback-url")
     Optional<String> loopbackUrl;
 
+    /** 显式上限；未配时按 {@link #resolveLoopbackPermits(int, OptionalInt)} 推算。 */
+    @ConfigProperty(name = "cat2bug.mcp.loopback.max-in-flight")
+    OptionalInt loopbackMaxInFlight;
+
+    @ConfigProperty(name = "quarkus.thread-pool.max-threads")
+    OptionalInt threadPoolMaxThreads;
+
     @Inject
     TokenService tokenService;
 
@@ -60,6 +77,34 @@ public class McpGateway {
             .connectTimeout(Duration.ofSeconds(5))
             .followRedirects(HttpClient.Redirect.NEVER)
             .build();
+
+    private Semaphore loopbackSlots;
+    private int loopbackPermits;
+
+    @PostConstruct
+    void initLoopbackLimiter() {
+        loopbackPermits = resolveLoopbackPermits(
+                threadPoolMaxThreads.orElse(DEFAULT_THREAD_POOL_MAX),
+                loopbackMaxInFlight);
+        loopbackSlots = new Semaphore(loopbackPermits, true);
+        LOG.infof("MCP 回环并发上限 %d（为嵌套 REST 预留工作线程，避免自死锁）", loopbackPermits);
+    }
+
+    /**
+     * 在途回环许可数：显式配置优先；否则取 {@code max(4, maxThreads/3)}，
+     * 保证至少约 2/3 的工作线程可服务嵌套 REST / 网页请求。
+     */
+    public static int resolveLoopbackPermits(int maxThreads, OptionalInt explicit) {
+        if (explicit != null && explicit.isPresent()) {
+            int n = explicit.getAsInt();
+            if (n < 1) {
+                throw new IllegalArgumentException("cat2bug.mcp.loopback.max-in-flight must be >= 1");
+            }
+            return n;
+        }
+        int pool = Math.max(1, maxThreads);
+        return Math.max(4, pool / 3);
+    }
 
     public JsonNode get(McpScope scope, String path, Map<String, ?> query) {
         return call(scope, "GET", path, query, null);
@@ -78,6 +123,7 @@ public class McpGateway {
      * @throws ToolCallException 非 2xx 或 {@code code != 200}
      */
     public JsonNode call(McpScope scope, String method, String path, Map<String, ?> query, Object body) {
+        acquireLoopbackSlot();
         String sessionId = null;
         try {
             LoginUser session = sessionFor(scope);
@@ -98,13 +144,25 @@ public class McpGateway {
             } else {
                 builder.method(method, HttpRequest.BodyPublishers.noBody());
             }
-            HttpResponse<byte[]> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofByteArray());
+            // sendAsync：把等响应放到 HttpClient 内部线程，避免再占一条 Quarkus worker 做 IO 等待；
+            // 调用方 worker 仍会 join，故必须配合上面的信号量预留嵌套 REST 线程。
+            HttpResponse<byte[]> response = client.sendAsync(builder.build(), HttpResponse.BodyHandlers.ofByteArray())
+                    .get(TIMEOUT.toSeconds(), TimeUnit.SECONDS);
             return unwrap(response.statusCode(), response.body());
         } catch (ToolCallException e) {
             throw e;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new ToolCallException("调用被中断");
+        } catch (java.util.concurrent.TimeoutException e) {
+            throw new ToolCallException("内部调用超时");
+        } catch (java.util.concurrent.ExecutionException e) {
+            Throwable cause = e.getCause() == null ? e : e.getCause();
+            if (cause instanceof ToolCallException toolEx) {
+                throw toolEx;
+            }
+            LOG.warnf("MCP 转发 %s %s 失败: %s", method, path, cause.getMessage());
+            throw new ToolCallException("内部调用失败：" + cause.getMessage());
         } catch (IOException | RuntimeException e) {
             LOG.warnf("MCP 转发 %s %s 失败: %s", method, path, e.getMessage());
             throw new ToolCallException("内部调用失败：" + e.getMessage());
@@ -112,7 +170,31 @@ public class McpGateway {
             if (sessionId != null) {
                 tokenService.delLoginUser(sessionId);
             }
+            releaseLoopbackSlot();
         }
+    }
+
+    private void acquireLoopbackSlot() {
+        try {
+            if (!loopbackSlots.tryAcquire(TIMEOUT.toSeconds(), TimeUnit.SECONDS)) {
+                LOG.warnf("MCP 回环并发已满（上限 %d），拒绝新的内部转发", loopbackPermits);
+                throw new ToolCallException("系统繁忙：MCP 内部转发并发已满，请稍后重试");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ToolCallException("调用被中断");
+        }
+    }
+
+    private void releaseLoopbackSlot() {
+        if (loopbackSlots != null) {
+            loopbackSlots.release();
+        }
+    }
+
+    /** 测试与运维观测：当前配置的在途回环上限。 */
+    int loopbackPermits() {
+        return loopbackPermits;
     }
 
     JsonNode unwrap(int status, byte[] bytes) throws IOException {

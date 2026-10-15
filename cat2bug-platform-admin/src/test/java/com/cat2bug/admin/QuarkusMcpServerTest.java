@@ -79,30 +79,12 @@ class QuarkusMcpServerTest {
     private String admin;
     private String pat;
     private long projectId;
-    private String projectRef;
 
     @BeforeEach
     void setUp() {
         admin = QuarkusTestAuth.loginAsAdmin();
-        String suffix = Long.toString(System.nanoTime(), 36);
-        Number teamId = given().header("Authorization", admin).contentType(ContentType.JSON)
-                .body("{\"teamName\":\"MCP团队" + suffix + "\",\"teamKey\":\"mt" + suffix + "\"}")
-                .when().post("/system/team")
-                .then().statusCode(200).body("code", equalTo(200))
-                .extract().path("data.teamId");
-        given().header("Authorization", admin).contentType(ContentType.JSON)
-                .body("{\"teamId\":" + teamId + ",\"projectName\":\"MCP项目" + suffix + "\",\"projectKey\":\"mp" + suffix + "\"}")
-                .when().post("/system/project")
-                .then().statusCode(200).body("code", equalTo(200));
-        projectId = given().header("Authorization", admin)
-                .when().get("/system/project/list?teamId=" + teamId + "&pageNum=1&pageSize=10")
-                .then().statusCode(200).extract().<Number>path("rows[0].projectId").longValue();
-        projectRef = String.valueOf(projectId);
-        pat = given().header("Authorization", admin).contentType(ContentType.JSON)
-                .body("{\"name\":\"MCP 测试 " + suffix + "\",\"expireDays\":1}")
-                .when().post("/system/user/profile/tokens")
-                .then().statusCode(200).body("code", equalTo(200))
-                .extract().path("data.token");
+        projectId = createProject();
+        pat = issueToken(1L);
     }
 
     @Test
@@ -140,44 +122,53 @@ class QuarkusMcpServerTest {
         McpTestClient mcp = new McpTestClient(pat).initialize("Cursor-Test");
         List<String> names = new ArrayList<>();
         mcp.listTools().forEach(t -> names.add(t.path("name").asText()));
-        assertTrue(names.containsAll(List.of("list_my_projects", "search_defects", "create_defect",
+        assertTrue(names.containsAll(List.of("get_current_project", "search_defects", "create_defect",
                 "repair_defect", "search_code", "call_operation")), names.toString());
+        assertFalse(names.contains("list_my_projects"), names.toString());
+        mcp.listTools().forEach(t -> assertTrue(t.path("inputSchema").path("properties").path("project").isMissingNode(),
+                t.path("name").asText() + " 不应再有 project 参数"));
+        mcp.listTools().forEach(t -> {
+            JsonNode title = t.path("annotations").path("title");
+            assertTrue(title.isMissingNode() || title.isTextual(),
+                    t.path("name").asText() + " 的 annotations.title 必须是字符串或不出现（Cursor 遇到 null 会拒收整张工具表）");
+        });
 
-        JsonNode projects = McpTestClient.json(mcp.callTool("list_my_projects", Map.of()));
-        assertTrue(projects.toString().contains("\"projectId\":" + projectId), projects.toString());
+        JsonNode current = McpTestClient.json(ok(mcp.callTool("get_current_project", Map.of())));
+        assertTrue(current.toString().contains("\"projectId\":" + projectId), current.toString());
+        assertTrue(current.path("repositoryConfirmHint").asText().contains("单仓库"), current.toString());
 
         JsonNode created = mcp.callTool("create_defect", Map.of(
-                "project", projectRef, "name", "MCP 新建缺陷", "handle_by", List.of(1),
+                "name", "MCP 新建缺陷", "handle_by", List.of(1),
                 "idempotency_key", "mcp-test-" + projectId));
         assertFalse(created.path("isError").asBoolean(), McpTestClient.text(created));
         long defectId = McpTestClient.json(created).path("defectId").asLong();
         assertTrue(defectId > 0, McpTestClient.text(created));
 
         JsonNode replay = McpTestClient.json(mcp.callTool("create_defect", Map.of(
-                "project", projectRef, "name", "MCP 新建缺陷", "idempotency_key", "mcp-test-" + projectId)));
+                "name", "MCP 新建缺陷", "idempotency_key", "mcp-test-" + projectId)));
         assertEquals(defectId, replay.path("defectId").asLong());
         assertTrue(replay.path("replayed").asBoolean());
 
         JsonNode search = McpTestClient.json(mcp.callTool("search_defects",
-                Map.of("project", projectRef, "assigned_to_me", true)));
+                Map.of("assigned_to_me", true)));
         assertTrue(search.toString().contains("MCP 新建缺陷"), search.toString());
 
-        JsonNode badCommit = mcp.callTool("repair_defect", Map.of("project", projectRef, "defect_id", defectId,
+        JsonNode badCommit = mcp.callTool("repair_defect", Map.of("defect_id", defectId,
                 "remark", "修好了", "commits", List.of(Map.of("sha", "not-a-sha", "url", "https://example.com/c/1"))));
         assertTrue(badCommit.path("isError").asBoolean(), McpTestClient.text(badCommit));
 
-        JsonNode repaired = mcp.callTool("repair_defect", Map.of("project", projectRef, "defect_id", defectId,
+        JsonNode repaired = mcp.callTool("repair_defect", Map.of("defect_id", defectId,
                 "remark", "修好了", "review_by", 1,
                 "commits", List.of(Map.of("sha", "a1b2c3d4e5f6", "url", "https://example.com/commit/a1b2c3d4e5f6",
                         "message", "fix: 外部提交"))));
         assertFalse(repaired.path("isError").asBoolean(), McpTestClient.text(repaired));
 
-        JsonNode wrongState = mcp.callTool("repair_defect", Map.of("project", projectRef, "defect_id", defectId,
+        JsonNode wrongState = mcp.callTool("repair_defect", Map.of("defect_id", defectId,
                 "remark", "再修一次"));
         assertTrue(wrongState.path("isError").asBoolean(), McpTestClient.text(wrongState));
 
         JsonNode detail = McpTestClient.json(mcp.callTool("get_defect",
-                Map.of("project", projectRef, "defect_id", defectId)));
+                Map.of("defect_id", defectId)));
         assertTrue(detail.toString().contains("a1b2c3d4e5f6"), detail.toString());
 
         List<SysDefectLog> logs = defectLogMapper.selectSysDefectLogList(logQuery(defectId), 0, 50);
@@ -198,27 +189,26 @@ class QuarkusMcpServerTest {
                 .extract().path("data.defectId");
         McpTestClient mcp = new McpTestClient(pat).initialize("Claude-Test");
 
-        JsonNode foreign = mcp.callTool("get_defect", Map.of("project", projectRef, "defect_id", foreignDefect));
+        JsonNode foreign = mcp.callTool("get_defect", Map.of("defect_id", foreignDefect));
         assertTrue(foreign.path("isError").asBoolean());
         assertTrue(McpTestClient.text(foreign).contains("不属于该项目"), McpTestClient.text(foreign));
 
-        JsonNode foreignGeneric = mcp.callTool("call_operation", Map.of("project", projectRef,
+        JsonNode foreignGeneric = mcp.callTool("call_operation", Map.of(
                 "operation", "defect.getInfo", "path_params", Map.of("defectId", foreignDefect)));
         assertTrue(foreignGeneric.path("isError").asBoolean(), McpTestClient.text(foreignGeneric));
 
-        JsonNode ops = McpTestClient.json(mcp.callTool("list_operations", Map.of("project", projectRef, "module", "defect")));
+        JsonNode ops = McpTestClient.json(mcp.callTool("list_operations", Map.of("module", "defect")));
         assertTrue(ops.toString().contains("defect.list"), ops.toString());
         assertFalse(ops.toString().contains("/system/user"), ops.toString());
         assertFalse(ops.toString().contains("/export"), ops.toString());
         assertFalse(ops.toString().contains("importData"), ops.toString());
-        JsonNode exportCall = mcp.callTool("call_operation", Map.of("project", projectRef, "operation", "defect.export"));
+        JsonNode exportCall = mcp.callTool("call_operation", Map.of("operation", "defect.export"));
         assertTrue(exportCall.path("isError").asBoolean(), McpTestClient.text(exportCall));
-        JsonNode codeOps = McpTestClient.json(mcp.callTool("list_operations", Map.of("project", projectRef, "module", "code")));
+        JsonNode codeOps = McpTestClient.json(mcp.callTool("list_operations", Map.of("module", "code")));
         assertFalse(codeOps.toString().contains("info/refs"), codeOps.toString());
         assertFalse(codeOps.toString().contains("/archive"), codeOps.toString());
 
         Map<String, Object> generic = new HashMap<>();
-        generic.put("project", projectRef);
         generic.put("operation", "defect.list");
         generic.put("query", Map.of("pageNum", 1, "pageSize", 5));
         JsonNode listed = mcp.callTool("call_operation", generic);
@@ -228,17 +218,17 @@ class QuarkusMcpServerTest {
                 .body("{\"enabled\":true,\"modules\":[\"case\"]}")
                 .when().put("/system/project/" + projectId + "/mcp")
                 .then().statusCode(200).body("code", equalTo(200));
-        JsonNode blocked = mcp.callTool("search_defects", Map.of("project", projectRef));
+        JsonNode blocked = mcp.callTool("search_defects", Map.of());
         assertTrue(blocked.path("isError").asBoolean(), McpTestClient.text(blocked));
 
         given().header("Authorization", admin).contentType(ContentType.JSON)
                 .body("{\"enabled\":false,\"modules\":[\"defect\"]}")
                 .when().put("/system/project/" + projectId + "/mcp")
                 .then().statusCode(200).body("code", equalTo(200));
-        JsonNode disabled = mcp.callTool("search_cases", Map.of("project", projectRef));
+        JsonNode disabled = mcp.callTool("search_cases", Map.of());
         assertTrue(disabled.path("isError").asBoolean(), McpTestClient.text(disabled));
-        JsonNode projects = McpTestClient.json(mcp.callTool("list_my_projects", Map.of()));
-        assertFalse(projects.toString().contains("\"projectId\":" + projectId), projects.toString());
+        JsonNode current = mcp.callTool("get_current_project", Map.of());
+        assertTrue(current.path("isError").asBoolean(), McpTestClient.text(current));
     }
 
     @Test
@@ -266,18 +256,33 @@ class QuarkusMcpServerTest {
 
         McpTestClient mcp = new McpTestClient(pat).initialize("Cursor-Test");
         JsonNode found = McpTestClient.json(mcp.callTool("search_code", Map.of(
-                "project", projectRef, "repository_id", repositoryId, "query", "NullPointer")));
+                "repository_id", repositoryId, "query", "NullPointer")));
         assertTrue(found.toString().contains("src/App.java") && found.toString().contains("README.md"), found.toString());
         JsonNode file = mcp.callTool("read_code_file", Map.of(
-                "project", projectRef, "repository_id", repositoryId, "path", "src/App.java"));
+                "repository_id", repositoryId, "path", "src/App.java"));
         assertTrue(McpTestClient.text(file).contains("修复空指针"), McpTestClient.text(file));
+
+        JsonNode own = McpTestClient.json(ok(mcp.callTool("resolve_project_by_git_remote",
+                Map.of("remote_url", "http://localhost/git/p/" + projectId + "/mcp-demo.git"))));
+        assertEquals(repositoryId, own.path("repositoryId").asLong());
+        long otherProject = createProject();
+        long otherRepo = given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body("{\"projectId\":" + otherProject + ",\"name\":\"mcp-other\",\"slug\":\"mcp-other\"}")
+                .when().post("/system/git/repo")
+                .then().statusCode(200).body("code", equalTo(200))
+                .extract().<Number>path("data.repositoryId").longValue();
+        String otherSlug = repositoryMapper.selectSysGitRepositoryByRepositoryId(otherRepo).getSlug();
+        JsonNode foreign = mcp.callTool("resolve_project_by_git_remote",
+                Map.of("remote_url", "http://localhost/git/p/" + otherProject + "/" + otherSlug + ".git"));
+        assertTrue(foreign.path("isError").asBoolean(), McpTestClient.text(foreign));
+        assertTrue(McpTestClient.text(foreign).contains("不属于本次授权的项目"), McpTestClient.text(foreign));
     }
 
     @Test
     void tokenBoundToOtherResourceRejected() {
-        String plaintext = AccessTokens.generate(AccessTokens.PERSONAL_PREFIX);
+        String plaintext = AccessTokens.generate(AccessTokens.OAUTH_ACCESS_PREFIX);
         Date now = new Date();
-        SysUserAccessToken row = tokenService.newRow(1L, "别的资源", plaintext, SysUserAccessToken.SOURCE_MANUAL,
+        SysUserAccessToken row = tokenService.newRow(1L, projectId, "别的资源", plaintext, SysUserAccessToken.SOURCE_OAUTH,
                 new Date(now.getTime() + 3_600_000L), now);
         row.setResource("https://other.example.com/mcp");
         tokenMapper.insert(row);
@@ -359,7 +364,7 @@ class QuarkusMcpServerTest {
             String userJwt = login(userName);
             QuarkusTestAuth.ensureCurrentProject(userJwt, projectId);
             userJwt = login(userName);
-            String userPat = createPat(userJwt, "外部成员令牌");
+            String userPat = issueToken(userId);
 
             given().header("Authorization", userJwt)
                     .when().get("/system/project/" + projectId + "/mcp")
@@ -371,19 +376,19 @@ class QuarkusMcpServerTest {
                     .then().body("code", not(equalTo(200)));
 
             McpTestClient mcp = new McpTestClient(userPat).initialize("OpenCode-Test");
-            JsonNode created = mcp.callTool("create_defect", Map.of("project", projectRef, "name", "外部成员提的缺陷"));
+            JsonNode created = mcp.callTool("create_defect", Map.of("name", "外部成员提的缺陷"));
             assertFalse(created.path("isError").asBoolean(), McpTestClient.text(created));
-            JsonNode caseDenied = mcp.callTool("create_case", Map.of("project", projectRef, "name", "无权限用例", "module_id", 1));
+            JsonNode caseDenied = mcp.callTool("create_case", Map.of("name", "无权限用例", "module_id", 1));
             assertTrue(caseDenied.path("isError").asBoolean(), McpTestClient.text(caseDenied));
             assertTrue(McpTestClient.text(caseDenied).contains("无权限"), McpTestClient.text(caseDenied));
 
-            JsonNode ops = McpTestClient.json(mcp.callTool("list_operations", Map.of("project", projectRef)));
+            JsonNode ops = McpTestClient.json(mcp.callTool("list_operations", Map.of()));
             assertTrue(ops.toString().contains("defect.list"), ops.toString());
             assertFalse(ops.toString().contains("\"case.add\""), ops.toString());
             assertFalse(ops.toString().contains("project.edit"), ops.toString());
 
             McpTestClient adminMcp = new McpTestClient(pat).initialize("Cursor-Test");
-            adminMcp.callTool("search_defects", Map.of("project", projectRef));
+            adminMcp.callTool("search_defects", Map.of());
             given().header("Authorization", admin)
                     .when().get("/getInfo")
                     .then().statusCode(200)
@@ -397,8 +402,8 @@ class QuarkusMcpServerTest {
     void writeToolsSucceed() {
         McpTestClient mcp = new McpTestClient(pat).initialize("Cursor-Test");
         long defectId = McpTestClient.json(ok(mcp.callTool("create_defect", Map.of(
-                "project", projectRef, "name", "写工具缺陷", "handle_by", List.of(1))))).path("defectId").asLong();
-        Map<String, Object> target = Map.of("project", projectRef, "defect_id", defectId);
+                "name", "写工具缺陷", "handle_by", List.of(1))))).path("defectId").asLong();
+        Map<String, Object> target = Map.of("defect_id", defectId);
 
         ok(mcp.callTool("update_defect", with(target, "name", "写工具缺陷-改")));
         ok(mcp.callTool("comment_defect", with(target, "content", "MCP 评论")));
@@ -417,10 +422,10 @@ class QuarkusMcpServerTest {
                 .when().post("/system/module")
                 .then().statusCode(200).body("code", equalTo(200))
                 .extract().path("data[0].moduleId");
-        long caseId = McpTestClient.json(ok(mcp.callTool("create_case", Map.of("project", projectRef,
+        long caseId = McpTestClient.json(ok(mcp.callTool("create_case", Map.of(
                 "name", "MCP 用例", "module_id", moduleId,
                 "steps", List.of(Map.of("describe", "打开页面", "expect", "页面正常")))))).findValue("caseId").asLong();
-        ok(mcp.callTool("update_case", Map.of("project", projectRef, "case_id", caseId, "name", "MCP 用例-改")));
+        ok(mcp.callTool("update_case", Map.of("case_id", caseId, "name", "MCP 用例-改")));
 
         String planId = given().header("Authorization", admin).contentType(ContentType.JSON)
                 .body("{\"planName\":\"MCP计划\",\"planVersion\":\"1.0\",\"projectId\":" + projectId
@@ -429,9 +434,9 @@ class QuarkusMcpServerTest {
                 .then().statusCode(200).body("code", equalTo(200))
                 .extract().path("data.planId");
         JsonNode items = McpTestClient.json(ok(mcp.callTool("list_plan_items",
-                Map.of("project", projectRef, "plan_id", planId))));
+                Map.of("plan_id", planId))));
         String planItemId = items.findValue("planItemId").asText();
-        ok(mcp.callTool("update_plan_item", Map.of("project", projectRef, "plan_item_id", planItemId,
+        ok(mcp.callTool("update_plan_item", Map.of("plan_item_id", planItemId,
                 "state", "not_pass", "defect_id", defectId)));
     }
 
@@ -439,8 +444,8 @@ class QuarkusMcpServerTest {
     void writeToolsDenied() {
         McpTestClient adminMcp = new McpTestClient(pat).initialize("Cursor-Test");
         long defectId = McpTestClient.json(ok(adminMcp.callTool("create_defect", Map.of(
-                "project", projectRef, "name", "拒绝用缺陷", "handle_by", List.of(1))))).path("defectId").asLong();
-        Map<String, Object> target = Map.of("project", projectRef, "defect_id", defectId);
+                "name", "拒绝用缺陷", "handle_by", List.of(1))))).path("defectId").asLong();
+        Map<String, Object> target = Map.of("defect_id", defectId);
 
         String suffix = Long.toString(System.nanoTime(), 36);
         String userName = "mcpd_" + suffix;
@@ -450,7 +455,7 @@ class QuarkusMcpServerTest {
             given().header("Authorization", admin).contentType(ContentType.JSON).body("[9]")
                     .when().put("/system/project/" + projectId + "/member/" + userId + "/role")
                     .then().statusCode(200).body("code", equalTo(200));
-            McpTestClient outsider = new McpTestClient(createPat(login(userName), "拒绝")).initialize("Deny-Test");
+            McpTestClient outsider = new McpTestClient(issueToken(userId)).initialize("Deny-Test");
             Map<String, Map<String, Object>> denied = new java.util.LinkedHashMap<>();
             denied.put("assign_defect", with(with(target, "handle_by", List.of(1)), "remark", "x"));
             denied.put("repair_defect", with(target, "remark", "x"));
@@ -458,9 +463,9 @@ class QuarkusMcpServerTest {
             denied.put("pass_defect", with(target, "remark", "x"));
             denied.put("close_defect", with(target, "remark", "x"));
             denied.put("open_defect", with(with(target, "handle_by", List.of(1)), "remark", "x"));
-            denied.put("create_case", Map.of("project", projectRef, "name", "x", "module_id", 1));
-            denied.put("update_case", Map.of("project", projectRef, "case_id", 1, "name", "x"));
-            denied.put("update_plan_item", Map.of("project", projectRef, "plan_item_id", "x", "state", "pass"));
+            denied.put("create_case", Map.of("name", "x", "module_id", 1));
+            denied.put("update_case", Map.of("case_id", 1, "name", "x"));
+            denied.put("update_plan_item", Map.of("plan_item_id", "x", "state", "pass"));
             denied.forEach((tool, args) -> assertTrue(outsider.callTool(tool, args).path("isError").asBoolean(),
                     tool + " 应因角色权限不足被拒绝"));
         } finally {
@@ -471,12 +476,99 @@ class QuarkusMcpServerTest {
                 .body("{\"enabled\":true,\"modules\":[\"case\"]}")
                 .when().put("/system/project/" + projectId + "/mcp")
                 .then().statusCode(200).body("code", equalTo(200));
-        JsonNode create = adminMcp.callTool("create_defect", Map.of("project", projectRef, "name", "x"));
+        JsonNode create = adminMcp.callTool("create_defect", Map.of("name", "x"));
         assertTrue(create.path("isError").asBoolean(), McpTestClient.text(create));
         JsonNode update = adminMcp.callTool("update_defect", with(target, "name", "x"));
         assertTrue(update.path("isError").asBoolean(), McpTestClient.text(update));
         JsonNode comment = adminMcp.callTool("comment_defect", with(target, "content", "x"));
         assertTrue(comment.path("isError").asBoolean(), McpTestClient.text(comment));
+    }
+
+    @Test
+    void guideAndPrompts() {
+        McpTestClient mcp = new McpTestClient(pat).initialize("Cursor-Test");
+        String instructions = mcp.initializeResult().path("instructions").asText();
+        assertTrue(instructions.contains("get_guide"), mcp.initializeResult().toString());
+        assertTrue(instructions.contains("不要反复追问"), instructions);
+        List<String> tools = new ArrayList<>();
+        mcp.listTools().forEach(t -> tools.add(t.path("name").asText()));
+        assertTrue(tools.contains("get_guide"), tools.toString());
+
+        JsonNode currentProject = McpTestClient.json(ok(mcp.callTool("get_current_project", Map.of())));
+        assertTrue(currentProject.path("repositoryConfirmHint").asText().contains("单仓库"),
+                currentProject.toString());
+
+        String overview = McpTestClient.text(ok(mcp.callTool("get_guide", Map.of())));
+        assertTrue(overview.contains("本项目实况") && overview.contains("你的角色") && overview.contains("更多主题"), overview);
+
+        JsonNode bad = mcp.callTool("get_guide", Map.of("topic", "nope"));
+        assertTrue(bad.path("isError").asBoolean(), McpTestClient.text(bad));
+        assertTrue(McpTestClient.text(bad).contains("overview / roles / defect"), McpTestClient.text(bad));
+
+        String defect = McpTestClient.text(ok(mcp.callTool("get_guide", Map.of("topic", "defect"))));
+        for (String s : List.of("repair_defect", "pass_defect", "reject_defect", "assign_defect", "open_defect",
+                "处理中", "待审核", "已驳回", "已关闭", "修复后进入待审核", "退回上一次的处理人", "缺陷自定义字段")) {
+            assertTrue(defect.contains(s), "缺陷指南缺少「" + s + "」：" + defect);
+        }
+        String roles = McpTestClient.text(ok(mcp.callTool("get_guide", Map.of("topic", "roles"))));
+        assertTrue(roles.contains("成员（按角色）"), roles);
+
+        String codeOk = McpTestClient.text(ok(mcp.callTool("get_guide", Map.of("topic", "code"))));
+        for (String s : List.of("不问仓库", "resolve_project_by_git_remote", "defaultBranch", "本地常见分支")) {
+            assertTrue(codeOk.contains(s), "代码指南缺少「" + s + "」：" + codeOk);
+        }
+
+        given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body("{\"enabled\":true,\"modules\":[\"defect\"]}")
+                .when().put("/system/project/" + projectId + "/mcp")
+                .then().statusCode(200).body("code", equalTo(200));
+        String code = McpTestClient.text(ok(mcp.callTool("get_guide", Map.of("topic", "code"))));
+        assertTrue(code.contains("没有『代码』模块的权限"), code);
+        assertFalse(code.contains("list_code_tree"), code);
+
+        JsonNode prompts = mcp.listPrompts();
+        List<String> names = new ArrayList<>();
+        prompts.forEach(p -> {
+            names.add(p.path("name").asText());
+            assertTrue(p.path("title").isTextual() && !p.path("title").asText().isBlank(), p.toString());
+            p.path("arguments").forEach(a -> assertFalse(a.path("required").asBoolean(), p.toString()));
+        });
+        assertTrue(names.containsAll(List.of("report_defect", "fix_defect", "review_defect", "run_test_plan",
+                "write_test_cases", "project_status")), names.toString());
+
+        String fix = mcp.getPrompt("fix_defect", Map.of("defect_num", "71"));
+        for (String s : List.of("71", "get_guide", "get_defect", "repair_defect", "待审核", "审核人验证", "不要自行合并",
+                "resolve_project_by_git_remote", "不问仓库", "defaultBranch", "本地常见分支")) {
+            assertTrue(fix.contains(s), "fix_defect 缺少「" + s + "」：" + fix);
+        }
+        String fixNoArg = mcp.getPrompt("fix_defect", Map.of());
+        assertTrue(fixNoArg.contains("未提供") && fixNoArg.contains("assigned_to_me=true"), fixNoArg);
+        assertFalse(fixNoArg.contains("{{"), fixNoArg);
+
+        given().contentType("application/json").header("Accept", "application/json, text/event-stream")
+                .body("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"prompts/list\",\"params\":{}}")
+                .when().post("/mcp")
+                .then().statusCode(401);
+    }
+
+    @Test
+    void guideListsOnlyAllowedOperations() {
+        String suffix = Long.toString(System.nanoTime(), 36);
+        String userName = "mcpg_" + suffix;
+        long userId = createUser(userName);
+        try {
+            QuarkusTestAuth.ensureProjectMember(admin, projectId, userId);
+            given().header("Authorization", admin).contentType(ContentType.JSON).body("[7]")
+                    .when().put("/system/project/" + projectId + "/member/" + userId + "/role")
+                    .then().statusCode(200).body("code", equalTo(200));
+            McpTestClient dev = new McpTestClient(issueToken(userId)).initialize("Guide-Test");
+            String guide = McpTestClient.text(ok(dev.callTool("get_guide", Map.of("topic", "defect"))));
+            String ops = guide.lines().filter(l -> l.startsWith("  - 缺陷：")).findFirst().orElse("");
+            assertTrue(ops.contains("新建") && ops.contains("提交修复"), guide);
+            assertFalse(ops.contains("关闭") || ops.contains("审核通过"), ops);
+        } finally {
+            given().header("Authorization", admin).when().delete("/system/user/" + userId);
+        }
     }
 
     private static JsonNode ok(JsonNode result) {
@@ -496,18 +588,34 @@ class QuarkusMcpServerTest {
         String userName = "mcpr_" + suffix;
         long userId = createUser(userName);
         try {
-            McpTestClient mcp = new McpTestClient(createPat(login(userName), "限流")).initialize("Limit-Test");
+            McpTestClient mcp = new McpTestClient(issueToken(userId)).initialize("Limit-Test");
             JsonNode last = null;
             for (int i = 0; i < 121; i++) {
-                last = mcp.callTool("list_my_projects", Map.of());
+                last = mcp.callTool("get_current_project", Map.of());
             }
             assertTrue(last.path("isError").asBoolean(), McpTestClient.text(last));
             assertTrue(McpTestClient.text(last).contains("过于频繁"), McpTestClient.text(last));
-            JsonNode other = new McpTestClient(pat).initialize("Cursor-Test").callTool("list_my_projects", Map.of());
+            JsonNode other = new McpTestClient(pat).initialize("Cursor-Test").callTool("get_current_project", Map.of());
             assertFalse(other.path("isError").asBoolean(), "限流按用户计数，不影响其他用户");
         } finally {
             given().header("Authorization", admin).when().delete("/system/user/" + userId);
         }
+    }
+
+    private long createProject() {
+        String suffix = Long.toString(System.nanoTime(), 36);
+        Number teamId = given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body("{\"teamName\":\"MCP团队" + suffix + "\",\"teamKey\":\"mt" + suffix + "\"}")
+                .when().post("/system/team")
+                .then().statusCode(200).body("code", equalTo(200))
+                .extract().path("data.teamId");
+        given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body("{\"teamId\":" + teamId + ",\"projectName\":\"MCP项目" + suffix + "\",\"projectKey\":\"mp" + suffix + "\"}")
+                .when().post("/system/project")
+                .then().statusCode(200).body("code", equalTo(200));
+        return given().header("Authorization", admin)
+                .when().get("/system/project/list?teamId=" + teamId + "&pageNum=1&pageSize=10")
+                .then().statusCode(200).extract().<Number>path("rows[0].projectId").longValue();
     }
 
     private long createUser(String userName) {
@@ -531,12 +639,13 @@ class QuarkusMcpServerTest {
                 .extract().path("token");
     }
 
-    private static String createPat(String jwt, String name) {
-        return given().header("Authorization", jwt).contentType(ContentType.JSON)
-                .body("{\"name\":\"" + name + "\",\"expireDays\":1}")
-                .when().post("/system/user/profile/tokens")
-                .then().statusCode(200).body("code", equalTo(200))
-                .extract().path("data.token");
+    /** 等同于该用户在授权页选择了本测试项目后拿到的 OAuth 访问令牌 */
+    private String issueToken(long userId) {
+        String plaintext = AccessTokens.generate(AccessTokens.OAUTH_ACCESS_PREFIX);
+        Date now = new Date();
+        tokenMapper.insert(tokenService.newRow(userId, projectId, "MCP 测试", plaintext,
+                SysUserAccessToken.SOURCE_OAUTH, new Date(now.getTime() + 3_600_000L), now));
+        return plaintext;
     }
 
     private static SysDefectLog logQuery(long defectId) {

@@ -392,6 +392,8 @@ if [[ "$HAS_PROJECT" == "true" ]]; then
     mcp_check "mcp tools/list" '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' 'search_defects'
     mcp_check "mcp list_operations" '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"list_operations","arguments":{"project":"'"$PID"'","module":"defect"}}}' 'defect.list'
     mcp_check "mcp search_defects" '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"search_defects","arguments":{"project":"'"$PID"'"}}}' 'total'
+    mcp_check "mcp get_guide" '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"get_guide","arguments":{"topic":"defect"}}}' 'repair_defect'
+    mcp_check "mcp prompts/list" '{"jsonrpc":"2.0","id":6,"method":"prompts/list"}' 'fix_defect'
   fi
 fi
 

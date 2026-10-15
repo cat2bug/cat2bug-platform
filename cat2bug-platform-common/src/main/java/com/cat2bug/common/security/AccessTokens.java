@@ -12,7 +12,6 @@ import java.util.HexFormat;
  */
 public final class AccessTokens {
 
-    public static final String PERSONAL_PREFIX = "c2b_pat_";
     public static final String OAUTH_ACCESS_PREFIX = "c2b_oat_";
     public static final String OAUTH_REFRESH_PREFIX = "c2b_ort_";
     public static final String OAUTH_CODE_PREFIX = "c2b_oac_";
@@ -54,7 +53,7 @@ public final class AccessTokens {
     }
 
     public static boolean looksLikeAccessToken(String token) {
-        return token != null && (token.startsWith(PERSONAL_PREFIX) || token.startsWith(OAUTH_ACCESS_PREFIX));
+        return token != null && token.startsWith(OAUTH_ACCESS_PREFIX);
     }
 
     /** 常量时间比较，避免按字节提前返回泄露信息 */

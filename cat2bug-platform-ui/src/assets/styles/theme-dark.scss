@@ -179,7 +179,7 @@ html.dark {
   --text-color-primary: #f5f7fa;
   --text-color-regular: #e5eaf3;
   --text-color-secondary: #909399;
-  --text-color-placeholder: #4c4d4f;
+  --text-color-placeholder: #8b8d94;
   --cat2bug-input-icon-color: #c0c4cc;
   --form-label-color: #edf0f5;
 
@@ -237,7 +237,12 @@ html.dark {
   --el-input-bg-color: var(--input-bg);
   --el-input-border-color: var(--input-border);
   --el-input-text-color: var(--input-color);
+  /* 未引入 Element Plus 自带暗色变量，--el-text-color-* 默认仍是浅色主题的深灰，必须映射到项目 token */
+  --el-text-color-primary: var(--text-color-primary);
+  --el-text-color-regular: var(--text-color-regular);
+  --el-text-color-secondary: var(--text-color-secondary);
   --el-text-color-placeholder: var(--text-color-placeholder);
+  --el-text-color-disabled: #6c6e72;
   --el-border-color: var(--border-color-base);
   --el-border-color-hover: var(--input-border);
   --el-bg-color-overlay: var(--dropdown-bg);
@@ -246,6 +251,10 @@ html.dark {
   --el-descriptions-table-border: 1px solid var(--border-color-light);
   --el-descriptions-item-bordered-label-background: var(--bg-color-block);
   --el-fill-color-light: var(--table-row-hover-bg);
+  --el-color-primary-light-3: #c79a14;
+  --el-color-primary-light-5: #806519;
+  --el-color-primary-light-7: #5a4a1d;
+  --el-color-primary-light-8: #463b1f;
   --el-color-primary-light-9: rgba(255, 193, 7, 0.12);
   --el-color-primary: var(--cat2bug-primary, #FFC107);
   --el-button-hover-bg-color: rgba(255, 193, 7, 0.12);
@@ -5095,10 +5104,27 @@ html.dark {
     border-color: var(--border-color-light) !important;
   }
 
-  // 全局 Markdown 预览代码块（编辑模式、缺陷描述等）
-  .markdown-body {
+  // 全局 Markdown（覆盖 markdown-it-vue / github 写死的 #eaecef 下划线与过大标题）
+  .markdown-body,
+  .markdown-it-vue {
     --markdown-img-bg: transparent;
     --markdown-img-alt-color: var(--text-color-secondary);
+    color: var(--text-color-regular);
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-color-primary) !important;
+    }
+
+    /* github 样式：border-bottom: 1px solid #eaecef —— 暗色下近纯白，改用分割线 token */
+    h1, h2 {
+      border-bottom: 1px solid var(--divider-color, var(--border-color-light)) !important;
+    }
+
+    hr {
+      background-color: var(--divider-color, var(--border-color-light)) !important;
+      border-bottom-color: var(--divider-color, var(--border-color-light)) !important;
+      height: 1px !important;
+    }
 
     img {
       background-color: var(--markdown-img-bg) !important;

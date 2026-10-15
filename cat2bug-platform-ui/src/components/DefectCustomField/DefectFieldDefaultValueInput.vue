@@ -2,7 +2,7 @@
   <div class="defect-field-default-value">
     <el-input
       v-if="fieldType === 'string'"
-      :value="stringValue"
+      :model-value="stringValue"
       clearable
       :maxlength="maxLength || 512"
       :placeholder="$t('defect.custom-field.default-value-placeholder')"
@@ -34,7 +34,7 @@
     />
     <el-select
       v-else-if="fieldType === 'enum'"
-      :value="stringValue"
+      :model-value="stringValue"
       clearable
       class="defect-field-default-value-enum defect-enum-select"
       :style="enumSelectCssVars({ typeConfig }, stringValue)"

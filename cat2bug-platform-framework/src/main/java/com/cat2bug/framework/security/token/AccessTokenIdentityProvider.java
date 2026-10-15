@@ -30,16 +30,18 @@ public class AccessTokenIdentityProvider implements IdentityProvider<TokenAuthen
         return context.runBlocking(() -> {
             String clientIp = (String) request.getAttribute(AccessTokenAuthMechanism.CLIENT_IP_ATTRIBUTE);
             String resource = (String) request.getAttribute(AccessTokenAuthMechanism.RESOURCE_ATTRIBUTE);
-            LoginUser loginUser = resolver.isResolvable()
+            AccessTokenResolver.Authenticated authenticated = resolver.isResolvable()
                     ? resolver.get().authenticate(request.getToken().getToken(), clientIp, resource)
                     : null;
-            if (loginUser == null) {
+            if (authenticated == null) {
                 throw new AuthenticationFailedException();
             }
+            LoginUser loginUser = authenticated.loginUser();
             return QuarkusSecurityIdentity.builder()
                     .setPrincipal(new QuarkusPrincipal(loginUser.getUsername()))
                     .addCredential(request.getToken())
                     .addAttribute(AccessTokenIdentities.LOGIN_USER_ATTRIBUTE, loginUser)
+                    .addAttribute(AccessTokenIdentities.PROJECT_ID_ATTRIBUTE, authenticated.projectId())
                     .build();
         });
     }

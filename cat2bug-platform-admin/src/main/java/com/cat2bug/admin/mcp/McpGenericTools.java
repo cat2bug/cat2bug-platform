@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.cat2bug.admin.mcp.McpDefectTools.PROJECT_DESC;
 
 /**
  * 通用通道：精做工具没覆盖的网页操作，按目录列出、查看参数后调用。仍走同一套权限与归属校验。
@@ -48,13 +47,12 @@ public class McpGenericTools {
     McpJson json;
 
     @Tool(name = "list_operations",
-            description = "通用通道：列出你在该项目可调用的网页操作（精做工具未覆盖时使用）。可按模块过滤："
+            description = "通用通道：列出你在授权项目中可调用的网页操作（精做工具未覆盖时使用）。可按模块过滤："
                     + "defect / case / plan / deliverable / report / document / code / dashboard / project。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "List operations", readOnlyHint = true, openWorldHint = false))
     String listOperations(McpConnection connection,
-                          @ToolArg(name = "project", description = PROJECT_DESC) String project,
                           @ToolArg(name = "module", description = "模块", required = false) String module) {
-        McpScope scope = context.scope(connection, project, List.of());
+        McpScope scope = context.scope(connection, List.of());
         ArrayNode out = json.array();
         for (Operation op : McpOperationCatalog.operations().values()) {
             if (module != null && !module.isBlank() && !op.modules().contains(module.trim())) {
@@ -75,11 +73,10 @@ public class McpGenericTools {
 
     @Tool(name = "describe_operation",
             description = "通用通道：查看某个操作的路径参数、查询参数、请求体字段与所需权限。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Describe operation", readOnlyHint = true, openWorldHint = false))
     String describeOperation(McpConnection connection,
-                             @ToolArg(name = "project", description = PROJECT_DESC) String project,
                              @ToolArg(name = "operation", description = "list_operations 返回的 operation") String operation) {
-        McpScope scope = context.scope(connection, project, List.of());
+        McpScope scope = context.scope(connection, List.of());
         Operation op = require(scope, operation);
         ObjectNode o = json.object();
         o.put("operation", op.id());
@@ -93,21 +90,20 @@ public class McpGenericTools {
             o.put("bodyType", op.bodyType());
             o.set("bodyFields", json.valueToTree(op.bodyFields()));
         }
-        o.put("note", "projectId 会自动填为目标项目；路径或请求体里的对象 ID 必须属于该项目");
+        o.put("note", "projectId 会自动填为授权项目；路径或请求体里的对象 ID 必须属于该项目");
         return json.write(o);
     }
 
     @Tool(name = "call_operation",
             description = "通用通道：调用某个网页操作。path_params 填路径变量，query 填查询参数，body 为 JSON 请求体。"
                     + "先用 describe_operation 查看参数。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = true, idempotentHint = false, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Call operation", readOnlyHint = false, destructiveHint = true, idempotentHint = false, openWorldHint = false))
     String callOperation(McpConnection connection,
-                         @ToolArg(name = "project", description = PROJECT_DESC) String project,
                          @ToolArg(name = "operation", description = "list_operations 返回的 operation") String operation,
                          @ToolArg(name = "path_params", description = "路径变量", required = false) Map<String, Object> pathParams,
                          @ToolArg(name = "query", description = "查询参数", required = false) Map<String, Object> query,
                          @ToolArg(name = "body", description = "JSON 请求体", required = false) Object body) {
-        McpScope scope = context.scope(connection, project, List.of());
+        McpScope scope = context.scope(connection, List.of());
         Operation op = require(scope, operation);
         String path = fillPath(scope, op, pathParams == null ? Map.of() : pathParams);
         Map<String, Object> q = checkQuery(scope, op, query == null ? Map.of() : query);
@@ -285,7 +281,7 @@ public class McpGenericTools {
 
     private static void requireSameProject(McpScope scope, String value) {
         if (!Objects.equals(String.valueOf(scope.projectId()), value == null ? null : value.trim())) {
-            throw new ToolCallException("projectId 与目标项目不一致：通用通道只能操作 project 参数指定的项目");
+            throw new ToolCallException("projectId 与目标项目不一致：通用通道只能操作授权时选择的项目");
         }
     }
 

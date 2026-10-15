@@ -16,7 +16,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.cat2bug.admin.mcp.McpDefectTools.PROJECT_DESC;
 import static com.cat2bug.admin.mcp.McpDefectTools.blankToNull;
 import static com.cat2bug.admin.mcp.McpDefectTools.clampPageSize;
 
@@ -47,15 +46,14 @@ public class McpWorkTools {
 
     @Tool(name = "search_cases",
             description = "查询测试用例列表。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Search cases", readOnlyHint = true, openWorldHint = false))
     String searchCases(McpConnection connection,
-                       @ToolArg(name = "project", description = PROJECT_DESC) String project,
                        @ToolArg(name = "keyword", description = "按用例标题模糊匹配", required = false) String keyword,
                        @ToolArg(name = "module_id", description = "交付物（模块）ID", required = false) Long moduleId,
                        @ToolArg(name = "case_num", description = "项目内用例编号", required = false) Long caseNum,
                        @ToolArg(name = "page", description = "页码", required = false) Integer page,
                        @ToolArg(name = "page_size", description = "每页条数，默认 20，最大 100", required = false) Integer pageSize) {
-        McpScope scope = context.scope(connection, project, "system:case:list");
+        McpScope scope = context.scope(connection, "system:case:list");
         Map<String, Object> q = new LinkedHashMap<>();
         q.put("projectId", scope.projectId());
         q.put("caseName", blankToNull(keyword));
@@ -68,20 +66,18 @@ public class McpWorkTools {
 
     @Tool(name = "get_case",
             description = "读取测试用例详情（前置条件、步骤、预期、数据）。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Get case", readOnlyHint = true, openWorldHint = false))
     String getCase(McpConnection connection,
-                   @ToolArg(name = "project", description = PROJECT_DESC) String project,
                    @ToolArg(name = "case_id", description = "用例 ID") Long caseId) {
-        McpScope scope = context.scope(connection, project, "system:case:query");
+        McpScope scope = context.scope(connection, "system:case:query");
         objects.testCase(scope, caseId);
         return json.write(json.caseDetail(McpJson.data(gateway.get(scope, "/system/case/" + caseId, null))));
     }
 
     @Tool(name = "create_case",
             description = "新建测试用例。steps 为步骤列表（describe 操作、expect 期望）。建议传 idempotency_key。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Create case", readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
     String createCase(McpConnection connection,
-                      @ToolArg(name = "project", description = PROJECT_DESC) String project,
                       @ToolArg(name = "name", description = "用例标题") String name,
                       @ToolArg(name = "module_id", description = "交付物（模块）ID") Long moduleId,
                       @ToolArg(name = "preconditions", description = "前置条件", required = false) String preconditions,
@@ -90,7 +86,7 @@ public class McpWorkTools {
                       @ToolArg(name = "level", description = "用例等级 1～5，默认 2", required = false) Long level,
                       @ToolArg(name = "case_data", description = "测试数据", required = false) String caseData,
                       @ToolArg(name = "idempotency_key", description = "幂等键", required = false) String idempotencyKey) {
-        McpScope scope = context.scope(connection, project, "system:case:add");
+        McpScope scope = context.scope(connection, "system:case:add");
         if (name == null || name.isBlank()) {
             throw new ToolCallException("用例标题不能为空");
         }
@@ -118,9 +114,8 @@ public class McpWorkTools {
 
     @Tool(name = "update_case",
             description = "修改测试用例，只传需要改的字段；steps 传入时整体替换原步骤。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Update case", readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
     String updateCase(McpConnection connection,
-                      @ToolArg(name = "project", description = PROJECT_DESC) String project,
                       @ToolArg(name = "case_id", description = "用例 ID") Long caseId,
                       @ToolArg(name = "name", description = "用例标题", required = false) String name,
                       @ToolArg(name = "module_id", description = "交付物（模块）ID", required = false) Long moduleId,
@@ -129,7 +124,7 @@ public class McpWorkTools {
                       @ToolArg(name = "steps", description = "步骤列表", required = false) List<CaseStepArg> steps,
                       @ToolArg(name = "level", description = "用例等级", required = false) Long level,
                       @ToolArg(name = "case_data", description = "测试数据", required = false) String caseData) {
-        McpScope scope = context.scope(connection, project, "system:case:edit");
+        McpScope scope = context.scope(connection, "system:case:edit");
         SysCase existing = objects.testCase(scope, caseId);
         if (moduleId != null) {
             objects.module(scope, moduleId);
@@ -164,13 +159,12 @@ public class McpWorkTools {
 
     @Tool(name = "list_plans",
             description = "查询测试计划列表（含通过 / 失败 / 未执行数量与缺陷统计）。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "List plans", readOnlyHint = true, openWorldHint = false))
     String listPlans(McpConnection connection,
-                     @ToolArg(name = "project", description = PROJECT_DESC) String project,
                      @ToolArg(name = "keyword", description = "按计划名称模糊匹配", required = false) String keyword,
                      @ToolArg(name = "page", description = "页码", required = false) Integer page,
                      @ToolArg(name = "page_size", description = "每页条数", required = false) Integer pageSize) {
-        McpScope scope = context.scope(connection, project, "system:plan:list");
+        McpScope scope = context.scope(connection, "system:plan:list");
         Map<String, Object> q = new LinkedHashMap<>();
         q.put("projectId", scope.projectId());
         q.put("planName", blankToNull(keyword));
@@ -186,14 +180,13 @@ public class McpWorkTools {
 
     @Tool(name = "list_plan_items",
             description = "列出测试计划的子项（每个子项对应一个用例）。state 取值 pass / not_pass / unexecuted。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "List plan items", readOnlyHint = true, openWorldHint = false))
     String listPlanItems(McpConnection connection,
-                         @ToolArg(name = "project", description = PROJECT_DESC) String project,
                          @ToolArg(name = "plan_id", description = "测试计划 ID") String planId,
                          @ToolArg(name = "state", description = "按执行状态过滤", required = false) String state,
                          @ToolArg(name = "page", description = "页码", required = false) Integer page,
                          @ToolArg(name = "page_size", description = "每页条数", required = false) Integer pageSize) {
-        McpScope scope = context.scope(connection, project, "system:plan:run", "system:plan:edit");
+        McpScope scope = context.scope(connection, "system:plan:run", "system:plan:edit");
         objects.plan(scope, planId);
         Map<String, Object> q = new LinkedHashMap<>();
         q.put("planId", planId);
@@ -211,13 +204,12 @@ public class McpWorkTools {
 
     @Tool(name = "update_plan_item",
             description = "记录测试计划子项的执行结果（pass / not_pass / unexecuted），可同时关联一个缺陷。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Update plan item", readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
     String updatePlanItem(McpConnection connection,
-                          @ToolArg(name = "project", description = PROJECT_DESC) String project,
                           @ToolArg(name = "plan_item_id", description = "测试计划子项 ID") String planItemId,
                           @ToolArg(name = "state", description = "pass / not_pass / unexecuted") String state,
                           @ToolArg(name = "defect_id", description = "关联的缺陷 ID", required = false) Long defectId) {
-        McpScope scope = context.scope(connection, project, "system:plan:run", "system:plan:edit");
+        McpScope scope = context.scope(connection, "system:plan:run", "system:plan:edit");
         SysPlanItem item = objects.planItem(scope, planItemId);
         String s = normalizeItemState(state);
         if (s == null) {
@@ -242,11 +234,10 @@ public class McpWorkTools {
 
     @Tool(name = "list_modules",
             description = "列出项目的交付物（模块）树，缺陷与用例按交付物归类。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "List modules", readOnlyHint = true, openWorldHint = false))
     String listModules(McpConnection connection,
-                       @ToolArg(name = "project", description = PROJECT_DESC) String project,
                        @ToolArg(name = "keyword", description = "按名称过滤", required = false) String keyword) {
-        McpScope scope = context.scope(connection, project, "system:module:list", "system:defect:list");
+        McpScope scope = context.scope(connection, "system:module:list", "system:defect:list");
         Map<String, Object> q = new LinkedHashMap<>();
         q.put("projectId", scope.projectId());
         q.put("moduleName", blankToNull(keyword));
@@ -257,13 +248,12 @@ public class McpWorkTools {
 
     @Tool(name = "list_reports",
             description = "查询项目报告列表。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "List reports", readOnlyHint = true, openWorldHint = false))
     String listReports(McpConnection connection,
-                       @ToolArg(name = "project", description = PROJECT_DESC) String project,
                        @ToolArg(name = "keyword", description = "按标题模糊匹配", required = false) String keyword,
                        @ToolArg(name = "page", description = "页码", required = false) Integer page,
                        @ToolArg(name = "page_size", description = "每页条数", required = false) Integer pageSize) {
-        McpScope scope = context.scope(connection, project, "system:report:list");
+        McpScope scope = context.scope(connection, "system:report:list");
         Map<String, Object> q = new LinkedHashMap<>();
         q.put("projectId", scope.projectId());
         q.put("reportTitle", blankToNull(keyword));
@@ -278,11 +268,10 @@ public class McpWorkTools {
 
     @Tool(name = "get_report",
             description = "读取报告正文。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Get report", readOnlyHint = true, openWorldHint = false))
     String getReport(McpConnection connection,
-                     @ToolArg(name = "project", description = PROJECT_DESC) String project,
                      @ToolArg(name = "report_id", description = "报告 ID") Long reportId) {
-        McpScope scope = context.scope(connection, project, "system:report:query");
+        McpScope scope = context.scope(connection, "system:report:query");
         objects.report(scope, reportId);
         JsonNode r = McpJson.data(gateway.get(scope, "/system/report/" + reportId, null));
         ObjectNode o = json.object();
@@ -296,14 +285,13 @@ public class McpWorkTools {
 
     @Tool(name = "list_documents",
             description = "查询项目文档（目录与文件）。parent_id 为空时列根目录。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "List documents", readOnlyHint = true, openWorldHint = false))
     String listDocuments(McpConnection connection,
-                         @ToolArg(name = "project", description = PROJECT_DESC) String project,
                          @ToolArg(name = "keyword", description = "按名称模糊匹配", required = false) String keyword,
                          @ToolArg(name = "parent_id", description = "父目录 ID", required = false) Long parentId,
                          @ToolArg(name = "page", description = "页码", required = false) Integer page,
                          @ToolArg(name = "page_size", description = "每页条数", required = false) Integer pageSize) {
-        McpScope scope = context.scope(connection, project, "system:document:list");
+        McpScope scope = context.scope(connection, "system:document:list");
         if (parentId != null) {
             objects.document(scope, parentId);
         }
@@ -325,10 +313,9 @@ public class McpWorkTools {
 
     @Tool(name = "get_project_stats",
             description = "项目概况统计：缺陷（按状态 / 类型）、用例、交付物、成员数量等。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
-    String getProjectStats(McpConnection connection,
-                           @ToolArg(name = "project", description = PROJECT_DESC) String project) {
-        McpScope scope = context.scope(connection, project, "system:dashboard:query");
+            annotations = @Tool.Annotations(title = "Get project stats", readOnlyHint = true, openWorldHint = false))
+    String getProjectStats(McpConnection connection) {
+        McpScope scope = context.scope(connection, "system:dashboard:query");
         String base = "/system/dashboard/" + scope.projectId();
         ObjectNode out = json.object();
         out.set("defect", McpJson.data(gateway.get(scope, base + "/defect", null)));

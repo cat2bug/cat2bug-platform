@@ -12,40 +12,40 @@
 .markdown-body h4,
 .markdown-body h5,
 .markdown-body h6 {
-  margin-top: 24px;
-  margin-bottom: 16px;
+  margin-top: 1.15em;
+  margin-bottom: 0.5em;
   font-weight: 600;
   line-height: 1.25;
-  color: #24292e;
+  color: var(--text-color-primary, #24292e);
 }
 
 .markdown-body h1 {
-  font-size: 32px;
+  font-size: 1.25em;
   border-bottom: 1px solid var(--divider-color, var(--border-color-light, #eaecef));
-  padding-bottom: 8px;
+  padding-bottom: 0.3em;
 }
 
 .markdown-body h2 {
-  font-size: 24px;
+  font-size: 1.1em;
   border-bottom: 1px solid var(--divider-color, var(--border-color-light, #eaecef));
-  padding-bottom: 8px;
+  padding-bottom: 0.25em;
 }
 
 .markdown-body h3 {
-  font-size: 20px;
+  font-size: 1.05em;
 }
 
 .markdown-body h4 {
-  font-size: 16px;
+  font-size: 1em;
 }
 
 .markdown-body h5 {
-  font-size: 14px;
+  font-size: 0.95em;
 }
 
 .markdown-body h6 {
-  font-size: 13px;
-  color: #6a737d;
+  font-size: 0.9em;
+  color: var(--text-color-secondary, #6a737d);
 }
 
 .markdown-body p {

@@ -2,6 +2,7 @@ package com.cat2bug.admin.resource;
 
 import com.cat2bug.common.api.AjaxResult;
 import com.cat2bug.common.domain.SysOAuthClient;
+import com.cat2bug.common.domain.SysProject;
 import com.cat2bug.framework.security.SecurityUtils;
 import com.cat2bug.framework.web.IpRateLimiter;
 import com.cat2bug.system.service.oauth.OAuthException;
@@ -24,6 +25,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +63,8 @@ public class OAuthResource {
                                 @JsonProperty("code_challenge_method") String codeChallengeMethod,
                                 @JsonProperty("state") String state,
                                 @JsonProperty("resource") String resource,
-                                @JsonProperty("approve") Boolean approve) {
+                                @JsonProperty("approve") Boolean approve,
+                                @JsonProperty("project_id") Long projectId) {
 
         OAuthService.AuthorizeRequest toRequest() {
             return new OAuthService.AuthorizeRequest(responseType, clientId, redirectUri, codeChallenge,
@@ -138,6 +141,7 @@ public class OAuthResource {
             data.put("clientName", validated.client().getClientName());
             data.put("redirectUri", validated.redirectUri());
             data.put("redirectHost", URI.create(validated.redirectUri()).getHost());
+            data.put("teams", selectableTeams(SecurityUtils.getUserId()));
             return AjaxResult.success(data);
         } catch (OAuthException e) {
             return AjaxResult.error(e.getError() + ": " + e.getMessage());
@@ -152,9 +156,13 @@ public class OAuthResource {
         if (body == null) {
             return AjaxResult.error("invalid_request");
         }
+        boolean approve = Boolean.TRUE.equals(body.approve());
+        if (approve && body.projectId() == null) {
+            return AjaxResult.error("invalid_request: project_id is required");
+        }
         try {
-            String redirect = Boolean.TRUE.equals(body.approve())
-                    ? oauthService.approve(SecurityUtils.getUserId(), body.toRequest())
+            String redirect = approve
+                    ? oauthService.approve(SecurityUtils.getUserId(), body.projectId(), body.toRequest())
                     : oauthService.deny(body.toRequest());
             return AjaxResult.success(Map.of("redirect", redirect));
         } catch (OAuthException e) {
@@ -207,6 +215,29 @@ public class OAuthResource {
         }
         oauthService.revoke(token);
         return Response.ok().build();
+    }
+
+    /** 按团队分组的可选项目，保持查询顺序 */
+    private List<Map<String, Object>> selectableTeams(Long userId) {
+        Map<Long, Map<String, Object>> teams = new LinkedHashMap<>();
+        for (SysProject p : oauthService.selectableProjects(userId)) {
+            Map<String, Object> team = teams.computeIfAbsent(p.getTeamId(), id -> {
+                Map<String, Object> t = new LinkedHashMap<>();
+                t.put("teamId", id);
+                t.put("teamName", p.getTeamName());
+                t.put("teamKey", p.getTeamKey());
+                t.put("projects", new ArrayList<Map<String, Object>>());
+                return t;
+            });
+            Map<String, Object> project = new LinkedHashMap<>();
+            project.put("projectId", p.getProjectId());
+            project.put("projectName", p.getProjectName());
+            project.put("projectKey", p.getProjectKey());
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> projects = (List<Map<String, Object>>) team.get("projects");
+            projects.add(project);
+        }
+        return new ArrayList<>(teams.values());
     }
 
     private static Response.ResponseBuilder noStore(Response.ResponseBuilder builder) {

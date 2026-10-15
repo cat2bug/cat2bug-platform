@@ -67,7 +67,11 @@ public class McpAccessService {
         cache.clear();
     }
 
+    /** 系统管理员与网页一致，可选全部已开启 MCP 的项目；其他用户只能选自己是成员的 */
     public List<SysProject> enabledProjectsOf(Long userId) {
+        if (SysUser.isAdmin(userId)) {
+            return projectMcpMapper.selectEnabledProjects();
+        }
         return projectMcpMapper.selectEnabledProjectsOfUser(userId);
     }
 

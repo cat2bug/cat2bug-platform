@@ -8,6 +8,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import jakarta.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -23,6 +24,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,9 +36,29 @@ class QuarkusOAuthTest {
 
     private static final String REDIRECT = "http://127.0.0.1:33418/callback";
     private static final AtomicInteger IP_SEQ = new AtomicInteger(1);
+    /** admin 新建的项目：创建者即成员，MCP 默认开启 */
+    private static long PROJECT_ID;
 
     @Inject
     SysOAuthCodeMapper codeMapper;
+
+    @BeforeEach
+    void createProject() {
+        String admin = QuarkusTestAuth.loginAsAdmin();
+        String suffix = Long.toString(System.nanoTime(), 36);
+        Number teamId = given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body("{\"teamName\":\"OAuth团队" + suffix + "\",\"teamKey\":\"ot" + suffix + "\"}")
+                .when().post("/system/team")
+                .then().statusCode(200).body("code", equalTo(200))
+                .extract().path("data.teamId");
+        given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body("{\"teamId\":" + teamId + ",\"projectName\":\"OAuth项目" + suffix + "\",\"projectKey\":\"op" + suffix + "\"}")
+                .when().post("/system/project")
+                .then().statusCode(200).body("code", equalTo(200));
+        PROJECT_ID = given().header("Authorization", admin)
+                .when().get("/system/project/list?teamId=" + teamId + "&pageNum=1&pageSize=10")
+                .then().statusCode(200).extract().<Number>path("rows[0].projectId").longValue();
+    }
 
     /** 每个用例换一个来源地址，避免进程内限流计数互相影响 */
     private static RequestSpecification client() {
@@ -145,11 +167,22 @@ class QuarkusOAuthTest {
                 .when().post("/oauth/authorize/check")
                 .then().statusCode(200).body("code", equalTo(200))
                 .body("data.clientName", equalTo("Inspector"))
-                .body("data.redirectHost", equalTo("127.0.0.1"));
+                .body("data.redirectHost", equalTo("127.0.0.1"))
+                .body("data.teams.projects.flatten().projectId", hasItem((int) PROJECT_ID));
         given().contentType(ContentType.JSON)
                 .body(authorizeBody(clientId, "x", "s3", true))
                 .when().post("/oauth/authorize/decision")
                 .then().statusCode(200).body("code", equalTo(401));
+
+        String challenge = AccessTokens.pkceChallenge(verifier());
+        given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body(authorizeBody(clientId, challenge, "s5", true, null))
+                .when().post("/oauth/authorize/decision")
+                .then().statusCode(200).body("code", not(equalTo(200)));
+        given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body(authorizeBody(clientId, challenge, "s6", true, 987_654_321L))
+                .when().post("/oauth/authorize/decision")
+                .then().body("code", not(equalTo(200)));
 
         Response denied = given().header("Authorization", admin).contentType(ContentType.JSON)
                 .body(authorizeBody(clientId, "x", "s4", false))
@@ -201,7 +234,8 @@ class QuarkusOAuthTest {
                 .then().statusCode(400).body("error", equalTo("invalid_grant"));
 
         given().header("Authorization", "Bearer " + access)
-                .when().get("/mcp/__whoami").then().statusCode(200).body("userName", equalTo("admin"));
+                .when().get("/mcp/__whoami").then().statusCode(200).body("userName", equalTo("admin"))
+                .body("projectId", equalTo((int) PROJECT_ID));
         given().header("Authorization", "Bearer " + refresh)
                 .when().get("/mcp/__whoami").then().statusCode(401);
         given().header("Authorization", "Bearer " + access)
@@ -212,7 +246,8 @@ class QuarkusOAuthTest {
         String access2 = rotated.path("access_token");
         String refresh2 = rotated.path("refresh_token");
         given().header("Authorization", "Bearer " + access2)
-                .when().get("/mcp/__whoami").then().statusCode(200);
+                .when().get("/mcp/__whoami").then().statusCode(200)
+                .body("projectId", equalTo((int) PROJECT_ID));
 
         refresh(clientId, refresh).then().statusCode(400).body("error", equalTo("invalid_grant"));
         given().header("Authorization", "Bearer " + access2)
@@ -221,30 +256,11 @@ class QuarkusOAuthTest {
     }
 
     @Test
-    void revokeFromProfileAndEndpoint() {
+    void revokeFromEndpoint() {
         String admin = QuarkusTestAuth.loginAsAdmin();
-        String clientName = "Revoke " + System.nanoTime();
-        String clientId = register(clientName, List.of(REDIRECT));
+        String clientId = register("Revoke " + System.nanoTime(), List.of(REDIRECT));
         String verifier = verifier();
         Response tokens = exchange(clientId, approve(admin, clientId, verifier, null), verifier);
-        String access = tokens.path("access_token");
-        String refresh = tokens.path("refresh_token");
-
-        List<Map<String, Object>> list = given().header("Authorization", admin)
-                .when().get("/system/user/profile/tokens")
-                .then().statusCode(200).extract().path("data");
-        Map<String, Object> entry = list.stream()
-                .filter(m -> clientName.equals(m.get("clientName")))
-                .findFirst().orElseThrow();
-        assertEquals("oauth_refresh", entry.get("source"));
-        given().header("Authorization", admin)
-                .when().delete("/system/user/profile/tokens/" + entry.get("tokenId"))
-                .then().body("code", equalTo(200));
-        given().header("Authorization", "Bearer " + access)
-                .when().get("/mcp/__whoami").then().statusCode(401);
-        refresh(clientId, refresh).then().statusCode(400);
-
-        tokens = exchange(clientId, approve(admin, clientId, verifier, null), verifier);
         String access3 = tokens.path("access_token");
         String refresh3 = tokens.path("refresh_token");
         client().contentType(ContentType.URLENC).formParam("token", refresh3)
@@ -265,9 +281,33 @@ class QuarkusOAuthTest {
         row.setCodeHash(AccessTokens.sha256Hex(code));
         row.setClientId(clientId);
         row.setUserId(1L);
+        row.setProjectId(PROJECT_ID);
         row.setRedirectUri(REDIRECT);
         row.setCodeChallenge(AccessTokens.pkceChallenge(verifier));
         row.setExpiresAt(new Date(now.getTime() - 1000L));
+        row.setCreateTime(now);
+        codeMapper.insert(row);
+
+        client().contentType(ContentType.URLENC)
+                .formParam("grant_type", "authorization_code").formParam("code", code)
+                .formParam("client_id", clientId).formParam("code_verifier", verifier)
+                .when().post("/oauth/token")
+                .then().statusCode(400).body("error", equalTo("invalid_grant"));
+    }
+
+    @Test
+    void codeWithoutProjectRejected() {
+        String clientId = register("NoProject", List.of(REDIRECT));
+        String verifier = verifier();
+        String code = AccessTokens.generate(AccessTokens.OAUTH_CODE_PREFIX);
+        Date now = new Date();
+        SysOAuthCode row = new SysOAuthCode();
+        row.setCodeHash(AccessTokens.sha256Hex(code));
+        row.setClientId(clientId);
+        row.setUserId(1L);
+        row.setRedirectUri(REDIRECT);
+        row.setCodeChallenge(AccessTokens.pkceChallenge(verifier));
+        row.setExpiresAt(new Date(now.getTime() + 60_000L));
         row.setCreateTime(now);
         codeMapper.insert(row);
 
@@ -323,10 +363,15 @@ class QuarkusOAuthTest {
     }
 
     private static String authorizeBody(String clientId, String challenge, String state, Boolean approve) {
+        return authorizeBody(clientId, challenge, state, approve, Boolean.TRUE.equals(approve) ? PROJECT_ID : null);
+    }
+
+    private static String authorizeBody(String clientId, String challenge, String state, Boolean approve, Long projectId) {
         return "{\"response_type\":\"code\",\"client_id\":\"" + clientId + "\",\"redirect_uri\":\"" + REDIRECT
                 + "\",\"code_challenge\":\"" + challenge + "\",\"code_challenge_method\":\"S256\""
                 + (state == null ? "" : ",\"state\":\"" + state + "\"")
-                + (approve == null ? "" : ",\"approve\":" + approve) + "}";
+                + (approve == null ? "" : ",\"approve\":" + approve)
+                + (projectId == null ? "" : ",\"project_id\":" + projectId) + "}";
     }
 
     private static String verifier() {

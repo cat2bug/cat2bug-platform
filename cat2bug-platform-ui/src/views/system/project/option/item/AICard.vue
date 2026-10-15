@@ -12,7 +12,9 @@
       </template>
       <router-link v-if="canManageAiModel" :to="href('ollama')"><el-link>{{$t('project.ai-model-manager')}}</el-link></router-link>
       <router-link v-if="canManageAiAccount" :to="href('openai')"><el-link>{{$t('project.ai-account-manager')}}</el-link></router-link>
+      <el-link v-if="canManageMcp" @click="mcpVisible = true">{{$t('project-mcp.entry')}}</el-link>
     </el-card>
+    <mcp-settings-dialog v-if="canManageMcp" v-model="mcpVisible" :project-id="projectId" />
   </el-col>
 </template>
 
@@ -21,9 +23,11 @@ import { projectAiModelOptions } from "@/api/system/ai";
 import { hasAnyPermi, projectOptionHref } from '@/utils/project-option-card'
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/user'
+import McpSettingsDialog from '../dialog/McpSettingsDialog.vue'
 
 export default {
   name: "AICard",
+  components: { McpSettingsDialog },
   props: {
     project: {
       type: Object,
@@ -37,7 +41,8 @@ export default {
   },
   data() {
     return {
-      aiEnabled: false
+      aiEnabled: false,
+      mcpVisible: false
     };
   },
   computed: {
@@ -50,8 +55,11 @@ export default {
     canManageAiAccount() {
       return hasAnyPermi(['ai:account:list'])
     },
+    canManageMcp() {
+      return hasAnyPermi(['system:project:query'])
+    },
     cardVisible() {
-      return this.canManageAiModel || this.canManageAiAccount
+      return this.canManageAiModel || this.canManageAiAccount || this.canManageMcp
     }
   },
   created() {

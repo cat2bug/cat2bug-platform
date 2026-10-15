@@ -320,7 +320,7 @@
                   <svg-icon :icon-class="currentLangIcon" class="setup-lang-flag" />
                   <el-select
                     id="setup-lang-select"
-                    :value="currentLocale"
+                    :model-value="currentLocale"
                     size="small"
                     class="setup-lang-select"
                     @change="changeLang"
@@ -617,11 +617,30 @@ export default {
       this.loadPreflight()
     })
   },
-  beforeDestroy() {
+  mounted() {
+    window.addEventListener('keydown', this.handleEnterKey)
+  },
+  beforeUnmount() {
+    window.removeEventListener('keydown', this.handleEnterKey)
     document.documentElement.classList.remove('setup-wizard-active')
     this.clearWaitTimers()
   },
   methods: {
+    /** 回车等同点击「下一步」；最后一步「提交」不响应回车，输入法组字、焦点在按钮 / 多行文本 / 下拉框时保留原生行为 */
+    handleEnterKey(event) {
+      if (event.key !== 'Enter' || event.isComposing || event.shiftKey || event.ctrlKey || event.metaKey || event.altKey) {
+        return
+      }
+      if (this.activeStep >= 5 || this.nextStepLoading) {
+        return
+      }
+      const target = event.target
+      if (target && target.closest && target.closest('button, textarea, a, .el-select, .el-select__popper, .el-dialog')) {
+        return
+      }
+      event.preventDefault()
+      this.nextStep()
+    },
     changeLang(lang) {
       this.$i18n.locale = lang
       this.$cache.local.set(I18N_LOCALE_KEY, lang)

@@ -206,7 +206,7 @@
                   <svg-icon :icon-class="currentLangIcon" class="setup-lang-flag" />
                   <el-select
                     id="upgrade-lang-select"
-                    :value="currentLocale"
+                    :model-value="currentLocale"
                     size="small"
                     class="setup-lang-select"
                     @change="changeLang"
@@ -347,6 +347,14 @@ export default {
     }
   },
   computed: {
+    /** 与「开始升级 / 重试」按钮的显示与可用条件保持一致 */
+    canExecuteByEnter() {
+      return this.currentStepKey === 'upgrade.step.execute'
+        && !this.status.restartRequired
+        && this.status.state !== 'restart_required'
+        && this.canStartUpgrade
+        && !this.executing
+    },
     currentLocale() {
       return this.$i18n.locale
     },
@@ -482,11 +490,34 @@ export default {
     this.syncAdminRuleMessages()
     this.initialize()
   },
-  beforeDestroy() {
+  mounted() {
+    window.addEventListener('keydown', this.handleEnterKey)
+  },
+  beforeUnmount() {
+    window.removeEventListener('keydown', this.handleEnterKey)
     document.documentElement.classList.remove('setup-wizard-active')
     this.clearWaitTimers()
   },
   methods: {
+    /** 回车等同点击「下一步」，执行步骤里等同「开始升级 / 重试」；输入法组字、焦点在按钮 / 多行文本 / 下拉框时保留原生行为 */
+    handleEnterKey(event) {
+      if (event.key !== 'Enter' || event.isComposing || event.shiftKey || event.ctrlKey || event.metaKey || event.altKey) {
+        return
+      }
+      const target = event.target
+      if (target && target.closest && target.closest('button, textarea, a, .el-select, .el-select__popper, .el-dialog')) {
+        return
+      }
+      if (this.activeStep < this.wizardExecuteStepIndex) {
+        event.preventDefault()
+        this.nextStep()
+        return
+      }
+      if (this.canExecuteByEnter) {
+        event.preventDefault()
+        this.handleExecute()
+      }
+    },
     changeLang(lang) {
       this.$i18n.locale = lang
       this.$cache.local.set(I18N_LOCALE_KEY, lang)

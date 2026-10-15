@@ -2,12 +2,14 @@ package com.cat2bug.system.service.oauth;
 
 import com.cat2bug.common.domain.SysOAuthClient;
 import com.cat2bug.common.domain.SysOAuthCode;
+import com.cat2bug.common.domain.SysProject;
 import com.cat2bug.common.domain.SysUserAccessToken;
 import com.cat2bug.common.security.AccessTokens;
 import com.cat2bug.system.mapper.SysOAuthClientMapper;
 import com.cat2bug.system.mapper.SysOAuthCodeMapper;
 import com.cat2bug.system.mapper.SysUserAccessTokenMapper;
 import com.cat2bug.system.service.SysUserAccessTokenService;
+import com.cat2bug.system.service.mcp.McpAccessService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -52,6 +54,9 @@ public class OAuthService {
 
     @Inject
     SysUserAccessTokenService tokenService;
+
+    @Inject
+    McpAccessService mcpAccessService;
 
     public record AuthorizeRequest(String responseType, String clientId, String redirectUri, String codeChallenge,
                                    String codeChallengeMethod, String state, String resource) {
@@ -137,15 +142,24 @@ public class OAuthService {
         return new ValidatedAuthorize(client, redirectUri, request);
     }
 
-    /** 用户同意：签发一次性授权码，返回带 code 与 state 的回调地址 */
-    public String approve(Long userId, AuthorizeRequest request) {
+    /** 确认页可选项目：本人是成员且已开启 MCP */
+    public List<SysProject> selectableProjects(Long userId) {
+        return mcpAccessService.enabledProjectsOf(userId);
+    }
+
+    /** 用户同意：校验所选项目后签发一次性授权码，返回带 code 与 state 的回调地址 */
+    public String approve(Long userId, Long projectId, AuthorizeRequest request) {
         ValidatedAuthorize validated = validate(request);
+        if (!isSelectable(userId, projectId)) {
+            throw OAuthException.notRedirectable("invalid_request", "project is not selectable for MCP");
+        }
         String code = AccessTokens.generate(AccessTokens.OAUTH_CODE_PREFIX);
         Date now = new Date();
         SysOAuthCode row = new SysOAuthCode();
         row.setCodeHash(AccessTokens.sha256Hex(code));
         row.setClientId(validated.client().getClientId());
         row.setUserId(userId);
+        row.setProjectId(projectId);
         row.setRedirectUri(validated.redirectUri());
         row.setCodeChallenge(request.codeChallenge());
         row.setResource(blankToNull(request.resource()));
@@ -156,6 +170,13 @@ public class OAuthService {
         params.put("code", code);
         params.put("state", request.state());
         return appendQuery(validated.redirectUri(), params);
+    }
+
+    boolean isSelectable(Long userId, Long projectId) {
+        if (userId == null || projectId == null) {
+            return false;
+        }
+        return selectableProjects(userId).stream().anyMatch(p -> projectId.equals(p.getProjectId()));
     }
 
     public String deny(AuthorizeRequest request) {
@@ -189,6 +210,9 @@ public class OAuthService {
         if (!Objects.equals(row.getClientId(), clientId)) {
             throw new OAuthException("invalid_grant", "client_id mismatch");
         }
+        if (row.getProjectId() == null) {
+            throw new OAuthException("invalid_grant", "authorization code is not bound to a project");
+        }
         if (redirectUri != null && !redirectUri.isBlank() && !Objects.equals(row.getRedirectUri(), redirectUri)) {
             throw new OAuthException("invalid_grant", "redirect_uri mismatch");
         }
@@ -203,7 +227,7 @@ public class OAuthService {
         SysOAuthClient client = clientMapper.selectById(clientId);
         Date now = new Date();
         clientMapper.touch(clientId, now);
-        return issue(row.getUserId(), client, UUID.randomUUID().toString(), boundResource, now);
+        return issue(row.getUserId(), row.getProjectId(), client, UUID.randomUUID().toString(), boundResource, now);
     }
 
     public TokenResponse refresh(String refreshToken, String clientId, String resource) {
@@ -211,7 +235,7 @@ public class OAuthService {
             throw new OAuthException("invalid_request", "refresh_token and client_id are required");
         }
         SysUserAccessToken row = tokenMapper.selectByHash(AccessTokens.sha256Hex(refreshToken));
-        if (row == null || !SysUserAccessToken.SOURCE_OAUTH_REFRESH.equals(row.getSource())) {
+        if (row == null || !SysUserAccessToken.SOURCE_OAUTH_REFRESH.equals(row.getSource()) || row.getProjectId() == null) {
             throw new OAuthException("invalid_grant", "refresh token is invalid");
         }
         Date now = new Date();
@@ -238,7 +262,7 @@ public class OAuthService {
         }
         SysOAuthClient client = clientMapper.selectById(clientId);
         clientMapper.touch(clientId, now);
-        return issue(row.getUserId(), client, row.getGrantId(), row.getResource(), now);
+        return issue(row.getUserId(), row.getProjectId(), client, row.getGrantId(), row.getResource(), now);
     }
 
     /** RFC 7009：未知令牌也视为成功；刷新令牌吊销整条授权 */
@@ -247,7 +271,7 @@ public class OAuthService {
             return;
         }
         SysUserAccessToken row = tokenMapper.selectByHash(AccessTokens.sha256Hex(token));
-        if (row == null || SysUserAccessToken.SOURCE_MANUAL.equals(row.getSource())) {
+        if (row == null) {
             return;
         }
         Date now = new Date();
@@ -265,11 +289,12 @@ public class OAuthService {
         clientMapper.deleteUnusedBefore(new Date(now.getTime() - REFRESH_TTL_MILLIS), now);
     }
 
-    private TokenResponse issue(Long userId, SysOAuthClient client, String grantId, String resource, Date now) {
+    private TokenResponse issue(Long userId, Long projectId, SysOAuthClient client, String grantId, String resource,
+                                Date now) {
         String name = client == null ? "OAuth" : client.getClientName();
         String clientId = client == null ? null : client.getClientId();
         String access = AccessTokens.generate(AccessTokens.OAUTH_ACCESS_PREFIX);
-        SysUserAccessToken accessRow = tokenService.newRow(userId, name, access, SysUserAccessToken.SOURCE_OAUTH,
+        SysUserAccessToken accessRow = tokenService.newRow(userId, projectId, name, access, SysUserAccessToken.SOURCE_OAUTH,
                 new Date(now.getTime() + ACCESS_TTL_SECONDS * 1000L), now);
         accessRow.setClientId(clientId);
         accessRow.setGrantId(grantId);
@@ -277,7 +302,7 @@ public class OAuthService {
         tokenMapper.insert(accessRow);
 
         String refresh = AccessTokens.generate(AccessTokens.OAUTH_REFRESH_PREFIX);
-        SysUserAccessToken refreshRow = tokenService.newRow(userId, name, refresh,
+        SysUserAccessToken refreshRow = tokenService.newRow(userId, projectId, name, refresh,
                 SysUserAccessToken.SOURCE_OAUTH_REFRESH, new Date(now.getTime() + REFRESH_TTL_MILLIS), now);
         refreshRow.setClientId(clientId);
         refreshRow.setGrantId(grantId);

@@ -20,6 +20,7 @@ final class McpTestClient {
     private final String bearer;
     private final AtomicInteger ids = new AtomicInteger();
     private String sessionId;
+    private JsonNode initializeResult;
 
     McpTestClient(String bearer) {
         this.bearer = bearer;
@@ -32,6 +33,7 @@ final class McpTestClient {
         params.putObject("clientInfo").put("name", clientName).put("version", "1.0");
         Response response = send("initialize", params, true);
         sessionId = response.header("Mcp-Session-Id");
+        initializeResult = parse(response).path("result");
         ObjectNode notify = MAPPER.createObjectNode();
         notify.put("jsonrpc", "2.0");
         notify.put("method", "notifications/initialized");
@@ -41,6 +43,26 @@ final class McpTestClient {
 
     JsonNode listTools() {
         return parse(send("tools/list", MAPPER.createObjectNode(), false)).path("result").path("tools");
+    }
+
+    JsonNode initializeResult() {
+        return initializeResult;
+    }
+
+    JsonNode listPrompts() {
+        return parse(send("prompts/list", MAPPER.createObjectNode(), false)).path("result").path("prompts");
+    }
+
+    /** 返回第一条消息的文本。 */
+    String getPrompt(String name, Map<String, String> arguments) {
+        ObjectNode params = MAPPER.createObjectNode();
+        params.put("name", name);
+        params.set("arguments", MAPPER.valueToTree(arguments));
+        JsonNode root = parse(send("prompts/get", params, false));
+        if (root.has("error")) {
+            throw new AssertionError("JSON-RPC 错误：" + root.get("error"));
+        }
+        return root.path("result").path("messages").path(0).path("content").path("text").asText();
     }
 
     /** 返回 {@code result}；业务失败时 {@code result.isError=true}。 */

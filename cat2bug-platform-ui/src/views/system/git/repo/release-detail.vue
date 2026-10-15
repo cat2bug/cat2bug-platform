@@ -509,8 +509,15 @@ export default {
 
     h1, h2, h3, h4, h5, h6 {
       color: var(--text-color-primary);
-      border-bottom-color: var(--border-color-light);
     }
+
+    h1, h2 {
+      border-bottom: 1px solid var(--divider-color, var(--border-color-light));
+    }
+
+    h1 { font-size: 1.2em; }
+    h2 { font-size: 1.08em; }
+    h3 { font-size: 1.02em; }
 
     a {
       color: var(--el-color-primary, #ffc107);

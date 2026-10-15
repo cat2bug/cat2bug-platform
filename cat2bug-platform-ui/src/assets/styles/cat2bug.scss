@@ -2150,6 +2150,17 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
     /* Safari：-webkit-line-clamp 未设 box-align 时标题会在格内水平居中 */
     -webkit-box-pack: start;
     -webkit-box-align: start;
+
+    /* el-link 的下划线是撑满元素宽度的 ::after，这里链接占满整格，改为只给文字加下划线 */
+    &::after,
+    &:hover::after {
+      display: none !important;
+    }
+
+    &:hover .el-link__inner {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
   }
 }
 

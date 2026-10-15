@@ -21,7 +21,6 @@ import java.util.Objects;
  */
 public class McpDefectTools {
 
-    static final String PROJECT_DESC = "项目：projectId，或「团队标识/项目标识」（见 list_my_projects）";
     static final int MAX_PAGE_SIZE = 100;
 
     public record CommitArg(Long repository_id, String sha, String url, String message) {
@@ -45,9 +44,8 @@ public class McpDefectTools {
     @Tool(name = "search_defects",
             description = "查询项目内的缺陷列表（按创建倒序）。state 取值 PROCESSING(处理中)/AUDIT(待审核)/REJECTED(已驳回)/CLOSED(已关闭)；"
                     + "type 取值 BUG/TASK/DEMAND。assigned_to_me=true 只看当前处理人包含我的缺陷。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Search defects", readOnlyHint = true, openWorldHint = false))
     String searchDefects(McpConnection connection,
-                         @ToolArg(name = "project", description = PROJECT_DESC) String project,
                          @ToolArg(name = "keyword", description = "按缺陷标题模糊匹配", required = false) String keyword,
                          @ToolArg(name = "state", description = "缺陷状态", required = false) String state,
                          @ToolArg(name = "type", description = "缺陷类型", required = false) String type,
@@ -55,7 +53,7 @@ public class McpDefectTools {
                          @ToolArg(name = "assigned_to_me", description = "只看指派给我的", required = false) Boolean assignedToMe,
                          @ToolArg(name = "page", description = "页码，从 1 开始", required = false) Integer page,
                          @ToolArg(name = "page_size", description = "每页条数，默认 20，最大 100", required = false) Integer pageSize) {
-        McpScope scope = context.scope(connection, project, "system:defect:list");
+        McpScope scope = context.scope(connection, "system:defect:list");
         Map<String, Object> q = new LinkedHashMap<>();
         q.put("projectId", scope.projectId());
         q.put("defectName", blankToNull(keyword));
@@ -72,13 +70,12 @@ public class McpDefectTools {
 
     @Tool(name = "get_defect",
             description = "读取单个缺陷的详情与处理记录（含评论、关联提交）。defect_id 与 defect_num（列表里的 #编号）二选一。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Get defect", readOnlyHint = true, openWorldHint = false))
     String getDefect(McpConnection connection,
-                     @ToolArg(name = "project", description = PROJECT_DESC) String project,
                      @ToolArg(name = "defect_id", description = "缺陷 ID", required = false) Long defectId,
                      @ToolArg(name = "defect_num", description = "项目内缺陷编号", required = false) Long defectNum,
                      @ToolArg(name = "log_limit", description = "返回最近多少条处理记录，默认 20，0 表示不要", required = false) Integer logLimit) {
-        McpScope scope = context.scope(connection, project, "system:defect:query");
+        McpScope scope = context.scope(connection, "system:defect:query");
         SysDefect defect = locate(scope, defectId, defectNum);
         JsonNode data = McpJson.data(gateway.get(scope, "/system/defect/" + defect.getDefectId(), null));
         ObjectNode out = json.defectDetail(data == null ? json.valueToTree(defect) : data);
@@ -97,9 +94,8 @@ public class McpDefectTools {
     @Tool(name = "create_defect",
             description = "新建缺陷。handle_by 为处理人用户 ID 列表（可先用 list_project_members 查询）。"
                     + "建议传 idempotency_key，重试时不会重复创建。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Create defect", readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
     String createDefect(McpConnection connection,
-                        @ToolArg(name = "project", description = PROJECT_DESC) String project,
                         @ToolArg(name = "name", description = "缺陷标题") String name,
                         @ToolArg(name = "describe", description = "缺陷描述，支持 Markdown", required = false) String describe,
                         @ToolArg(name = "type", description = "BUG / TASK / DEMAND，默认 BUG", required = false) String type,
@@ -108,7 +104,7 @@ public class McpDefectTools {
                         @ToolArg(name = "module_version", description = "版本号", required = false) String moduleVersion,
                         @ToolArg(name = "handle_by", description = "处理人用户 ID 列表", required = false) List<Long> handleBy,
                         @ToolArg(name = "idempotency_key", description = "幂等键（字母数字 ._:-，≤64）", required = false) String idempotencyKey) {
-        McpScope scope = context.scope(connection, project, "system:defect:add");
+        McpScope scope = context.scope(connection, "system:defect:add");
         if (name == null || name.isBlank()) {
             throw new ToolCallException("缺陷标题不能为空");
         }
@@ -136,9 +132,8 @@ public class McpDefectTools {
 
     @Tool(name = "update_defect",
             description = "修改缺陷的标题、描述、类型、优先级、交付物或版本。只传需要改的字段；状态与处理人请用流转工具修改。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Update defect", readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
     String updateDefect(McpConnection connection,
-                        @ToolArg(name = "project", description = PROJECT_DESC) String project,
                         @ToolArg(name = "defect_id", description = "缺陷 ID") Long defectId,
                         @ToolArg(name = "name", description = "缺陷标题", required = false) String name,
                         @ToolArg(name = "describe", description = "缺陷描述", required = false) String describe,
@@ -146,7 +141,7 @@ public class McpDefectTools {
                         @ToolArg(name = "level", description = "urgent / height / middle / low", required = false) String level,
                         @ToolArg(name = "module_id", description = "交付物（模块）ID", required = false) Long moduleId,
                         @ToolArg(name = "module_version", description = "版本号", required = false) String moduleVersion) {
-        McpScope scope = context.scope(connection, project, "system:defect:edit");
+        McpScope scope = context.scope(connection, "system:defect:edit");
         SysDefect defect = objects.defect(scope, defectId);
         if (moduleId != null) {
             objects.module(scope, moduleId);
@@ -168,14 +163,13 @@ public class McpDefectTools {
 
     @Tool(name = "comment_defect",
             description = "在缺陷的处理记录下发表评论。默认评论最新一条处理记录，也可指定 defect_log_id。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Comment defect", readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
     String commentDefect(McpConnection connection,
-                         @ToolArg(name = "project", description = PROJECT_DESC) String project,
                          @ToolArg(name = "defect_id", description = "缺陷 ID") Long defectId,
                          @ToolArg(name = "content", description = "评论内容") String content,
                          @ToolArg(name = "defect_log_id", description = "评论哪条处理记录", required = false) Long defectLogId,
                          @ToolArg(name = "idempotency_key", description = "幂等键", required = false) String idempotencyKey) {
-        McpScope scope = context.scope(connection, project, "system:comment:add", "system:defect:list");
+        McpScope scope = context.scope(connection, "system:comment:add", "system:defect:list");
         SysDefect defect = objects.defect(scope, defectId);
         if (content == null || content.isBlank()) {
             throw new ToolCallException("评论内容不能为空");
@@ -202,14 +196,13 @@ public class McpDefectTools {
     }
 
     @Tool(name = "assign_defect",
-            description = "把缺陷指派给其他成员。要求你是该缺陷的创建人或当前处理人，且缺陷未关闭。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
+            description = "把缺陷指派给其他成员。要求你是该缺陷的创建人或当前处理人，且缺陷未关闭。流转规则见 get_guide(topic=defect)。",
+            annotations = @Tool.Annotations(title = "Assign defect", readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
     String assignDefect(McpConnection connection,
-                        @ToolArg(name = "project", description = PROJECT_DESC) String project,
                         @ToolArg(name = "defect_id", description = "缺陷 ID") Long defectId,
                         @ToolArg(name = "handle_by", description = "新的处理人用户 ID 列表") List<Long> handleBy,
                         @ToolArg(name = "remark", description = "说明", required = false) String remark) {
-        McpScope scope = context.scope(connection, project, "system:defect:assign");
+        McpScope scope = context.scope(connection, "system:defect:assign");
         SysDefect defect = objects.defect(scope, defectId);
         if (!Objects.equals(defect.getCreateById(), scope.userId()) && !isHandler(defect, scope)) {
             throw new ToolCallException("只有缺陷的创建人或当前处理人才能指派");
@@ -222,19 +215,21 @@ public class McpDefectTools {
 
     @Tool(name = "repair_defect",
             description = "提交修复，缺陷进入待审核。要求你是当前处理人且状态为处理中或已驳回。"
-                    + "review_by 为审核人（默认取最近一条处理记录的操作人）；commits 可关联修复提交："
-                    + "本平台托管仓库传 repository_id + sha（会校验提交存在），外部仓库传 sha + url。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
+                    + "review_by 为审核人（默认取缺陷创建人，即提出 bug 的人）；commits 可关联修复提交："
+                    + "本平台托管仓库传 repository_id + sha（会校验提交存在），外部仓库传 sha + url。流转规则见 get_guide(topic=defect)。",
+            annotations = @Tool.Annotations(title = "Repair defect", readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
     String repairDefect(McpConnection connection,
-                        @ToolArg(name = "project", description = PROJECT_DESC) String project,
                         @ToolArg(name = "defect_id", description = "缺陷 ID") Long defectId,
                         @ToolArg(name = "remark", description = "修复说明", required = false) String remark,
-                        @ToolArg(name = "review_by", description = "审核人用户 ID", required = false) Long reviewBy,
+                        @ToolArg(name = "review_by", description = "审核人用户 ID（默认缺陷创建人）", required = false) Long reviewBy,
                         @ToolArg(name = "commits", description = "关联提交列表", required = false) List<CommitArg> commits) {
-        McpScope scope = context.scope(connection, project, "system:defect:repair");
+        McpScope scope = context.scope(connection, "system:defect:repair");
         SysDefect defect = objects.defect(scope, defectId);
         requireHandler(scope, defect);
-        Long reviewer = reviewBy != null ? reviewBy : latestLogCreator(scope, defect.getDefectId());
+        Long reviewer = reviewBy != null ? reviewBy : defect.getCreateById();
+        if (reviewer == null) {
+            reviewer = latestLogCreator(scope, defect.getDefectId());
+        }
         List<Map<String, Object>> commitBody = new ArrayList<>();
         if (commits != null) {
             for (CommitArg c : commits) {
@@ -256,26 +251,24 @@ public class McpDefectTools {
     }
 
     @Tool(name = "reject_defect",
-            description = "驳回修复，缺陷退回给上一次的处理人。要求你是当前处理人且状态为待审核。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
+            description = "驳回修复，缺陷退回给上一次的处理人。要求你是当前处理人且状态为待审核。流转规则见 get_guide(topic=defect)。",
+            annotations = @Tool.Annotations(title = "Reject defect", readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
     String rejectDefect(McpConnection connection,
-                        @ToolArg(name = "project", description = PROJECT_DESC) String project,
                         @ToolArg(name = "defect_id", description = "缺陷 ID") Long defectId,
                         @ToolArg(name = "remark", description = "驳回原因") String remark) {
-        McpScope scope = context.scope(connection, project, "system:defect:reject");
+        McpScope scope = context.scope(connection, "system:defect:reject");
         SysDefect defect = objects.defect(scope, defectId);
         requireHandler(scope, defect);
         return transition(scope, defect, "reject", null, remark, null);
     }
 
     @Tool(name = "pass_defect",
-            description = "审核通过，缺陷关闭。要求你是当前处理人且状态为待审核。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
+            description = "审核通过，缺陷关闭。要求你是当前处理人且状态为待审核。流转规则见 get_guide(topic=defect)。",
+            annotations = @Tool.Annotations(title = "Pass defect", readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
     String passDefect(McpConnection connection,
-                      @ToolArg(name = "project", description = PROJECT_DESC) String project,
                       @ToolArg(name = "defect_id", description = "缺陷 ID") Long defectId,
                       @ToolArg(name = "remark", description = "说明", required = false) String remark) {
-        McpScope scope = context.scope(connection, project, "system:defect:pass");
+        McpScope scope = context.scope(connection, "system:defect:pass");
         SysDefect defect = objects.defect(scope, defectId);
         requireHandler(scope, defect);
         return transition(scope, defect, "pass", null, remark, null);
@@ -283,25 +276,23 @@ public class McpDefectTools {
 
     @Tool(name = "close_defect",
             description = "直接关闭缺陷（不经审核）。状态须为处理中、待审核或已驳回。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = true, idempotentHint = false, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Close defect", readOnlyHint = false, destructiveHint = true, idempotentHint = false, openWorldHint = false))
     String closeDefect(McpConnection connection,
-                       @ToolArg(name = "project", description = PROJECT_DESC) String project,
                        @ToolArg(name = "defect_id", description = "缺陷 ID") Long defectId,
                        @ToolArg(name = "remark", description = "关闭原因") String remark) {
-        McpScope scope = context.scope(connection, project, "system:defect:close");
+        McpScope scope = context.scope(connection, "system:defect:close");
         SysDefect defect = objects.defect(scope, defectId);
         return transition(scope, defect, "close", null, remark, null);
     }
 
     @Tool(name = "open_defect",
             description = "重新开启已关闭的缺陷，并指定处理人。",
-            annotations = @Tool.Annotations(readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "Open defect", readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
     String openDefect(McpConnection connection,
-                      @ToolArg(name = "project", description = PROJECT_DESC) String project,
                       @ToolArg(name = "defect_id", description = "缺陷 ID") Long defectId,
                       @ToolArg(name = "handle_by", description = "处理人用户 ID 列表") List<Long> handleBy,
                       @ToolArg(name = "remark", description = "重新开启的原因") String remark) {
-        McpScope scope = context.scope(connection, project, "system:defect:open");
+        McpScope scope = context.scope(connection, "system:defect:open");
         SysDefect defect = objects.defect(scope, defectId);
         if (handleBy == null || handleBy.isEmpty()) {
             throw new ToolCallException("handle_by 不能为空");
@@ -311,11 +302,10 @@ public class McpDefectTools {
 
     @Tool(name = "list_project_members",
             description = "列出项目成员（用户 ID、账号、昵称），用于选择处理人或审核人。",
-            annotations = @Tool.Annotations(readOnlyHint = true, openWorldHint = false))
+            annotations = @Tool.Annotations(title = "List project members", readOnlyHint = true, openWorldHint = false))
     String listProjectMembers(McpConnection connection,
-                              @ToolArg(name = "project", description = PROJECT_DESC) String project,
                               @ToolArg(name = "keyword", description = "按账号或昵称过滤", required = false) String keyword) {
-        McpScope scope = context.scope(connection, project, "system:project:list", "system:project:member");
+        McpScope scope = context.scope(connection, "system:project:list", "system:project:member");
         Map<String, Object> q = new LinkedHashMap<>();
         q.put("pageNum", 1);
         q.put("pageSize", 500);

@@ -1,4 +1,46 @@
 @import './markdown-it-vue.css';
+
+/* 覆盖 github markdown-it-vue：正文内标题勿过大；h1/h2 下划线用分割线 token（禁 #eaecef） */
+.markdown-body h1,
+.markdown-it-vue h1 {
+  font-size: 1.25em;
+  margin-top: 1.25em;
+  margin-bottom: 0.6em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--divider-color, var(--border-color-light, #eaecef));
+  color: var(--text-color-primary, #24292e);
+}
+
+.markdown-body h2,
+.markdown-it-vue h2 {
+  font-size: 1.1em;
+  margin-top: 1.15em;
+  margin-bottom: 0.5em;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--divider-color, var(--border-color-light, #eaecef));
+  color: var(--text-color-primary, #24292e);
+}
+
+.markdown-body h3,
+.markdown-it-vue h3 {
+  font-size: 1.05em;
+  margin-top: 1em;
+  margin-bottom: 0.45em;
+  color: var(--text-color-primary, #24292e);
+}
+
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6,
+.markdown-it-vue h4,
+.markdown-it-vue h5,
+.markdown-it-vue h6 {
+  font-size: 1em;
+  margin-top: 0.9em;
+  margin-bottom: 0.4em;
+  color: var(--text-color-primary, #24292e);
+}
+
 @import './variables.scss';
 @import './multipane-resizer-dragging.scss';
 @import './mixin.scss';

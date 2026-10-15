@@ -20,8 +20,8 @@ class AccessTokenUnitTest {
     void generatedTokensHavePrefixLengthAndAreUnique() {
         Set<String> seen = new HashSet<>();
         for (int i = 0; i < 200; i++) {
-            String token = AccessTokens.generate(AccessTokens.PERSONAL_PREFIX);
-            assertTrue(token.startsWith("c2b_pat_"));
+            String token = AccessTokens.generate(AccessTokens.OAUTH_ACCESS_PREFIX);
+            assertTrue(token.startsWith("c2b_oat_"));
             assertEquals(8 + 43, token.length());
             assertTrue(token.substring(8).matches("[0-9A-Za-z]{43}"));
             assertTrue(seen.add(token));
@@ -34,7 +34,7 @@ class AccessTokenUnitTest {
         String token = AccessTokens.generate(AccessTokens.OAUTH_ACCESS_PREFIX);
         assertEquals(token.substring(0, 12), AccessTokens.displayPrefix(token));
         assertTrue(AccessTokens.looksLikeAccessToken(token));
-        assertTrue(AccessTokens.looksLikeAccessToken(AccessTokens.generate(AccessTokens.PERSONAL_PREFIX)));
+        assertFalse(AccessTokens.looksLikeAccessToken("c2b_pat_" + "a".repeat(43)));
         assertFalse(AccessTokens.looksLikeAccessToken(AccessTokens.generate(AccessTokens.OAUTH_REFRESH_PREFIX)));
         assertFalse(AccessTokens.looksLikeAccessToken("eyJhbGciOiJIUzUxMiJ9.x.y"));
     }

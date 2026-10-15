@@ -11,6 +11,7 @@ import jakarta.ws.rs.ext.Provider;
 import jakarta.annotation.Priority;
 
 import com.cat2bug.framework.security.git.GitSmartHttpPathSupport;
+import io.quarkus.runtime.LaunchMode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,14 +86,23 @@ public class EmbeddedSpaFallbackFilter implements ContainerRequestFilter {
 
     @PostConstruct
     void init() {
+        indexHtmlBytes = loadIndexHtml();
+        embeddedSpaAvailable = indexHtmlBytes != null && indexHtmlBytes.length > 0;
+    }
+
+    /** 开发模式下前端会被单独重新构建（build:embedded），每次读取以免返回启动时的旧 index.html */
+    private byte[] currentIndexHtml() {
+        if (LaunchMode.current() != LaunchMode.DEVELOPMENT) {
+            return indexHtmlBytes;
+        }
+        byte[] latest = loadIndexHtml();
+        return latest != null && latest.length > 0 ? latest : indexHtmlBytes;
+    }
+
+    private static byte[] loadIndexHtml() {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (InputStream inputStream = loader.getResourceAsStream(INDEX_HTML_LOCATION)) {
-            if (inputStream == null) {
-                embeddedSpaAvailable = false;
-                return;
-            }
-            indexHtmlBytes = inputStream.readAllBytes();
-            embeddedSpaAvailable = indexHtmlBytes.length > 0;
+            return inputStream == null ? null : inputStream.readAllBytes();
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to load " + INDEX_HTML_LOCATION, e);
         }
@@ -110,7 +120,7 @@ public class EmbeddedSpaFallbackFilter implements ContainerRequestFilter {
         if (!shouldServeSpa(ctx, path)) {
             return;
         }
-        Response.ResponseBuilder response = Response.ok(indexHtmlBytes)
+        Response.ResponseBuilder response = Response.ok(currentIndexHtml())
                 .type(MediaType.TEXT_HTML_TYPE.withCharset(StandardCharsets.UTF_8.name()));
         if (OAUTH_CONSENT_PATH.equals(path)) {
             // 授权确认页禁止被嵌入，防止点击劫持骗取「允许」

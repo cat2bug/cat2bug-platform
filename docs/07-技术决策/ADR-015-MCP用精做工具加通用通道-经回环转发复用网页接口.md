@@ -46,5 +46,6 @@
 
 - 新增或修改项目内接口时：若引入新的对象 ID 参数，要在 `McpOperationCatalog.OWNED_PARAMS` / `McpObjects` 补归属校验；若接口从 `sys_user_config` 读当前项目，要加入排除清单。
 - 回环地址默认 `127.0.0.1:{quarkus.http.port}`，只监听特定地址或端口特殊的部署要配置 `cat2bug.mcp.loopback-url`。
+- 同步回环与嵌套 REST 共用工作线程池，必须限制在途回环并发（`cat2bug.mcp.loopback.max-in-flight` / 默认按线程池 1/3），否则并行工具会自死锁；见 [[MCP回环占满工作线程导致Quarkus假死]]。
 - Native 需要为 `com.cat2bug.admin.resource.` 注册反射，操作目录才能读取注解。
 - 实现见 [[MCP接入与权限]]。
