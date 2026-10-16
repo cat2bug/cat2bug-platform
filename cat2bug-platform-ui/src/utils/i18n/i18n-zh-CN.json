@@ -2108,6 +2108,7 @@
   "oauth.invalid-request": "授权请求无效",
   "oauth.title": "「{client}」请求访问你的 Cat2Bug 账号",
   "oauth.account": "当前账号",
+  "oauth.switch-account": "切换账号",
   "oauth.redirect-host": "回调地址",
   "oauth.local-app": "本机应用",
   "oauth.scope-mcp": "通过 MCP 以你的身份读取和操作项目数据",

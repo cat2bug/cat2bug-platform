@@ -2032,6 +2032,7 @@
   "oauth.invalid-request": "잘못된 권한 요청",
   "oauth.title": "\"{client}\"이(가) Cat2Bug 계정 접근을 요청합니다",
   "oauth.account": "계정",
+  "oauth.switch-account": "계정 전환",
   "oauth.redirect-host": "리디렉션 주소",
   "oauth.local-app": "로컬 앱",
   "oauth.scope-mcp": "MCP를 통해 본인으로 프로젝트 데이터 조회 및 작업",

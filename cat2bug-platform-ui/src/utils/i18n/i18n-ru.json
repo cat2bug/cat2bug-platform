@@ -2032,6 +2032,7 @@
   "oauth.invalid-request": "Недействительный запрос авторизации",
   "oauth.title": "«{client}» запрашивает доступ к вашей учётной записи Cat2Bug",
   "oauth.account": "Учётная запись",
+  "oauth.switch-account": "Сменить аккаунт",
   "oauth.redirect-host": "Адрес возврата",
   "oauth.local-app": "локальное приложение",
   "oauth.scope-mcp": "Читать и изменять данные проектов от вашего имени через MCP",

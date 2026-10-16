@@ -2034,6 +2034,7 @@
   "oauth.invalid-request": "授權請求無效",
   "oauth.title": "「{client}」請求存取你的 Cat2Bug 帳號",
   "oauth.account": "目前帳號",
+  "oauth.switch-account": "切換帳號",
   "oauth.redirect-host": "回呼位址",
   "oauth.local-app": "本機應用程式",
   "oauth.scope-mcp": "透過 MCP 以你的身分讀取和操作專案資料",

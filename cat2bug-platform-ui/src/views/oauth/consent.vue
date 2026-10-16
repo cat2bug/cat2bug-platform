@@ -19,7 +19,12 @@
           <dl class="oauth-consent-details">
             <div class="oauth-consent-row">
               <dt>{{ $t('oauth.account') }}</dt>
-              <dd>{{ userName }}</dd>
+              <dd class="oauth-consent-account">
+                <span>{{ userName }}</span>
+                <button type="button" class="oauth-consent-switch" :disabled="switching" @click="switchAccount">
+                  {{ $t('oauth.switch-account') }}
+                </button>
+              </dd>
             </div>
             <div class="oauth-consent-row">
               <dt>{{ $t('oauth.redirect-host') }}</dt>
@@ -89,6 +94,7 @@ export default {
     return {
       loading: true,
       submitting: false,
+      switching: false,
       loadError: '',
       client: null,
       teams: [],
@@ -137,6 +143,18 @@ export default {
       }
       const current = Number(useUserStore().config?.currentProjectId)
       if (projects.some(p => p.projectId === current)) this.projectId = current
+    },
+    switchAccount() {
+      if (this.switching) return
+      this.switching = true
+      const redirect = this.$route.fullPath
+      const store = useUserStore()
+      const goLogin = () => {
+        this.$router.replace({ path: '/login', query: { redirect } })
+      }
+      store.LogOut().catch(() => {
+        store.FedLogOut()
+      }).then(goLogin)
     },
     decide(approve) {
       this.submitting = true
@@ -266,6 +284,28 @@ html.dark .oauth-consent-page {
     margin: 0;
     color: var(--consent-text-primary);
     word-break: break-all;
+  }
+}
+
+.oauth-consent-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.oauth-consent-switch {
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--consent-accent);
+  font-size: 13px;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
   }
 }
 

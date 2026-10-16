@@ -2032,6 +2032,7 @@
   "oauth.invalid-request": "無効な認可リクエスト",
   "oauth.title": "「{client}」があなたの Cat2Bug アカウントへのアクセスを求めています",
   "oauth.account": "アカウント",
+  "oauth.switch-account": "アカウントを切り替え",
   "oauth.redirect-host": "リダイレクト先",
   "oauth.local-app": "ローカルアプリ",
   "oauth.scope-mcp": "MCP 経由であなたとしてプロジェクトデータを閲覧・操作",

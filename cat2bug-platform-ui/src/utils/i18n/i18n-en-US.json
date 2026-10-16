@@ -2108,6 +2108,7 @@
   "oauth.invalid-request": "Invalid authorization request",
   "oauth.title": "\"{client}\" wants to access your Cat2Bug account",
   "oauth.account": "Account",
+  "oauth.switch-account": "Switch account",
   "oauth.redirect-host": "Redirects to",
   "oauth.local-app": "local app",
   "oauth.scope-mcp": "Read and act on project data as you via MCP",

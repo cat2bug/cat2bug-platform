@@ -2032,6 +2032,7 @@
   "oauth.invalid-request": "طلب تفويض غير صالح",
   "oauth.title": "\"{client}\" يطلب الوصول إلى حسابك في Cat2Bug",
   "oauth.account": "الحساب",
+  "oauth.switch-account": "تبديل الحساب",
   "oauth.redirect-host": "عنوان إعادة التوجيه",
   "oauth.local-app": "تطبيق محلي",
   "oauth.scope-mcp": "قراءة بيانات المشاريع والتعامل معها باسمك عبر MCP",
