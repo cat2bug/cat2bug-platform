@@ -51,12 +51,70 @@
     </sql>
 
     <sql id="selectSysDefectWhere">
-        WHERE d.del_flag = '0'
+        WHERE 1 = 1
+        <choose>
+            <when test="defect != null and defect.params != null and (defect.params.delFlag == '2' or defect.params.delFlag == 2)">
+                AND d.del_flag = '2'
+            </when>
+            <otherwise>
+                AND d.del_flag = '0'
+            </otherwise>
+        </choose>
         <if test="defect != null and defect.projectId != null">
             AND d.project_id = #{defect.projectId}
         </if>
-        <if test="defect != null and defect.defectName != null and defect.defectName != ''">
-            AND d.defect_name LIKE CONCAT('%', #{defect.defectName}, '%')
+        <choose>
+            <when test="defect != null and defect.nameVersionKeyword != null and defect.nameVersionKeyword != ''">
+                AND (
+                    d.defect_name LIKE CONCAT('%', #{defect.nameVersionKeyword}, '%')
+                    OR CONCAT(d.project_num, '') LIKE CONCAT('%', #{defect.nameVersionKeyword}, '%')
+                    OR d.module_version LIKE CONCAT('%', #{defect.nameVersionKeyword}, '%')
+                    OR m.module_name LIKE CONCAT('%', #{defect.nameVersionKeyword}, '%')
+                    OR d.defect_describe LIKE CONCAT('%', #{defect.nameVersionKeyword}, '%')
+                )
+            </when>
+            <when test="defect != null and defect.params != null and defect.params.nameVersionKeyword != null and defect.params.nameVersionKeyword != ''">
+                AND (
+                    d.defect_name LIKE CONCAT('%', #{defect.params.nameVersionKeyword}, '%')
+                    OR CONCAT(d.project_num, '') LIKE CONCAT('%', #{defect.params.nameVersionKeyword}, '%')
+                    OR d.module_version LIKE CONCAT('%', #{defect.params.nameVersionKeyword}, '%')
+                    OR m.module_name LIKE CONCAT('%', #{defect.params.nameVersionKeyword}, '%')
+                    OR d.defect_describe LIKE CONCAT('%', #{defect.params.nameVersionKeyword}, '%')
+                )
+            </when>
+            <otherwise>
+                <if test="defect != null and defect.defectName != null and defect.defectName != ''">
+                    AND d.defect_name LIKE CONCAT('%', #{defect.defectName}, '%')
+                </if>
+                <if test="defect != null and defect.moduleVersion != null and defect.moduleVersion != ''">
+                    AND d.module_version LIKE CONCAT('%', #{defect.moduleVersion}, '%')
+                </if>
+            </otherwise>
+        </choose>
+        <if test="defect != null and defect.testPlanId != null">
+            AND d.test_plan_id = #{defect.testPlanId}
+        </if>
+        <if test="defect != null and defect.caseId != null">
+            AND d.case_id = #{defect.caseId}
+        </if>
+        <choose>
+            <when test="defect != null and defect.moduleId == 0">AND d.module_id IS NULL</when>
+            <when test="defect != null and defect.moduleId != null and defect.moduleId &gt; 0">AND d.module_id = #{defect.moduleId}</when>
+        </choose>
+        <if test="defect != null and defect.createBy != null and defect.createBy != ''">
+            AND d.create_by = #{defect.createBy}
+        </if>
+        <if test="defect != null and defect.updateBy != null and defect.updateBy != ''">
+            AND d.update_by = #{defect.updateBy}
+        </if>
+        <if test="defect != null and defect.params != null and defect.params.beginUpdateTime != null and defect.params.beginUpdateTime != '' and defect.params.endUpdateTime != null and defect.params.endUpdateTime != ''">
+            AND d.update_time BETWEEN #{defect.params.beginUpdateTime} AND #{defect.params.endUpdateTime}
+        </if>
+        <if test="defect != null and defect.params != null and defect.params.beginCreateTime != null and defect.params.beginCreateTime != '' and defect.params.endCreateTime != null and defect.params.endCreateTime != ''">
+            AND d.create_time BETWEEN #{defect.params.beginCreateTime} AND #{defect.params.endCreateTime}
+        </if>
+        <if test="defect != null and defect.params != null and defect.params.beginHandleTime != null and defect.params.beginHandleTime != '' and defect.params.endHandleTime != null and defect.params.endHandleTime != ''">
+            AND d.handle_time BETWEEN #{defect.params.beginHandleTime} AND #{defect.params.endHandleTime}
         </if>
         <if test="defect != null and defect.defectState != null">
             AND d.defect_state = #{defect.defectState}
@@ -68,15 +126,54 @@
         <if test="defect != null and defect.defectType != null">
             AND d.defect_type = #{defect.defectType}
         </if>
-        <if test="defect != null and defect.moduleId != null">
-            AND d.module_id = #{defect.moduleId}
-        </if>
         <if test="defect != null and defect.params != null and defect.params.projectNum != null">
             AND d.project_num = #{defect.params.projectNum}
         </if>
+        <if test="defect != null and defect.handleBy != null and defect.handleBy.size() &gt; 0">
+            AND (
+            <foreach collection="defect.handleBy" item="handlerId" separator=" OR ">
+                CONCAT(',', REPLACE(REPLACE(REPLACE(IFNULL(d.handle_by, ''), '[', ''), ']', ''), ' ', ''), ',')
+                LIKE CONCAT('%,', #{handlerId}, ',%')
+            </foreach>
+            )
+        </if>
+        <if test="defect != null and defect.params != null and defect.params.createByIds != null and defect.params.createByIds.size() &gt; 0">
+            AND d.create_by_id IN
+            <foreach collection="defect.params.createByIds" item="creatorId" open="(" separator="," close=")">#{creatorId}</foreach>
+        </if>
         <if test="defect != null and defect.params != null and defect.params.handleById != null">
-            AND CONCAT(',', REPLACE(REPLACE(REPLACE(d.handle_by, '[', ''), ']', ''), ' ', ''), ',')
+            AND CONCAT(',', REPLACE(REPLACE(REPLACE(IFNULL(d.handle_by, ''), '[', ''), ']', ''), ' ', ''), ',')
                 LIKE CONCAT('%,', #{defect.params.handleById}, ',%')
+        </if>
+        <if test="defect != null and defect.params != null and defect.params.userId != null">
+            AND (
+                CONCAT(',', REPLACE(REPLACE(REPLACE(IFNULL(d.handle_by, ''), '[', ''), ']', ''), ' ', ''), ',')
+                    LIKE CONCAT('%,', #{defect.params.userId}, ',%')
+                OR d.create_by_id = #{defect.params.userId}
+                OR d.update_by_id = #{defect.params.userId}
+            )
+        </if>
+        <if test="defect != null and defect.params != null and defect.params.defectIds != null and defect.params.defectIds != ''">
+            AND d.defect_id IN
+            <foreach collection="defect.params.defectIds.split(',')" item="defectId" open="(" separator="," close=")">#{defectId}</foreach>
+        </if>
+        <if test="defect != null and defect.params != null and defect.params.calendarStartDate != null and defect.params.calendarStartDate != '' and defect.params.calendarEndDate != null and defect.params.calendarEndDate != ''">
+            AND (
+                d.plan_start_time BETWEEN #{defect.params.calendarStartDate} AND #{defect.params.calendarEndDate}
+                OR d.plan_end_time BETWEEN #{defect.params.calendarStartDate} AND #{defect.params.calendarEndDate}
+                OR d.update_time BETWEEN #{defect.params.calendarStartDate} AND #{defect.params.calendarEndDate}
+            )
+        </if>
+        <if test="defect != null and defect.params != null and defect.params.search != null and defect.params.search != ''">
+            AND (
+                d.defect_name LIKE CONCAT('%', #{defect.params.search}, '%')
+                OR CONCAT(d.project_num, '') LIKE CONCAT('%', #{defect.params.search}, '%')
+                OR m.module_name LIKE CONCAT('%', #{defect.params.search}, '%')
+                OR d.defect_describe LIKE CONCAT('%', #{defect.params.search}, '%')
+            )
+        </if>
+        <if test="defect != null and defect.defectLevel != null and defect.defectLevel != ''">
+            AND d.defect_level = #{defect.defectLevel}
         </if>
     </sql>
 

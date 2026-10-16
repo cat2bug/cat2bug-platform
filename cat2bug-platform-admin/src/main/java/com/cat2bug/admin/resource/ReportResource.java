@@ -26,9 +26,11 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import org.jboss.resteasy.reactive.RestForm;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Path("/system/report")
 @Produces(MediaType.APPLICATION_JSON)
@@ -65,12 +67,17 @@ public class ReportResource {
                               @QueryParam("reportDataCoder") String reportDataCoder,
                               @QueryParam("createById") Long createById,
                               @QueryParam("pageNum") Integer pageNum,
-                              @QueryParam("pageSize") Integer pageSize) {
+                              @QueryParam("pageSize") Integer pageSize,
+                              @Context UriInfo uriInfo) {
         SysReport query = new SysReport();
         query.setProjectId(projectId);
         query.setReportTitle(reportTitle);
         query.setReportDataCoder(reportDataCoder);
         query.setCreateById(createById);
+        List<Long> createByIds = DefectListQuery.indexedLongs(uriInfo.getQueryParameters(), "createByIds");
+        if (!createByIds.isEmpty()) {
+            query.setCreateByIds(createByIds);
+        }
         TableDataInfo table = sysReportService.selectReportPage(query, pageNum, pageSize);
         enrichReportFocusList(table);
         return table;

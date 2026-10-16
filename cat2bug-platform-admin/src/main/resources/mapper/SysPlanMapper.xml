@@ -447,11 +447,9 @@
             <if test="defect != null and defect.createBy != null and defect.createBy != ''">AND d.create_by = #{defect.createBy}</if>
             <if test="defect != null and defect.updateBy != null and defect.updateBy != ''">AND d.update_by = #{defect.updateBy}</if>
             <if test="defect != null and defect.defectState != null">AND d.defect_state = #{defect.defectState}</if>
-            <if test="defect != null and defect.params != null and defect.params.defectStates != null and defect.params.defectStates != ''">
-                AND
-                <foreach collection="defect.params.defectStates.split(',')" item="state" separator=" OR " open="(" close=")">
-                    d.defect_state = #{state}
-                </foreach>
+            <if test="defect != null and defect.params != null and defect.params.defectStates != null">
+                AND d.defect_state IN
+                <foreach collection="defect.params.defectStates" item="state" open="(" separator="," close=")">#{state}</foreach>
             </if>
             <if test="defect != null and defect.handleBy != null and defect.handleBy.size() > 0">
                 AND

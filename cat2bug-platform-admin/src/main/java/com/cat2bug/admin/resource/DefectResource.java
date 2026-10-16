@@ -36,6 +36,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriInfo;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 import org.jboss.resteasy.reactive.RestForm;
 
@@ -43,7 +44,6 @@ import jakarta.ws.rs.DefaultValue;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -99,35 +99,11 @@ public class DefectResource {
     @GET
     @Path("/list")
     @RequiresPermissions("system:defect:list")
-    public TableDataInfo list(@QueryParam("projectId") Long projectId,
-                              @QueryParam("defectName") String defectName,
-                              @QueryParam("defectState") String defectState,
-                              @QueryParam("defectType") String defectType,
-                              @QueryParam("params[defectStates]") String defectStates,
-                              @QueryParam("moduleId") Long moduleId,
-                              @QueryParam("handleById") Long handleById,
-                              @QueryParam("projectNum") Long projectNum,
-                              @QueryParam("pageNum") Integer pageNum,
-                              @QueryParam("pageSize") Integer pageSize) {
-        SysDefect query = new SysDefect();
-        query.setProjectId(projectId);
-        query.setDefectName(defectName);
-        query.setDefectState(enumParam(DefectConstants::parseState, defectState));
-        query.setDefectType(enumParam(DefectConstants::parseType, defectType));
-        query.setModuleId(moduleId);
-        java.util.Map<String, Object> params = new java.util.HashMap<>();
-        if (handleById != null) {
-            params.put("handleById", handleById);
-        }
-        if (projectNum != null) {
-            params.put("projectNum", projectNum);
-        }
-        List<Integer> states = parseStates(defectStates);
-        if (!states.isEmpty()) {
-            params.put("defectStates", states);
-        }
-        query.setParams(params);
-        TableDataInfo table = sysDefectService.selectDefectPage(query, pageNum, pageSize);
+    public TableDataInfo list(@Context UriInfo uriInfo) {
+        TableDataInfo table = sysDefectService.selectDefectPage(
+                DefectListQuery.bind(uriInfo.getQueryParameters()),
+                DefectListQuery.pageNum(uriInfo.getQueryParameters()),
+                DefectListQuery.pageSize(uriInfo.getQueryParameters()));
         enrichDefectFocusList(table);
         return table;
     }
@@ -386,20 +362,6 @@ public class DefectResource {
         } catch (IllegalArgumentException e) {
             throw new ApiException(400, e.getMessage());
         }
-    }
-
-    private static List<Integer> parseStates(String value) {
-        List<Integer> states = new ArrayList<>();
-        if (StringUtils.isEmpty(value)) {
-            return states;
-        }
-        for (String part : value.split(",")) {
-            Integer state = enumParam(DefectConstants::parseState, part);
-            if (state != null && !states.contains(state)) {
-                states.add(state);
-            }
-        }
-        return states;
     }
 
     private Map<String, Object> buildExportParams(String exportScope, String exportColumns) {
