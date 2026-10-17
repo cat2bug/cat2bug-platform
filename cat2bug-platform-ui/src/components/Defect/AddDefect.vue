@@ -572,9 +572,9 @@ export default {
     font-size: 10px;
     font-weight: 600;
     line-height: 1;
-    color: #ffd54f;
+    color: var(--cat2bug-accent, #69b1ff);
     background: #2b2b2b;
-    border: 1px solid #5a5a5a;
+    border: 1px solid rgba(105, 177, 255, 0.45);
     border-radius: 3px;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
     user-select: none;

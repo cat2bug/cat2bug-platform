@@ -203,7 +203,7 @@ export default {
 
             &:hover,
             &:focus {
-              color: #ffc107;
+              color: var(--cat2bug-accent, #69b1ff);
             }
           }
         }

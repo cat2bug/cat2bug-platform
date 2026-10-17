@@ -198,7 +198,7 @@ html.dark .oauth-consent-page {
   --consent-card-bg: #1f2023;
   --consent-card-shadow: rgba(0, 0, 0, 0.4);
   --consent-card-border: #2a2a2c;
-  --consent-accent: #ffc107;
+  --consent-accent: #69b1ff;
   --consent-text-primary: #ffffff;
   --consent-text-secondary: #9ca3af;
   --consent-details-bg: #141416;

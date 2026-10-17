@@ -1601,13 +1601,13 @@ export default {
   }
   :deep(button){
     color: #ffffff;
-    background: #409eff;
-    border-color: #409eff;
+    background: var(--el-color-primary, #1890ff);
+    border-color: var(--el-color-primary, #1890ff);
   }
   :deep(button:hover),
   :deep(button:focus){
-    background: #66b1ff;
-    border-color: #66b1ff;
+    background: var(--el-color-primary-light-3, #4ea8ff);
+    border-color: var(--el-color-primary-light-3, #4ea8ff);
     color: #ffffff;
   }
   :deep(.el-dropdown__caret-button::before){
@@ -1620,15 +1620,15 @@ export default {
 
   @at-root html.dark & {
     :deep(button){
-      color: #141414 !important;
-      background: #ffc107 !important;
-      border-color: #ffc107 !important;
+      color: #ffffff !important;
+      background: var(--el-color-primary, #1890ff) !important;
+      border-color: var(--el-color-primary, #1890ff) !important;
     }
     :deep(button:hover),
     :deep(button:focus){
-      color: #141414 !important;
-      background: #ffd54f !important;
-      border-color: #ffd54f !important;
+      color: #ffffff !important;
+      background: var(--el-color-primary-light-3, #4ea8ff) !important;
+      border-color: var(--el-color-primary-light-3, #4ea8ff) !important;
     }
   }
 }

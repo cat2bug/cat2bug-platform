@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>unify-admin-ui 审查稿</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", sans-serif; background: #e8ecf2; color: #303133; line-height: 1.5; }
+    body.dark-chrome { background: #0f1012; color: #e5eaf3; }
+    a { color: inherit; text-decoration: none; }
+    header.bar {
+      position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      padding: 12px 24px; background: #fff; border-bottom: 1px solid #e4e7ed;
+    }
+    body.dark-chrome header.bar { background: #1e1e20; border-color: #363637; color: #e5eaf3; }
+    button.toggle { height: 32px; padding: 0 12px; border-radius: 4px; border: 1px solid #dcdfe6; background: #fff; cursor: pointer; }
+    body.dark-chrome button.toggle { background: #252529; border-color: #4c4d4f; color: #e5eaf3; }
+    button.toggle.on { background: #1890ff; color: #fff; border-color: #1890ff; }
+    .warn { margin-left: auto; font-size: 12px; color: #69b1ff; }
+    body.mode-now .warn { color: #e6a23c; }
+    .wrap { max-width: 1360px; margin: 0 auto; padding: 16px 24px 72px; }
+    .intro { margin: 0 0 16px; padding: 12px 14px; border-radius: 8px; background: #fff; border: 1px solid #e4e7ed; font-size: 13px; color: #606266; }
+    body.dark-chrome .intro { background: #1e1e20; border-color: #363637; color: #a8abb2; }
+    h2 { margin: 28px 0 8px; font-size: 18px; }
+    h2 span { margin-left: 8px; font-size: 12px; font-weight: 500; color: #909399; }
+    .desc { margin: 0 0 10px; font-size: 13px; color: #606266; }
+    body.dark-chrome .desc { color: #a8abb2; }
+    .board { border: 1px solid var(--frame-line); border-radius: 10px; overflow: hidden; background: var(--page-bg); box-shadow: 0 8px 28px rgba(0,0,0,.06); }
+    /* 单色图标必须用 mask+currentColor；禁止 <img> 黑底 SVG（暗色会看不见） */
+    .ico {
+      width: 1em; height: 1em; display: inline-block; flex-shrink: 0; vertical-align: -0.15em;
+      background: currentColor;
+      mask: var(--i) center / contain no-repeat;
+      -webkit-mask: var(--i) center / contain no-repeat;
+    }
+    .ico[data-i="bug"] { --i: url("icons/bug.svg"); }
+    .ico[data-i="mk-bug"] { --i: url("icons/mk-bug.svg"); }
+    .ico[data-i="peoples"] { --i: url("icons/peoples.svg"); }
+    .ico[data-i="chart"] { --i: url("icons/chart.svg"); }
+    .ico[data-i="dashboard"] { --i: url("icons/dashboard.svg"); }
+    .ico[data-i="case"] { --i: url("icons/case.svg"); }
+    .ico[data-i="all"] { --i: url("icons/all.svg"); }
+    .ico[data-i="list2"] { --i: url("icons/list2.svg"); }
+    .ico[data-i="documentation"] { --i: url("icons/documentation.svg"); }
+    .ico[data-i="delete"] { --i: url("icons/delete.svg"); }
+    .ico[data-i="add-tab"] { --i: url("icons/add-tab.svg"); }
+    .ico[data-i="view-statistic"] { --i: url("icons/view-statistic.svg"); }
+    .ico[data-i="table"] { --i: url("icons/table.svg"); }
+    .ico[data-i="excel2"] { --i: url("icons/excel2.svg"); }
+    .ico[data-i="sun"] { --i: url("icons/sun.svg"); }
+    .ico[data-i="moon"] { --i: url("icons/moon.svg"); }
+    .ico[data-i="website"] { --i: url("icons/website.svg"); }
+    .ico[data-i="github"] { --i: url("icons/github.svg"); }
+    .ico[data-i="notice"] { --i: url("icons/notice.svg"); }
+    .ico[data-i="user"] { --i: url("icons/user.svg"); }
+    .ico[data-i="password"] { --i: url("icons/password.svg"); }
+    .ico[data-i="international"] { --i: url("icons/international.svg"); }
+    .ico[data-i="login_button"] { --i: url("icons/login_button.svg"); }
+    .ico[data-i="finish"] { --i: url("icons/finish.svg"); }
+    .ico[data-i="search"] { --i: url("icons/search.svg"); }
+    .ico[data-i="fold"] { --i: url("icons/fold.svg"); }
+    .ico[data-i="plus"] { --i: url("icons/plus.svg"); }
+    .ico[data-i="arrow-down"] { --i: url("icons/arrow-down.svg"); }
+    /* 旗帜等多色图仍用 img */
+    .ico-img { width: 1em; height: 1em; display: inline-block; vertical-align: -0.15em; object-fit: contain; }
+
+    /* 登录 */
+    .login-page {
+      display: flex; align-items: center; justify-content: center; gap: 56px;
+      min-height: 760px; padding: 40px 48px 56px; background: var(--login-bg); color: var(--login-text-primary); position: relative;
+    }
+    .hero { flex: 1.1; max-width: 520px; }
+    .welcome { margin: 0 0 4px; font-size: 30px; font-weight: 500; color: var(--login-text-secondary); }
+    .brand { margin: 0 0 8px; font-size: 52px; font-weight: 700; letter-spacing: -.5px; white-space: nowrap; }
+    .brand-cat2 { color: var(--login-text-primary); }
+    .brand-bug { color: var(--login-accent); }
+    .brand-platform { color: var(--login-text-muted); }
+    .accent-line { width: 72px; height: 5px; border-radius: 3px; background: var(--login-accent); margin: 0 0 16px; }
+    .hero-title { margin: 0 0 10px; font-size: 20px; font-weight: 700; }
+    .hero-desc { margin: 0 0 10px; font-size: 14px; color: var(--login-text-secondary); }
+    .features { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+    .feature { display: flex; gap: 16px; }
+    .feature-ico {
+      flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--login-input-border);
+      background: var(--login-bg); color: var(--login-accent); display: flex; align-items: center; justify-content: center;
+      box-sizing: border-box; padding: 5px;
+    }
+    /* 与 login.vue 一致：特性图标用强调色，暗色下不发黑 */
+    .feature-ico .feat {
+      width: 22px; height: 22px; display: block;
+      background: currentColor;
+      mask: var(--feat) center / contain no-repeat;
+      -webkit-mask: var(--feat) center / contain no-repeat;
+    }
+    .feature-ico .feat-bug { --feat: url("icons/mk-bug.svg"); }
+    .feature-ico .feat-people { --feat: url("icons/peoples.svg"); }
+    .feature-ico .feat-chart { --feat: url("icons/chart.svg"); }
+    .feature strong { display: block; font-size: 16px; margin-bottom: 4px; }
+    .feature p { margin: 0; font-size: 14px; color: var(--login-text-secondary); }
+    .login-right { width: 420px; display: flex; flex-direction: column; z-index: 2; }
+    .cat-wrap { margin: 0 0 -1px; }
+    .cat-wrap img { display: block; width: 100%; border-radius: 16px 16px 0 0; }
+    .card {
+      background: var(--login-card-bg); border: 1px solid var(--login-card-border); border-radius: 16px;
+      box-shadow: var(--card-shadow); padding: 28px 20px 22px; z-index: 3;
+    }
+    .field-block { margin-bottom: 12px; }
+    .label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--login-text-secondary); margin-bottom: 6px; }
+    .label .ico { font-size: 15px; width: 15px; height: 15px; color: var(--login-text-secondary); }
+    .input {
+      height: 35px; border-radius: 8px; background: var(--login-input-bg); border: 1px solid var(--login-input-border);
+      display: flex; align-items: center; padding: 0 14px; font-size: 14px; color: var(--login-text-muted);
+    }
+    .captcha-row { display: flex; gap: 10px; }
+    .captcha-row .input { flex: 1; }
+    .captcha-box {
+      width: 120px; border-radius: 8px; background: var(--login-input-bg); border: 1px dashed var(--login-input-border);
+      display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--login-text-primary);
+    }
+    .opts { display: flex; justify-content: space-between; margin: 4px 0 12px; font-size: 13px; color: var(--login-text-regular); }
+    .opts a { color: var(--login-accent); }
+    .go {
+      width: 100%; height: 39px; border: 0; border-radius: 8px; background: var(--login-btn); color: var(--login-on-accent);
+      font-size: 15px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+    }
+    .go .ico { width: 18px; height: 18px; color: var(--login-on-accent); }
+    .divider { display: flex; align-items: center; gap: 10px; margin: 14px 0 12px; font-size: 13px; color: var(--login-text-muted); }
+    .divider i { flex: 1; height: 1px; background: var(--login-card-border); font-style: normal; }
+    .langs { display: flex; flex-wrap: wrap; gap: 10px; }
+    .lang {
+      width: 38px; height: 32px; border-radius: 6px; border: 1px solid var(--login-input-border);
+      display: inline-flex; align-items: center; justify-content: center; padding: 3px 6px; opacity: .85;
+    }
+    .lang img { width: 100%; height: 100%; object-fit: contain; }
+    .lang.on { border-color: var(--login-accent); box-shadow: 0 0 0 1px var(--login-accent-glow); opacity: 1; }
+    .copy { margin-top: 16px; text-align: center; font-size: 12px; color: var(--login-text-muted); }
+    .mouse-sprite {
+      position: absolute; right: 72px; bottom: 40px; width: 39px; height: 42px;
+      background: url("mouse_sprite_sit_v3.png") 0 0 / 312px 42px no-repeat; image-rendering: pixelated; z-index: 5;
+    }
+
+    /* 后台壳 + 缺陷页（对齐 Sidebar + defect/index.vue；现网无 TagsView 则不画） */
+    .shell { display: flex; min-height: 860px; background: var(--shell-page); }
+    .side {
+      width: 210px; background: var(--shell-side); color: var(--shell-side-text);
+      border-right: 1px solid var(--shell-line); display: flex; flex-direction: column;
+    }
+    /* TeamSelect：侧栏左上角 */
+    .team-select {
+      display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 12px;
+      border-bottom: 1px solid var(--shell-line); color: var(--shell-text); cursor: default;
+    }
+    .team-select .av {
+      width: 32px; height: 32px; border-radius: 4px; background: var(--shell-active);
+      color: #fff; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .team-select .name { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .team-select .caret { font-size: 12px; color: var(--shell-side-text); }
+    .side-scroll { flex: 1; overflow: auto; padding: 6px 0 10px; }
+    .menu-block { padding: 2px 0; }
+    .menu-divider { margin: 8px 16px; height: 1px; background: var(--shell-line); opacity: .95; }
+    .menu a {
+      display: flex; align-items: center; gap: 10px; margin: 0 8px; padding: 9px 10px; border-radius: 4px;
+      font-size: 14px; color: var(--shell-side-text);
+    }
+    .menu a .ico { width: 16px; height: 16px; color: currentColor; }
+    .menu a.on { color: var(--shell-active); background: var(--shell-active-bg); }
+    .main-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .navbar {
+      height: 50px; display: flex; align-items: center; gap: 8px; padding: 0 12px 0 8px;
+      background: var(--shell-side); border-bottom: 1px solid var(--shell-line); color: var(--shell-text);
+    }
+    .nav-ico {
+      width: 36px; height: 36px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;
+      color: var(--shell-side-text); cursor: default;
+    }
+    .nav-ico .ico { width: 18px; height: 18px; color: currentColor; }
+    .nav-ico .ico-img { width: 18px; height: 18px; }
+    .nav-ico:hover { background: rgba(127,127,127,.12); color: var(--shell-text); }
+    .crumb { font-size: 13px; color: var(--shell-side-text); margin-left: 4px; }
+    .crumb b { color: var(--shell-text); font-weight: 500; }
+    .crumb a { color: var(--shell-side-text); }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+    .nav-right .avatar {
+      width: 34px; height: 34px; border-radius: 50%; margin-left: 8px; background: var(--shell-tile);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 12px; color: var(--shell-text);
+    }
+    /* 缺陷页内容（现网 tagsView 关闭时无 TagsView，审查稿不画） */
+    .defect { flex: 1; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 10px; min-height: 0; background: var(--shell-page); }
+    .project-label { font-size: 13px; color: var(--shell-side-text); display: flex; align-items: center; gap: 6px; }
+    .project-label b { color: var(--shell-text); }
+    /* 收藏星：语义金黄，不跟品牌蓝 */
+    .project-label .star { color: rgb(247, 186, 42); }
+    .defect-tabs {
+      display: flex; align-items: center; gap: 0; border-bottom: 1px solid var(--shell-line);
+      min-height: 40px; padding: 0; position: relative;
+    }
+    .d-tab {
+      display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; font-size: 13px;
+      color: var(--shell-side-text); border-bottom: 2px solid transparent; margin-bottom: -1px; box-sizing: border-box;
+    }
+    .d-tab .ico { width: 14px; height: 14px; color: currentColor; }
+    .d-tab.on { color: var(--shell-active); border-bottom-color: var(--shell-active); }
+    /* 加号：与 tab 文字同一基线，不单独下陷 */
+    .d-tab-add {
+      margin: 0 4px 0 6px; width: 22px; height: 22px; box-sizing: border-box;
+      border: 1px solid var(--shell-line); border-radius: 4px; background: var(--shell-card);
+      display: inline-flex; align-items: center; justify-content: center; color: var(--shell-side-text);
+      align-self: center; flex-shrink: 0;
+    }
+    .d-tab-add .ico { width: 12px; height: 12px; color: currentColor; }
+    .d-tabs-right { margin-left: auto; display: flex; align-items: center; }
+    .icon-btn {
+      width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--shell-line);
+      background: var(--shell-card); display: inline-flex; align-items: center; justify-content: center; color: var(--shell-side-text);
+    }
+    .icon-btn .ico { width: 15px; height: 15px; color: currentColor; }
+    /* 统计：现网 Cat2BugStatistic 多卡片，不是四个数字 */
+    .stat-strip {
+      display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; padding-bottom: 2px;
+    }
+    .stat-box {
+      flex: 0 0 auto; min-width: 148px; max-width: 260px; min-height: 112px;
+      background: var(--shell-card); border: 1px solid var(--shell-line); border-radius: 4px;
+      padding: 8px 12px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .stat-box .hd { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; color: var(--shell-text); }
+    .stat-box .hd .tools-ico { display: flex; gap: 6px; color: var(--shell-side-text); font-size: 12px; }
+    .stat-box .bd { flex: 1; font-size: 12px; color: var(--shell-side-text); }
+    .stat-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+    .stat-row .lab { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stat-row .num { font-variant-numeric: tabular-nums; color: var(--shell-text); }
+    .stat-row .delta { color: #67c23a; font-size: 11px; }
+    .stat-avatars { display: flex; gap: 6px; align-items: center; min-height: 56px; }
+    .stat-avatars span {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--shell-tile);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: var(--shell-text);
+    }
+    .stat-big { font-size: 36px; font-weight: 700; color: var(--shell-text); line-height: 1.1; padding-top: 8px; }
+    .stat-bars { display: flex; flex-direction: column; gap: 6px; }
+    .stat-bars .bar-row { display: flex; align-items: center; gap: 6px; }
+    .stat-bars .bar-row .n { width: 36px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .stat-bars .bar {
+      flex: 1; height: 8px; border-radius: 4px; background: var(--shell-tile); overflow: hidden;
+    }
+    /* 团队待办负载：现网 flagColor 多色，不统一成品牌蓝 */
+    .stat-bars .bar i { display: block; height: 100%; border-radius: 4px; }
+    .stat-bars .bar i.c0 { background: rgb(245, 108, 108); }
+    .stat-bars .bar i.c1 { background: rgb(251, 177, 63); }
+    .stat-bars .bar i.c2 { background: rgb(103, 194, 58); }
+    .stat-bars .bar i.c3 { background: #1989fa; }
+    .stat-ico { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .stat-ico.s0 { background: #F56C6C; }
+    .stat-ico.s1 { background: #FBB13F; }
+    .stat-ico.s2 { background: #67C23A; }
+    .stat-ico.s3 { background: #409EFF; }
+    .tools {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      background: transparent; padding: 0;
+    }
+    .view-switch {
+      display: inline-flex; border: 1px solid var(--shell-line); border-radius: 4px; overflow: hidden; height: 32px;
+    }
+    .view-switch span {
+      width: 36px; display: inline-flex; align-items: center; justify-content: center; background: var(--shell-card); color: var(--shell-side-text);
+      border-right: 1px solid var(--shell-line);
+    }
+    .view-switch span:last-child { border-right: 0; }
+    .view-switch span.on { background: var(--shell-active-bg); color: var(--shell-active); }
+    .view-switch .ico { width: 15px; height: 15px; color: currentColor; }
+    .split, .select, .search {
+      height: 32px; border-radius: 4px; border: 1px solid var(--shell-line); background: var(--shell-card);
+      color: var(--shell-text); font-size: 13px; display: inline-flex; align-items: center; padding: 0 10px; gap: 6px;
+    }
+    .split { padding: 0; overflow: hidden; }
+    .split .main { padding: 0 12px; height: 100%; display: inline-flex; align-items: center; gap: 4px; }
+    .split .caret {
+      width: 28px; height: 100%; border-left: 1px solid var(--shell-line);
+      display: inline-flex; align-items: center; justify-content: center; color: var(--shell-side-text);
+    }
+    .split .caret .ico { width: 12px; height: 12px; }
+    .select { min-width: 140px; color: var(--shell-side-text); }
+    .select .ico { width: 14px; height: 14px; color: var(--shell-side-text); flex-shrink: 0; }
+    .select .ph { flex: 1; min-width: 0; }
+    .select .caret-ico { width: 12px; height: 12px; margin-left: auto; opacity: .7; }
+    .search { width: 280px; color: var(--shell-side-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .search .ico { width: 14px; height: 14px; color: var(--shell-side-text); flex-shrink: 0; }
+    .tools-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+    .btn-primary {
+      height: 32px; border: 0; border-radius: 4px; background: var(--shell-btn); color: var(--login-on-accent, #fff);
+      font-size: 13px; display: inline-flex; align-items: center; padding: 0; overflow: hidden;
+    }
+    body.mode-now.theme-dark .btn-primary { color: #1a1a1a; }
+    .btn-primary .main { padding: 0 12px; height: 100%; display: inline-flex; align-items: center; gap: 4px; }
+    .btn-primary .main .ico { width: 14px; height: 14px; color: currentColor; }
+    .btn-primary .caret {
+      width: 28px; height: 100%; border-left: 1px solid rgba(255,255,255,.35);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .btn-primary .caret .ico { width: 12px; height: 12px; color: currentColor; }
+    body.mode-now.theme-dark .btn-primary .caret { border-left-color: rgba(0,0,0,.2); }
+    .table-wrap { flex: 1; background: var(--shell-card); border: 1px solid var(--shell-line); border-radius: 4px; overflow: auto; min-height: 220px; }
+    table.list { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.list th {
+      text-align: left; padding: 10px 8px; background: var(--shell-table-head); color: var(--shell-side-text);
+      border-bottom: 1px solid var(--shell-line); font-weight: 500; white-space: nowrap; position: sticky; top: 0;
+    }
+    table.list th .grip { opacity: .35; margin-right: 4px; }
+    table.list td { padding: 11px 8px; border-bottom: 1px solid var(--shell-line); color: var(--shell-text); }
+    table.list a { color: var(--shell-link); }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; border: 1px solid var(--shell-line); color: var(--shell-side-text); }
+    .pill.blue { color: var(--shell-active); border-color: transparent; background: var(--shell-active-bg); }
+    .pill.red { color: #e64545; background: rgba(230,69,69,.08); border-color: transparent; }
+    .pager { display: flex; justify-content: flex-end; gap: 6px; padding: 10px; font-size: 12px; color: var(--shell-side-text); }
+    .pager span { min-width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--shell-line); display: inline-flex; align-items: center; justify-content: center; background: var(--shell-page); }
+    .pager span.on { background: var(--shell-btn); border-color: var(--shell-btn); color: #fff; }
+    body.mode-now.theme-dark .pager span.on { color: #1a1a1a; }
+
+    /* 细项 */
+    .details { display: grid; gap: 12px; }
+    .detail { display: grid; grid-template-columns: 240px 1fr; gap: 14px; padding: 14px; border-radius: 8px; background: #fff; border: 1px solid #e4e7ed; }
+    body.dark-chrome .detail { background: #1e1e20; border-color: #363637; }
+    .detail-fig { border: 1px solid #e4e7ed; border-radius: 6px; background: #f5f7fa; min-height: 110px; display: flex; align-items: center; justify-content: center; padding: 10px; }
+    body.dark-chrome .detail-fig { background: #252529; border-color: #363637; }
+    .detail h3 { margin: 0 0 6px; font-size: 15px; }
+    .badge { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .badge.keep { background: #f0f9eb; color: #67c23a; }
+    .badge.change { background: #ecf5ff; color: #1890ff; }
+    .detail p { margin: 0 0 6px; font-size: 13px; color: #606266; }
+    body.dark-chrome .detail p { color: #a8abb2; }
+    .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; font-size: 12px; }
+    .cmp div { padding: 8px 10px; border-radius: 6px; background: #f5f7fa; border: 1px solid #ebeef5; }
+    body.dark-chrome .cmp div { background: #252529; border-color: #363637; }
+    .cmp b { display: block; margin-bottom: 4px; color: #909399; font-weight: 500; }
+
+    body.mode-now.theme-light {
+      --page-bg:#fdfdfd; --frame-line:#dcdfe6;
+      --login-bg:#fdfdfd; --login-card-bg:#fff; --login-accent:#409EFF; --login-btn:#409EFF; --login-on-accent:#fff; --login-accent-glow:rgba(64,158,255,.18);
+      --login-text-primary:#303133; --login-text-secondary:#606266; --login-text-muted:#909399; --login-text-regular:#606266;
+      --login-input-bg:#f5f7fa; --login-input-border:#dcdfe6; --login-card-border:#e4e7ed; --card-shadow:0 24px 60px rgba(0,0,0,.08);
+      --shell-page:#f5f7fa; --shell-side:#fff; --shell-card:#fff; --shell-tile:#f5f7fa; --shell-text:#303133; --shell-side-text:rgba(0,0,0,.7);
+      --shell-line:#e4e7ed; --shell-active:#409eff; --shell-active-bg:rgba(64,158,255,.12); --shell-btn:#409eff; --shell-link:#409eff; --shell-tag:#42b983; --shell-table-head:#fafafa;
+    }
+    body.mode-now.theme-dark {
+      --page-bg:#17181a; --frame-line:#2a2a2c;
+      --login-bg:#17181a; --login-card-bg:#1f2023; --login-accent:#ffc107; --login-btn:#ffc107; --login-on-accent:#1a1a1a; --login-accent-glow:rgba(255,193,7,.18);
+      --login-text-primary:#fff; --login-text-secondary:#9ca3af; --login-text-muted:#6b7280; --login-text-regular:#e5eaf3;
+      --login-input-bg:#141416; --login-input-border:#3f3f41; --login-card-border:#2a2a2c; --card-shadow:0 16px 40px rgba(0,0,0,.45);
+      --shell-page:#1e1e20; --shell-side:#1e1e20; --shell-card:#252529; --shell-tile:#252529; --shell-text:#f5f7fa; --shell-side-text:#a8abb2;
+      --shell-line:#363637; --shell-active:#FFC107; --shell-active-bg:rgba(255,193,7,.14); --shell-btn:#FFC107; --shell-link:#FFC107; --shell-tag:#42b983; --shell-table-head:#252529;
+    }
+    body.mode-next.theme-light {
+      --page-bg:#fdfdfd; --frame-line:#dcdfe6;
+      --login-bg:#fdfdfd; --login-card-bg:#fff; --login-accent:#1890ff; --login-btn:#1890ff; --login-on-accent:#fff; --login-accent-glow:rgba(24,144,255,.18);
+      --login-text-primary:#303133; --login-text-secondary:#606266; --login-text-muted:#909399; --login-text-regular:#606266;
+      --login-input-bg:#f5f7fa; --login-input-border:#dcdfe6; --login-card-border:#e4e7ed; --card-shadow:0 24px 60px rgba(0,0,0,.08);
+      --shell-page:#f5f7fa; --shell-side:#fff; --shell-card:#fff; --shell-tile:#f5f7fa; --shell-text:#303133; --shell-side-text:rgba(0,0,0,.7);
+      --shell-line:#e4e7ed; --shell-active:#1890ff; --shell-active-bg:rgba(24,144,255,.12); --shell-btn:#1890ff; --shell-link:#1890ff; --shell-tag:#1890ff; --shell-table-head:#fafafa;
+    }
+    body.mode-next.theme-dark {
+      --page-bg:#17181a; --frame-line:#2a2a2c;
+      --login-bg:#17181a; --login-card-bg:#1f2023; --login-accent:#69b1ff; --login-btn:#1890ff; --login-on-accent:#fff; --login-accent-glow:rgba(105,177,255,.22);
+      --login-text-primary:#fff; --login-text-secondary:#9ca3af; --login-text-muted:#6b7280; --login-text-regular:#e5eaf3;
+      --login-input-bg:#141416; --login-input-border:#3f3f41; --login-card-border:#2a2a2c; --card-shadow:0 16px 40px rgba(0,0,0,.45);
+      --shell-page:#1e1e20; --shell-side:#1e1e20; --shell-card:#252529; --shell-tile:#252529; --shell-text:#f5f7fa; --shell-side-text:#a8abb2;
+      --shell-line:#363637; --shell-active:#1890ff; --shell-active-bg:rgba(24,144,255,.16); --shell-btn:#1890ff; --shell-link:#69b1ff; --shell-tag:#1890ff; --shell-table-head:#252529;
+    }
+    @media (max-width: 980px) {
+      .login-page { flex-direction: column; }
+      .hero { display: none; }
+      .detail { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="mode-next theme-dark">
+  <header class="bar">
+    <strong>审查稿</strong>
+    <span style="font-size:12px;opacity:.75">色板示意 · 缺陷页请在本地现网验收</span>
+    <button id="btn-now" class="toggle" type="button">现网对照（含琥珀）</button>
+    <button id="btn-next" class="toggle on" type="button">提案的颜色</button>
+    <button id="btn-light" class="toggle" type="button">浅色</button>
+    <button id="btn-dark" class="toggle on" type="button">暗色</button>
+    <span id="mode-hint" class="warn">提案暗色：蓝 #1890ff / #69b1ff，无品牌黄</span>
+  </header>
+
+  <div class="wrap">
+    <p class="intro">
+      静态稿只保登录与壳色板。缺陷列表结构复杂，不再用 HTML 克隆对齐——请本地起 <code>cat2bug-platform-ui</code>，打开缺陷管理验收主按钮蓝、侧栏激活蓝、语义色（星/统计/状态）未误刷。
+    </p>
+
+    <h2>1. 登录页整页 <span>语言区 = 真实旗帜 SVG</span></h2>
+    <p class="desc">结构对齐 login.vue + UserNameAndPasswordLogin.vue。账号/密码/语言标签带图标；语言格子是旗帜图，不是「简/繁/EN」字。</p>
+    <div class="board">
+      <div class="login-page">
+        <section class="hero">
+          <p class="welcome">欢迎来到</p>
+          <div class="brand"><span class="brand-cat2">Cat2</span><span class="brand-bug">Bug</span><span class="brand-platform">-Platform</span></div>
+          <div class="accent-line"></div>
+          <h1 class="hero-title">简化缺陷，夯实软件</h1>
+          <p class="hero-desc">Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留给个人及团体免费使用。</p>
+          <p class="hero-desc">它的使用人群锁定个人或中小型软件开发团队，减少运营投入及成本，让个人或团队可以快速上手，把控软件质量。</p>
+          <ul class="features">
+            <li class="feature">
+              <div class="feature-ico"><span class="feat feat-bug" aria-hidden="true"></span></div>
+              <div><strong>智能缺陷跟踪</strong><p>轻松跟踪、排序并解决问题。</p></div>
+            </li>
+            <li class="feature">
+              <div class="feature-ico"><span class="feat feat-people" aria-hidden="true"></span></div>
+              <div><strong>团队协作</strong><p>无缝协作，保持团队步调一致。</p></div>
+            </li>
+            <li class="feature">
+              <div class="feature-ico"><span class="feat feat-chart" aria-hidden="true"></span></div>
+              <div><strong>洞察报告</strong><p>获取实时洞察，做出数据驱动的决策。</p></div>
+            </li>
+          </ul>
+        </section>
+        <section class="login-right">
+          <div class="cat-wrap"><img id="cat" alt="睡觉的猫" src="login-cat-scene-dark.jpg?v=13"></div>
+          <div class="card">
+            <div class="field-block">
+              <div class="label"><i class="ico" data-i="user" aria-hidden="true"></i>账号</div>
+              <div class="input">请输入账号</div>
+            </div>
+            <div class="field-block">
+              <div class="label"><i class="ico" data-i="password" aria-hidden="true"></i>密码</div>
+              <div class="input">请输入密码</div>
+            </div>
+            <div class="field-block">
+              <div class="label">验证码</div>
+              <div class="captcha-row">
+                <div class="input">请输入验证码</div>
+                <div class="captcha-box">3+4</div>
+              </div>
+            </div>
+            <div class="opts"><span>□ 记住密码</span><a href="#">立即注册</a></div>
+            <button class="go" type="button">登录 <i class="ico" data-i="login_button" aria-hidden="true"></i></button>
+            <div class="divider"><i></i><span>或</span><i></i></div>
+            <div class="label"><i class="ico" data-i="international" aria-hidden="true"></i>语言</div>
+            <div class="langs">
+              <div class="lang on" title="简体中文"><img src="icons/lang_zh_CN.svg" alt="zh_CN"></div>
+              <div class="lang" title="繁體中文"><img src="icons/lang_zh_TW.svg" alt="zh_TW"></div>
+              <div class="lang" title="English"><img src="icons/lang_en_US.svg" alt="en_US"></div>
+              <div class="lang" title="日本語"><img src="icons/lang_ja_JP.svg" alt="ja_JP"></div>
+              <div class="lang" title="한국어"><img src="icons/lang_ko_KR.svg" alt="ko_KR"></div>
+              <div class="lang" title="Русский"><img src="icons/lang_ru.svg" alt="ru"></div>
+              <div class="lang" title="العربية"><img src="icons/lang_ar.svg" alt="ar"></div>
+            </div>
+            <div class="copy">Copyright © 2024–2026 版权所有</div>
+          </div>
+        </section>
+        <div class="mouse-sprite" title="可控制老鼠示意一帧"></div>
+      </div>
+    </div>
+
+    <h2>2. 后台壳色板 <span>缺陷页改走现网</span></h2>
+    <p class="desc">侧栏激活 / 顶栏 / 主按钮走品牌蓝；收藏星金黄、统计多色、状态点不跟蓝。缺陷列表请本地打开真实页面验收。</p>
+    <div class="board">
+      <div class="shell">
+        <aside class="side">
+          <div class="team-select" title="TeamSelect">
+            <span class="av">C2</span>
+            <span class="name">猫陪我改BUG</span>
+            <span class="caret">▾</span>
+          </div>
+          <div class="side-scroll menu">
+            <div class="menu-block">
+              <a href="#"><i class="ico" data-i="list2" aria-hidden="true"></i>项目管理</a>
+            </div>
+            <div class="menu-divider"></div>
+            <div class="menu-block">
+              <a href="#"><i class="ico" data-i="dashboard" aria-hidden="true"></i>仪表盘</a>
+              <a href="#"><i class="ico" data-i="case" aria-hidden="true"></i>测试用例</a>
+              <a class="on" href="#"><i class="ico" data-i="bug" aria-hidden="true"></i>缺陷管理</a>
+              <a href="#"><i class="ico" data-i="documentation" aria-hidden="true"></i>文档管理</a>
+            </div>
+            <div class="menu-divider"></div>
+            <div class="menu-block">
+              <a href="#"><i class="ico" data-i="peoples" aria-hidden="true"></i>团队设置</a>
+            </div>
+          </div>
+        </aside>
+        <div class="main-col">
+          <div class="navbar">
+            <span class="nav-ico" title="折叠侧栏">☰</span>
+            <div class="crumb"><a href="#">首页</a> / <b>缺陷管理</b></div>
+            <div class="nav-right">
+              <span class="nav-ico" title="切换主题"><i class="ico" id="theme-ico" data-i="sun" aria-hidden="true"></i></span>
+              <span class="nav-ico" title="官网"><i class="ico" data-i="website" aria-hidden="true"></i></span>
+              <span class="avatar">管</span>
+            </div>
+          </div>
+          <div class="defect" style="padding:28px 24px">
+            <p style="margin:0 0 12px;font-size:15px;font-weight:600;color:var(--shell-text)">验收清单（本地现网）</p>
+            <ul style="margin:0;padding-left:18px;font-size:13px;color:var(--shell-side-text);line-height:1.7">
+              <li>浅色 / 暗色各看一次缺陷列表</li>
+              <li>「新建缺陷」与侧栏当前项是品牌蓝，暗色无琥珀黄品牌位</li>
+              <li>收藏星仍金黄；统计条多色、状态点未一律刷蓝</li>
+              <li>表格拖序 / 固定列 / 调宽 / 排序行为不变</li>
+            </ul>
+            <p style="margin:16px 0 0;font-size:12px;opacity:.75">业务页零散写死 <code>#409eff</code> / <code>#FFC107</code> 不在本变更清扫。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>3. 细项图文 <span>对照改色范围</span></h2>
+    <div class="details">
+      <article class="detail">
+        <div class="detail-fig">
+          <div class="langs">
+            <div class="lang on"><img src="icons/lang_zh_CN.svg" alt=""></div>
+            <div class="lang"><img src="icons/lang_en_US.svg" alt=""></div>
+            <div class="lang"><img src="icons/lang_ja_JP.svg" alt=""></div>
+          </div>
+        </div>
+        <div>
+          <h3>登录语言旗帜<span class="badge keep">保持</span></h3>
+          <p>现网七语种 <code>lang_*.svg</code>。审查稿必须显示旗帜图，不能用「简/EN」字代替。</p>
+          <div class="cmp"><div><b>现在</b>旗帜 SvgIcon</div><div><b>提案</b>图标文件不换，选中描边跟品牌蓝</div></div>
+        </div>
+      </article>
+      <article class="detail">
+        <div class="detail-fig" style="gap:8px;color:var(--shell-side-text,#a8abb2)">
+          <i class="ico" data-i="moon" style="width:22px;height:22px" aria-hidden="true"></i>
+          <i class="ico" data-i="website" style="width:22px;height:22px" aria-hidden="true"></i>
+          <i class="ico" data-i="github" style="width:22px;height:22px" aria-hidden="true"></i>
+          <i class="ico" data-i="notice" style="width:22px;height:22px" aria-hidden="true"></i>
+          <i class="ico" data-i="documentation" style="width:22px;height:22px" aria-hidden="true"></i>
+          <img class="ico-img" style="width:22px;height:22px" src="icons/lang_zh_CN.svg" alt="">
+        </div>
+        <div>
+          <h3>顶栏右侧图标<span class="badge keep">保持</span></h3>
+          <p>主题、官网、源码、通知、文档、语言均为图标，不是文字按钮。</p>
+          <div class="cmp"><div><b>现在</b>SvgIcon 工具条</div><div><b>提案</b>图标不动，颜色跟 token</div></div>
+        </div>
+      </article>
+      <article class="detail">
+        <div class="detail-fig" style="flex-direction:column;align-items:stretch;gap:6px;font-size:12px;color:#606266">
+          <div>主按钮 / 侧栏激活 → 品牌蓝</div>
+          <div>星 / 统计 / 状态 → 语义色不动</div>
+        </div>
+        <div>
+          <h3>缺陷列表<span class="badge change">现网验收</span></h3>
+          <p>不再用静态 HTML 克隆工具区。token 落地后在真实缺陷页确认主操作蓝、语义色未误刷。</p>
+          <div class="cmp"><div><b>现在</b>静态稿易偏</div><div><b>提案</b>改 token + 本地看页</div></div>
+        </div>
+      </article>
+      <article class="detail">
+        <div class="detail-fig"><img id="cat-detail" src="login-cat-scene-dark.jpg?v=13" alt="" style="max-width:100%;max-height:100px;border-radius:6px"></div>
+        <div>
+          <h3>睡觉的猫 / 老鼠<span class="badge keep">保持</span></h3>
+          <p>猫在登录卡片外；老鼠仍是可控制 canvas。提案不删。</p>
+          <div class="cmp"><div><b>现在</b>特色保留</div><div><b>提案</b>只改周围强调色</div></div>
+        </div>
+      </article>
+      <article class="detail">
+        <div class="detail-fig">
+          <div id="swatch-now" style="display:none;gap:8px;align-items:center">
+            <div style="width:40px;height:40px;border-radius:6px;background:#409EFF" title="现网浅色"></div>
+            <div style="width:40px;height:40px;border-radius:6px;background:#FFC107" title="现网暗色琥珀（将被移除）"></div>
+            <span style="font-size:11px;opacity:.7">现网对照</span>
+          </div>
+          <div id="swatch-next" style="display:flex;gap:8px;align-items:center">
+            <div style="width:40px;height:40px;border-radius:6px;background:#1890ff" title="提案主色"></div>
+            <div style="width:40px;height:40px;border-radius:6px;background:#69b1ff" title="提案暗色链接/激活"></div>
+            <span style="font-size:11px;opacity:.7">提案 · 无黄</span>
+          </div>
+        </div>
+        <div>
+          <h3>品牌主色<span class="badge change">改色</span></h3>
+          <p>浅色统一 #1890ff；暗色页签/侧栏/实心按钮同 #1890ff，链接与聚焦环 #69b1ff；琥珀黄退出品牌色（仅「现网对照」里能看到黄）。</p>
+          <div class="cmp"><div><b>现在</b>双蓝 + 暗色琥珀</div><div><b>提案</b>一枚蓝 + 暗色提亮链接</div></div>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <script>
+    const body = document.body
+    const cat = document.getElementById('cat')
+    const catDetail = document.getElementById('cat-detail')
+    const themeIco = document.getElementById('theme-ico')
+    function sync() {
+      const dark = body.classList.contains('theme-dark')
+      const next = body.classList.contains('mode-next')
+      body.classList.toggle('dark-chrome', dark)
+      const src = dark ? 'login-cat-scene-dark.jpg?v=13' : 'login-cat-scene-light.jpg?v=10'
+      cat.src = src
+      catDetail.src = src
+      themeIco.setAttribute('data-i', dark ? 'sun' : 'moon')
+      document.getElementById('btn-now').classList.toggle('on', !next)
+      document.getElementById('btn-next').classList.toggle('on', next)
+      document.getElementById('btn-light').classList.toggle('on', !dark)
+      document.getElementById('btn-dark').classList.toggle('on', dark)
+      document.getElementById('swatch-now').style.display = next ? 'none' : 'flex'
+      document.getElementById('swatch-next').style.display = next ? 'flex' : 'none'
+      document.getElementById('mode-hint').textContent = next
+        ? (dark ? '提案暗色：页签/按钮 #1890ff，链接 #69b1ff' : '提案浅色：统一 #1890ff')
+        : (dark ? '现网对照：暗色仍是琥珀黄（将被移除）' : '现网对照：浅色 #409EFF')
+    }
+    document.getElementById('btn-now').onclick = () => { body.classList.add('mode-now'); body.classList.remove('mode-next'); sync() }
+    document.getElementById('btn-next').onclick = () => { body.classList.add('mode-next'); body.classList.remove('mode-now'); sync() }
+    document.getElementById('btn-light').onclick = () => { body.classList.add('theme-light'); body.classList.remove('theme-dark'); sync() }
+    document.getElementById('btn-dark').onclick = () => { body.classList.add('theme-dark'); body.classList.remove('theme-light'); sync() }
+    sync()
+  </script>
+</body>
+</html>

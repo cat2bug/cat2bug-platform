@@ -51,15 +51,15 @@
   --statistic-card-height: 115px;
   --statistic-life-card-height: var(--statistic-card-height);
 
-  /* 顶部路由/首屏进度条（浅色主题：Element 主色蓝） */
-  --page-progress-color: #409eff;
-  --page-progress-glow: rgba(64, 158, 255, 0.45);
-  --page-progress-gradient-start: #337ecc;
+  /* 顶部路由/首屏进度条（浅色主题：品牌蓝） */
+  --page-progress-color: #1890ff;
+  --page-progress-glow: rgba(24, 144, 255, 0.45);
+  --page-progress-gradient-start: #096dd9;
 
   /* el-progress 轨道 / 填充（浅色默认） */
   --progress-track-bg: #ebeef5;
   --progress-track-border: transparent;
-  --progress-fill-color: #409eff;
+  --progress-fill-color: #1890ff;
   --progress-fill-success: #67c23a;
   --progress-fill-warning: #e6a23c;
   --progress-fill-exception: #f56c6c;
@@ -71,7 +71,7 @@
 
   /* Cat2BugTable 表头排序箭头（浅色） */
   --cat2bug-table-sort-caret-inactive: #c0c4cc;
-  --cat2bug-table-sort-caret-active: #409eff;
+  --cat2bug-table-sort-caret-active: #1890ff;
 
   /* 图片占位 / 加载失败（Cat2BugImage、原生 img 回退统一） */
   --cat2bug-image-placeholder-bg: #ebeef5;
@@ -2836,16 +2836,16 @@ html:not(.dark) .el-button--primary.is-plain.cat2bug-btn-outline {
 
 html.dark .project-option-list-tools-right .el-button--primary.is-plain:not(.cat2bug-btn-outline):focus,
 html.dark .project-option-list-tools-right .el-button--primary.is-plain:not(.cat2bug-btn-outline).list-query-toolbar-nav-focused {
-  background-color: #FFD54F !important;
-  border-color: #FFC107 !important;
-  color: #141414 !important;
-  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+  background-color: var(--el-color-primary-light-3, #4ea8ff) !important;
+  border-color: var(--el-color-primary, #1890ff) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
 }
 
 html.dark .project-option-list-tools-right .el-button--primary.is-plain.cat2bug-btn-outline:focus,
 html.dark .project-option-list-tools-right .el-button--primary.is-plain.cat2bug-btn-outline.list-query-toolbar-nav-focused {
-  background-color: rgba(255, 193, 7, 0.12) !important;
+  background-color: rgba(24, 144, 255, 0.12) !important;
   border-color: var(--border-color-base) !important;
-  color: #FFC107 !important;
-  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+  color: var(--cat2bug-primary, #1890ff) !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
 }

@@ -424,16 +424,16 @@ export default {
   }
 
   &.is-active {
-    background: rgba(255, 193, 7, 0.28);
-    border-color: rgba(255, 193, 7, 0.65);
-    color: #ffc107;
+    background: color-mix(in srgb, var(--login-accent, #1890ff) 28%, transparent);
+    border-color: color-mix(in srgb, var(--login-accent, #1890ff) 65%, transparent);
+    color: var(--login-accent, #1890ff);
     transform: scale(0.96);
   }
 }
 
 html.dark .mouse-dpad__btn.is-active .mouse-dpad__hint {
   opacity: 1;
-  color: #ffc107;
+  color: var(--login-accent, #69b1ff);
 }
 
 .mouse-dpad__hint {

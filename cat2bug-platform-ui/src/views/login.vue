@@ -163,9 +163,10 @@ body {
 .logo-page {
   --login-bg: #fdfdfd;
   --login-card-bg: #ffffff;
-  --login-accent: #409EFF;
+  --login-accent: #1890ff;
+  --login-btn: #1890ff;
   --login-on-accent: #ffffff;
-  --login-accent-glow: rgba(64, 158, 255, 0.18);
+  --login-accent-glow: rgba(24, 144, 255, 0.18);
   --login-text-primary: #303133;
   --login-text-secondary: #606266;
   --login-text-muted: #909399;
@@ -186,9 +187,10 @@ body {
 html.dark .logo-page {
   --login-bg: #17181a;
   --login-card-bg: #1f2023;
-  --login-accent: #ffc107;
-  --login-on-accent: #1a1a1a;
-  --login-accent-glow: rgba(255, 193, 7, 0.18);
+  --login-accent: #69b1ff;
+  --login-btn: #1890ff;
+  --login-on-accent: #ffffff;
+  --login-accent-glow: rgba(105, 177, 255, 0.18);
   --login-text-primary: #ffffff;
   --login-text-secondary: #9ca3af;
   --login-text-muted: #6b7280;
@@ -200,8 +202,8 @@ html.dark .logo-page {
 
 /* 黑色主题：⌘/Ctrl 字母快捷键徽标与登录页 accent 一致 */
 html.dark:has(.logo-page) #cat2bug-page-kbd-overlay .cat2bug-page-kbd-hint-float {
-  color: #ffc107;
-  border-color: rgba(255, 193, 7, 0.55);
+  color: #69b1ff;
+  border-color: rgba(105, 177, 255, 0.55);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
 }
 

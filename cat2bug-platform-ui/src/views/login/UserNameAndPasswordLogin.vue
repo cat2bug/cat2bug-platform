@@ -470,8 +470,8 @@ export default {
     &.is-focus .el-input__wrapper,
     .el-input__wrapper.is-focus {
       box-shadow:
-        0 0 0 1px var(--login-accent, #ffc107) inset,
-        0 0 0 2px var(--login-accent-glow, rgba(255, 193, 7, 0.18));
+        0 0 0 1px var(--login-accent, #1890ff) inset,
+        0 0 0 2px var(--login-accent-glow, rgba(24, 144, 255, 0.18));
     }
   }
 }
@@ -531,7 +531,7 @@ html.dark .login-form {
   position: relative;
   display: inline-block;
   font-size: 13px;
-  color: var(--login-accent, #ffc107);
+  color: var(--login-accent, #1890ff);
   text-decoration: none;
   &:hover {
     opacity: 0.85;
@@ -553,8 +553,8 @@ html.dark .login-form {
   font-weight: 700;
   border-radius: 8px;
   border: none !important;
-  background: var(--login-accent, #ffc107) !important;
-  color: var(--login-on-accent, #1a1a1a) !important;
+  background: var(--login-btn, var(--login-accent, #1890ff)) !important;
+  color: var(--login-on-accent, #ffffff) !important;
   transition: filter 0.2s, transform 0.05s;
 
   span {
@@ -572,15 +572,15 @@ html.dark .login-form {
   &:hover,
   &:focus {
     filter: brightness(1.05);
-    background: var(--login-accent, #ffc107) !important;
+    background: var(--login-btn, var(--login-accent, #1890ff)) !important;
     border-color: transparent !important;
-    color: var(--login-on-accent, #1a1a1a) !important;
+    color: var(--login-on-accent, #ffffff) !important;
   }
 
   &:active {
     transform: translateY(1px);
-    background: var(--login-accent, #ffc107) !important;
-    color: var(--login-on-accent, #1a1a1a) !important;
+    background: var(--login-btn, var(--login-accent, #1890ff)) !important;
+    color: var(--login-on-accent, #ffffff) !important;
   }
 }
 
@@ -597,8 +597,8 @@ html.dark .login-form {
 
 .form-options :deep(.el-checkbox__input.is-checked .el-checkbox__inner),
 .form-options :deep(.el-checkbox__input.is-indeterminate .el-checkbox__inner){
-  background-color: var(--login-accent, #ffc107);
-  border-color: var(--login-accent, #ffc107);
+  background-color: var(--login-accent, #1890ff);
+  border-color: var(--login-accent, #1890ff);
 }
 
 .login-divider {
@@ -653,13 +653,13 @@ html.dark .login-form {
   &:hover {
     opacity: 1;
     transform: scale(1.1);
-    border-color: var(--login-accent, #ffc107);
+    border-color: var(--login-accent, #1890ff);
   }
 
   &.lang-icon-host--active {
     opacity: 1;
-    border-color: var(--login-accent, #ffc107);
-    box-shadow: 0 0 0 1px var(--login-accent-glow, rgba(255, 193, 7, 0.18));
+    border-color: var(--login-accent, #1890ff);
+    box-shadow: 0 0 0 1px var(--login-accent-glow, rgba(24, 144, 255, 0.18));
   }
 }
 
@@ -671,7 +671,7 @@ html.dark .login-form {
   border: 1px solid var(--login-card-border, var(--border-color-base));
   border-radius: 8px;
   overflow: hidden;
-  background: var(--login-accent, #FFC145);
+  background: var(--login-btn, var(--login-accent, #1890ff));
   cursor: pointer;
 }
 

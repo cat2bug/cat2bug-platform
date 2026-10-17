@@ -359,7 +359,7 @@ html.dark .invite-page {
   --invite-card-bg: #1f2023;
   --invite-card-shadow: rgba(0, 0, 0, 0.4);
   --invite-card-border: #2a2a2c;
-  --invite-accent: #ffc107;
+  --invite-accent: #69b1ff;
   --invite-accent-hover: #ffca28;
   --invite-accent-active: #ffb300;
   --invite-on-accent: #1a1a1a;

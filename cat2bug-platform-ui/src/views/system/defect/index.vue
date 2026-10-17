@@ -3258,10 +3258,10 @@ export default {
   }
 }
 .defect-tools-button:hover {
-  color: #409EFF;
+  color: var(--cat2bug-primary, #1890ff);
 
   @at-root html.dark & {
-    color: #FFC107 !important;
+    color: var(--cat2bug-primary, #1890ff) !important;
   }
 }
 .defect-tab-label {
@@ -3276,6 +3276,8 @@ export default {
     font-size: 14px;
     flex-shrink: 0;
     vertical-align: middle;
+    color: inherit;
+    fill: currentColor;
   }
   .el-icon-close {
     flex-shrink: 0;
@@ -3339,13 +3341,13 @@ export default {
   }
   :deep(button){
     color: #ffffff;
-    background: #409eff;
-    border-color: #409eff;
+    background: var(--el-color-primary, #1890ff);
+    border-color: var(--el-color-primary, #1890ff);
   }
   :deep(button:hover),
   :deep(button:focus){
-    background: #66b1ff;
-    border-color: #66b1ff;
+    background: var(--el-color-primary-light-3, #4ea8ff);
+    border-color: var(--el-color-primary-light-3, #4ea8ff);
     color: #ffffff;
   }
   :deep(.el-dropdown__caret-button::before){
@@ -3358,15 +3360,15 @@ export default {
 
   @at-root html.dark & {
     :deep(button){
-      color: #141414 !important;
-      background: #ffc107 !important;
-      border-color: #ffc107 !important;
+      color: #ffffff !important;
+      background: var(--el-color-primary, #1890ff) !important;
+      border-color: var(--el-color-primary, #1890ff) !important;
     }
     :deep(button:hover),
     :deep(button:focus){
-      color: #141414 !important;
-      background: #ffd54f !important;
-      border-color: #ffd54f !important;
+      color: #ffffff !important;
+      background: var(--el-color-primary-light-3, #4ea8ff) !important;
+      border-color: var(--el-color-primary-light-3, #4ea8ff) !important;
     }
   }
 }

@@ -30,8 +30,8 @@
 }
 
 html.dark .layout-nav-kbd-dropdown-active {
-  background-color: rgba(255, 213, 79, 0.18) !important;
-  color: #ffd54f !important;
+  background-color: rgba(105, 177, 255, 0.18) !important;
+  color: var(--cat2bug-accent, #69b1ff) !important;
 }
 
 .cat2bug-page-kbd-hint-float,
@@ -51,9 +51,9 @@ html.dark .layout-nav-kbd-dropdown-active {
   line-height: 1 !important;
   letter-spacing: 0;
   white-space: nowrap;
-  color: #ffd54f;
+  color: var(--cat2bug-accent, #69b1ff);
   background: #2b2b2b;
-  border: 1px solid #5a5a5a;
+  border: 1px solid rgba(105, 177, 255, 0.45);
   border-radius: 3px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
@@ -128,9 +128,9 @@ html:not(.dark) .defect-list-kbd-hint {
   font-size: 10px;
   font-weight: 600;
   line-height: 1;
-  color: #ffd54f;
+  color: var(--cat2bug-accent, #69b1ff);
   background: #2b2b2b;
-  border: 1px solid #5a5a5a;
+  border: 1px solid rgba(105, 177, 255, 0.45);
   border-radius: 3px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
   user-select: none;
@@ -216,24 +216,24 @@ html:not(.dark) .app-container .defect-kbd-hint-host .defect-kbd-hint--primary {
 html.dark .cat2bug-split-dropdown-kbd .cat2bug-split-dropdown-focus-target:focus,
 html.dark .cat2bug-split-dropdown-kbd.cat2bug-split-dropdown-host-focused .cat2bug-split-dropdown-focus-target,
 html.dark .list-query-toolbar-nav-focused.cat2bug-split-dropdown-focus-target {
-  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
 }
 
 .el-dropdown-menu__item.cat2bug-split-dropdown-item-focused {
-  background-color: rgba(64, 158, 255, 0.12);
+  background-color: rgba(24, 144, 255, 0.12);
 }
 
 html.dark .el-dropdown-menu__item.cat2bug-split-dropdown-item-focused {
-  background-color: rgba(255, 206, 58, 0.15);
+  background-color: rgba(105, 177, 255, 0.15);
 }
 
 .report-template-select-popper .template-list-item.report-template-card-kbd-current {
-  box-shadow: 0 0 0 2px var(--primary-color, #409eff);
+  box-shadow: 0 0 0 2px var(--cat2bug-primary, #1890ff);
   outline: none;
 }
 
 html.dark .report-template-select-popper .template-list-item.report-template-card-kbd-current {
-  box-shadow: 0 0 0 2px var(--cat2bug-field-focus-color, #ffce3a);
+  box-shadow: 0 0 0 2px var(--cat2bug-field-focus-color, #69b1ff);
 }
 
 /** 项目信息「更改封面」浮层：方向键焦点环（popover teleport 到 body，须全局样式） */
@@ -249,7 +249,8 @@ html.dark .report-template-select-popper .template-list-item.report-template-car
 }
 
 .el-popover.project-icon-popper .project-icon-popper__grid {
-  width: 550px;
+  width: max-content;
+  max-width: 348px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -266,15 +267,22 @@ html.dark .report-template-select-popper .template-list-item.report-template-car
 }
 
 .el-popover.project-icon-popper .project-icon-popper__grid .el-image {
-  width: 130px;
-  height: 130px;
+  width: 72px;
+  height: 72px;
   border-radius: 4px;
   cursor: pointer;
 }
 
+.el-popover.project-icon-popper .project-icon-popper__grid .update-button {
+  width: 72px !important;
+  height: 72px !important;
+  font-size: 22px;
+  padding: 0;
+}
+
 /* 项目封面区：popover 触发器与按钮同宽，文字水平垂直居中 */
 .project-icon-popover-kbd {
-  width: 150px;
+  width: 96px;
   display: block;
 
   > .el-tooltip__trigger,
@@ -311,23 +319,23 @@ html.dark .report-template-select-popper .template-list-item.report-template-car
 }
 
 .el-popover.project-icon-popper .project-icon-item.project-icon-item-kbd-current .el-image {
-  border: 2px solid #FFC107 !important;
-  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.35);
+  border: 2px solid var(--cat2bug-field-focus-color, #69b1ff) !important;
+  box-shadow: 0 0 0 2px var(--cat2bug-field-focus-ring, rgba(105, 177, 255, 0.35));
 }
 
 .el-popover.project-icon-popper .project-icon-item.project-icon-item-kbd-current .cat2bug-upload-focus-target {
-  outline: 2px solid #FFC107;
+  outline: 2px solid var(--cat2bug-field-focus-color, #69b1ff);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 html:not(.dark) .el-popover.project-icon-popper .project-icon-item.project-icon-item-kbd-current .el-image {
-  border-color: var(--primary-color, #409eff) !important;
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
+  border-color: var(--cat2bug-primary, #1890ff) !important;
+  box-shadow: 0 0 0 2px var(--cat2bug-field-focus-ring, rgba(24, 144, 255, 0.35));
 }
 
 html:not(.dark) .el-popover.project-icon-popper .project-icon-item.project-icon-item-kbd-current .cat2bug-upload-focus-target {
-  outline-color: var(--primary-color, #409eff);
+  outline-color: var(--cat2bug-primary, #1890ff);
 }
 
 .report-template-popover-hint-layer {
@@ -343,32 +351,32 @@ html.dark .el-button.is-plain:not(.el-button--primary):not(.el-button--success):
   background-color: var(--bg-color-block, #1e1e1e) !important;
   border-color: var(--border-color-base, #4c4d4f) !important;
   color: var(--text-color-regular, #cfd3dc) !important;
-  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
 }
 
 html.dark .el-button--primary.is-plain:not(.cat2bug-btn-outline):focus,
 html.dark .el-button--primary.is-plain:not(.cat2bug-btn-outline).list-query-toolbar-nav-focused {
-  background-color: #FFD54F !important;
-  border-color: #FFD54F !important;
-  color: #141414 !important;
-  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+  background-color: var(--el-color-primary-light-3, #4ea8ff) !important;
+  border-color: var(--el-color-primary, #1890ff) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
 }
 
 html.dark .el-button--primary.is-plain.cat2bug-btn-outline:focus,
 html.dark .el-button--primary.is-plain.cat2bug-btn-outline.list-query-toolbar-nav-focused {
-  background-color: rgba(255, 193, 7, 0.12) !important;
-  border-color: #FFC107 !important;
-  color: #FFC107 !important;
-  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+  background-color: rgba(24, 144, 255, 0.12) !important;
+  border-color: var(--cat2bug-primary, #1890ff) !important;
+  color: var(--cat2bug-primary, #1890ff) !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
 }
 
 html.dark .report-template-select-kbd.is-popover-open .report-hint-create.el-button--primary.is-plain,
 html.dark .report-template-select-kbd .report-hint-create.el-button--primary.is-plain:focus,
 html.dark .report-template-select-kbd .report-hint-create.el-button--primary.is-plain:hover {
-  background-color: #FFD54F !important;
-  border-color: #FFD54F !important;
-  color: #141414 !important;
-  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+  background-color: var(--el-color-primary-light-3, #4ea8ff) !important;
+  border-color: var(--el-color-primary, #1890ff) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
 }
 
 html.dark .el-button--danger.is-plain:focus,
@@ -405,15 +413,15 @@ html.dark .el-button-group:focus-within:has(> .el-button--success) {
 /* 日期范围：键盘方向键移动时的当前格高亮 */
 .el-date-table td.cat2bug-date-kbd-current div {
   span {
-    background-color: #409eff;
+    background-color: var(--cat2bug-primary, #1890ff);
     color: #fff;
     font-weight: 700;
   }
 }
 
 html.dark .el-date-table td.cat2bug-date-kbd-current div span {
-  background-color: #ffc107;
-  color: #1a1a1a;
+  background-color: var(--cat2bug-primary, #1890ff);
+  color: #ffffff;
 }
 
 .cat2bug-date-panel-kbd-hint {
@@ -428,11 +436,11 @@ html.dark .el-date-table td.cat2bug-date-kbd-current div span {
   border-radius: 3px;
   pointer-events: none;
   color: #fff;
-  background: rgba(64, 158, 255, 0.92);
+  background: rgba(24, 144, 255, 0.92);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
 }
 
 html.dark .cat2bug-date-panel-kbd-hint {
-  color: #1a1a1a;
-  background: rgba(255, 193, 7, 0.95);
+  color: #ffffff;
+  background: rgba(105, 177, 255, 0.95);
 }

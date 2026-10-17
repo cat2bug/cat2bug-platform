@@ -563,15 +563,15 @@ export default {
   }
 
   &.is-selected {
-    background-color: rgba(255, 193, 7, 0.12) !important;
-    color: var(--sidebar-active-text, #ffc107) !important;
+    background-color: rgba(105, 177, 255, 0.16) !important;
+    color: var(--sidebar-active-text, #69b1ff) !important;
     font-weight: 600;
   }
 
   &.is-selected.is-hovering,
   &.is-selected:hover {
     background-color: var(--team-select-popper-hover, #2d2d31) !important;
-    color: var(--sidebar-active-text, #ffc107) !important;
+    color: var(--sidebar-active-text, #69b1ff) !important;
   }
 }
 
@@ -592,14 +592,14 @@ export default {
   .team-select-footer-btn.el-button {
     @include team-select-footer-btn-base;
     background-color: transparent !important;
-    border-color: var(--sidebar-active-text, #ffc107) !important;
-    color: var(--sidebar-active-text, #ffc107) !important;
+    border-color: var(--sidebar-active-text, #69b1ff) !important;
+    color: var(--sidebar-active-text, #69b1ff) !important;
 
     &:hover,
     &:focus {
-      background-color: rgba(255, 193, 7, 0.08) !important;
-      border-color: #ffd54f !important;
-      color: #ffd54f !important;
+      background-color: rgba(105, 177, 255, 0.12) !important;
+      border-color: var(--cat2bug-accent, #69b1ff) !important;
+      color: var(--cat2bug-accent, #69b1ff) !important;
     }
   }
 }

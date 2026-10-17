@@ -242,7 +242,7 @@ export default {
       },
       menuActiveTextColor() {
         if (this.isSidebarDark) {
-          return 'var(--sidebar-active-text, #FFC107)'
+          return 'var(--sidebar-active-text, #1890ff)'
         }
         return this.settings?.theme
       }
