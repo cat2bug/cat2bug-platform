@@ -639,6 +639,7 @@
   "module.hidden-parent-levels": "{0} مستوى",
   "module.scroll-up": "التمرير لأعلى",
   "module.scroll-down": "التمرير لأسفل",
+  "module.expand-children": "توسيع الفرعي",
   "module.expand-collapse": "توسيع/تصغير",
   "module.enter-module-name": "الرجاء إدخال اسم وحدة التسليم",
   "module.enter-module-names": "الرجاء إدخال أسماء وحدات تسليم متعددة، حيث يتم فصل كل اسم بفاصل سطر جديد",
@@ -2022,5 +2023,12 @@
   "defect-log.commit": "الالتزام",
   "git.repo.pr.defect-project-missing": "تعذر تحديد مشروع المستودع؛ لا يمكن فتح العيب",
   "git.repo.pr.defect-not-found": "لم يتم العثور على العيب #{num}",
-  "git.repo.pr.defect-load-failed": "تعذر تحميل العيب #{num} (قد لا تتوفر الصلاحية)"
+  "git.repo.pr.defect-load-failed": "تعذر تحميل العيب #{num} (قد لا تتوفر الصلاحية)",
+  "error.404.title": "الصفحة غير موجودة",
+  "error.404.description": "تعذر العثور على الصفحة المطلوبة. تحقق من العنوان أو ارجع إلى الصفحة الرئيسية.",
+  "error.404.home": "العودة للرئيسية",
+  "error.401.title": "لا توجد صلاحية وصول",
+  "error.401.description": "حسابك لا يملك صلاحية فتح هذه الصفحة. يمكنك الرجوع أو العودة للرئيسية.",
+  "error.401.back": "رجوع",
+  "error.401.home": "العودة للرئيسية"
 }

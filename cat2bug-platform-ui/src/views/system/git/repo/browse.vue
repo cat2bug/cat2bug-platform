@@ -745,16 +745,15 @@
           @deleted="onReleaseDeleted"
           @edit="openEditRelease"
         />
-        <el-empty
+        <cat2-bug-empty
           v-if="!releasesLoading && !releasesTimeline.length"
           class="git-releases-empty"
-          :image-size="96"
         >
           <template #description>
             <p class="git-releases-empty__title">{{ $t('git.repo.release.empty') }}</p>
             <p class="git-releases-empty__hint">{{ $t('git.repo.release.empty-hint') }}</p>
           </template>
-        </el-empty>
+        </cat2-bug-empty>
       </div>
     </div>
 

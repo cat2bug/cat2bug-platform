@@ -78,7 +78,7 @@
                   </div>
                 </div>
               </div>
-              <el-empty v-if="!commitsLoading && !commits.length" :description="$t('git.repo.pr.no-commits')" :image-size="72" />
+              <cat2-bug-empty v-if="!commitsLoading && !commits.length" :description="$t('git.repo.pr.no-commits')" />
             </div>
           </el-tab-pane>
           <el-tab-pane name="files" :label="$t('git.repo.pr.files', { n: files.length })">
@@ -97,7 +97,7 @@
                   <div v-else class="git-pr-detail__placeholder">{{ $t('git.repo.commit.no-patch') }}</div>
                 </div>
               </div>
-              <el-empty v-if="!filesLoading && !files.length" :description="$t('git.repo.pr.no-files')" :image-size="72" />
+              <cat2-bug-empty v-if="!filesLoading && !files.length" :description="$t('git.repo.pr.no-files')" />
             </div>
           </el-tab-pane>
           <el-tab-pane name="discussion" :label="$t('git.repo.pr.discussion', { n: comments.length })">
@@ -158,7 +158,7 @@
                   </div>
                 </div>
               </div>
-              <el-empty v-if="!commentsLoading && !comments.length" :description="$t('git.repo.pr.no-comments')" :image-size="72" />
+              <cat2-bug-empty v-if="!commentsLoading && !comments.length" :description="$t('git.repo.pr.no-comments')" />
             </section>
           </el-tab-pane>
         </el-tabs>

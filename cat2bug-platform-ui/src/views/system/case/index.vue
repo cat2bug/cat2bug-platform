@@ -37,6 +37,7 @@
 
         <div ref="caseToolsRight" class="table-tools row case-right-tools" :class="{ 'buttons-wrapped': caseRightButtonsWrapped }">
         <el-popover
+          :width="240"
           placement="top"
           trigger="click"
           popper-class="defect-column-picker-popover"

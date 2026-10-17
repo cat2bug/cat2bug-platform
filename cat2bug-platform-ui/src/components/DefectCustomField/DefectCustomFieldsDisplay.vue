@@ -18,10 +18,11 @@
       </el-col>
     </el-row>
   </div>
-  <el-empty v-else :description="$t('no-data')" />
+  <cat2-bug-empty v-else :description="$t('no-data')" />
 </template>
 
 <script>
+import Cat2BugEmpty from '@/components/Cat2BugEmpty'
 import { listModulePath } from '@/api/system/module'
 import { TableOptions } from '@/views/system/defect/list/table-options'
 import { TABLE_KEY_TO_BUILTIN_FIELD_KEY } from '@/utils/defect-field-layout'
@@ -46,7 +47,7 @@ const ACCORDION_TYPE_ORDER = Object.freeze({ image: 0, object: 1, file: 2 })
 export default {
   name: 'DefectCustomFieldsDisplay',
   dicts: ['defect_level'],
-  components: {},
+  components: { Cat2BugEmpty },
   props: {
     projectId: { type: Number, default: null },
     /** 完整缺陷对象（详情抽屉传入） */

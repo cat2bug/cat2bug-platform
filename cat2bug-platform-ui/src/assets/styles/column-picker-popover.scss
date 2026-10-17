@@ -5,6 +5,10 @@
 
 .defect-column-picker-popover,
 .defect-excel-column-picker-popover {
+  /* EP 默认 width:150，字段勾选列表会被压扁换行 */
+  width: 240px !important;
+  min-width: 200px !important;
+  max-width: min(320px, calc(100vw - 32px)) !important;
   padding: 8px 6px !important;
   box-sizing: border-box;
   overflow: hidden;

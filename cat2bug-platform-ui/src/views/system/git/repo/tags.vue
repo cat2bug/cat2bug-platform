@@ -99,10 +99,9 @@
               </div>
             </div>
           </div>
-          <el-empty
+          <cat2-bug-empty
             v-if="!tagsLoading && !tags.length"
             :description="$t('git.repo.tags.empty')"
-            :image-size="80"
           />
         </div>
       </section>

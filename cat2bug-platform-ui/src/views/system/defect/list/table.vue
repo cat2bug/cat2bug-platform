@@ -4,7 +4,14 @@
     <div class="defect-table-tools defect-table-tools-bar defect-view-toolbar">
       <slot name="left-tools"></slot>
       <div class="table-tools row">
-        <el-popover placement="top" trigger="click" popper-class="defect-column-picker-popover" @show="emitColumnPickerVisible(true)" @hide="emitColumnPickerVisible(false)">
+        <el-popover
+          :width="240"
+          placement="top"
+          trigger="click"
+          popper-class="defect-column-picker-popover"
+          @show="emitColumnPickerVisible(true)"
+          @hide="emitColumnPickerVisible(false)"
+        >
           <div class="defect-column-picker-head">
             <el-icon class="legacy-icon-inline"><component :is="$legacyIcon('el-icon-s-fold')" /></el-icon>
             <h4>{{ $t('display-field') }}</h4>

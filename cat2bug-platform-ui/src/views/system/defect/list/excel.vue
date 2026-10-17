@@ -19,6 +19,7 @@
           </span>
         </el-tooltip>
         <el-popover
+          :width="260"
           v-model:visible="excelToolbarColumnPickerVisible"
           placement="bottom-end"
           trigger="click"

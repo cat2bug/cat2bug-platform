@@ -641,6 +641,7 @@
   "module.hidden-parent-levels": "{0}層",
   "module.scroll-up": "向上捲動",
   "module.scroll-down": "向下捲動",
+  "module.expand-children": "展開下級",
   "module.expand-collapse": "展開/摺疊",
   "module.enter-module-name": "請輸入交付物名稱",
   "module.enter-module-names": "請輸入多個交付物名稱，每個交付物名稱透過換行符區分",
@@ -2024,5 +2025,12 @@
   "defect-log.commit": "關聯提交",
   "git.repo.pr.defect-project-missing": "無法確定目前倉庫所屬專案，暫不能開啟缺陷",
   "git.repo.pr.defect-not-found": "找不到缺陷 #{num}",
-  "git.repo.pr.defect-load-failed": "無法載入缺陷 #{num}（可能沒有權限）"
+  "git.repo.pr.defect-load-failed": "無法載入缺陷 #{num}（可能沒有權限）",
+  "error.404.title": "頁面不存在",
+  "error.404.description": "找不到你要造訪的頁面。請檢查網址，或返回首頁繼續使用。",
+  "error.404.home": "返回首頁",
+  "error.401.title": "沒有存取權限",
+  "error.401.description": "目前帳號無權開啟此頁面。可返回上一頁，或回到首頁。",
+  "error.401.back": "返回",
+  "error.401.home": "返回首頁"
 }

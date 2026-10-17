@@ -43,7 +43,7 @@
         <el-button class="case-button" type="primary" @click="handleImportClick">批量导入系统</el-button>
       </div>
     </div>
-    <el-empty v-else description="没有找到数据" :image-size="50"></el-empty>
+    <cat2-bug-empty v-else size="small" description="没有找到数据" />
   </div>
 </template>
 

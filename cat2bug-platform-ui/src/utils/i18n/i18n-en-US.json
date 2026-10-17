@@ -705,6 +705,7 @@
   "module.hidden-parent-levels": "L{0}",
   "module.scroll-up": "Scroll up",
   "module.scroll-down": "Scroll down",
+  "module.expand-children": "Expand children",
   "module.expand-collapse": "Expand/Collapse",
   "module.enter-module-name": "Please enter the deliverable",
   "module.enter-module-names": "Please enter multiple deliverable names, each distinguished by a newline character",
@@ -2093,5 +2094,12 @@
   "defect-log.commit": "Commit",
   "git.repo.pr.defect-project-missing": "Cannot determine the project for this repository; unable to open the defect",
   "git.repo.pr.defect-not-found": "Defect #{num} was not found",
-  "git.repo.pr.defect-load-failed": "Failed to load defect #{num} (permission may be missing)"
+  "git.repo.pr.defect-load-failed": "Failed to load defect #{num} (permission may be missing)",
+  "error.404.title": "Page not found",
+  "error.404.description": "The page you are looking for does not exist. Check the URL, or go back to the home page.",
+  "error.404.home": "Back to home",
+  "error.401.title": "Access denied",
+  "error.401.description": "You do not have permission to open this page. Go back, or return to the home page.",
+  "error.401.back": "Back",
+  "error.401.home": "Back to home"
 }

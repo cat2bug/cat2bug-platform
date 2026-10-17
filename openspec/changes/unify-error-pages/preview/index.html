@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>错误页预览 · 登录狸花猫 × 深浅主题</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+      background: #0a0a0a;
+      color: #ddd;
+      padding: 24px;
+    }
+    h1 { font-size: 20px; margin: 0 0 6px; color: #eee; }
+    .lead { color: #888; margin: 0 0 18px; max-width: 920px; line-height: 1.55; font-size: 14px; }
+    .themes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      max-width: 1280px;
+    }
+    .theme {
+      border: 1px solid #222;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #141416;
+    }
+    .theme-head {
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #aaa;
+      border-bottom: 1px solid #1c1c1e;
+    }
+    .theme.light .stage-wrap { background: #f5f6f8; }
+    .theme.dark .stage-wrap { background: #1e1e20; }
+    .theme.light {
+      --bg: #f5f6f8;
+      --panel: #fff;
+      --text: #303133;
+      --text2: #909399;
+      --border: #e4e7ed;
+      --primary: #1890ff;
+    }
+    .theme.dark {
+      --bg: #1e1e20;
+      --panel: #252529;
+      --text: #f5f7fa;
+      --text2: #a3a6ad;
+      --border: #363637;
+      --primary: #1890ff;
+    }
+    .pages {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: #1c1c1e;
+    }
+    .page {
+      background: var(--bg);
+      min-height: 380px;
+      padding: 28px 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .inner { width: 100%; max-width: 280px; }
+    .art {
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: 200px;
+      max-height: 160px;
+      margin: 0 auto 8px;
+      object-fit: contain;
+    }
+    .code {
+      font-size: 48px;
+      line-height: 1.05;
+      color: var(--primary);
+      font-weight: 700;
+      margin: 0 0 6px;
+    }
+    .code--word { font-size: 28px; letter-spacing: 0.06em; }
+    .title {
+      margin: 0 0 8px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .desc {
+      margin: 0 0 16px;
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--text2);
+    }
+    .actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      height: 32px; padding: 0 12px; border-radius: 4px; font-size: 12px;
+      border: 1px solid transparent;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-default { background: var(--panel); color: var(--text); border-color: var(--border); }
+    .tag {
+      padding: 6px 10px;
+      font-size: 11px;
+      color: #777;
+      background: rgba(0,0,0,.04);
+    }
+    .theme.dark .tag { background: rgba(255,255,255,.04); color: #888; }
+    @media (max-width: 960px) {
+      .themes { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <h1>错误页预览 · 登录页狸花猫形象 × 浅/深对照</h1>
+  <p class="lead">定点修正：401 锁拱透底、暗色眼睛高光、禁用改为胸前矮门（不挡眼）+完整挂锁。404 浅色未改。正式页面未动。</p>
+
+  <div class="themes">
+    <!-- 浅色 -->
+    <section class="theme light">
+      <div class="theme-head">浅色主题</div>
+      <div class="pages">
+        <div class="page">
+          <div class="inner">
+            <img class="art" src="illust-404-light.png?v=1792252257" alt="" />
+            <div class="code">404</div>
+            <h2 class="title">页面不存在</h2>
+            <p class="desc">找不到你要访问的页面。请检查地址，或返回首页继续使用。</p>
+            <div class="actions"><span class="btn btn-primary">返回首页</span></div>
+            <div class="tag">404</div>
+          </div>
+        </div>
+        <div class="page">
+          <div class="inner">
+            <img class="art" src="illust-401-light.png?v=1792252257" alt="" />
+            <div class="code">401</div>
+            <h2 class="title">没有访问权限</h2>
+            <p class="desc">当前账号无权打开此页面。可返回上一页，或回到首页。</p>
+            <div class="actions">
+              <span class="btn btn-default">返回</span>
+              <span class="btn btn-primary">返回首页</span>
+            </div>
+            <div class="tag">401</div>
+          </div>
+        </div>
+        <div class="page">
+          <div class="inner">
+            <img class="art" src="illust-disabled-light.png?v=1792252257" alt="" />
+            <div class="code code--word">TEAM</div>
+            <h2 class="title">团队已禁用</h2>
+            <p class="desc">您的团队功能已被禁用。如需解锁，请联系管理人员。</p>
+            <div class="actions"><span class="btn btn-primary">切换团队</span></div>
+            <div class="tag">团队禁用</div>
+          </div>
+        </div>
+        <div class="page">
+          <div class="inner">
+            <img class="art" src="illust-disabled-light.png?v=1792252257" alt="" />
+            <div class="code code--word">PROJECT</div>
+            <h2 class="title">项目已禁用</h2>
+            <p class="desc">您参与的项目功能已被禁用。如需解锁，请联系管理人员。</p>
+            <div class="actions"><span class="btn btn-primary">选择项目</span></div>
+            <div class="tag">项目禁用</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 暗色 -->
+    <section class="theme dark">
+      <div class="theme-head">暗色主题</div>
+      <div class="pages">
+        <div class="page">
+          <div class="inner">
+            <img class="art" src="illust-404-dark.png?v=1792252257" alt="" />
+            <div class="code">404</div>
+            <h2 class="title">页面不存在</h2>
+            <p class="desc">找不到你要访问的页面。请检查地址，或返回首页继续使用。</p>
+            <div class="actions"><span class="btn btn-primary">返回首页</span></div>
+            <div class="tag">404</div>
+          </div>
+        </div>
+        <div class="page">
+          <div class="inner">
+            <img class="art" src="illust-401-dark.png?v=1792252257" alt="" />
+            <div class="code">401</div>
+            <h2 class="title">没有访问权限</h2>
+            <p class="desc">当前账号无权打开此页面。可返回上一页，或回到首页。</p>
+            <div class="actions">
+              <span class="btn btn-default">返回</span>
+              <span class="btn btn-primary">返回首页</span>
+            </div>
+            <div class="tag">401</div>
+          </div>
+        </div>
+        <div class="page">
+          <div class="inner">
+            <img class="art" src="illust-disabled-dark.png?v=1792252257" alt="" />
+            <div class="code code--word">TEAM</div>
+            <h2 class="title">团队已禁用</h2>
+            <p class="desc">您的团队功能已被禁用。如需解锁，请联系管理人员。</p>
+            <div class="actions"><span class="btn btn-primary">切换团队</span></div>
+            <div class="tag">团队禁用</div>
+          </div>
+        </div>
+        <div class="page">
+          <div class="inner">
+            <img class="art" src="illust-disabled-dark.png?v=1792252257" alt="" />
+            <div class="code code--word">PROJECT</div>
+            <h2 class="title">项目已禁用</h2>
+            <p class="desc">您参与的项目功能已被禁用。如需解锁，请联系管理人员。</p>
+            <div class="actions"><span class="btn btn-primary">选择项目</span></div>
+            <div class="tag">项目禁用</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

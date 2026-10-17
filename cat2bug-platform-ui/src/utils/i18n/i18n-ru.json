@@ -639,6 +639,7 @@
   "module.hidden-parent-levels": "{0} ур.",
   "module.scroll-up": "Прокрутить вверх",
   "module.scroll-down": "Прокрутить вниз",
+  "module.expand-children": "Развернуть дочерние",
   "module.expand-collapse": "Развернуть/Свернуть",
   "module.enter-module-name": "Введите название модуля",
   "module.enter-module-names": "Введите названия нескольких модулей. Каждый название должно быть на отдельной строке",
@@ -2022,5 +2023,12 @@
   "defect-log.commit": "Коммит",
   "git.repo.pr.defect-project-missing": "Не удалось определить проект репозитория; дефект открыть нельзя",
   "git.repo.pr.defect-not-found": "Дефект #{num} не найден",
-  "git.repo.pr.defect-load-failed": "Не удалось загрузить дефект #{num} (возможно, нет прав)"
+  "git.repo.pr.defect-load-failed": "Не удалось загрузить дефект #{num} (возможно, нет прав)",
+  "error.404.title": "Страница не найдена",
+  "error.404.description": "Запрошенная страница не существует. Проверьте адрес или вернитесь на главную.",
+  "error.404.home": "На главную",
+  "error.401.title": "Нет доступа",
+  "error.401.description": "У вашей учётной записи нет прав на эту страницу. Вернитесь назад или на главную.",
+  "error.401.back": "Назад",
+  "error.401.home": "На главную"
 }

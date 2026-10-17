@@ -92,6 +92,7 @@
       >
         <select-case
           v-model:caseId="config.caseId"
+          :project-id="projectId"
           :module-id="config.moduleId"
         />
       </el-form-item>

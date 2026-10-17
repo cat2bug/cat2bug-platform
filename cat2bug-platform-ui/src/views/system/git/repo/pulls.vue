@@ -49,10 +49,9 @@
           </span>
           <el-icon class="git-pr-list__arrow"><ArrowRight /></el-icon>
         </button>
-        <el-empty
+        <cat2-bug-empty
           v-if="!loading && !filteredPulls.length"
           :description="$t('git.repo.pr.empty')"
-          :image-size="96"
         />
       </div>
     </git-repo-shell>

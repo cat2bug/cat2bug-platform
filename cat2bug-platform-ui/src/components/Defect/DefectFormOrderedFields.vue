@@ -118,8 +118,9 @@
         <select-case
           ref="selectCase"
           v-model:caseId="form.caseId"
+          v-model:step-index="form.caseStepId"
+          :project-id="projectId"
           :module-id="form.moduleId"
-          :step-index="form.caseStepId"
           @step-change="$emit('step-change', $event)"
         />
       </el-form-item>
@@ -195,6 +196,7 @@ import { resolveOrderedDefectFormFields } from '@/utils/defect-form-field-order'
 export default {
   name: 'DefectFormOrderedFields',
   dicts: ['defect_level'],
+  emits: ['module-change', 'step-change', 'update:planTimeRange'],
   components: {
     SelectProjectMember,
     SelectModule,

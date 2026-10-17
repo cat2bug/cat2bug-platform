@@ -42,7 +42,7 @@
             <span class="handle-defect-collapse-title" data-collapse-name="defectDescribe">{{ $i18n.t('describe') }}</span>
           </template>
           <markdown-content v-if="defect.defectDescribe" :content="defect.defectDescribe+''" />
-          <el-empty v-else :description="$t('no-data')"></el-empty>
+          <cat2-bug-empty v-else :description="$t('no-data')" />
         </el-collapse-item>
         <el-collapse-item name="customFields">
           <template #title>
@@ -97,6 +97,7 @@ import DefectTools from "@/components/Defect/DefectTools";
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import CaseCard from "@/components/Case/CaseCard";
+import Cat2BugEmpty from '@/components/Cat2BugEmpty'
 import FocusMemberList from "@/components/FocusMemberList";
 import {getCase} from "@/api/system/case";
 import MarkdownContent from '@/components/Markdown/MarkdownContent.vue'
@@ -120,6 +121,7 @@ export default {
     DefectTypeFlag,
     DefectStateFlag,
     CaseCard,
+    Cat2BugEmpty,
     MarkdownContent,
     FocusMemberList,
     DefectCustomFieldsDisplay: () => import('@/components/DefectCustomField/DefectCustomFieldsDisplay'),

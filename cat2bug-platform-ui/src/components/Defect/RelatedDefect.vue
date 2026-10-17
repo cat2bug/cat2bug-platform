@@ -25,6 +25,7 @@
         </div>
         <div class="table-tools row">
           <el-popover
+          :width="240"
             placement="top"
             trigger="click"
             popper-class="defect-column-picker-popover">

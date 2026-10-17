@@ -65,11 +65,12 @@ export default {
 }
 
 .start-switch[collect='true'] :deep(.el-icon) {
-  color: var(--star-switch-on-color, rgb(247, 186, 42));
+  /* !important：压过 .el-card__header i 的主色覆盖 */
+  color: var(--star-switch-on-color, rgb(247, 186, 42)) !important;
 }
 
 /* 浅色主题 off-color 为描边色（#fff），SVG 应使用 off-stroke / off-fill */
 .start-switch:not([collect='true']) :deep(.el-icon) {
-  color: var(--star-switch-off-stroke, #c0c4cc);
+  color: var(--star-switch-off-stroke, #c0c4cc) !important;
 }
 </style>

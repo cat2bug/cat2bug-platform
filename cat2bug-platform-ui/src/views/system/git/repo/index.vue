@@ -149,7 +149,12 @@
               </div>
             </div>
           </div>
-          <el-empty v-else-if="!loading" :description="$t('git.repo.empty')" />
+          <cat2-bug-empty
+            v-else-if="!loading"
+            class="git-repo-empty"
+            size="large"
+            :description="$t('git.repo.empty')"
+          />
         </div>
 
         <div v-show="filteredTotal > 0" class="git-repo-pagination-band table-pagination-band">
@@ -744,6 +749,10 @@ export default {
 
 .git-repo-list {
   border-top: 1px solid var(--border-color-light);
+}
+
+.git-repo-empty {
+  padding: 64px 16px 80px;
 }
 
 .git-repo-pagination-band {

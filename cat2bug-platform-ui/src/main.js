@@ -39,6 +39,7 @@ import FileUpload from '@/components/FileUpload'
 import ImageUpload from '@/components/ImageUpload'
 import ImagePreview from '@/components/ImagePreview'
 import Cat2BugImage from '@/components/Cat2BugImage'
+import Cat2BugEmpty from '@/components/Cat2BugEmpty'
 import { Cat2BugImageErrorSlot } from '@/utils/upload-asset'
 import DictTag from '@/components/DictTag'
 import SiteCopyright from '@/components/SiteCopyright'
@@ -142,6 +143,7 @@ async function mountApp() {
   app.component('ImagePreview', ImagePreview)
   app.component('Cat2BugImage', Cat2BugImage)
   app.component('Cat2BugImageErrorSlot', Cat2BugImageErrorSlot)
+  app.component('Cat2BugEmpty', Cat2BugEmpty)
   app.component('CommandPalette', CommandPalette)
 
   app.config.globalProperties.getDicts = getDicts

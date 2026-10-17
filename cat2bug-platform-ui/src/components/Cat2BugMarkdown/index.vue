@@ -524,11 +524,9 @@ export default {
       const markdownEdit = this.$refs.markdownEdit
       if (markdownEdit && typeof markdownEdit.insertFormatted === 'function') {
         const inserted = markdownEdit.insertFormatted((selectedText) => {
-          if (selectedText) {
-            content = strFormat(content, selectedText)
-          } else {
-            content = strFormat(content, tool.name)
-          }
+          // 无选区时用空串，避免插入 title2 这类内部 key
+          const placeholder = selectedText || ''
+          content = strFormat(content, placeholder)
           return {
             targetValue: `\n${content}\n`,
             select: false,
@@ -547,15 +545,22 @@ export default {
     },
     /** 左侧工具栏处理事件 */
     async toolsHandle(tools, tool) {
-      if(tool.type=='command') {
-        tool.content(this, tool);
-      } else if(tool.type=='component'){
-        this.currentToolView = tool.content.name;
-        this.$nextTick(()=>{
-          this.$refs.toolView.run(this,tools,tool);
-        });
+      if (tool.type == 'command') {
+        tool.content(this, tool)
+      } else if (tool.type == 'component') {
+        // 用组件对象挂载，避免仅靠全局 name 时 keep-alive/ref 偶发拿不到实例
+        this.currentToolView = tool.content
+        await this.$nextTick()
+        let view = this.$refs.toolView
+        if (!view || typeof view.run !== 'function') {
+          await this.$nextTick()
+          view = this.$refs.toolView
+        }
+        if (view && typeof view.run === 'function') {
+          view.run(this, tools, tool)
+        }
       } else {
-        await this.insertContent(tool);
+        await this.insertContent(tool)
       }
     },
     /** 获取Markdown文档的图片 */

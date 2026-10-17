@@ -705,6 +705,7 @@
   "module.hidden-parent-levels": "{0}层",
   "module.scroll-up": "向上滚动",
   "module.scroll-down": "向下滚动",
+  "module.expand-children": "展开下级",
   "module.expand-collapse": "展开/折叠",
   "module.enter-module-name": "请输入交付物名称",
   "module.enter-module-names": "请输入多个交付物名称，每个交付物名称通过换行符区分",
@@ -2093,5 +2094,12 @@
   "defect-log.commit": "关联提交",
   "git.repo.pr.defect-project-missing": "无法确定当前仓库所属项目，暂不能打开缺陷",
   "git.repo.pr.defect-not-found": "未找到缺陷 #{num}",
-  "git.repo.pr.defect-load-failed": "无法加载缺陷 #{num}（可能没有权限）"
+  "git.repo.pr.defect-load-failed": "无法加载缺陷 #{num}（可能没有权限）",
+  "error.404.title": "页面不存在",
+  "error.404.description": "找不到你要访问的页面。请检查地址，或返回首页继续使用。",
+  "error.404.home": "返回首页",
+  "error.401.title": "没有访问权限",
+  "error.401.description": "当前账号无权打开此页面。可返回上一页，或回到首页。",
+  "error.401.back": "返回",
+  "error.401.home": "返回首页"
 }

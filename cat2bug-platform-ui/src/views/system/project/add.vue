@@ -52,7 +52,7 @@
                           <member-nameplate :member="member"></member-nameplate>
                         </el-col>
                       </el-row>
-                    <el-empty v-else :description="$t('no-data')"></el-empty>
+                    <cat2-bug-empty v-else size="small" :description="$t('no-data')" />
                     <template #reference>
                       <el-button :icon="$legacyIcon('el-icon-user-solid')">{{$t('project.add-member')}}</el-button>
                     </template>

@@ -639,6 +639,7 @@
   "module.hidden-parent-levels": "{0}단계",
   "module.scroll-up": "위로 스크롤",
   "module.scroll-down": "아래로 스크롤",
+  "module.expand-children": "하위 펼치기",
   "module.expand-collapse": "펼치기/접기",
   "module.enter-module-name": "전달물 이름을 입력해주세요",
   "module.enter-module-names": "여러 전달물 이름을 입력해주세요. 각 전달물 이름은 줄 바꿈으로 구분합니다",
@@ -2022,5 +2023,12 @@
   "defect-log.commit": "관련 커밋",
   "git.repo.pr.defect-project-missing": "이 저장소의 프로젝트를 확인할 수 없어 결함을 열 수 없습니다",
   "git.repo.pr.defect-not-found": "결함 #{num}을(를) 찾을 수 없습니다",
-  "git.repo.pr.defect-load-failed": "결함 #{num}을(를) 불러오지 못했습니다(권한이 없을 수 있음)"
+  "git.repo.pr.defect-load-failed": "결함 #{num}을(를) 불러오지 못했습니다(권한이 없을 수 있음)",
+  "error.404.title": "페이지를 찾을 수 없습니다",
+  "error.404.description": "요청하신 페이지를 찾을 수 없습니다. 주소를 확인하거나 홈으로 돌아가 주세요.",
+  "error.404.home": "홈으로",
+  "error.401.title": "접근 권한이 없습니다",
+  "error.401.description": "현재 계정으로 이 페이지를 열 수 없습니다. 이전 페이지로 돌아가거나 홈으로 이동하세요.",
+  "error.401.back": "뒤로",
+  "error.401.home": "홈으로"
 }

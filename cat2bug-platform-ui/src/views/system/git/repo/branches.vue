@@ -116,10 +116,9 @@
               </div>
             </div>
           </div>
-          <el-empty
+          <cat2-bug-empty
             v-if="!branchesLoading && !branches.length"
             :description="$t('git.repo.branches.empty')"
-            :image-size="80"
           />
         </div>
       </section>

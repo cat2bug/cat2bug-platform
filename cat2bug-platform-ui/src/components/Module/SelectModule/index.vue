@@ -8,6 +8,7 @@
     @hide="popoverHideHandle"
     :popper-class="popoverPopperClass"
     :show-arrow="popoverVisibleArrow"
+    :width="modulePopoverWidth"
     :boundaries-padding="16"
     :popper-options="modulePopoverPopperOptions"
     :trigger="popoverTriggerMode">
@@ -67,11 +68,11 @@
                    :keyboard-active-part="keyboardActivePartForColumn(index)"
                    :path-highlight-module-id="pathHighlightModuleIdForColumn(index)"
                    :label-max-length-override="menuLabelLimits[index]"
-                   @clickMenu="clickMenuHandle($event,index)"
-                   @clickDirectory="clickDirectoryHandle($event,index)"
-                   @clickAddSubMenu="clickAddSubMenuHandle($event,index)"
-                   @addInputBlur="onAddModuleInputBlur"
-                   @addInputEscape="handleAddModuleInputEscape"
+                   @click-menu="clickMenuHandle($event,index)"
+                   @click-directory="clickDirectoryHandle($event,index)"
+                   @click-add-sub-menu="clickAddSubMenuHandle($event,index)"
+                   @add-input-blur="onAddModuleInputBlur"
+                   @add-input-escape="handleAddModuleInputEscape"
                    @column-ready="onModuleMenuColumnReady"
                    @module-added="onModuleMenuAdded($event, index)"
       ></module-menu>
@@ -206,6 +207,12 @@ export default {
         /* 展开子级列后不因 flip 改到 top，避免抽屉底部输入框旁的下拉跳到表单中部 */
         modifiersIgnored: ['flip']
       }
+    },
+    /** 按列数给 EP Popover 显式宽度（默认 150 会把 200px 列压成只剩 ›/+）；勿加额外空白 */
+    modulePopoverWidth () {
+      const colCount = Math.max(1, (this.activeModuleIds && this.activeModuleIds.length) || 1)
+      const prevBtnW = this.menuScrollHasLeft ? 44 : 0
+      return colCount * 200 + prevBtnW
     }
   },
   watch: {
@@ -256,7 +263,7 @@ export default {
       this.loadModuleForProp(this.moduleId)
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     const shell = this.$refs.inputBox;
     if (shell) shell.__cat2bugOnTabAway = null;
     this.detachModulePopoverKeyboardListener();
@@ -442,7 +449,7 @@ export default {
         this.$_onModulePopoverKeydown = null;
       }
     },
-    /** 限制 popover 不超出视口/抽屉，宽度随菜单列内容收缩（列内超长文字省略） */
+    /** 限制 popover 不超出视口/抽屉/对话框；宽度按列数固定（EP 默认 width=150 会压扁列） */
     fitModulePopoverLayout() {
       const apply = () => {
         const scroller = this.$refs.moduleMenuScroller;
@@ -460,48 +467,55 @@ export default {
         let refRect = null;
         if (ref && typeof ref.getBoundingClientRect === 'function') {
           refRect = ref.getBoundingClientRect();
-          maxWidth = Math.min(maxWidth, vw - refRect.left - pad);
+          // 优先用输入框右侧剩余空间；不够一列时改用整视口宽度
+          const rightSpace = vw - refRect.left - pad;
+          maxWidth = Math.min(maxWidth, Math.max(rightSpace, vw - pad * 2));
         }
 
-        const drawer = ref && ref.closest('.el-drawer');
-        if (drawer && typeof drawer.getBoundingClientRect === 'function') {
-          const dr = drawer.getBoundingClientRect();
-          if (refRect) {
-            maxWidth = Math.min(maxWidth, dr.right - refRect.left - pad);
-          } else {
-            maxWidth = Math.min(maxWidth, dr.width - pad * 2);
+        const host = ref && (
+          ref.closest('.el-drawer__body') ||
+          ref.closest('.el-dialog__body') ||
+          ref.closest('.el-drawer') ||
+          ref.closest('.el-dialog')
+        );
+        if (host && typeof host.getBoundingClientRect === 'function') {
+          const hr = host.getBoundingClientRect();
+          const hostBudget = Math.floor(hr.width - pad * 2);
+          if (hostBudget > 0) {
+            maxWidth = Math.min(maxWidth, hostBudget);
           }
         }
 
-        maxWidth = Math.max(160, Math.floor(maxWidth));
-        popper.style.setProperty('max-width', `${maxWidth}px`, 'important');
-        popper.style.boxSizing = 'border-box';
-
         const colW = 200;
-        const colCount = this.activeModuleIds.length;
-        const popoverPadding = 20;
-        const contentW = colCount * colW + popoverPadding;
-        if (contentW > maxWidth) {
-          popper.style.setProperty('width', `${maxWidth}px`, 'important');
-        } else {
-          popper.style.removeProperty('width');
-        }
+        const colCount = Math.max(1, this.activeModuleIds.length);
+        const prevBtnW = this.menuScrollHasLeft ? 44 : 0;
+        const contentW = colCount * colW + prevBtnW;
+        // 至少容纳一列，避免被 EP 默认 150px 压扁
+        const minW = colW;
+        maxWidth = Math.max(minW, Math.floor(maxWidth));
+        const targetW = Math.min(contentW, maxWidth);
+
+        popper.style.boxSizing = 'border-box';
 
         const outer = scroller.parentElement;
         if (outer && outer.classList.contains('select-module-menu-outer')) {
-          outer.style.removeProperty('width');
+          outer.style.width = 'auto';
           outer.style.maxWidth = '100%';
         }
-        scroller.style.removeProperty('width');
+        scroller.style.width = 'max-content';
         scroller.style.maxWidth = '100%';
 
-        this.updateMenuLabelLimits(scroller, maxWidth);
+        this.updateMenuLabelLimits(scroller, targetW);
 
         this.refreshModulePopoverReference();
         const popover = this.$refs.modulePopover;
         if (popover && typeof popover.updatePopper === 'function') {
           popover.updatePopper();
         }
+        // updatePopper 后再次写入，避免被 EP 内联 width 盖回默认值
+        popper.style.setProperty('max-width', `${maxWidth}px`, 'important');
+        popper.style.setProperty('width', `${targetW}px`, 'important');
+        popper.style.setProperty('min-width', `${Math.min(minW, maxWidth)}px`, 'important');
         this.syncMenuScrollIndicators();
         this.syncAllMenuColumnScrollIndicators();
       };
@@ -1053,11 +1067,8 @@ export default {
         return;
       }
 
-      if (menu.moduleHasChildren(module)) {
-        this.moveModuleColumn(1);
-      } else {
-        this.clickMenuHandle(module, this.activeColumnIndex);
-      }
+      // Enter/空格：选中当前行（含有子级的中间节点）；展开子级用 → 或点 ›
+      this.clickMenuHandle(module, this.activeColumnIndex);
     },
     reloadModulePathMap(projectId) {
       const pid = Number(projectId)
@@ -1111,7 +1122,7 @@ export default {
       return parts.join('/');
     },
     setDisplaySearch(value) {
-      this.$set(this.queryMember.params, 'search', value);
+      this.queryMember.params.search = value;
     },
     applyDisplaySearchFormatted(full) {
       const apply = () => {
@@ -1266,7 +1277,10 @@ export default {
       if (this._openedForAddSubColumnIndex != null && this.activeColumnIndex !== this._openedForAddSubColumnIndex) {
         this._openedForAddSubColumnIndex = null;
       }
-      this.$nextTick(() => this.scrollMenuColumnIntoView());
+      this.$nextTick(() => {
+        this.fitModulePopoverLayout();
+        this.scrollMenuColumnIntoView();
+      });
     },
     /** 点击菜单事件的处理 */
     clickMenuHandle(module, index) {
@@ -1367,7 +1381,9 @@ export default {
     flex-direction: column;
     align-items: stretch;
     line-height: normal;
-    width: auto;
+    /* 覆盖 EP 默认 width:150；精确宽度由 fitModulePopoverLayout / :width 写入，勿加额外空白条 */
+    width: auto !important;
+    min-width: 200px !important;
     max-width: calc(100vw - 32px) !important;
     max-height: none;
   }
@@ -1376,6 +1392,7 @@ export default {
     flex-direction: row;
     align-items: stretch;
     box-sizing: border-box;
+    width: max-content;
     max-width: 100%;
     overflow: hidden;
     position: relative;
@@ -1435,14 +1452,13 @@ export default {
   }
   .el-popover.el-popper.select-module-popover .select-module-menu {
     display: inline-flex;
-    flex: 1;
+    flex: 0 0 auto;
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: stretch;
     box-sizing: border-box;
     width: max-content;
     max-width: 100%;
-    min-width: 0;
     max-height: min(80vh, 560px);
     min-height: 0;
     min-width: 0;
@@ -1453,6 +1469,13 @@ export default {
   }
   .el-popover.el-popper.select-module-popover .module-menu-column + .module-menu-column {
     border-left: 1px solid var(--border-color-light, #e4e7ed);
+  }
+  /* 子列加载：勿用全局暗色近黑遮罩，与下拉背景一致 */
+  .el-popover.el-popper.select-module-popover .el-loading-mask {
+    background-color: transparent !important;
+  }
+  html.dark .el-popover.el-popper.select-module-popover .el-loading-mask {
+    background-color: transparent !important;
   }
   .el-popover.el-popper.select-module-popover .select-module-menu::-webkit-scrollbar {
     height: 8px;

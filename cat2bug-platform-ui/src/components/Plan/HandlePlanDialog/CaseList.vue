@@ -39,6 +39,7 @@
       </div>
       <div class="handle-plan-tools-right">
         <el-popover
+          :width="240"
           placement="top"
           trigger="click"
           popper-class="defect-column-picker-popover"

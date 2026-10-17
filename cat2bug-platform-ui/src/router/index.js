@@ -389,13 +389,29 @@ export const constantRoutes = [
   },
   {
     path: '/404',
-    component: () => import('@/views/error/404'),
-    hidden: true
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/error/404'),
+        name: 'Page404',
+        meta: { title: '404', titleI18nKey: 'error.404.title' }
+      }
+    ]
   },
   {
     path: '/401',
-    component: () => import('@/views/error/401'),
-    hidden: true
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/error/401'),
+        name: 'Page401',
+        meta: { title: '401', titleI18nKey: 'error.401.title' }
+      }
+    ]
   },
   {
     path: '/error',

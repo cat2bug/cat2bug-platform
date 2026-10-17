@@ -1,10 +1,12 @@
 <template>
-  <div class="case-card">
+  <div class="case-card" :class="$attrs.class">
     <div class="case-card-body" v-if="caseModel && caseModel.caseId">
       <div class="case-card-tools" v-if="_toolsVisible(caseModel)">
         <el-popover
           placement="left-start"
-          trigger="hover">
+          trigger="hover"
+          width="auto"
+          popper-class="case-card-media-popover">
           <div style="display: inline-flex; flex-direction: row; gap: 5px; max-width: 900px">
             <cat2-bug-image
               v-for="(img,index) in list(caseModel.imgUrls)"
@@ -23,7 +25,9 @@
         </el-popover>
         <el-popover
           placement="left-start"
-          trigger="hover">
+          trigger="hover"
+          :width="280"
+          popper-class="case-card-media-popover">
           <div style="display: inline-flex; flex-direction: column; align-items: start;">
             <cat2-bug-text type="down" :content="file" :tooltip="file" v-for="(file,index) in list(caseModel.annexUrls)" :key="index"/>
           </div>
@@ -47,7 +51,18 @@
           </div>
         </div>
         <div class="row footer">
-          <label>{{ $t('step') }}</label><case-step ref="caseStep" class="step" :case-steps="caseModel.caseStep" v-bind="$attrs" />
+          <label>{{ $t('step') }}</label>
+          <div class="case-card-step-wrap">
+            <case-step
+              ref="caseStep"
+              :case-steps="caseModel.caseStep"
+              :edit="edit"
+              :state-visible="stateVisible"
+              :step-index="stepIndex"
+              @update:step-index="onStepIndexUpdate"
+              @change="onStepChange"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -66,6 +81,7 @@ export default {
   emits: ['update:stepIndex', 'change'],
   name: "CaseCard",
   components: {CaseStep, Cat2BugText},
+  inheritAttrs: false,
   data() {
     return {
     }
@@ -78,6 +94,21 @@ export default {
     toolsVisible: {
       type: Boolean,
       default: true
+    },
+    /** 是否可点选失败步骤（缺陷表单选中用例后） */
+    edit: {
+      type: Boolean,
+      default: false
+    },
+    /** 是否展示步骤通过/未通过状态 */
+    stateVisible: {
+      type: Boolean,
+      default: false
+    },
+    /** 未通过步骤下标（之前的步骤视为通过） */
+    stepIndex: {
+      type: Number,
+      default: null
     }
   },
   computed: {
@@ -105,6 +136,12 @@ export default {
     },
   },
   methods: {
+    onStepIndexUpdate(index) {
+      this.$emit('update:stepIndex', index)
+    },
+    onStepChange(index) {
+      this.$emit('change', index)
+    },
     /** 下载附件操作 */
     handleDown(event, file) {
       const a = document.createElement("a");
@@ -122,91 +159,129 @@ export default {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 10px 10px 5px 10px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 4px 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
   .case-card-body {
     width: 100%;
+    min-width: 0;
     display: flex;
     flex-direction: row;
+    align-items: flex-start;
+    gap: 8px;
   }
   .case-card-tools {
     display: flex;
     flex-direction: column;
-    padding-right: 10px;
-    gap: 15px;
+    flex: 0 0 auto;
+    gap: 10px;
     > span {
       flex: 0;
     }
     .el-button {
       padding: 5px;
-      margin: 0px;
+      margin: 0;
     }
-    .el-badge > :deep(.el-badge__content){
+    .el-badge > :deep(.el-badge__content) {
       font-size: 0.6rem;
       height: 15px;
       width: 15px;
       line-height: 13px;
-      padding: 0px;
+      padding: 0;
     }
   }
   .case-card-content {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 0;
   }
   .case-card-header {
-    line-height: 30px;
     width: 100%;
+    min-width: 0;
   }
   .case-card-empty {
     width: 100%;
-    height: 50px;
+    min-height: 48px;
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    background-color: #fbfdff;
+    background-color: var(--bg-color-block, #fbfdff);
     border-radius: 5px;
-    border: 1px dashed #c0ccdc;
+    border: 1px dashed var(--border-color-base, #c0ccdc);
+    color: var(--text-color-secondary, #909399);
     > span {
       flex: none;
-      font-size: 16px;
+      font-size: 14px;
     }
   }
+  /* 固定标签列宽，标题/前置条件/预期左缘对齐 */
   label {
-    min-width: 60px;
+    flex: 0 0 4.5em;
+    width: 4.5em;
+    min-width: 4.5em;
+    max-width: 4.5em;
+    margin: 0;
+    padding: 0;
     text-align: right;
-    margin-right: 10px;
-  }
-  label {
     font-size: 12px;
-    height: 15px;
-    line-height: 15px;
+    line-height: 1.5;
+    color: var(--text-color-secondary, #909399);
   }
-  span {
-    min-height: 15px;
-    line-height: 15px;
-    flex: 1;
-    word-break: break-all;
+  .case-card-header > .row > span {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    word-break: break-word;
+    color: var(--text-color-primary, #303133);
+  }
+  /* 同组件内包一层，保证步骤区吃满剩余宽度（scoped 无法直接 flex 子组件根节点） */
+  .case-card-step-wrap {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 0; /* 配合 flex:1，强制按剩余空间计算宽度，避免被内容撑成极窄列 */
   }
   .footer {
     width: 100%;
-    padding-top: 5px;
-    margin-top: 5px;
-    border-top: 1px dashed #E4E7ED;
+    min-width: 0;
+    align-items: flex-start;
+    padding-top: 8px;
+    margin-top: 6px;
+    border-top: 1px dashed var(--border-color-light, #e4e7ed);
   }
 }
 .row {
   display: flex;
   flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
   width: 100%;
+  min-width: 0;
+  margin-bottom: 6px;
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 .image-click {
   border-radius: 5px;
-  border: 1px solid #F2F6FC;
+  border: 1px solid var(--border-color-lighter, #f2f6fc);
 }
 .image-click:hover {
   scale: 1.1;
   z-index: 999;
-  border: 1px solid #DCDFE6;
-  -webkit-box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color-base, #dcdfe6);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+</style>
+<style>
+.el-popover.el-popper.case-card-media-popover {
+  width: auto !important;
+  min-width: 120px !important;
+  max-width: min(900px, calc(100vw - 32px)) !important;
+  box-sizing: border-box;
 }
 </style>

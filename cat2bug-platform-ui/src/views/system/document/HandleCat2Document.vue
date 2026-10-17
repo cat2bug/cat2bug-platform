@@ -3,7 +3,7 @@
     <el-page-header @back="goBack" content="文档详情">
     </el-page-header>
     <cat2-bug-document v-if="doc" v-loading="loading" />
-    <el-empty v-else />
+    <cat2-bug-empty v-else :description="$t('no-data')" />
   </div>
 
 </template>

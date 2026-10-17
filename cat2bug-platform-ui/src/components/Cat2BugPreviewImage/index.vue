@@ -17,6 +17,7 @@
       v-else-if="imageCount>1"
       placement="left"
       trigger="hover"
+      width="auto"
       popper-class="cat2bug-preview-image-popover"
       >
       <div class="row-image">

@@ -70,6 +70,7 @@
                     ref="cloudCasePromptPopover"
                     v-model="casePromptVisible"
                     @show="handlePromptChange"
+                    :width="480"
                     trigger="click">
                     <div class="cloud-case-prompt">
                       <div v-show="addCasePromptVisible">
@@ -139,7 +140,7 @@
                           @current-change="getCasePrompt">
                         </el-pagination>
                       </div>
-                      <el-empty v-if="!casePromptList || casePromptList.length==0" :description="$t('case.empty-prompt')"></el-empty>
+                      <cat2-bug-empty v-if="!casePromptList || casePromptList.length==0" size="default" :description="$t('case.empty-prompt')" />
                     </div>
                     <template #reference>
                       <el-button class="cat2-bug-textarea-button" link><svg-icon icon-class="tips"></svg-icon></el-button>

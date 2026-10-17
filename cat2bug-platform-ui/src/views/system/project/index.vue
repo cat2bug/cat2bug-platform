@@ -9,7 +9,7 @@
 <!--    收藏列表-->
     <h4 v-show="collectList.length>0">{{$t('project.collect-project')}}</h4>
     <el-row v-show="collectList.length>0" class="project-collects" :gutter="10">
-      <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4" v-for="project in collectList" :key="project.projectId">
+      <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="6" v-for="project in collectList" :key="project.projectId">
         <el-card class="box-card project-block" @click="clickProject(project)">
           <template #header>
             <div class="clearfix project-collects-card-header">
@@ -635,6 +635,14 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.project-manage-page {
+  :deep(.el-tabs__item) {
+    min-width: 140px !important;
+    padding: 0 36px !important;
+    text-align: center;
+  }
+}
+
 h4 {
   margin: 5px 0px 10px 0px;
 }

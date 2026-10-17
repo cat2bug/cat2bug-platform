@@ -60,7 +60,7 @@
         <legacy-icon icon="el-icon-check" v-else></legacy-icon>
       </el-col>
     </el-row>
-    <el-empty v-else :description="$i18n.t('no-data')"></el-empty>
+    <cat2-bug-empty v-else size="small" :description="$i18n.t('no-data')" />
     <el-pagination
       size="small"
       :hide-on-single-page="true"

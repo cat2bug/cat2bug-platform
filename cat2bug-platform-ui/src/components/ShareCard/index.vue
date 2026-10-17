@@ -5,6 +5,7 @@
     trigger="click"
     :teleported="true"
     popper-class="share-card-popper"
+    :width="420"
     v-model:visible="visible">
     <div v-if="visible" class="shard-context" v-loading="apiLoading">
       <el-form :inline="true" :model="form">
@@ -166,6 +167,12 @@ export default {
 }
 html.dark .share-card-loading .el-loading-mask {
   background-color: rgba(0, 0, 0, 0.45) !important;
+}
+.el-popover.el-popper.share-card-popper {
+  width: 420px !important;
+  min-width: 320px !important;
+  max-width: min(480px, calc(100vw - 32px)) !important;
+  box-sizing: border-box;
 }
 </style>
 <style lang="scss" scoped>

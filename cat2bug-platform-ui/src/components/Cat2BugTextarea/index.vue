@@ -302,4 +302,10 @@ export default {
     right: 0;
     top: 60px;
   }
+  /* 弹框内不再套一层 markdown 卡片边框 */
+  .cat2bug-textarea-dialog .markdown {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
 </style>

@@ -12,7 +12,7 @@
       </div>
       <el-button class="case-button" type="primary" plain @click="handleClick">生成测试用例思维导图</el-button>
     </div>
-    <el-empty v-else description="没有找到数据" :image-size="50"></el-empty>
+    <cat2-bug-empty v-else size="small" description="没有找到数据" />
   </div>
 </template>
 

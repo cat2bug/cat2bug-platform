@@ -13,7 +13,11 @@
       <div ref="menuScroller" class="module-menu-scroller" @scroll="syncVerticalScrollIndicators">
         <el-row class="module-menu">
           <el-col v-if="loading" class="module-menu-item module-menu-loading" :span="24">
-            <div v-loading="loading" style="width: 100%;height: 200px;"></div>
+            <div
+              v-loading="loading"
+              class="module-menu-loading-body"
+              element-loading-background="transparent"
+            />
           </el-col>
           <el-col
             class="module-menu-item module-menu-row"
@@ -24,22 +28,33 @@
               'is-keyboard-active': keyboardActiveIndex === index && keyboardActivePart === 'main',
               'is-path-active': isPathActiveRow(module)
             }"
-            @click="showSubMenuHandle(module)">
-            <el-tooltip
-              :content="module.moduleName"
-              placement="top"
-              :open-delay="400"
-              :disabled="!labelNeedsTooltip(module.moduleName)">
-              <span class="module-menu-row-label">{{ formatMenuLabel(module.moduleName) }}</span>
-            </el-tooltip>
-            <legacy-icon icon="el-icon-arrow-right" v-if="moduleHasChildren(module)" class="module-menu-row-arrow"></legacy-icon>
+            @click.stop="selectModuleHandle(module)">
+            <div class="module-menu-row-main">
+              <el-tooltip
+                :content="module.moduleName"
+                placement="top"
+                :show-after="400"
+                :disabled="!labelNeedsTooltip(module.moduleName)">
+                <span class="module-menu-row-label">{{ formatMenuLabel(module.moduleName) }}</span>
+              </el-tooltip>
+            </div>
+            <!-- 有子级：点文字选中；点 › 展开下层（任意层级均可选中，不限叶子） -->
+            <button
+              v-if="moduleHasChildren(module)"
+              type="button"
+              class="module-menu-row-arrow"
+              :title="$t('module.expand-children')"
+              :aria-label="$t('module.expand-children')"
+              @click.stop="expandModuleHandle(module)">
+              <legacy-icon icon="el-icon-arrow-right"></legacy-icon>
+            </button>
             <el-button
               v-else-if="isEdit"
               link
               size="small"
               class="module-menu-row-side-add"
               :class="{'is-keyboard-active': keyboardActiveIndex === index && keyboardActivePart === 'side'}"
-              @click="addSubMenuHandle($event, module)"><legacy-icon icon="el-icon-plus"></legacy-icon></el-button>
+              @click.stop="addSubMenuHandle($event, module)"><legacy-icon icon="el-icon-plus"></legacy-icon></el-button>
           </el-col>
         </el-row>
       </div>
@@ -64,8 +79,8 @@
           :project-id="projectId"
           :module-pid="modulePid"
           @added="addModuleHandle"
-          @input-blur="$emit('addInputBlur')"
-          @input-escape="$emit('addInputEscape')" />
+          @input-blur="$emit('add-input-blur')"
+          @input-escape="$emit('add-input-escape')" />
       </div>
     </div>
   </div>
@@ -165,7 +180,7 @@ export default {
     this.updateLabelMaxLength();
     this.$nextTick(() => this.syncVerticalScrollIndicators());
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this._scrollIndicatorRaf) {
       cancelAnimationFrame(this._scrollIndicatorRaf);
       this._scrollIndicatorRaf = null;
@@ -327,7 +342,7 @@ export default {
       if (idx < 0) return;
       const row = list[idx];
       const next = (Number(row.childrenCount) || 0) + 1;
-      this.$set(row, 'childrenCount', next);
+      row.childrenCount = next;
     },
     open(projectId,modulePid) {
       if(projectId){
@@ -339,19 +354,23 @@ export default {
       this.getModuleList();
     },
     moduleHasChildren (module) {
-      const c = module && module.childrenCount
-      return c != null && Number(c) > 0
+      if (!module) return false
+      const c = module.childrenCount
+      if (c != null && Number(c) > 0) return true
+      const kids = module.children
+      return Array.isArray(kids) && kids.length > 0
     },
-    showSubMenuHandle(module) {
-      if (this.moduleHasChildren(module)) {
-        this.$emit('clickDirectory', module);
-      } else {
-        this.$emit('clickMenu', module);
-      }
+    /** 点行/文字：选中该交付物（含有子级的中间节点） */
+    selectModuleHandle(module) {
+      this.$emit('click-menu', module);
+    },
+    /** 点 ›：仅展开子级，不选中 */
+    expandModuleHandle(module) {
+      this.$emit('click-directory', module);
     },
     addSubMenuHandle(event, module) {
-      this.$emit('clickAddSubMenu', module);
-      event.stopPropagation();
+      this.$emit('click-add-sub-menu', module);
+      if (event) event.stopPropagation();
     }
   }
 }
@@ -461,18 +480,18 @@ export default {
   .module-menu-item.module-menu-row {
     min-height: 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     gap: 4px;
     box-sizing: border-box;
-    :deep(.el-tooltip){
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-    }
   }
   .module-menu-loading {
     padding: 0;
+  }
+  .module-menu-loading-body {
+    width: 100%;
+    height: 160px;
+    background: transparent;
   }
   .module-menu-item:not(.module-menu-row) {
     padding: 0;
@@ -497,12 +516,19 @@ export default {
       }
     }
   }
-  .module-menu-row-label {
-    flex: 1;
+  /* 文案区可收缩；右侧箭头/+ 必须留在行内，勿被 max-width:100% 挤出裁切 */
+  .module-menu-row-main {
+    flex: 1 1 auto;
     min-width: 0;
-    max-width: 100%;
+    overflow: hidden;
+  }
+  .module-menu-row-label {
+    display: block;
+    width: 100%;
+    min-width: 0;
     overflow: hidden;
     white-space: nowrap;
+    text-overflow: ellipsis;
     border-radius: 5px;
     padding: 0;
     margin: 0;
@@ -513,7 +539,22 @@ export default {
     }
   }
   .module-menu-row-arrow {
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 4px 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-color-secondary, #909399);
+    line-height: 1;
+    border-radius: 4px;
+    &:hover {
+      color: var(--cat2bug-primary, #1890ff);
+      background: var(--bg-color-block, rgba(24, 144, 255, 0.08));
+    }
   }
   .module-menu-row-side-add {
     flex-shrink: 0;

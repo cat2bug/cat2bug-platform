@@ -92,6 +92,8 @@
   /* 缺陷新建/编辑抽屉：单行输入类控件最大宽度（与 SelectModule / SelectProjectMember 对齐） */
   --cat2bug-defect-form-field-max-width: 300px;
   --cat2bug-defect-form-plan-range-max-width: 480px;
+  /* 测试用例卡片文字多，选中后展示区按表单内容区拉满 */
+  --cat2bug-defect-form-case-max-width: 100%;
 
   /* 业务抽屉左侧模块标识边（对齐 Vue2；RTL 抽屉靠内容区一侧为 border-left） */
   --cat2bug-drawer-accent-width: 3px;
@@ -346,8 +348,7 @@
     > .el-input-number,
     > .el-date-editor:not(.el-range-editor),
     > .select-project-member-input,
-    > .select-module-input,
-    > .select-case-input {
+    > .select-module-input {
       display: block;
       max-width: var(--cat2bug-defect-form-field-max-width, 300px);
       width: 100%;
@@ -357,6 +358,24 @@
       max-width: var(--cat2bug-defect-form-plan-range-max-width, 480px);
       width: 100% !important;
       min-width: 0 !important;
+      box-sizing: border-box;
+    }
+
+    /* 测试用例：选中后 CaseCard 文字多，与描述等字段同宽拉满 */
+    > .select-case,
+    > .el-popover,
+    > .select-case-input {
+      display: block;
+      width: 100%;
+      max-width: var(--cat2bug-defect-form-case-max-width, 100%);
+      box-sizing: border-box;
+    }
+
+    > .el-popover .select-case-input,
+    > .select-case .select-case-input {
+      display: flex;
+      width: 100%;
+      max-width: 100%;
       box-sizing: border-box;
     }
 
@@ -419,7 +438,8 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 .el-input-number .el-input__inner,
 .el-pagination__editor.el-input .el-input__inner,
 .select-project-member-input,
-.select-module-input {
+.select-module-input,
+.select-case-input {
   border-radius: $cat2bug-radius !important;
   box-sizing: border-box;
   border: 1px solid var(--border-color-base, var(--el-input-border-color, #dcdfe6));
@@ -572,7 +592,9 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 .select-project-member-input:focus,
 .select-project-member-input:focus-within,
 .select-module-input.cat2bug-combo-focus-target:focus,
-.select-module-input.cat2bug-combo-focus-target:focus-within {
+.select-module-input.cat2bug-combo-focus-target:focus-within,
+.select-case-input:focus,
+.select-case-input:focus-within {
   @include cat2bug-unified-focus-border;
   @include cat2bug-unified-focus-ring;
 }
@@ -1265,12 +1287,24 @@ img.cat2bug-image-error__img {
 }
 
 .select-project-member-input,
-.select-module-input,
-.select-case-input {
+.select-module-input {
   display: inline-flex !important;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
+  padding-right: var(--cat2bug-dropdown-caret-inset, 8px);
+  box-sizing: border-box;
+}
+
+/* 测试用例：多行 CaseCard，顶对齐；边框圆角与 input/textarea 一致 */
+.select-case-input {
+  display: flex !important;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  width: 100%;
+  height: auto;
+  min-height: var(--cat2bug-control-height, 32px);
   padding-right: var(--cat2bug-dropdown-caret-inset, 8px);
   box-sizing: border-box;
 }

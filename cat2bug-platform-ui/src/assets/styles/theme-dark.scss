@@ -630,9 +630,22 @@ html.dark {
       border-bottom: 1px solid var(--border-color-light) !important;
       
       // Override scoped icons color in cards (like project/team settings)
-      i,
-      .svg-icon {
+      // 排除 StarSwitch：收藏星应为黄色，不能被主色覆盖
+      i:not(.start-switch *),
+      .svg-icon:not(.start-switch *) {
         color: var(--cat2bug-option-card-icon-color, var(--cat2bug-primary)) !important;
+        fill: currentColor;
+      }
+
+      .start-switch[collect='true'] .el-icon,
+      .start-switch[collect='true'] i {
+        color: var(--star-switch-on-color, rgb(247, 186, 42)) !important;
+        fill: currentColor;
+      }
+
+      .start-switch:not([collect='true']) .el-icon,
+      .start-switch:not([collect='true']) i {
+        color: var(--star-switch-off-stroke, #c0c4cc) !important;
         fill: currentColor;
       }
     }
@@ -3995,20 +4008,24 @@ html.dark {
     }
   }
 
-  // Element UI 空状态 (el-empty) 暗黑模式
+  // 空状态：业务统一 Cat2BugEmpty；若仍有裸 el-empty，压暗 EP 默认纸箱
   .el-empty {
     .el-empty__description p {
       color: var(--text-color-secondary) !important;
     }
 
-    /* 默认插画为浅色渐变 SVG，压暗以贴合黑色主题 */
-    .el-empty__image {
+    &:not(.cat2bug-empty) .el-empty__image {
       filter: brightness(0.42) contrast(1.05);
       opacity: 0.85;
     }
 
-    .el-empty__image svg {
+    &:not(.cat2bug-empty) .el-empty__image svg {
       fill: #4c4d4f;
+    }
+
+    &.cat2bug-empty .el-empty__image {
+      filter: none !important;
+      opacity: 1 !important;
     }
   }
 
@@ -4432,7 +4449,8 @@ html.dark {
   // 25. 适配测试用例选择组件 (SelectCase) 暗黑模式
   .select-case-input {
     background-color: var(--input-bg) !important;
-    border-color: var(--input-border) !important;
+    border: 1px solid var(--input-border) !important;
+    border-radius: var(--cat2bug-border-radius, 4px) !important;
 
     .select-case-input__icon {
       color: var(--cat2bug-input-icon-color, #c0c4cc) !important;
@@ -4456,25 +4474,63 @@ html.dark {
       }
     }
 
-    .step-row span {
-      color: var(--text-color-primary) !important;
+    .step-row {
+      color: var(--text-color-regular) !important;
+
+      span {
+        color: var(--text-color-regular) !important;
+      }
+
+      > span + span {
+        border-left-color: var(--border-color-light) !important;
+      }
     }
 
     .step-row[state='case.pass-tested'] {
-      background-color: rgba(103, 194, 58, 0.12) !important;
-      border-color: rgba(103, 194, 58, 0.35) !important;
+      background-color: transparent !important;
+      border-color: transparent !important;
+      border-left-color: #67c23a !important;
 
       span {
+        color: var(--text-color-regular) !important;
+      }
+
+      p {
+        background-color: #67c23a !important;
+      }
+
+      .step-state {
         color: #95d475 !important;
+        border-color: rgba(103, 194, 58, 0.45) !important;
+        background: rgba(103, 194, 58, 0.12) !important;
       }
     }
 
     .step-row[state='case.failed-tested'] {
-      background-color: rgba(245, 108, 108, 0.12) !important;
-      border-color: rgba(245, 108, 108, 0.35) !important;
+      background-color: rgba(245, 108, 108, 0.1) !important;
+      border-color: transparent !important;
+      border-left-color: #f56c6c !important;
 
       span {
+        color: var(--text-color-regular) !important;
+      }
+
+      p {
+        background-color: #f56c6c !important;
+      }
+
+      .step-state {
         color: #f89898 !important;
+        border-color: rgba(245, 108, 108, 0.45) !important;
+        background: rgba(245, 108, 108, 0.12) !important;
+      }
+    }
+
+    .step-row[state='case.not-tested'] {
+      border-left-color: var(--border-color-light) !important;
+
+      p {
+        background-color: var(--text-color-secondary) !important;
       }
     }
   }
@@ -4520,25 +4576,63 @@ html.dark {
       }
     }
 
-    .step-row span {
-      color: var(--text-color-primary) !important;
+    .step-row {
+      color: var(--text-color-regular) !important;
+
+      span {
+        color: var(--text-color-regular) !important;
+      }
+
+      > span + span {
+        border-left-color: var(--border-color-light) !important;
+      }
     }
 
     .step-row[state='case.pass-tested'] {
-      background-color: rgba(103, 194, 58, 0.12) !important;
-      border-color: rgba(103, 194, 58, 0.35) !important;
+      background-color: transparent !important;
+      border-color: transparent !important;
+      border-left-color: #67c23a !important;
 
       span {
+        color: var(--text-color-regular) !important;
+      }
+
+      p {
+        background-color: #67c23a !important;
+      }
+
+      .step-state {
         color: #95d475 !important;
+        border-color: rgba(103, 194, 58, 0.45) !important;
+        background: rgba(103, 194, 58, 0.12) !important;
       }
     }
 
     .step-row[state='case.failed-tested'] {
-      background-color: rgba(245, 108, 108, 0.12) !important;
-      border-color: rgba(245, 108, 108, 0.35) !important;
+      background-color: rgba(245, 108, 108, 0.1) !important;
+      border-color: transparent !important;
+      border-left-color: #f56c6c !important;
 
       span {
+        color: var(--text-color-regular) !important;
+      }
+
+      p {
+        background-color: #f56c6c !important;
+      }
+
+      .step-state {
         color: #f89898 !important;
+        border-color: rgba(245, 108, 108, 0.45) !important;
+        background: rgba(245, 108, 108, 0.12) !important;
+      }
+    }
+
+    .step-row[state='case.not-tested'] {
+      border-left-color: var(--border-color-light) !important;
+
+      p {
+        background-color: var(--text-color-secondary) !important;
       }
     }
   }
@@ -5025,6 +5119,12 @@ html.dark {
   .cat2bug-textarea-dialog {
     .el-dialog__body {
       background-color: var(--dialog-bg) !important;
+    }
+
+    .markdown {
+      border: none !important;
+      box-shadow: none !important;
+      background-color: transparent !important;
     }
   }
 
