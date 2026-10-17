@@ -7,6 +7,7 @@
 - 配置项 `cat2bug.profile`，默认 `./upload`（相对工作目录）。实际值以安装后的运行期配置为准；Docker Compose 通过 `CAT2BUG_PROFILE=/home/uploadPath` 与卷挂载点对齐（见 [[部署]]）。
 - 解析入口：`Cat2BugProfileConfig.profileRoot()`（转绝对路径并规范化）；`resolveUploadPath` 拒绝越出 profile 根的路径。
 - 对外 URL 前缀为 `/profile`（`FileUploadService.RESOURCE_PREFIX`）。
+- 本地缺文件时回源：配置 `cat2bug.profile-remote-base`（站点根；私有端连云库时一般是 `https://www.cat2bug.com`，不是 `cloud.cat2bug.com`），由 `ProfileResource` 拉同一 `/profile/...` 路径。**不要**写成 `cat2bug.profile.remote-base`——与标量 `cat2bug.profile` 同前缀时 SmallRye 读不到，图片会全 404。
 
 ## 目录结构
 

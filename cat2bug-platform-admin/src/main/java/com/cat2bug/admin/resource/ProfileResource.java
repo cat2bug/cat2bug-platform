@@ -27,7 +27,11 @@ public class ProfileResource {
     @Inject
     Cat2BugProfileConfig profileConfig;
 
-    @ConfigProperty(name = "cat2bug.profile.remote-base", defaultValue = " ")
+    /**
+     * 本地 {@code cat2bug.profile} 缺文件时回源的站点根（如 https://www.cat2bug.com）。
+     * 勿写成 {@code cat2bug.profile.remote-base}：与标量 {@code cat2bug.profile} 同前缀会冲突，SmallRye 读不到。
+     */
+    @ConfigProperty(name = "cat2bug.profile-remote-base", defaultValue = " ")
     String remoteBase;
 
     @GET
@@ -65,7 +69,28 @@ public class ProfileResource {
         if (remoteType != null && !remoteType.isBlank() && !remoteType.startsWith("text/html")) {
             return remoteType.split(";")[0].trim();
         }
-        String contentType = Files.probeContentType(file);
-        return contentType == null ? "application/octet-stream" : contentType;
+        // 回源场景本地文件可能不存在，probe 前先判断
+        if (file != null && Files.isRegularFile(file)) {
+            String contentType = Files.probeContentType(file);
+            if (contentType != null) {
+                return contentType;
+            }
+        }
+        return guessContentTypeByName(file == null ? null : file.getFileName().toString());
+    }
+
+    private static String guessContentTypeByName(String name) {
+        if (name == null) {
+            return "application/octet-stream";
+        }
+        String lower = name.toLowerCase();
+        if (lower.endsWith(".png")) return "image/png";
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+        if (lower.endsWith(".gif")) return "image/gif";
+        if (lower.endsWith(".webp")) return "image/webp";
+        if (lower.endsWith(".svg")) return "image/svg+xml";
+        if (lower.endsWith(".bmp")) return "image/bmp";
+        if (lower.endsWith(".ico")) return "image/x-icon";
+        return "application/octet-stream";
     }
 }
