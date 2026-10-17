@@ -660,7 +660,7 @@ export default {
   overflow: hidden;
   outline: none;
   &:focus-visible {
-    outline: 2px solid var(--cat2bug-field-focus-color, #409eff);
+    outline: 2px solid var(--cat2bug-field-focus-color, #1890ff);
     outline-offset: 2px;
     border-radius: var(--cat2bug-border-radius, 4px);
   }

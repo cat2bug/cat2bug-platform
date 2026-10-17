@@ -788,7 +788,7 @@ export default {
   border-radius: 4px;
 }
 .plan-add-sidebar-expand-trigger:hover {
-  color: #409eff;
+  color: var(--cat2bug-primary, #1890ff);
   background-color: var(--sidebar-expand-trigger-hover-bg, #ecf5ff);
 }
 .plan-add-sidebar-expand-trigger:focus-visible {

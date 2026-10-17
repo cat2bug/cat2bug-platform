@@ -48,7 +48,7 @@ public class McpOperationCatalog {
 
     /** 路径中出现即可校验归属的参数 */
     static final Set<String> OWNED_PARAMS = Set.of("projectId", "defectId", "defectLogId", "defectLogIds", "caseId",
-            "planId", "planIds", "planItemId", "planItemIds", "moduleId", "moduleIds", "reportId", "reportIds",
+            "planId", "planIds", "planItemId", "planItemIds", "moduleId", "moduleIds",
             "docId", "docIds", "repositoryId", "repositoryIds");
 
     /** 只有同一路径里还有 projectId / repositoryId 时才允许出现的从属参数 */

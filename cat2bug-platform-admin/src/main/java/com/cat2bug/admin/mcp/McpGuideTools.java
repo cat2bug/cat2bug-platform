@@ -40,7 +40,6 @@ public class McpGuideTools {
                 new Topic("case", "测试用例", "case"),
                 new Topic("plan", "测试计划", "plan"),
                 new Topic("deliverable", "交付物", "deliverable"),
-                new Topic("report", "报告", "report"),
                 new Topic("document", "文档", "document"),
                 new Topic("code", "代码", "code"))) {
             TOPICS.put(t.key(), t);
@@ -49,7 +48,7 @@ public class McpGuideTools {
 
     static final Map<String, String> MODULE_LABELS = Map.of(
             "defect", "缺陷", "case", "测试用例", "plan", "测试计划", "deliverable", "交付物",
-            "report", "报告", "document", "文档", "code", "代码", "dashboard", "仪表盘", "project", "项目");
+            "document", "文档", "code", "代码", "dashboard", "仪表盘", "project", "项目");
 
     /** 各模块里值得告诉 AI 的操作（权限串 → 说明），按流程顺序。 */
     static final Map<String, Map<String, String>> OPERATIONS = new LinkedHashMap<>();
@@ -78,10 +77,6 @@ public class McpGuideTools {
                 "system:module:list", "查询",
                 "system:module:add", "新建",
                 "system:module:edit", "修改"));
-        OPERATIONS.put("report", ordered(
-                "system:report:list", "查询",
-                "system:report:add", "新建",
-                "system:report:edit", "修改"));
         OPERATIONS.put("document", ordered(
                 "system:document:list", "查询",
                 "system:document:add", "新建",
@@ -111,7 +106,7 @@ public class McpGuideTools {
     @Tool(name = "get_guide",
             description = "Cat2Bug 使用指南：项目实况（你的角色、可用模块与可执行操作）+ 业务流程说明（缺陷流转、每一步谁来做、用哪个工具、"
                     + "做完后该提示用户什么）。开始操作或回答业务问题前先调用；topic 取 overview（默认）/ roles / defect / case / "
-                    + "plan / deliverable / report / document / code。",
+                    + "plan / deliverable / document / code。",
             annotations = @Tool.Annotations(title = "Get usage guide", readOnlyHint = true, openWorldHint = false))
     String getGuide(McpConnection connection,
                     @ToolArg(name = "topic", description = "指南主题，默认 overview", required = false) String topic) {

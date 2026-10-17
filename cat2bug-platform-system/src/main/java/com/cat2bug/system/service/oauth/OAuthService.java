@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 public class OAuthService {
 
     public static final long CODE_TTL_MILLIS = 10 * 60_000L;
+    /** 访问令牌有效期 1 小时。刷新令牌仍为 30 天。 */
     public static final long ACCESS_TTL_SECONDS = 3600L;
     public static final long REFRESH_TTL_MILLIS = 30L * 86_400_000L;
     public static final String SCOPE = "mcp";

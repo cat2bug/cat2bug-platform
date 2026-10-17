@@ -39,8 +39,6 @@ class QuarkusSystemExcelExportTest {
         assertSheetHeader("/system/team/export", "团队名称");
         assertSheetHeader("/system/project/export", "项目名称", "teamId", resolveFirstTeamId(token));
         assertSheetHeader("/system/log/export", "缺陷日志的描述", "defectId", "1");
-        assertSheetHeader("/system/report/export", "报告标题", "projectId", "1");
-        assertSheetHeader("/system/report/template/export", "交付物类型");
         assertSheetHeader("/system/api/export", "项目id", "projectId", "1");
     }
 

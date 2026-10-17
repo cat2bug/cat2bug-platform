@@ -116,11 +116,6 @@
                       <svg-icon icon-class="table" />
                     </span>
                   </el-radio-button>
-                  <!--                <el-radio-button label="DefectCalendar">-->
-                  <!--                  <span class="defect-content-view-switch-inner" :title="$t('calendar')">-->
-                  <!--                    <svg-icon icon-class="date" />-->
-                  <!--                  </span>-->
-                  <!--                </el-radio-button>-->
                   <!-- Excel模式 -->
                   <el-radio-button value="DefectExcel">
                     <span class="defect-content-view-switch-inner" :title="$t('excel')">
@@ -221,9 +216,6 @@
           </span>
         </template>
       </component>
-      <!--    </keep-alive>-->
-      <!-- 缺陷日历-->
-      <!--    <defect-calendar v-else-if="defectContentId=='calendar'" ref="defectCalendar" />-->
       <!-- 添加或修改缺陷对话框 -->
       <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="search(queryParams)" />
       <!-- 浏览缺陷对话框 -->
@@ -3120,7 +3112,7 @@ export default {
     cursor: pointer;
     transition: color 0.2s, border-color 0.2s, background-color 0.2s;
     &:hover {
-      color: #409eff;
+      color: var(--cat2bug-primary, #1890ff);
       border-color: #c6e2ff;
       background-color: #ecf5ff;
     }

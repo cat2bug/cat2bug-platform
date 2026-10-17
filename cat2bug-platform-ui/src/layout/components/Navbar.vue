@@ -170,7 +170,7 @@ export default {
             dangerouslyUseHTMLString: true,
             type: 'success',
             offset: 50,
-            message: sanitizeHtml(`<a target="_blank" style="color: #409eff;" href="${host}/notice/index?noticeId=${encodeURIComponent(msg.noticeId)}">${escapeHtml(msg.title)}</a>`)
+            message: sanitizeHtml(`<a target="_blank" style="color: var(--cat2bug-primary, #1890ff);" href="${host}/notice/index?noticeId=${encodeURIComponent(msg.noticeId)}">${escapeHtml(msg.title)}</a>`)
           })
         }
       }

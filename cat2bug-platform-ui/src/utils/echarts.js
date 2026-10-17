@@ -1,25 +1,18 @@
 /**
- * ECharts 按需注册入口；新增图表类型或组件时需在此补充 use()，否则 setOption 静默不渲染对应部分。
+ * ECharts 按需注册。实际图表：柱状、折线、饼、仪表盘、雷达。
+ * 新增类型或组件时在此 use()，否则 setOption 静默不渲染对应部分。
  */
 import * as echarts from 'echarts/core'
-import { BarChart, GaugeChart, LineChart, PieChart, RadarChart, ScatterChart } from 'echarts/charts'
+import { BarChart, GaugeChart, LineChart, PieChart, RadarChart } from 'echarts/charts'
 import {
   AxisPointerComponent,
-  DataZoomComponent,
-  DatasetComponent,
   GraphicComponent,
   GridComponent,
   LegendComponent,
-  MarkAreaComponent,
-  MarkLineComponent,
-  MarkPointComponent,
   RadarComponent,
-  TitleComponent,
-  ToolboxComponent,
-  TooltipComponent,
-  VisualMapComponent
+  TooltipComponent
 } from 'echarts/components'
-import { LabelLayout, UniversalTransition } from 'echarts/features'
+import { LabelLayout } from 'echarts/features'
 import { CanvasRenderer } from 'echarts/renderers'
 
 echarts.use([
@@ -28,23 +21,13 @@ echarts.use([
   LineChart,
   PieChart,
   RadarChart,
-  ScatterChart,
   AxisPointerComponent,
-  DataZoomComponent,
-  DatasetComponent,
   GraphicComponent,
   GridComponent,
   LegendComponent,
-  MarkAreaComponent,
-  MarkLineComponent,
-  MarkPointComponent,
   RadarComponent,
-  TitleComponent,
-  ToolboxComponent,
   TooltipComponent,
-  VisualMapComponent,
   LabelLayout,
-  UniversalTransition,
   CanvasRenderer
 ])
 

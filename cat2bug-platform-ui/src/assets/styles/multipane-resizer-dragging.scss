@@ -6,7 +6,7 @@
   cursor: col-resize;
 
   &::before {
-    background-color: #409eff;
+    background-color: var(--cat2bug-primary, #1890ff);
     box-shadow: none;
   }
 

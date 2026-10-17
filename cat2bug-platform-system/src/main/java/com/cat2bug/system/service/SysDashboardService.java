@@ -11,7 +11,6 @@ import com.cat2bug.common.domain.dashboard.SysDocumentStatistics;
 import com.cat2bug.common.domain.dashboard.SysMemberStatistics;
 import com.cat2bug.common.domain.dashboard.SysMemberRankOfDefects;
 import com.cat2bug.common.domain.dashboard.SysModuleStatistics;
-import com.cat2bug.common.domain.dashboard.SysReportStatistics;
 import com.cat2bug.common.util.StringUtils;
 import com.cat2bug.system.mapper.SysDashboardMapper;
 import com.cat2bug.system.util.SysDefectTrendLineHelper;
@@ -49,11 +48,6 @@ public class SysDashboardService {
     public SysModuleStatistics moduleStatistics(Long projectId) {
         SysModuleStatistics stats = sysDashboardMapper.moduleStatistics(projectId);
         return stats != null ? stats : emptyModuleStats();
-    }
-
-    public SysReportStatistics reportStatistics(Long projectId) {
-        SysReportStatistics stats = sysDashboardMapper.reportStatistics(projectId);
-        return stats != null ? stats : emptyReportStats();
     }
 
     public SysDocumentStatistics documentStatistics(Long projectId) {
@@ -177,12 +171,6 @@ public class SysDashboardService {
 
     private SysModuleStatistics emptyModuleStats() {
         SysModuleStatistics s = new SysModuleStatistics();
-        s.setTotal(0);
-        return s;
-    }
-
-    private SysReportStatistics emptyReportStats() {
-        SysReportStatistics s = new SysReportStatistics();
         s.setTotal(0);
         return s;
     }

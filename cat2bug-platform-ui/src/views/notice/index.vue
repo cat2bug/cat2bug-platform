@@ -152,7 +152,7 @@ export default {
       groupList: [],
       activeNoticeName: '',
       activeTabName: 'all',
-      noticeTabs:['', 'defect', 'report'],
+      noticeTabs:['', 'defect'],
       // 遮罩层
       loading: true,
       // 选中数组

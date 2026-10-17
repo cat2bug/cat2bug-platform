@@ -690,7 +690,7 @@ export default {
 }
 :deep(.el-upload-list--picture-card .el-upload-list__item.is-keyboard-focus){
   outline: none !important;
-  border: 1px dashed var(--cat2bug-field-focus-color, #409eff) !important;
+  border: 1px dashed var(--cat2bug-field-focus-color, #1890ff) !important;
   z-index: 1;
 }
 :deep(.update-button.is-keyboard-focus){

@@ -21,7 +21,7 @@ const sideThemeValue =
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
     title: '',
-    theme: storageSetting.theme || '#409EFF',
+    theme: storageSetting.theme || '#1890ff',
     sideTheme: sideThemeValue,
     showSettings,
     topNav: storageSetting.topNav === undefined ? topNav : storageSetting.topNav,

@@ -77,7 +77,6 @@ class QuarkusListSortTest {
                         "caseNum", "caseLevel", "moduleName"),
                 "/system/plan/" + planId + "/defect/list?projectId=1", List.of("projectNum", "defectName",
                         "defectState", "updateTime"),
-                "/system/report/list?projectId=1", List.of("createBy", "reportSource", "reportTime", "reportTitle"),
                 "/system/document/list?projectId=1", List.of("docName", "fileExtension", "updateByName", "updateTime"),
                 "/monitor/operlog/list", List.of("costTime", "operName", "operTime"),
                 "/monitor/logininfor/list", List.of("loginTime", "userName"));

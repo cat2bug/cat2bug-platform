@@ -22,7 +22,7 @@ import { ensureGitRepoIdAttached, routeNeedsGitRepoId } from '@/utils/git-repo-r
 NProgress.configure({ showSpinner: false })
 installNProgressColdBootGuard(NProgress)
 
-const PAGE_PROGRESS_COLOR = '#409eff'
+const PAGE_PROGRESS_COLOR = '#1890ff'
 
 function paintNProgressBar() {
   const root = document.documentElement

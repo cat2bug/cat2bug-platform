@@ -1,7 +1,8 @@
 package com.cat2bug.system.service;
 
-import com.alibaba.fastjson2.JSON;
 import com.cat2bug.common.domain.SysGitRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cat2bug.common.domain.SysGitRepositoryMember;
 import com.cat2bug.common.domain.SysMemberInvite;
 import com.cat2bug.common.domain.SysProject;
@@ -38,6 +39,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -53,6 +55,7 @@ public class SysMemberInviteService {
     private static final int INVITE_TTL_SECONDS = 3600;
     private static final int REPO_INVITE_TTL_SECONDS = 3 * 24 * 3600;
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Inject
     SysMemberInviteMapper sysMemberInviteMapper;
@@ -143,7 +146,7 @@ public class SysMemberInviteService {
         invite.setTeamId(project.getTeamId());
         invite.setProjectId(repo.getProjectId());
         invite.setRepositoryId(repositoryId);
-        invite.setRoleIds(JSON.toJSONString(Collections.singletonList(normalizedRole)));
+        invite.setRoleIds(toJson(Collections.singletonList(normalizedRole)));
         invite.setExpiresAt(addSeconds(now, REPO_INVITE_TTL_SECONDS));
         invite.setRevoked(0);
         invite.setCreatedBy(createdBy);
@@ -395,7 +398,7 @@ public class SysMemberInviteService {
         invite.setTeamId(teamId);
         invite.setProjectId(projectId);
         invite.setRepositoryId(repositoryId);
-        invite.setRoleIds(JSON.toJSONString(roleIds));
+        invite.setRoleIds(toJson(roleIds));
         invite.setExpiresAt(addSeconds(now, INVITE_TTL_SECONDS));
         invite.setRevoked(0);
         invite.setCreatedBy(createdBy);
@@ -452,7 +455,7 @@ public class SysMemberInviteService {
         if (StringUtils.isEmpty(roleIdsJson)) {
             return new Long[0];
         }
-        List<Long> roleIds = JSON.parseArray(roleIdsJson, Long.class);
+        List<Long> roleIds = readJsonList(roleIdsJson, new TypeReference<List<Long>>() { });
         return roleIds == null ? new Long[0] : roleIds.toArray(new Long[0]);
     }
 
@@ -460,8 +463,24 @@ public class SysMemberInviteService {
         if (StringUtils.isEmpty(roleIdsJson)) {
             return Collections.emptyList();
         }
-        List<String> roles = JSON.parseArray(roleIdsJson, String.class);
+        List<String> roles = readJsonList(roleIdsJson, new TypeReference<List<String>>() { });
         return roles == null ? Collections.emptyList() : roles;
+    }
+
+    private static String toJson(Object value) {
+        try {
+            return MAPPER.writeValueAsString(value);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    private static <T> T readJsonList(String json, TypeReference<T> type) {
+        try {
+            return MAPPER.readValue(json, type);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private String normalizeAclRole(String aclRole) {

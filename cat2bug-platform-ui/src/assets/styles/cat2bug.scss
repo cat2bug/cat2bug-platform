@@ -457,7 +457,7 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 
 .el-input:not(.el-textarea) .el-input__wrapper.is-focus,
 .el-input:not(.el-textarea).is-focus .el-input__wrapper {
-  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, var(--el-color-primary, #409eff)) inset !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, var(--el-color-primary, #1890ff)) inset !important;
 }
 
 .el-input:not(.el-textarea) .el-input__wrapper .el-input__inner:focus {
@@ -563,9 +563,9 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 
 /* textarea 无 wrapper：用向内 outline，避免外描边被 overflow 裁切，四边焦点框都清晰可见 */
 .el-textarea:not(.is-disabled) .el-textarea__inner:focus {
-  outline: 2px solid var(--cat2bug-field-focus-color, var(--el-color-primary, #409eff)) !important;
+  outline: 2px solid var(--cat2bug-field-focus-color, var(--el-color-primary, #1890ff)) !important;
   outline-offset: -2px !important;
-  border-color: var(--cat2bug-field-focus-color, var(--el-color-primary, #409eff)) !important;
+  border-color: var(--cat2bug-field-focus-color, var(--el-color-primary, #1890ff)) !important;
   box-shadow: none !important;
 }
 
@@ -616,7 +616,7 @@ html.dark .cat2bug-upload-focus-target.upload-file-focus-target:focus,
 html.dark .cat2bug-upload-focus-target.upload-file-focus-target:focus-within,
 html.dark .cat2bug-upload-focus-target.case-import-upload-focus-target:focus,
 html.dark .cat2bug-upload-focus-target.case-import-upload-focus-target:focus-within {
-  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
 }
 
 .cat2bug-upload-focus-target.upload-file-focus-target .el-button:focus,
@@ -656,7 +656,7 @@ html.dark .cat2bug-upload-focus-target.case-import-upload-focus-target:focus-wit
 
 html.dark .upload-file-list .el-upload-list__item.is-keyboard-focus,
 html.dark .case-import-upload-focus-target.is-keyboard-list-mode .el-upload-list__item.is-keyboard-focus {
-  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a);
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff);
 }
 
 /* 图片上传：键盘高亮仅用虚线边框（覆盖暗色主题 el-button border !important） */
@@ -668,7 +668,7 @@ html.dark .case-import-upload-focus-target.is-keyboard-list-mode .el-upload-list
 
 html.dark .component-upload-image-focus-target .update-button.is-keyboard-focus,
 html.dark .component-upload-image-focus-target .el-upload-list--picture-card .el-upload-list__item.is-keyboard-focus {
-  border: 1px dashed var(--cat2bug-field-focus-color, #ffce3a) !important;
+  border: 1px dashed var(--cat2bug-field-focus-color, #69b1ff) !important;
 }
 
 /* Element UI 开关：inline-flex 对齐轨道，隐藏 input 原生 outline，:focus-within 外环贴合 */
@@ -802,7 +802,7 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
 .el-button--primary.is-plain.list-query-toolbar-nav-focused {
   border-color: #b3d8ff !important;
   background-color: #ecf5ff !important;
-  color: #409eff !important;
+  color: var(--cat2bug-primary, #1890ff) !important;
 }
 
 .el-button--success.is-plain:focus,
@@ -836,13 +836,13 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
 .el-button--warning.is-plain.list-query-toolbar-nav-focused {
   border-color: #b3d8ff !important;
   background-color: #ecf5ff !important;
-  color: #409eff !important;
+  color: var(--cat2bug-primary, #1890ff) !important;
 }
 
 .el-button--warning.is-plain:hover {
   border-color: #b3d8ff !important;
   background-color: #ecf5ff !important;
-  color: #409eff !important;
+  color: var(--cat2bug-primary, #1890ff) !important;
 }
 
 .el-button--info.is-plain:focus,
@@ -988,7 +988,7 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
   button:not(:disabled):not(.disabled):hover,
   .btn-prev:not(.disabled):hover,
   .btn-next:not(.disabled):hover {
-    color: #409eff !important;
+    color: var(--cat2bug-primary, #1890ff) !important;
     background-color: transparent !important;
   }
 
@@ -1865,7 +1865,7 @@ img.cat2bug-image-error__img {
 
     &:hover,
     &:focus {
-      color: var(--cat2bug-operate-text-muted-hover, #409eff);
+      color: var(--cat2bug-operate-text-muted-hover, #1890ff);
     }
   }
 
@@ -1895,7 +1895,7 @@ img.cat2bug-image-error__img {
 
     &:hover,
     &:focus {
-      color: var(--cat2bug-operate-text-warning-hover, #409eff);
+      color: var(--cat2bug-operate-text-warning-hover, #1890ff);
     }
   }
 }
@@ -2232,7 +2232,7 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 
   &.is-focus .el-input__wrapper,
   .el-input__wrapper.is-focus {
-    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, var(--el-color-primary, #409eff)) inset !important;
+    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, var(--el-color-primary, #1890ff)) inset !important;
   }
 }
 .delete-button {
@@ -2759,15 +2759,15 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
       margin: 0px 5px;
     }
     .tools-button:hover {
-      color: #409EFF;
+      color: var(--cat2bug-primary, #1890ff);
     }
   }
 }
 
 /* 列表页「新建/添加」等 primary plain 按钮：白底蓝字改为蓝底白字（仅浅色主题） */
 html:not(.dark) .el-button--primary.is-plain:not(.cat2bug-btn-outline) {
-  background-color: #409EFF !important;
-  border-color: #409EFF !important;
+  background-color: var(--cat2bug-primary, #1890ff) !important;
+  border-color: var(--cat2bug-primary, #1890ff) !important;
   color: #ffffff !important;
 
   &:hover,
@@ -2788,12 +2788,12 @@ html:not(.dark) .el-button--primary.is-plain:not(.cat2bug-btn-outline) {
 html:not(.dark) .el-button--primary.is-plain.cat2bug-btn-outline {
   background-color: #ecf5ff !important;
   border-color: #b3d8ff !important;
-  color: #409EFF !important;
+  color: var(--cat2bug-primary, #1890ff) !important;
 
   &:hover,
   &:focus {
-    background-color: #409EFF !important;
-    border-color: #409EFF !important;
+    background-color: var(--cat2bug-primary, #1890ff) !important;
+    border-color: var(--cat2bug-primary, #1890ff) !important;
     color: #ffffff !important;
   }
 

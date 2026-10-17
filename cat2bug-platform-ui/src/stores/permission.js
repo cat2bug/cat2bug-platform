@@ -49,8 +49,12 @@ function isDevToolMenuComponent(component) {
   if (typeof component !== 'string') return false
   return component === 'tool/build/index'
     || component === 'tool/gen/index'
+    || component === 'tool/swagger/index'
     || component.startsWith('tool/build/')
     || component.startsWith('tool/gen/')
+    || component.startsWith('tool/swagger/')
+    || component.startsWith('tool/project/browser')
+    || component.startsWith('tool/project/option/browser')
 }
 
 function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {

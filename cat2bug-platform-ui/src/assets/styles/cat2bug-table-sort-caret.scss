@@ -44,11 +44,11 @@ $cat2bug-sort-caret-down-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.
 
   /* 选中态须不低于上方 .caret-wrapper 路径，否则 inactive 的 !important 会盖住 active */
   #{$root} th.is-sortable.ascending .caret-wrapper .sort-caret.ascending {
-    background-color: var(--cat2bug-table-sort-caret-active, #409eff) !important;
+    background-color: var(--cat2bug-table-sort-caret-active, #1890ff) !important;
   }
 
   #{$root} th.is-sortable.descending .caret-wrapper .sort-caret.descending {
-    background-color: var(--cat2bug-table-sort-caret-active, #409eff) !important;
+    background-color: var(--cat2bug-table-sort-caret-active, #1890ff) !important;
   }
 
   #{$root} th.is-sortable.ascending .caret-wrapper .sort-caret.descending {

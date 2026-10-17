@@ -28,6 +28,7 @@
 - **体积口径**：默认按 UPX 后可分发二进制计。
 - **接受约 38.8 MiB**（arm64，原始 169 MiB），未达 ~20 MB，产品负责人已确认接受，不再强求。
 - 硬约束：**禁止以体积裁功能**（Excel 含图表、Git、H2+MySQL 同包、嵌入 SPA 单文件均保留）。
+- 2026-10-17：Hutool 与 BouncyCastle 已换成 JDK（`openspec/changes/drop-hutool-bouncycastle`）。同日 arm64 重打：未压缩 179.1 MiB（187,835,392 字节），UPX 40.8 MiB（42,830,688 字节）；此前 UPX 为 42.4 MiB。这一包同时带上了 Element Plus 按需样式。门禁里「约 38.8 MiB」仍是当时接受的数字，不因这一次测量改写。
 
 ## 原因
 
@@ -35,7 +36,7 @@
 
 ## 副作用
 
-- 要继续接近 20 MB 只能做产品取舍：按数据库拆 H2/MySQL 两个包（约 −2~3 MB）、fastjson2 统一为 Jackson（约 −1~2 MB）、SPA 不嵌入（约 −5 MB，放弃单文件）、收窄代码高亮语言包等。
+- 要继续接近 20 MB 只能做产品取舍：按数据库拆 H2/MySQL 两个包（约 −2~3 MB）、SPA 不嵌入（约 −5 MB，放弃单文件）、收窄代码高亮语言包等。fastjson2 已换成 Jackson，OkHttp 已换成 JDK `HttpClient`（连带去掉 Kotlin）。2026-10-17 再打的 arm64 包使用 Mandrel 的 `-O1`（该版本没有 `-Os`）：未压缩 170.1 MiB（178,332,672 字节），UPX 38.7 MiB（40,577,740 字节）。上一包是 `-O2`、仍含 fastjson2 与 OkHttp，UPX 为 40.8 MiB。门禁里「约 38.8 MiB」仍是当时接受的数字。
 - FastExcel 导入只支持 `.xlsx`；图表靠自研 `XlsxPatcher` 注入。
 - 安装向导完成后进程退出，需 systemd / Docker `restart` 拉起；整个工作目录（`data/`、`upload/`、`git/`、`config/install/`）必须持久化。
 - amd64 未在本机构建，体积预计同量级（待确认）。

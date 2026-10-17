@@ -34,7 +34,10 @@ describe('project-module-path (scoped routes)', () => {
     expect(PROJECT_MODULES).toContain('defect')
     expect(PROJECT_MODULES).toContain('code')
     expect(isProjectModule('DEFECT')).toBe(true)
+    expect(isProjectModule('report')).toBe(false)
     expect(isProjectModule('unknown')).toBe(false)
+    expect(PROJECT_MODULES).not.toContain('report')
+    expect(PROJECT_MODULE_VIEW.report).toBeUndefined()
   })
 
   it('parses empty module and dashboard', () => {

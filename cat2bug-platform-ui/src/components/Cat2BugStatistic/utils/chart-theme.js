@@ -9,7 +9,7 @@ export function statisticChartColors(dark) {
     tooltipText: dark ? '#e5eaf3' : '#303133',
     heatZero: dark ? '#2b2b2c' : '#ebedf0',
     heatLow: dark ? '#1e3a5f' : '#c6e2ff',
-    heatMid: dark ? '#409eff' : '#79bbff',
+    heatMid: dark ? '#1890ff' : '#79bbff',
     heatHigh: dark ? '#66b1ff' : '#337ecc',
     barBg: dark ? 'rgba(255,255,255,0.08)' : 'rgba(180,180,180,0.2)',
     radarSplit: dark
@@ -28,13 +28,13 @@ export function calendarHeatmapTheme(dark) {
       ...base,
       gridGap: '#252529',
       emptyCell: '#3a4048',
-      heatActive: ['#1a3a5c', '#2563ab', '#409eff', '#79c0ff']
+      heatActive: ['#1a3a5c', '#2563ab', '#1890ff', '#79c0ff']
     }
   }
   return {
     ...base,
     gridGap: '#f8f8f9',
     emptyCell: '#ebedf0',
-    heatActive: ['#c6e2ff', '#79bbff', '#409eff', '#337ecc']
+    heatActive: ['#c6e2ff', '#79bbff', '#1890ff', '#337ecc']
   }
 }

@@ -281,7 +281,7 @@ export default {
     margin: 0 0 10px;
     line-height: 1.5;
     a {
-      color: #409eff;
+      color: var(--cat2bug-primary, #1890ff);
     }
   }
   :deep(.notice-defect-fields){

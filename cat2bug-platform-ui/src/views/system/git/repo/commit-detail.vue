@@ -949,7 +949,7 @@ export default {
     }
 
     .git-commit-detail__patch-code {
-      color: var(--el-color-primary, #409eff);
+      color: var(--el-color-primary, #1890ff);
     }
   }
 

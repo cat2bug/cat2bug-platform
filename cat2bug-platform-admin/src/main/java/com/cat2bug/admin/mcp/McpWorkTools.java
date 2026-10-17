@@ -244,44 +244,7 @@ public class McpWorkTools {
         return json.write(McpJson.data(gateway.get(scope, "/system/module/tree", q)));
     }
 
-    // ---------------------------------------------------------------- 报告 / 文档
-
-    @Tool(name = "list_reports",
-            description = "查询项目报告列表。",
-            annotations = @Tool.Annotations(title = "List reports", readOnlyHint = true, openWorldHint = false))
-    String listReports(McpConnection connection,
-                       @ToolArg(name = "keyword", description = "按标题模糊匹配", required = false) String keyword,
-                       @ToolArg(name = "page", description = "页码", required = false) Integer page,
-                       @ToolArg(name = "page_size", description = "每页条数", required = false) Integer pageSize) {
-        McpScope scope = context.scope(connection, "system:report:list");
-        Map<String, Object> q = new LinkedHashMap<>();
-        q.put("projectId", scope.projectId());
-        q.put("reportTitle", blankToNull(keyword));
-        q.put("pageNum", page == null || page < 1 ? 1 : page);
-        q.put("pageSize", clampPageSize(pageSize));
-        return json.write(json.page(gateway.get(scope, "/system/report/list", q), r -> {
-            ObjectNode o = json.object();
-            McpJson.copy(r, o, "reportId", "reportTitle", "reportTime", "reportDescription", "reportSource", "createBy");
-            return o;
-        }));
-    }
-
-    @Tool(name = "get_report",
-            description = "读取报告正文。",
-            annotations = @Tool.Annotations(title = "Get report", readOnlyHint = true, openWorldHint = false))
-    String getReport(McpConnection connection,
-                     @ToolArg(name = "report_id", description = "报告 ID") Long reportId) {
-        McpScope scope = context.scope(connection, "system:report:query");
-        objects.report(scope, reportId);
-        JsonNode r = McpJson.data(gateway.get(scope, "/system/report/" + reportId, null));
-        ObjectNode o = json.object();
-        McpJson.copy(r, o, "reportId", "reportTitle", "reportTime", "reportDescription", "reportSource", "createBy");
-        JsonNode data = r == null ? null : r.get("reportData");
-        if (data != null && !data.isNull()) {
-            o.put("reportData", McpJson.clip(data.isTextual() ? data.asText() : data.toString()));
-        }
-        return json.write(o);
-    }
+    // ---------------------------------------------------------------- 文档
 
     @Tool(name = "list_documents",
             description = "查询项目文档（目录与文件）。parent_id 为空时列根目录。",

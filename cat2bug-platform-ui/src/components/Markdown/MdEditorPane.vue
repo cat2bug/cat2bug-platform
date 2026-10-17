@@ -22,7 +22,7 @@ import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import { useSettingsStore } from '@/stores/settings'
 import { readStoredThemeMode } from '@/utils/theme-mode'
-import { normalizeDslSource } from '@/components/ReportTemplateEditor/dsl/normalize'
+import { normalizeDslSource } from '@/components/Markdown/dsl/normalize'
 
 function isEditorDarkMode() {
   if (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) {

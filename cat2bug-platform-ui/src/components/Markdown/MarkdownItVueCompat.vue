@@ -6,6 +6,7 @@
 import MarkdownIt from 'markdown-it'
 import { escapeHtml, sanitizeHtml } from '@/utils/sanitize-html'
 import { handleImageErrorEvent } from '@/utils/upload-asset'
+import { loadMarkdownExtrasCss } from '@/components/Markdown/load-markdown-extras-css'
 
 export default {
   name: 'MarkdownItVueCompat',
@@ -26,6 +27,7 @@ export default {
     }
   },
   created() {
+    loadMarkdownExtrasCss()
     const markdownItOpts = this.options?.markdownIt || {}
     this.md = new MarkdownIt({
       html: true,

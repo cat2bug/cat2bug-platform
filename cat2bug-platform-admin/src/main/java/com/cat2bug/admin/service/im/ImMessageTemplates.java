@@ -2,7 +2,6 @@ package com.cat2bug.admin.service.im;
 
 import com.cat2bug.common.constant.DefectConstants;
 import com.cat2bug.common.domain.SysDefect;
-import com.cat2bug.common.domain.SysReport;
 import com.cat2bug.common.domain.vo.EnumVo;
 import com.cat2bug.common.util.MessageUtils;
 import com.cat2bug.common.util.StringUtils;
@@ -55,17 +54,6 @@ public final class ImMessageTemplates {
         }
 
         return new ImMessageBody(text("缺陷通知", link, lines), md.toString(), html("缺陷通知", link, lines));
-    }
-
-    public static ImMessageBody report(SysReport report, String link) {
-        String title = blankToEmpty(report.getReportTitle());
-        List<Line> lines = List.of(new Line("报告", title));
-        StringBuilder md = new StringBuilder();
-        md.append(String.format("## %s \n\n", title));
-        if (StringUtils.isNotEmpty(link)) {
-            md.append(String.format("点击查看 [%s](%s) \n\n", link, link));
-        }
-        return new ImMessageBody(text("报告通知", link, lines), md.toString(), html("报告通知", link, lines));
     }
 
     /** 用户手写的通知：Markdown 与站内内容即原文，文本前加标题，HTML 转义后保留换行。 */

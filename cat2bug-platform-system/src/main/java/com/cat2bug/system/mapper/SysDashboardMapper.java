@@ -13,7 +13,6 @@ import com.cat2bug.common.domain.dashboard.SysColumnsInChart;
 import com.cat2bug.common.domain.dashboard.SysMemberOfDefectsLine;
 import com.cat2bug.common.domain.dashboard.SysMemberRankOfDefects;
 import com.cat2bug.common.domain.dashboard.SysModuleStatistics;
-import com.cat2bug.common.domain.dashboard.SysReportStatistics;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -28,8 +27,6 @@ public interface SysDashboardMapper {
     SysDefectStatistics defectStatistics(@Param("projectId") Long projectId);
 
     SysModuleStatistics moduleStatistics(@Param("projectId") Long projectId);
-
-    SysReportStatistics reportStatistics(@Param("projectId") Long projectId);
 
     SysDocumentStatistics documentStatistics(@Param("projectId") Long projectId);
 

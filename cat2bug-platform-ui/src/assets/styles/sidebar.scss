@@ -383,7 +383,7 @@ html.dark #app {
     .el-sub-menu .el-menu-item.is-active::before,
     .el-submenu.is-active > .el-submenu__title::before,
     .el-sub-menu.is-active > .el-sub-menu__title::before {
-      background-color: var(--sidebar-item-active-bg, rgba(255, 193, 7, 0.14)) !important;
+      background-color: var(--sidebar-item-active-bg, rgba(24, 144, 255, 0.12)) !important;
     }
 
     .el-menu-item.is-active,
@@ -484,7 +484,7 @@ html.dark #app {
   .el-submenu .el-menu-item.is-active::before,
   .el-sub-menu.is-active > .el-sub-menu__title::before,
   .el-submenu.is-active > .el-submenu__title::before {
-    background-color: var(--sidebar-item-active-bg, rgba(255, 193, 7, 0.14)) !important;
+    background-color: var(--sidebar-item-active-bg, rgba(24, 144, 255, 0.12)) !important;
   }
 
   .el-menu-item.is-active,
@@ -539,7 +539,7 @@ html.dark .el-menu--popup.el-popper {
     &:focus,
     &.is-active {
       color: var(--sidebar-active-text) !important;
-      background-color: rgba(255, 193, 7, 0.12) !important;
+      background-color: var(--sidebar-item-active-bg, rgba(105, 177, 255, 0.16)) !important;
     }
   }
 

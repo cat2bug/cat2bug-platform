@@ -906,7 +906,7 @@ import GitRepoCommitDetailPanel from './commit-detail.vue'
 import GitRepoShell from './GitRepoShell.vue'
 import GitTagIcon from './GitTagIcon.vue'
 import GitReleaseIcon from './GitReleaseIcon.vue'
-import { extractHeadings } from '@/components/Report/annotation/report-toc'
+import { extractHeadings } from '@/utils/markdown-toc'
 import { useUserStore } from '@/stores/user'
 import { checkPermi } from '@/utils/permission'
 import { formatTime, fileSizeUnit } from '@/utils/index'
@@ -2776,7 +2776,7 @@ export default {
   &:focus-visible {
     outline: none !important;
     border-color: var(--border-color-base, #dcdfe6) !important;
-    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, var(--el-color-primary, #409eff)) inset !important;
+    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, var(--el-color-primary, #1890ff)) inset !important;
   }
 
   /* 自定义图标（非 el-icon 包裹）也走统一间距，避免与 EP margin 叠加倍增 */
@@ -3657,7 +3657,7 @@ export default {
   max-width: 100%;
   font-size: 14px;
   font-weight: 600;
-  color: var(--el-color-primary, #ffc107);
+  color: var(--el-color-primary, #1890ff);
   text-decoration: none;
 
   &:hover {
@@ -3984,7 +3984,7 @@ export default {
 
   :deep(.el-date-editor.el-range-editor.is-active),
   :deep(.el-date-editor.el-range-editor.is-focus) {
-    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, var(--el-color-primary, #409eff)) inset !important;
+    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, var(--el-color-primary, #1890ff)) inset !important;
   }
 
   /* 与分支/贡献者下拉选中文字同色 */
@@ -4199,7 +4199,7 @@ export default {
 
   .git-create-release-upload__icon {
     font-size: 40px;
-    color: var(--el-color-primary, #ffc107);
+    color: var(--el-color-primary, #1890ff);
     margin-bottom: 8px;
   }
 

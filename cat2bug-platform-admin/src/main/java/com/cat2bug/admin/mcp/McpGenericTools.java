@@ -48,7 +48,7 @@ public class McpGenericTools {
 
     @Tool(name = "list_operations",
             description = "通用通道：列出你在授权项目中可调用的网页操作（精做工具未覆盖时使用）。可按模块过滤："
-                    + "defect / case / plan / deliverable / report / document / code / dashboard / project。",
+                    + "defect / case / plan / deliverable / document / code / dashboard / project。",
             annotations = @Tool.Annotations(title = "List operations", readOnlyHint = true, openWorldHint = false))
     String listOperations(McpConnection connection,
                           @ToolArg(name = "module", description = "模块", required = false) String module) {
@@ -219,11 +219,10 @@ public class McpGenericTools {
 
     private void checkCorrelation(McpScope scope, String moduleType, String correlationId) {
         long id = parseLong("correlationId", correlationId);
-        switch (moduleType) {
-            case "defect_log" -> objects.defectLog(scope, id);
-            case "report" -> objects.report(scope, id);
-            default -> throw new ToolCallException("不支持的关联类型：" + moduleType);
+        if (!"defect_log".equals(moduleType)) {
+            throw new ToolCallException("不支持的关联类型：" + moduleType);
         }
+        objects.defectLog(scope, id);
     }
 
     void checkKey(McpScope scope, String key, JsonNode value) {
@@ -267,7 +266,6 @@ public class McpGenericTools {
                         objects.module(scope, parseLong(key, v));
                     }
                 }
-                case "reportId", "reportIds" -> objects.report(scope, parseLong(key, v));
                 case "docId", "docIds", "docPid" -> {
                     if (parseLong(key, v) > 0) {
                         objects.document(scope, parseLong(key, v));

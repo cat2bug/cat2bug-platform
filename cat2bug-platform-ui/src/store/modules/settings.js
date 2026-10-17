@@ -19,7 +19,7 @@ const sideThemeValue =
 
 const state = {
   title: '',
-  theme: storageSetting.theme || '#409EFF',
+  theme: storageSetting.theme || '#1890ff',
   sideTheme: sideThemeValue,
   showSettings: showSettings,
   topNav: storageSetting.topNav === undefined ? topNav : storageSetting.topNav,

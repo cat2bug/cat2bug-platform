@@ -8,7 +8,7 @@
 
 - 请求头 `CAT2BUG-API-KEY: <项目 API Key>`；需 `cat2bug.api.enabled=true`，否则 HTTP 403「Open API 未启用」。
 - Key 绑定项目，其 `features`（JSON，如 `{"defect":["list","create"]}`）控制可用功能；`features` 为空表示不限制，Key 被禁用返回 HTTP 401「API KEY 已禁用」，无功能权限返回 HTTP 403。映射见 `cat2bug-platform-framework/.../security/open/ApiPermissionRegistry.java`（路径中纯数字段归一为 `{id}`）。
-- 不在映射表里的接口（如 `/api/deliverable/tree`、`/api/report/defect`）只要 Key 有效即可访问。
+- 不在映射表里的接口（如 `/api/deliverable/tree`）只要 Key 有效即可访问。原 `POST /api/report/defect` 已删除，见 [[ADR-018-移除报告模块且不保留历史数据]]。
 
 ## Open API 接口
 
@@ -28,7 +28,6 @@
 | GET | `/api/deliverable/info` | 按全路径或名称查交付物 | `deliverable.query` |
 | POST | `/api/deliverable` | 新增交付物 | `deliverable.create` |
 | POST | `/api/file/upload` | 上传附件（`OpenApiFileResource`） | `file.upload` |
-| POST | `/api/report/defect` | 推送缺陷报告（`OpenApiReportResource`；调用方是否为 Cat2Bug-JUnit/JLog「待确认」） | 未映射 |
 
 `DELETE:/api/defect` 在映射表中存在，但 Quarkus 资源类没有对应方法（是否有意不提供「待确认」）。
 

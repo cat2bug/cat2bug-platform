@@ -143,7 +143,7 @@ $cat2bug-ep-default-button: ':not(.el-button--primary):not(.el-button--success):
   --team-select-avatar-border: #dcdfe6;
 
   /* 项目/团队设置卡片标题图标 */
-  --cat2bug-option-card-icon-color: #409EFF;
+  --cat2bug-option-card-icon-color: var(--cat2bug-primary, #1890ff);
 
   --navbar-bg: #ffffff;
   --navbar-text: #303133;
@@ -1680,8 +1680,8 @@ html.dark {
     
     // 恢复项目报告等特定 tag 的原始蓝色（主色）
     &.report-tag.el-tag--dark {
-      background-color: #409EFF !important;
-      border-color: #409EFF !important;
+      background-color: var(--cat2bug-primary, #1890ff) !important;
+      border-color: var(--cat2bug-primary, #1890ff) !important;
       color: #ffffff !important;
     }
   }
@@ -3975,40 +3975,22 @@ html.dark {
     }
   }
 
-  /* 缺陷列表名称链接：暗黑模式用主文字色（白），悬停品牌黄 */
-  .table-defect-title {
-    .el-link.el-link--primary {
-      color: var(--text-color-primary, #f5f7fa) !important;
-
-      &:hover {
-        color: var(--cat2bug-primary) !important;
-      }
-
-      &.is-underline:after {
-        border-bottom-color: var(--text-color-primary, #f5f7fa) !important;
-      }
-
-      &.is-underline:hover:after {
-        border-bottom-color: var(--cat2bug-primary) !important;
-      }
-    }
-  }
-
-  /* 文件管理列表：文件/文件夹名称链接，暗黑模式同缺陷名称 */
+  /* 列表标题链接：暗色用强调蓝（与浅色主色链接对应），不要用主文字白 */
+  .table-defect-title,
   .document-title {
     .el-link.el-link--primary {
-      color: var(--text-color-primary, #f5f7fa) !important;
+      color: var(--cat2bug-accent, #69b1ff) !important;
 
       &:hover {
-        color: var(--cat2bug-primary) !important;
+        color: color-mix(in srgb, var(--cat2bug-accent, #69b1ff) 72%, #ffffff) !important;
       }
 
       &.is-underline:after {
-        border-bottom-color: var(--text-color-primary, #f5f7fa) !important;
+        border-bottom-color: var(--cat2bug-accent, #69b1ff) !important;
       }
 
       &.is-underline:hover:after {
-        border-bottom-color: var(--cat2bug-primary) !important;
+        border-bottom-color: color-mix(in srgb, var(--cat2bug-accent, #69b1ff) 72%, #ffffff) !important;
       }
     }
   }

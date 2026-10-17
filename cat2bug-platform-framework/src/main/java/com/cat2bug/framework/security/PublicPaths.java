@@ -52,9 +52,6 @@ public final class PublicPaths {
         if (isInvitePublicPath(normalized)) {
             return true;
         }
-        if (isReportPresetPreviewPath(normalized)) {
-            return true;
-        }
         if (normalized.startsWith(".well-known/")) {
             return true;
         }
@@ -68,11 +65,6 @@ public final class PublicPaths {
             "oauth/token",
             "oauth/revoke"
     );
-
-    /** 预制报告模版预览图由 &lt;img&gt; 加载，不会带 token（对齐 Spring SecurityConfig）。 */
-    private static boolean isReportPresetPreviewPath(String normalized) {
-        return normalized.matches("system/report/template/preset/.+/preview");
-    }
 
     /** 邀请预览与旧版直链 GET 允许匿名；accept 仍为 POST 需登录。 */
     private static boolean isInvitePublicPath(String normalized) {

@@ -303,7 +303,7 @@ $cmdp-border: rgba(255, 255, 255, 0.1);
 $cmdp-border-soft: rgba(255, 255, 255, 0.07);
 $cmdp-text: #e8e8ea;
 $cmdp-text-dim: #9a9aa2;
-$cmdp-accent: #ffce3a;
+$cmdp-accent: #69b1ff;
 
 .cmdp-mask {
   position: fixed;

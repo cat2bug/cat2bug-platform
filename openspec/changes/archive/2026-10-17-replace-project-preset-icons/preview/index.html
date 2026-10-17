@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>项目封面审查稿</title>
+  <style>
+    :root {
+      --page: #141418;
+      --panel: #1c1c21;
+      --text: #e8e8ed;
+      --muted: #9a9aa3;
+      --amber: #ffc107;
+      --line: #3a3a42;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--text);
+      font-family: "PingFang SC", "Helvetica Neue", sans-serif;
+      padding: 28px 24px 48px;
+    }
+    header { max-width: 720px; margin: 0 auto 20px; }
+    h1 { font-size: 18px; margin: 0 0 8px; font-weight: 600; }
+    p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .stage {
+      max-width: 720px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+    .preview-col { text-align: left; }
+    .preview {
+      width: 96px;
+      height: 96px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid var(--amber);
+    }
+    .preview svg { width: 100%; height: 100%; display: block; }
+    button.change {
+      margin-top: 10px;
+      background: var(--amber);
+      color: #1a1a1e;
+      border: 0;
+      border-radius: 4px;
+      padding: 6px 14px;
+      font-size: 13px;
+    }
+    .pop {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      width: 360px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 72px);
+      gap: 10px;
+    }
+    .cell {
+      width: 72px;
+      height: 72px;
+      border-radius: 6px;
+      overflow: hidden;
+      padding: 0;
+      border: 2px solid transparent;
+      background: transparent;
+      cursor: pointer;
+    }
+    .cell.current { border-color: var(--amber); }
+    .cell svg { width: 100%; height: 100%; display: block; }
+    .upload {
+      width: 72px;
+      height: 72px;
+      border-radius: 6px;
+      border: 1px dashed #6a6a74;
+      color: #bdbdc7;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+    }
+    .cap { margin-top: 14px; font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>项目封面 · 审查稿（第二版）</h1>
+    <p>对应创建项目里「更改封面」红框的那一组图。整张是封面，不是菜单线框。自己绘制，格子从现在的约 130px 收到 72px。点一下可换右侧预览。未写入正式资源。</p>
+  </header>
+  <div class="stage">
+    <div class="preview-col">
+      <div class="preview" id="preview"></div>
+      <button class="change" type="button">更改封面</button>
+    </div>
+    <div class="pop">
+      <div class="grid" id="grid"></div>
+      <div class="cap" id="cap"></div>
+    </div>
+  </div>
+  <script>
+    const covers = [
+      ['手机应用', '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="8" fill="#16324f"/><rect x="26" y="12" width="28" height="52" rx="5" fill="#7eb6ff"/><rect x="30" y="18" width="20" height="34" rx="2" fill="#16324f"/><circle cx="40" cy="57" r="2" fill="#16324f"/></svg>'],
+      ['打开的书', '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="8" fill="#3a2a22"/><path d="M12 22h24c4 6 4 28 0 36H12V22z" fill="#f3d2b0"/><path d="M68 22H44c-4 6-4 28 0 36h24V22z" fill="#e7b892"/><path d="M36 22h8v36h-8z" fill="#c4845a"/></svg>'],
+      ['日历', '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="8" fill="#1e3d36"/><rect x="16" y="20" width="48" height="44" rx="6" fill="#d7f3ea"/><rect x="16" y="20" width="48" height="14" rx="6" fill="#2f9e7a"/><rect x="16" y="28" width="48" height="6" fill="#2f9e7a"/><circle cx="32" cy="46" r="3" fill="#1e3d36"/><circle cx="48" cy="46" r="3" fill="#1e3d36"/><circle cx="32" cy="56" r="3" fill="#1e3d36"/></svg>'],
+      ['叠放的纸', '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="8" fill="#2a2740"/><rect x="22" y="18" width="40" height="48" rx="4" fill="#9aa0d4"/><rect x="16" y="14" width="40" height="48" rx="4" fill="#f4f1ea"/><path d="M40 14h16v14H40z" fill="#d9d3ea"/><path d="M22 34h22M22 42h18M22 50h14" stroke="#2a2740" stroke-width="2" stroke-linecap="round"/></svg>'],
+      ['三只箱子', '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="8" fill="#3d2e18"/><rect x="14" y="36" width="24" height="22" rx="3" fill="#f0c36a"/><path d="M14 42h24" stroke="#3d2e18" stroke-width="2"/><rect x="42" y="28" width="24" height="30" rx="3" fill="#e09a3e"/><path d="M42 36h24" stroke="#3d2e18" stroke-width="2"/><rect x="28" y="18" width="22" height="16" rx="3" fill="#f6deaa"/></svg>'],
+      ['柱状图', '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="8" fill="#1c3348"/><rect x="16" y="44" width="12" height="20" rx="2" fill="#8fd0ff"/><rect x="34" y="28" width="12" height="36" rx="2" fill="#ffc107"/><rect x="52" y="36" width="12" height="28" rx="2" fill="#7dcea0"/></svg>'],
+      ['对话', '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="8" fill="#2c2438"/><rect x="12" y="16" width="40" height="28" rx="8" fill="#f2e9ff"/><path d="M22 44l-4 10 14-8" fill="#f2e9ff"/><rect x="28" y="34" width="40" height="26" rx="8" fill="#ffc107"/><path d="M58 60l6 8-16-6" fill="#ffc107"/></svg>'],
+      ['纸飞机', '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="8" fill="#1a3044"/><path d="M14 40 L66 16 L46 64 L38 46 Z" fill="#9fd4ff"/><path d="M38 46 L66 16 L34 42 Z" fill="#d7eeff"/><path d="M38 46 L46 64 L42 48 Z" fill="#5aa7e0"/></svg>'],
+      ['文件夹', '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="8" fill="#243528"/><path d="M12 28h20l6-8h30v40H12z" fill="#7dcea0"/><path d="M12 36h56v24H12z" fill="#b7ebc6"/></svg>'],
+      ['三列看板', '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="8" fill="#2a2430"/><rect x="12" y="16" width="16" height="48" rx="3" fill="#f0c36a"/><rect x="32" y="16" width="16" height="32" rx="3" fill="#f4f1ea"/><rect x="52" y="16" width="16" height="40" rx="3" fill="#e07a5f"/></svg>']
+    ];
+
+    const grid = document.getElementById('grid');
+    const preview = document.getElementById('preview');
+    const cap = document.getElementById('cap');
+    let current = 0;
+
+    function paint() {
+      preview.innerHTML = covers[current][1];
+      cap.textContent = (current + 1) + '  ' + covers[current][0];
+      [...grid.children].forEach((el, i) => {
+        if (el.classList.contains('cell')) el.classList.toggle('current', i === current);
+      });
+    }
+
+    covers.forEach((item, i) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cell' + (i === 0 ? ' current' : '');
+      btn.innerHTML = item[1];
+      btn.title = item[0];
+      btn.onclick = () => { current = i; paint(); };
+      grid.appendChild(btn);
+    });
+    const upload = document.createElement('div');
+    upload.className = 'upload';
+    upload.textContent = '+';
+    grid.appendChild(upload);
+    paint();
+  </script>
+</body>
+</html>

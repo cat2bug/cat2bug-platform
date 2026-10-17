@@ -397,7 +397,7 @@ export default {
     justify-content: center;
     color: var(--text-color-secondary, #909399);
     &:hover {
-      color: var(--cat2bug-primary, #409eff);
+      color: var(--cat2bug-primary, #1890ff);
     }
     .el-icon-arrow-up,
     .el-icon-arrow-down {
@@ -522,7 +522,7 @@ export default {
     color: var(--text-color-secondary, #909399);
   }
   .module-menu-row-side-add:hover {
-    color: var(--cat2bug-primary, #409eff);
+    color: var(--cat2bug-primary, #1890ff);
   }
   .module-menu-item.module-menu-row:hover {
     padding: 5px 10px !important;

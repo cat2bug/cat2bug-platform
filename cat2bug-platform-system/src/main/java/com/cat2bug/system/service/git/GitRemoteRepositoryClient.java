@@ -2,10 +2,9 @@ package com.cat2bug.system.service.git;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import com.cat2bug.common.exception.ApiException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cat2bug.common.util.MessageUtils;
 import com.cat2bug.common.util.StringUtils;
 import com.cat2bug.common.domain.git.SysGitRemoteListRequest;
@@ -35,6 +34,7 @@ public class GitRemoteRepositoryClient
     private static final String DEFAULT_GITLAB_HOST = "https://gitlab.com";
     private static final int PER_PAGE = 100;
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(30);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final HttpClient httpClient;
 
@@ -84,20 +84,19 @@ public class GitRemoteRepositoryClient
             .header("Authorization", "Bearer " + token)
             .header("Accept", "application/vnd.github+json")
             .header("User-Agent", "cat2bug-platform"));
-        JSONArray array = parseArray(body);
+        JsonNode array = parseArray(body);
         List<SysGitRemoteRepository> result = new ArrayList<>();
-        for (int i = 0; i < array.size(); i++)
+        for (JsonNode item : array)
         {
-            JSONObject item = array.getJSONObject(i);
-            if (item == null)
+            if (item == null || !item.isObject())
             {
                 continue;
             }
             SysGitRemoteRepository row = new SysGitRemoteRepository();
-            row.setName(item.getString("name"));
-            row.setFullPath(item.getString("full_name"));
-            row.setCloneUrl(item.getString("clone_url"));
-            row.setDefaultBranch(item.getString("default_branch"));
+            row.setName(text(item, "name"));
+            row.setFullPath(text(item, "full_name"));
+            row.setCloneUrl(text(item, "clone_url"));
+            row.setDefaultBranch(text(item, "default_branch"));
             result.add(row);
         }
         return result;
@@ -110,25 +109,24 @@ public class GitRemoteRepositoryClient
             .header("PRIVATE-TOKEN", token)
             .header("Accept", "application/json")
             .header("User-Agent", "cat2bug-platform"));
-        JSONArray array = parseArray(body);
+        JsonNode array = parseArray(body);
         List<SysGitRemoteRepository> result = new ArrayList<>();
-        for (int i = 0; i < array.size(); i++)
+        for (JsonNode item : array)
         {
-            JSONObject item = array.getJSONObject(i);
-            if (item == null)
+            if (item == null || !item.isObject())
             {
                 continue;
             }
             SysGitRemoteRepository row = new SysGitRemoteRepository();
-            row.setName(item.getString("name"));
-            row.setFullPath(item.getString("path_with_namespace"));
-            String cloneUrl = item.getString("http_url_to_repo");
+            row.setName(text(item, "name"));
+            row.setFullPath(text(item, "path_with_namespace"));
+            String cloneUrl = text(item, "http_url_to_repo");
             if (StringUtils.isEmpty(cloneUrl))
             {
-                cloneUrl = item.getString("ssh_url_to_repo");
+                cloneUrl = text(item, "ssh_url_to_repo");
             }
             row.setCloneUrl(cloneUrl);
-            row.setDefaultBranch(item.getString("default_branch"));
+            row.setDefaultBranch(text(item, "default_branch"));
             result.add(row);
         }
         return result;
@@ -141,31 +139,31 @@ public class GitRemoteRepositoryClient
         String body = httpGet(url, HttpRequest.newBuilder()
             .header("Accept", "application/json")
             .header("User-Agent", "cat2bug-platform"));
-        JSONArray array = parseArray(body);
+        JsonNode array = parseArray(body);
         List<SysGitRemoteRepository> result = new ArrayList<>();
-        for (int i = 0; i < array.size(); i++)
+        for (JsonNode item : array)
         {
-            JSONObject item = array.getJSONObject(i);
-            if (item == null)
+            if (item == null || !item.isObject())
             {
                 continue;
             }
             SysGitRemoteRepository row = new SysGitRemoteRepository();
-            row.setName(item.getString("name"));
-            String fullName = item.getString("full_name");
-            if (StringUtils.isEmpty(fullName) && item.getJSONObject("namespace") != null)
+            row.setName(text(item, "name"));
+            String fullName = text(item, "full_name");
+            JsonNode namespace = item.get("namespace");
+            if (StringUtils.isEmpty(fullName) && namespace != null && namespace.isObject())
             {
-                String path = item.getJSONObject("namespace").getString("path");
-                fullName = (path != null ? path + "/" : "") + item.getString("path");
+                String path = text(namespace, "path");
+                fullName = (path != null ? path + "/" : "") + text(item, "path");
             }
             row.setFullPath(fullName);
-            String cloneUrl = firstNonEmpty(item.getString("html_url"), item.getString("ssh_url"));
+            String cloneUrl = firstNonEmpty(text(item, "html_url"), text(item, "ssh_url"));
             if (StringUtils.isNotEmpty(cloneUrl) && cloneUrl.startsWith("http") && !cloneUrl.endsWith(".git"))
             {
                 cloneUrl = cloneUrl + ".git";
             }
             row.setCloneUrl(cloneUrl);
-            row.setDefaultBranch(item.getString("default_branch"));
+            row.setDefaultBranch(text(item, "default_branch"));
             result.add(row);
         }
         return result;
@@ -213,14 +211,14 @@ public class GitRemoteRepositoryClient
         }
     }
 
-    private static JSONArray parseArray(String body)
+    private static JsonNode parseArray(String body)
     {
         try
         {
-            Object parsed = JSON.parse(body);
-            if (parsed instanceof JSONArray)
+            JsonNode parsed = MAPPER.readTree(body);
+            if (parsed != null && parsed.isArray())
             {
-                return (JSONArray) parsed;
+                return parsed;
             }
             throw new ApiException(MessageUtils.message("git.repo.import.remote-list-failed"));
         }
@@ -232,6 +230,16 @@ public class GitRemoteRepositoryClient
         {
             throw new ApiException(MessageUtils.message("git.repo.import.remote-list-failed"));
         }
+    }
+
+    private static String text(JsonNode node, String field)
+    {
+        JsonNode value = node.get(field);
+        if (value == null || value.isNull())
+        {
+            return null;
+        }
+        return value.asText();
     }
 
     private static String firstNonEmpty(String a, String b)

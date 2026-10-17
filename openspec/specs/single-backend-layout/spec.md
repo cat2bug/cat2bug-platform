@@ -40,13 +40,9 @@ Module directory names, Maven artifactIds and Java package names of the backend 
 - **THEN** all tests pass and both smoke runs succeed with the same checks as before the rename
 
 ### Requirement: Delivery assets target the unified admin
-Embedded frontend build, report preset sync scripts, Docker Compose backend image and rpm packaging MUST consume artifacts of the unified `cat2bug-platform-admin`. The Docker Compose backend MUST persist the whole `cat2bug.profile` directory (including the `git` subdirectory) on a mounted volume.
+Embedded frontend build, Docker Compose backend image and rpm packaging MUST consume artifacts of the unified `cat2bug-platform-admin`. The Docker Compose backend MUST persist the whole `cat2bug.profile` directory (including the `git` subdirectory) on a mounted volume. The build MUST NOT depend on a report-preset sync script or on classpath resources under `报告/模版/`.
 
 #### Scenario: Compose deploy keeps uploads and repositories
 - **WHEN** an operator runs the documented Docker Compose stack, completes setup, uploads an attachment and creates a project Git repository, then recreates the backend container
 - **THEN** the attachment and the repository are still readable after the container is recreated
-
-#### Scenario: Report presets synced to admin
-- **WHEN** a maintainer runs `scripts/sync-report-preset-templates.sh`
-- **THEN** preset files are written under `cat2bug-platform-admin/src/main/resources/报告/模版/`
 

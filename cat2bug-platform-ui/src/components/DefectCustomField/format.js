@@ -59,7 +59,7 @@ export function enumOptionsFromTypeConfig(typeConfig) {
     .map((opt, index) => {
       if (typeof opt === 'string' || typeof opt === 'number' || typeof opt === 'boolean') {
         const key = String(opt).trim()
-        return { key, label: key, color: '#409EFF' }
+        return { key, label: key, color: '#1890ff' }
       }
       const label = opt.label != null ? String(opt.label).trim() : ''
       let key = opt.key != null ? String(opt.key).trim() : ''
@@ -69,7 +69,7 @@ export function enumOptionsFromTypeConfig(typeConfig) {
       return {
         key,
         label: label || key,
-        color: opt.color || '#409EFF'
+        color: opt.color || '#1890ff'
       }
     })
     .filter(opt => opt.key !== '')

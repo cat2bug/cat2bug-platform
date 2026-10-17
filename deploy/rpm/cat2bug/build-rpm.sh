@@ -1,63 +1,11 @@
 #!/usr/bin/env bash
-# 从 Quarkus Native 二进制生成 RPM（需 nfpm：https://nfpm.goreleaser.com/）
-#
-# 用法:
-#   ./deploy/build-native.sh x86_64
-#   ./deploy/rpm/cat2bug/build-rpm.sh x86_64
-#   NFPM_VERSION=1.1.0 ./deploy/rpm/cat2bug/build-rpm.sh aarch64
-#   RPM_USE_UPX=true ./deploy/rpm/cat2bug/build-rpm.sh x86_64   # 打包 UPX 压缩版（*.upx）
+# RPM 打包已迁到 cat2bug-build。本仓库只打 JAR。
 set -euo pipefail
-
-if ! command -v nfpm >/dev/null 2>&1; then
-  echo "nfpm is required to build RPM packages." >&2
-  echo "  macOS:   brew install nfpm" >&2
-  echo "  Linux:   go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest" >&2
-  echo "  Docs:    https://nfpm.goreleaser.com/install/" >&2
-  exit 1
-fi
-
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
-ADMIN="$ROOT/cat2bug-platform-admin"
-RPM_DIR="$(cd "$(dirname "$0")" && pwd)"
-ARCH="${1:-$(uname -m)}"
-
-case "$ARCH" in
-  x86_64|amd64) GOARCH=amd64; RPM_ARCH=x86_64; ELF_MACHINE="x86-64" ;;
-  aarch64|arm64) GOARCH=arm64; RPM_ARCH=aarch64; ELF_MACHINE="aarch64" ;;
-  *) echo "Unsupported arch: $ARCH (use x86_64 or aarch64)" >&2; exit 1 ;;
-esac
-
-BIN="$ADMIN/target/cat2bug-admin-linux-${GOARCH}"
-if [[ "${RPM_USE_UPX:-false}" == "true" ]]; then
-  BIN="${BIN}.upx"
-fi
-if [[ ! -f "$BIN" ]]; then
-  echo "Missing native binary: $BIN — run: ./deploy/build-native.sh $ARCH" >&2
+TARGET="$(cd "$ROOT/../cat2bug-build" && pwd)/scripts/platform/build-rpm.sh"
+if [[ ! -f "$TARGET" ]]; then
+  echo "找不到 $TARGET" >&2
   exit 1
 fi
-BIN_INFO="$(file -b "$BIN")"
-if [[ "$BIN_INFO" != *"ELF"* || "$BIN_INFO" != *"$ELF_MACHINE"* ]]; then
-  echo "Not a Linux $RPM_ARCH ELF: $BIN ($BIN_INFO)" >&2
-  exit 1
-fi
-
-VERSION="${NFPM_VERSION:-1.1.0}"
-STAGE="$RPM_DIR/stage"
-rm -rf "$STAGE"
-mkdir -p "$STAGE/usr/bin" "$STAGE/etc/cat2bug" "$STAGE/lib/systemd/system"
-cp "$BIN" "$STAGE/usr/bin/cat2bug-admin"
-chmod 755 "$STAGE/usr/bin/cat2bug-admin"
-cp "$RPM_DIR/cat2bug-platform.service" "$STAGE/lib/systemd/system/"
-cp "$RPM_DIR/application.properties" "$STAGE/etc/cat2bug/platform.properties"
-
-mkdir -p "$RPM_DIR/dist"
-export NFPM_ARCH="$RPM_ARCH"
-export NFPM_VERSION="$VERSION"
-cd "$RPM_DIR"
-rm -f dist/cat2bug-platform-*."${RPM_ARCH}".rpm
-nfpm package -f nfpm.yaml -t dist --packager rpm
-BUILT="$(ls -1 dist/cat2bug-platform-*."${RPM_ARCH}".rpm | head -1)"
-OUT="dist/cat2bug-platform_${VERSION}_${RPM_ARCH}.rpm"
-mv -f "$BUILT" "$OUT"
-
-echo "RPM: $RPM_DIR/$OUT ($(basename "$BIN"))"
+export CAT2BUG_PLATFORM_ROOT="$ROOT"
+exec "$TARGET" "$@"

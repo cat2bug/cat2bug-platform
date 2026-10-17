@@ -18,10 +18,6 @@
         <result property="total" column="total"/>
     </resultMap>
 
-    <resultMap id="SysReportStatisticsResult" type="com.cat2bug.common.domain.dashboard.SysReportStatistics">
-        <result property="total" column="total"/>
-    </resultMap>
-
     <resultMap id="SysDocumentStatisticsResult" type="com.cat2bug.common.domain.dashboard.SysDocumentStatistics">
         <result property="total" column="total"/>
     </resultMap>
@@ -54,7 +50,6 @@
         <result property="updateByAvatar" column="update_by_avatar"/>
         <result property="updateTime" column="update_time"/>
         <result property="projectId" column="project_id"/>
-        <result property="reportId" column="report_id"/>
         <result property="passCount" column="pass_count"/>
         <result property="failCount" column="fail_count"/>
         <result property="defectLevelUrgentCount" column="defect_level_urgent_count"/>
@@ -139,7 +134,6 @@
             p.update_by_id,
             p.update_time,
             p.project_id,
-            p.report_id,
             p.remark,
             u.nick_name AS update_by,
             u.avatar AS update_by_avatar,
@@ -287,12 +281,6 @@
         WHERE project_id = #{projectId}
     </select>
 
-    <select id="reportStatistics" resultMap="SysReportStatisticsResult">
-        SELECT COUNT(report_id) AS total
-        FROM sys_report
-        WHERE project_id = #{projectId}
-    </select>
-
     <select id="documentStatistics" resultMap="SysDocumentStatisticsResult">
         SELECT COUNT(doc_id) AS total
         FROM sys_document
@@ -374,15 +362,6 @@
             FROM sys_plan
             WHERE project_id = #{projectId}
             UNION
-            SELECT CAST(report_id AS CHAR(255)) AS id,
-                   report_title AS title,
-                   'report' AS type,
-                   NULL AS state,
-                   report_time AS time,
-                   create_by_id AS update_by_id
-            FROM sys_report
-            WHERE project_id = #{projectId}
-            UNION
             SELECT CAST(doc_id AS CHAR(255)) AS id,
                    file_url AS title,
                    'document' AS type,
@@ -425,15 +404,6 @@
                    COALESCE(update_time, create_time) AS time,
                    update_by_id
             FROM sys_plan
-            WHERE project_id = #{projectId}
-            UNION
-            SELECT CAST(report_id AS VARCHAR) AS id,
-                   report_title AS title,
-                   'report' AS type,
-                   NULL AS state,
-                   report_time AS time,
-                   create_by_id AS update_by_id
-            FROM sys_report
             WHERE project_id = #{projectId}
             UNION
             SELECT CAST(doc_id AS VARCHAR) AS id,

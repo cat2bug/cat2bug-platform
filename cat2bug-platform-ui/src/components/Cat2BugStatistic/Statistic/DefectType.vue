@@ -133,7 +133,7 @@ export default {
   }
 
   &:hover .cat2bug-statistic-label__name {
-    color: #409eff;
+    color: var(--cat2bug-primary, #1890ff);
   }
 }
 

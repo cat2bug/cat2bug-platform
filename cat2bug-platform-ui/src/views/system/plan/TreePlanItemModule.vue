@@ -456,7 +456,7 @@ export default {
   background: transparent;
 }
 .tree-plan-item-sidebar-toggle-wrap .tree-sidebar-collapse-toggle:hover {
-  color: #409eff;
+  color: var(--cat2bug-primary, #1890ff);
   background-color: #ecf5ff;
 }
 .tree-plan-item-sidebar-toggle-wrap .tree-sidebar-collapse-toggle:focus-visible {

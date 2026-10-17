@@ -1,10 +1,14 @@
-import { createApp } from 'vue'
+import { createApp, defineAsyncComponent } from 'vue'
 import Cookies from 'js-cookie'
 import { createHead } from '@unhead/vue'
 
 import '@fontsource/dseg7-classic/latin-400.css'
 import '@/assets/styles/element-plus-variables.scss'
-import 'element-plus/theme-chalk/src/index.scss'
+import 'element-plus/theme-chalk/base.css'
+import 'element-plus/es/components/message/style/css'
+import 'element-plus/es/components/message-box/style/css'
+import 'element-plus/es/components/loading/style/css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 import '@/assets/styles/index.scss'
 import '@/assets/styles/ruoyi.scss'
 import '@/assets/styles/cat2bug.scss'
@@ -31,7 +35,6 @@ import {
 
 import Pagination from '@/components/Pagination'
 import RightToolbar from '@/components/RightToolbar'
-import Editor from '@/components/Editor'
 import FileUpload from '@/components/FileUpload'
 import ImageUpload from '@/components/ImageUpload'
 import ImagePreview from '@/components/ImagePreview'
@@ -132,7 +135,8 @@ async function mountApp() {
   app.component('SiteCopyright', SiteCopyright)
   app.component('Pagination', Pagination)
   app.component('RightToolbar', RightToolbar)
-  app.component('Editor', Editor)
+  // Quill 体积大；仅在页面真正用到 <Editor> 时再加载
+  app.component('Editor', defineAsyncComponent(() => import('@/components/Editor/index.vue')))
   app.component('FileUpload', FileUpload)
   app.component('ImageUpload', ImageUpload)
   app.component('ImagePreview', ImagePreview)

@@ -38,10 +38,7 @@
 </template>
 
 <script>
-/**
- * @deprecated 模版编辑已迁移至 ReportTemplateEditor（Milkdown）。
- * 本组件保留：markdown-it 插件链仍被 ViewReport / 预览渲染引用。
- */
+/** Markdown 编辑与预览（缺陷描述、Git PR 等场景）。 */
 import { Multipane, MultipaneResizer } from '@/vendor/vue-multipane';
 import { MarkdownRenderer as MarkdownItVue } from '@/components/Markdown'
 import MdEditorPane from '@/components/Markdown/MdEditorPane.vue'
@@ -63,7 +60,6 @@ import {ImagePlugin} from "@/components/Cat2BugMarkdown/plugins/ImagePlugin";
 import html2canvas from 'html2canvas';
 import {strFormat} from "@/utils";
 import {upload} from "@/api/common/upload";
-import {updateTemplate} from "@/api/system/ReportTemplate";
 import {markdownData} from "@/api/markdown/markdown";
 import { useUserStore } from "@/stores/user";
 
@@ -199,28 +195,12 @@ export default {
     markdownView(view, tool) {
       this.viewVisible = !tool.check;
     },
-    /** 保存文档 */
+    /** 保存文档（仅同步 content；报告模版能力已移除） */
     async save() {
-      if(!this.template || Object.keys(this.template).length==0) return;
-      let template = {
-        templateId: this.template.templateId,
-        templateTitle: this.template.templateTitle,
-        moduleType: this.template.moduleType,
-        projectId: this.template.projectId,
-        templateContent: this.markdownContent,
-        majorVersion: this.template.majorVersion,
-        minorVersion: this.template.minorVersion,
-      }
-      const blob = await this.getMarkdownImage();
-      if(blob && blob.type=='image/png') {
-        const formData = new FormData();
-        formData.append('file', blob);
-        let res = await upload(formData);
-        template.templateIconUrl = res.fileName;
-      }
-      updateTemplate(template).then(res=>{
-        this.$message.success(this.$i18n.t('save-success').toString())
-      });
+      if (!this.template || Object.keys(this.template).length === 0) return
+      this.$emit('update:content', this.markdownContent)
+      this.$emit('input', this.markdownContent)
+      this.$message.success(this.$i18n.t('save-success').toString())
     },
     /** 清除文档 */
     clear() {
@@ -628,13 +608,29 @@ export default {
 }
 .markdown-tools {
   width: 100%;
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: flex-start;
   align-items: center;
+  gap: 2px;
   padding: 5px 10px;
   border-bottom: 1px solid #f2f6fc;
-  :deep(.el-submenu__icon-arrow){
+  :deep(.tools-menu.el-menu),
+  :deep(.tools-menu.el-menu--horizontal) {
+    width: max-content;
+    max-width: 100%;
+    height: auto !important;
+    flex: 0 1 auto;
+    border-bottom: none;
+  }
+  :deep(.tools-menu.el-menu--horizontal > .el-menu-item),
+  :deep(.tools-menu.el-menu--horizontal > .el-sub-menu),
+  :deep(.tools-menu.el-menu--horizontal > .siding) {
+    flex: 0 0 auto;
+  }
+  :deep(.el-submenu__icon-arrow),
+  :deep(.el-sub-menu__icon-arrow) {
     display: none !important;
   }
 }
@@ -650,7 +646,9 @@ export default {
   -moz-user-select: none;
   -ms-user-select: none;
   height: 100%;
-  > * {
+  > .markdown-body-edit,
+  > .markdown-body-view,
+  > .markdown-body-resizer {
     min-height: 100px;
     overflow-y: auto;
   }
@@ -689,6 +687,31 @@ export default {
     min-width: 0;
     overflow: hidden;
     overflow-y: auto;
+  }
+  /* 预览根节点也叫 markdown-body，不能沿用分栏的横向 flex，否则代码块被拉成窄竖条 */
+  > .markdown-body-view :deep(.markdown-body) {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    flex: none;
+    background-color: transparent;
+    box-shadow: none;
+    user-select: text;
+    -webkit-user-select: text;
+    pre {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      min-height: 0;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+    pre code {
+      display: block;
+      white-space: pre;
+      word-break: normal;
+    }
   }
 }
 </style>

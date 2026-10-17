@@ -19,7 +19,12 @@ public class MarkdownResource {
 
     @GET
     @Path("/{projectId}")
-    @RequiresPermissions("system:report:list")
+    @RequiresPermissions(value = {
+            "system:defect:list",
+            "system:case:list",
+            "system:plan:list",
+            "system:document:list"
+    }, logical = RequiresPermissions.Logical.OR)
     public AjaxResult initData(@PathParam("projectId") Long projectId) {
         return AjaxResult.success(markdownPluginService.initProjectData(projectId));
     }

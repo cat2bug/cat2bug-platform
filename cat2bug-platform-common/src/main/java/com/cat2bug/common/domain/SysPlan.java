@@ -24,7 +24,6 @@ public class SysPlan {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
     private Long projectId;
-    private Long reportId;
     private String remark;
     private int itemTotal;
     private int passCount;
@@ -214,14 +213,6 @@ public class SysPlan {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
-    }
-
-    public Long getReportId() {
-        return reportId;
-    }
-
-    public void setReportId(Long reportId) {
-        this.reportId = reportId;
     }
 
     public String getRemark() {

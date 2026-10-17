@@ -19,10 +19,9 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 4.  用例管理：管理测试用例。
 5.  缺陷管理：管理BUG、需求、任务。
 6.  交付物管理：维护项目中的可交付物品。
-7.  报告管理：显示团队、项目、测试用例、缺陷、交付物等的相关数据指标。
-8.  API管理：用于管理API接口密钥
-9. 通知管理：发送系统业务通知到系统内部、邮件、钉钉等平台中。
-10. 安装向导：一站式图形化安装配置，引导用户完成数据库、缓存、文件存储、AI及初始管理员账号的设置。
+7.  API管理：用于管理API接口密钥
+8.  通知管理：发送系统业务通知到系统内部、邮件、钉钉等平台中。
+9.  安装向导：一站式图形化安装配置，引导用户完成数据库、缓存、文件存储、AI及初始管理员账号的设置。
 
 ## 最新版本更新说明
 
@@ -39,7 +38,6 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 * 开源私有化AI+BUG系统部署;
 * 通过AI技术自动生成测试用例并录入到系统，解决费时费力录入用例的痛点;
 * 已测试平台为生态中心，衍生多种缺陷监控测试框架，可以一站式解决软件生产运维中的诸多痛点；
-* 自主研发报告模版，可轻松、快速、动态的生成项目所需管理及交付文档，较免管理人员编写文档的时间成本;
 * 专注于软件的缺陷的跟踪管理，简单直接，即开即用，减少学习成本；
 
 ## 在线体验
@@ -56,8 +54,8 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 | [Cat2Bug-App](https://gitee.com/cat2bug/cat2bug-app)       | 缺陷管理手机端     | Cat2Bug-Platform平台的手机端系统                                          |
 | [Cat2Bug-Chrome](https://gitee.com/cat2bug/cat2bug-chrome) | 缺陷管理谷歌浏览器插件 | Cat2Bug-Platform平台的谷歌浏览器插件                                        |
 | [Cat2Bug-MCP](https://gitee.com/cat2bug/cat2bug-mcp)       | MCP代理服务     | Cat2Bug-Platform与AI大模型通讯代理服务                                      |
-| [Cat2Bug-JLog](https://gitee.com/cat2bug/cat2bug-jlog)     | 错误日志采集框架    | 获取项目中的异常日志，并将日志报告提交到Cat2Bug-Platform                              |
-| [Cat2Bug-JUnit](https://gitee.com/cat2bug/cat2bug-junit)   | 单元测试框架      | 自动化单元测试框架，目前可以自动扫描Controller接口，随机提供参数测试，并将测试报告提交到Cat2Bug-Platform |
+| [Cat2Bug-JLog](https://gitee.com/cat2bug/cat2bug-jlog)     | 错误日志采集框架    | 获取项目中的异常日志；平台已移除 `/api/report/defect`，请改用缺陷开放接口写入                              |
+| [Cat2Bug-JUnit](https://gitee.com/cat2bug/cat2bug-junit)   | 单元测试框架      | 自动化单元测试框架，目前可以自动扫描Controller接口，随机提供参数测试；平台已移除 `/api/report/defect`，请改用缺陷开放接口写入 |
 
 ## 系统架构
 

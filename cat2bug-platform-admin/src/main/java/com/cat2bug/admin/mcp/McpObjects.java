@@ -8,7 +8,6 @@ import com.cat2bug.common.domain.SysGitRepository;
 import com.cat2bug.common.domain.SysModule;
 import com.cat2bug.common.domain.SysPlan;
 import com.cat2bug.common.domain.SysPlanItem;
-import com.cat2bug.common.domain.SysReport;
 import com.cat2bug.system.mapper.SysCaseMapper;
 import com.cat2bug.system.mapper.SysDefectLogMapper;
 import com.cat2bug.system.mapper.SysDefectMapper;
@@ -17,7 +16,6 @@ import com.cat2bug.system.mapper.SysGitRepositoryMapper;
 import com.cat2bug.system.mapper.SysModuleMapper;
 import com.cat2bug.system.mapper.SysPlanItemMapper;
 import com.cat2bug.system.mapper.SysPlanMapper;
-import com.cat2bug.system.mapper.SysReportMapper;
 import io.quarkiverse.mcp.server.ToolCallException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -48,9 +46,6 @@ public class McpObjects {
 
     @Inject
     SysModuleMapper moduleMapper;
-
-    @Inject
-    SysReportMapper reportMapper;
 
     @Inject
     SysDocumentMapper documentMapper;
@@ -105,11 +100,6 @@ public class McpObjects {
     public SysModule module(McpScope scope, Long moduleId) {
         SysModule m = moduleId == null ? null : moduleMapper.selectSysModuleByModuleId(moduleId);
         return owned(scope, m, m == null ? null : m.getProjectId(), "交付物", moduleId);
-    }
-
-    public SysReport report(McpScope scope, Long reportId) {
-        SysReport r = reportId == null ? null : reportMapper.selectSysReportByReportId(reportId);
-        return owned(scope, r, r == null ? null : r.getProjectId(), "报告", reportId);
     }
 
     public SysDocument document(McpScope scope, Long docId) {

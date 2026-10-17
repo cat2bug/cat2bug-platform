@@ -1297,15 +1297,15 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   min-height: 44px;
 
   &.is-active .setup-roadmap-marker {
-    background: #409eff;
-    border-color: #409eff;
+    background: var(--cat2bug-primary, #1890ff);
+    border-color: var(--cat2bug-primary, #1890ff);
     color: #fff;
   }
 
   &.is-done .setup-roadmap-marker {
     background: #ecf5ff;
-    border-color: #409eff;
-    color: #409eff;
+    border-color: var(--cat2bug-primary, #1890ff);
+    color: var(--cat2bug-primary, #1890ff);
   }
 
   &.is-active .setup-roadmap-text {
@@ -1539,7 +1539,7 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   }
 
   &.is-active {
-    border-color: #409eff;
+    border-color: var(--cat2bug-primary, #1890ff);
     background: #ecf5ff;
     box-shadow: 0 0 0 1px rgba(64, 158, 255, 0.25);
   }
@@ -1547,7 +1547,7 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 
 .setup-pick-icon {
   font-size: 22px;
-  color: #409eff;
+  color: var(--cat2bug-primary, #1890ff);
 }
 
 .setup-form-row {
@@ -1607,7 +1607,7 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 }
 
 .setup-link {
-  color: #409eff;
+  color: var(--cat2bug-primary, #1890ff);
   word-break: break-all;
 }
 

@@ -434,7 +434,7 @@ export default {
                 margin: 0 5px;
                 line-height: 24px;
                 font-size: 12px;
-                color: #409eff;
+                color: var(--cat2bug-primary, #1890ff);
                 border: 1px solid #d9ecff;
                 border-radius: 4px;
                 box-sizing: border-box;

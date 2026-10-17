@@ -3,6 +3,7 @@ package com.cat2bug.admin;
 import com.cat2bug.common.domain.SysOAuthCode;
 import com.cat2bug.common.security.AccessTokens;
 import com.cat2bug.system.mapper.SysOAuthCodeMapper;
+import com.cat2bug.system.service.oauth.OAuthService;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -221,7 +222,7 @@ class QuarkusOAuthTest {
         tokens.then().statusCode(200)
                 .header("Cache-Control", "no-store")
                 .body("token_type", equalTo("Bearer"))
-                .body("expires_in", equalTo(3600))
+                .body("expires_in", equalTo((int) OAuthService.ACCESS_TTL_SECONDS))
                 .body("access_token", startsWith("c2b_oat_"))
                 .body("refresh_token", startsWith("c2b_ort_"));
         String access = tokens.path("access_token");

@@ -517,7 +517,7 @@ export default {
 }
 //.plan-item-dropdown-link {
 //  cursor: pointer;
-//  color: #409EFF;
+//  color: var(--cat2bug-primary, #1890ff);
 //}
 //.plan-item-icon-arrow-down {
 //  font-size: 12px;

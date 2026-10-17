@@ -87,7 +87,7 @@ export default {
           transition: color 0.2s, background-color 0.2s;
 
           &:hover {
-            color: #409eff;
+            color: var(--cat2bug-primary, #1890ff);
             background-color: rgba(64, 158, 255, 0.08);
           }
         }

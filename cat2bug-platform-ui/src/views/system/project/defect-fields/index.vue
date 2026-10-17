@@ -1064,7 +1064,7 @@ export default {
       this.enumOptions.push({
         key: '',
         label: '',
-        color: '#409EFF'
+        color: '#1890ff'
       })
     },
     removeEnumOption(index) {
@@ -1253,7 +1253,7 @@ html.dark .defect-field-form-dialog {
       }
 
       &:focus {
-        border-color: var(--cat2bug-field-focus-color, #ffc107) !important;
+        border-color: var(--cat2bug-field-focus-color, #69b1ff) !important;
       }
     }
 
@@ -1352,7 +1352,7 @@ html.dark .defect-field-page .sort-order-arrows .sort-arrow.is-disabled {
   .sort-arrow {
     font-size: 18px;
     line-height: 1;
-    color: #409eff;
+    color: var(--cat2bug-primary, #1890ff);
     cursor: pointer;
     user-select: none;
     &:hover:not(.is-disabled) {

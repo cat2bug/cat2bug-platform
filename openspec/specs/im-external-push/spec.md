@@ -4,7 +4,7 @@
 TBD - created by archiving change restore-im-external-push. Update Purpose after archive.
 ## Requirements
 ### Requirement: 通知事件按接收人配置分发到各渠道
-系统 SHALL 在缺陷变更、通知发送、报告新建三种事件发生时，按每个接收人在该项目下的个人 IM 配置决定渠道：`system.configSwitch` 开启发站内通知与面板弹窗；`mail.configSwitch` 开启且用户有邮箱时发邮件；钉钉、飞书、企业微信的 `singleSwitch` 开启且 `mobile` 非空、且项目有对应企业应用配置时发个人消息。
+系统 SHALL 在缺陷变更、通知发送两种事件发生时，按每个接收人在该项目下的个人 IM 配置决定渠道：`system.configSwitch` 开启发站内通知与面板弹窗；`mail.configSwitch` 开启且用户有邮箱时发邮件；钉钉、飞书、企业微信的 `singleSwitch` 开启且 `mobile` 非空、且项目有对应企业应用配置时发个人消息。系统 MUST NOT 因报告新建发送通知。
 
 #### Scenario: 只开站内通知
 - **WHEN** 接收人只开启 `system.configSwitch`，其它渠道开关均关闭
@@ -62,19 +62,8 @@ TBD - created by archiving change restore-im-external-push. Update Purpose after
 - **WHEN** 运行期已启用邮件并配置 SMTP，接收人开启了 `mail.configSwitch` 且有邮箱
 - **THEN** 系统向该邮箱发送一封 HTML 邮件，主题为事件标题
 
-### Requirement: 报告新建通知项目成员
-系统 SHALL 在报告新建成功后，向项目内未锁定、且个人配置 `modules.report.event.new` 为真的成员发送通知，标题为「报告:<报告标题>」，链接指向该报告。
-
-#### Scenario: 成员开启报告新建通知
-- **WHEN** 项目成员 A 开启报告新建通知、成员 B 未开启，有人新建报告
-- **THEN** 只有 A 收到通知
-
-#### Scenario: 读取个人配置失败
-- **WHEN** 某成员的 IM 配置无法解析
-- **THEN** 该成员不接收此次报告通知，其它成员照常接收
-
-### Requirement: 三种事件提供文本、Markdown、HTML 正文
-系统 SHALL 为缺陷、通知、报告事件分别生成文本、Markdown、HTML 三种正文：钉钉群与飞书使用文本，钉钉个人与企业微信使用 Markdown，邮件使用 HTML；正文内容与 Spring 线对应模版一致（缺陷编号、名称、状态、处理人等字段）。
+### Requirement: 缺陷与通知事件提供文本、Markdown、HTML 正文
+系统 SHALL 为缺陷、通知事件分别生成文本、Markdown、HTML 三种正文：钉钉群与飞书使用文本，钉钉个人与企业微信使用 Markdown，邮件使用 HTML；正文内容与既有模版一致（缺陷编号、名称、状态、处理人等字段）。系统 MUST NOT 再生成报告事件正文。
 
 #### Scenario: 同一缺陷事件的多种格式
 - **WHEN** 一次缺陷变更同时发往飞书群、企业微信个人和邮件

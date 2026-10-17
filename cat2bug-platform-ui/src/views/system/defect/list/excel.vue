@@ -4983,7 +4983,7 @@ html.dark .defect-excel-root .defect-vue-excel-editor :deep(.systable tbody tr.s
 html.dark .defect-excel-root .defect-vue-excel-editor :deep(.systable tbody td.first-col.focus){
   box-shadow: inset 0 0 0 9999px var(--excel-first-col-fill-hover, var(--table-row-hover-bg, #2d2d31)) !important;
   color: var(--text-color-primary, #e5e5e5) !important;
-  border-right: 1px solid #409eff !important;
+  border-right: 1px solid var(--cat2bug-primary, #1890ff) !important;
 }
 /* 覆盖 vue-excel-editor 默认 td vertical-align: bottom */
 .defect-vue-excel-editor :deep(.systable tbody td[id$="-projectNum"]){
@@ -5161,7 +5161,7 @@ html.dark .defect-excel-root .defect-vue-excel-editor :deep(textarea.input-box:a
   height: 12px;
 }
 .defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-inline-upload-btn:hover){
-  color: #409eff;
+  color: var(--cat2bug-primary, #1890ff);
 }
 .defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-img-row){
   display: inline-flex;
@@ -5287,7 +5287,7 @@ html.dark .defect-excel-root .defect-vue-excel-editor :deep(textarea.input-box:a
   min-width: 0;
   overflow: hidden;
   cursor: pointer;
-  color: #409eff;
+  color: var(--cat2bug-primary, #1890ff);
   text-align: left;
 }
 .defect-vue-excel-editor :deep(.systable tbody td.cell-html .defect-excel-annex-line .cat2bug-inline-svg-icon){
@@ -5395,7 +5395,7 @@ html.dark .defect-excel-root .defect-vue-excel-editor table.systable tbody tr.se
 html.dark .defect-excel-root .defect-vue-excel-editor table.systable tbody td.first-col.focus {
   box-shadow: inset 0 0 0 9999px var(--excel-first-col-fill-hover, var(--table-row-hover-bg, #2d2d31)) !important;
   color: var(--text-color-primary, #e5e5e5) !important;
-  border-right: 1px solid #409eff !important;
+  border-right: 1px solid var(--cat2bug-primary, #1890ff) !important;
 }
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td:not(.first-col):not([id$="-projectNum"]) {
   vertical-align: middle !important;

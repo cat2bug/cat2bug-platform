@@ -1072,15 +1072,15 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   min-height: 44px;
 
   &.is-active .setup-roadmap-marker {
-    background: #409eff;
-    border-color: #409eff;
+    background: var(--cat2bug-primary, #1890ff);
+    border-color: var(--cat2bug-primary, #1890ff);
     color: #fff;
   }
 
   &.is-done .setup-roadmap-marker {
     background: #ecf5ff;
-    border-color: #409eff;
-    color: #409eff;
+    border-color: var(--cat2bug-primary, #1890ff);
+    color: var(--cat2bug-primary, #1890ff);
   }
 }
 

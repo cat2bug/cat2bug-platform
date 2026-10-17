@@ -177,7 +177,7 @@ export default {
   --consent-card-bg: #ffffff;
   --consent-card-shadow: rgba(0, 0, 0, 0.08);
   --consent-card-border: transparent;
-  --consent-accent: #409eff;
+  --consent-accent: #1890ff;
   --consent-text-primary: #303133;
   --consent-text-secondary: #909399;
   --consent-details-bg: #f5f7fa;

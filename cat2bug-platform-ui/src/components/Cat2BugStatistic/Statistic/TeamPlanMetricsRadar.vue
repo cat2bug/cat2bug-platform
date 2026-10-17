@@ -43,7 +43,7 @@ const RADAR_I18N = [
   'plan.defect-restart-rate',
   'plan.defect-escape-rate'
 ]
-const RADAR_COLORS = ['#409eff', '#67c23a', '#e6a23c', '#f56c6c', '#909399', '#6f7ad3']
+const RADAR_COLORS = ['#1890ff', '#67c23a', '#e6a23c', '#f56c6c', '#909399', '#6f7ad3']
 const PLAN_METRICS_LIMIT = 4
 const LEGEND_NAME_MAX = 9
 const LEGEND_GAP_PX = 4

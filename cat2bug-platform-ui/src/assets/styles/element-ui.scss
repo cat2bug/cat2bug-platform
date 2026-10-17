@@ -10,13 +10,13 @@
 
   .path {
     animation: loading-dash 1.5s ease-in-out infinite;
-    stroke: #409eff;
+    stroke: var(--cat2bug-primary, #1890ff);
     stroke-width: 2;
     stroke-linecap: round;
   }
 
   .el-loading-text {
-    color: #409eff;
+    color: var(--cat2bug-primary, #1890ff);
     margin: 3px 0;
     font-size: 14px;
   }

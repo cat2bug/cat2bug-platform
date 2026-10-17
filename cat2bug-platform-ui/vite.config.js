@@ -94,7 +94,7 @@ function vue2DatepickerShimPlugin() {
   }
 }
 
-/** vue-excel-editor / tool builder / Cat2Doc 仍使用 v2 风格 API；其余组件走 vuedraggable v4 */
+/** vue-excel-editor / Cat2Doc 仍使用 v2 风格 API；其余组件走 vuedraggable v4 */
 function vuedraggableLegacyShimPlugin() {
   return {
     name: 'vuedraggable-legacy-shim',
@@ -105,7 +105,6 @@ function vuedraggableLegacyShimPlugin() {
       if (
         from.includes('node_modules/vue-excel-editor/')
         || from.includes('/vendor/vue-excel-editor/')
-        || from.includes('/views/tool/build/')
         || from.includes('/components/Cat2BugDocument/')
       ) {
         return vuedraggableLegacyPath

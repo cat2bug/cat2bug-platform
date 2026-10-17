@@ -773,7 +773,7 @@ export default {
         background-color: var(--progress-track-bg, #ebeef5);
       }
       > .el-progress-bar__inner {
-        background-color: var(--progress-fill-color, #409eff);
+        background-color: var(--progress-fill-color, #1890ff);
       }
     }
     :deep(.el-progress__text){

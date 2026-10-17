@@ -4,16 +4,9 @@ import com.cat2bug.common.api.TableDataInfo;
 import com.cat2bug.common.core.page.PageDomain;
 import com.cat2bug.common.domain.LoginUser;
 import com.cat2bug.common.domain.SysComment;
-import com.cat2bug.common.domain.SysProject;
-import com.cat2bug.common.domain.SysReport;
-import com.cat2bug.common.domain.SysRole;
 import com.cat2bug.common.exception.ApiException;
-import com.cat2bug.common.util.MessageUtils;
 import com.cat2bug.framework.security.AuthContext;
 import com.cat2bug.system.mapper.SysCommentMapper;
-import com.cat2bug.system.mapper.SysProjectMapper;
-import com.cat2bug.system.mapper.SysReportMapper;
-import com.cat2bug.system.mapper.SysRoleMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -27,21 +20,8 @@ public class SysCommentService {
     private static final String ANCHOR_KIND_LINE = "line";
     private static final String ANCHOR_KIND_SELECTION = "selection";
 
-    private static final long TEAM_ADMIN_ROLE_ID = 4L;
-    private static final long PROJECT_ADMIN_ROLE_ID = 6L;
-    private static final long TEAM_CREATE_BY_ROLE_ID = 12L;
-
     @Inject
     SysCommentMapper sysCommentMapper;
-
-    @Inject
-    SysReportMapper sysReportMapper;
-
-    @Inject
-    SysProjectMapper sysProjectMapper;
-
-    @Inject
-    SysRoleMapper sysRoleMapper;
 
     @Inject
     AuthContext authContext;
@@ -125,47 +105,13 @@ public class SysCommentService {
         }
     }
 
-    /**
-     * 创建人始终可删；moduleType=report 时另允许报告所属项目的项目管理员 / 团队管理员 / 团队创建者删除；
-     * 其它模块不限制创建人，仅由接口权限控制。
-     */
+    /** 创建人始终可删；非创建人由接口权限控制。 */
     private void checkDeletePermission(SysComment comment) {
         LoginUser loginUser = authContext.getLoginUser();
         Long currentUserId = loginUser == null ? null : loginUser.getUserId();
         if (currentUserId != null && currentUserId.equals(comment.getCreateById())) {
             return;
         }
-        if (!SysReport.KEY.equals(comment.getModuleType())) {
-            return;
-        }
-        if (!isReportProjectOrTeamAdmin(comment.getCorrelationId(), currentUserId)) {
-            throw new ApiException(MessageUtils.message("no-permission"));
-        }
-    }
-
-    private boolean isReportProjectOrTeamAdmin(Long reportId, Long userId) {
-        if (reportId == null || userId == null) {
-            return false;
-        }
-        SysReport report = sysReportMapper.selectSysReportByReportId(reportId);
-        if (report == null || report.getProjectId() == null) {
-            return false;
-        }
-        SysProject project = sysProjectMapper.selectSysProjectByProjectId(report.getProjectId(), null);
-        if (project == null) {
-            return false;
-        }
-        List<SysRole> roles = sysRoleMapper.selectRolePermissionByUserId(
-                project.getTeamId(), project.getProjectId(), userId);
-        if (roles == null) {
-            return false;
-        }
-        return roles.stream().anyMatch(role -> {
-            Long roleId = role.getRoleId();
-            return roleId != null && (roleId == PROJECT_ADMIN_ROLE_ID
-                    || roleId == TEAM_ADMIN_ROLE_ID
-                    || roleId == TEAM_CREATE_BY_ROLE_ID);
-        });
     }
 
     private LoginUser requireLoginUser() {

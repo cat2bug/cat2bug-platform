@@ -89,9 +89,6 @@ describe('project-scoped route table', () => {
     await router.push('/acme/demo/plan')
     expect(router.currentRoute.value.name).toBe('ProjectScopedPlan')
 
-    await router.push('/acme/demo/report')
-    expect(router.currentRoute.value.name).toBe('ProjectScopedReport')
-
     await router.push('/acme/demo/document')
     expect(router.currentRoute.value.name).toBe('ProjectScopedDocument')
 

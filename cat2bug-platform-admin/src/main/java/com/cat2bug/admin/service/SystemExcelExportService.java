@@ -16,8 +16,6 @@ import com.cat2bug.common.domain.SysPlanItem;
 import com.cat2bug.common.domain.SysPost;
 import com.cat2bug.common.domain.SysProject;
 import com.cat2bug.common.domain.SysProjectApi;
-import com.cat2bug.common.domain.SysReport;
-import com.cat2bug.common.domain.SysReportTemplate;
 import com.cat2bug.common.domain.SysRole;
 import com.cat2bug.common.domain.SysScreenSize;
 import com.cat2bug.common.domain.SysTeam;
@@ -38,8 +36,6 @@ import com.cat2bug.system.service.SysPlanService;
 import com.cat2bug.system.service.SysPostService;
 import com.cat2bug.system.service.SysProjectApiService;
 import com.cat2bug.system.service.SysProjectService;
-import com.cat2bug.system.service.SysReportService;
-import com.cat2bug.system.service.SysReportTemplateService;
 import com.cat2bug.system.service.SysRoleService;
 import com.cat2bug.system.service.SysScreenSizeService;
 import com.cat2bug.system.service.SysTeamService;
@@ -120,8 +116,7 @@ public class SystemExcelExportService {
             new SimpleExcelExportSupport.ColumnDef<>("计划开始时间", p -> formatDateTime(p.getPlanStartTime())),
             new SimpleExcelExportSupport.ColumnDef<>("计划结束时间", p -> formatDateTime(p.getPlanEndTime())),
             new SimpleExcelExportSupport.ColumnDef<>("更新人ID", p -> SimpleExcelExportSupport.text(p.getUpdateById())),
-            new SimpleExcelExportSupport.ColumnDef<>("项目ID", p -> SimpleExcelExportSupport.text(p.getProjectId())),
-            new SimpleExcelExportSupport.ColumnDef<>("报告ID", p -> SimpleExcelExportSupport.text(p.getReportId()))
+            new SimpleExcelExportSupport.ColumnDef<>("项目ID", p -> SimpleExcelExportSupport.text(p.getProjectId()))
     );
 
     private static final List<SimpleExcelExportSupport.ColumnDef<SysPlanItem>> PLAN_ITEM_COLUMNS = List.of(
@@ -182,27 +177,6 @@ public class SystemExcelExportService {
             new SimpleExcelExportSupport.ColumnDef<>("状态", p -> "0".equals(p.getStatus()) ? "正常" : "停用")
     );
 
-    private static final List<SimpleExcelExportSupport.ColumnDef<SysReport>> REPORT_COLUMNS = List.of(
-            new SimpleExcelExportSupport.ColumnDef<>("报告标题", SysReport::getReportTitle),
-            new SimpleExcelExportSupport.ColumnDef<>("报告时间", r -> formatReportDate(r.getReportTime())),
-            new SimpleExcelExportSupport.ColumnDef<>("报告描述", SysReport::getReportDescription),
-            new SimpleExcelExportSupport.ColumnDef<>("数据", r -> r.getReportData() == null ? "" : String.valueOf(r.getReportData())),
-            new SimpleExcelExportSupport.ColumnDef<>("数据来源", SysReport::getReportSource),
-            new SimpleExcelExportSupport.ColumnDef<>(" 推送人ID", r -> SimpleExcelExportSupport.text(r.getCreateById()))
-    );
-
-    private static final List<SimpleExcelExportSupport.ColumnDef<SysReportTemplate>> REPORT_TEMPLATE_COLUMNS = List.of(
-            new SimpleExcelExportSupport.ColumnDef<>("交付物类型", SysReportTemplate::getModuleType),
-            new SimpleExcelExportSupport.ColumnDef<>("模版内容", SysReportTemplate::getTemplateContent),
-            new SimpleExcelExportSupport.ColumnDef<>("模版标题", SysReportTemplate::getTemplateTitle),
-            new SimpleExcelExportSupport.ColumnDef<>("更新用户", t -> SimpleExcelExportSupport.text(t.getUpdateById())),
-            new SimpleExcelExportSupport.ColumnDef<>("项目ID", t -> SimpleExcelExportSupport.text(t.getProjectId())),
-            new SimpleExcelExportSupport.ColumnDef<>("模版图标路径", SysReportTemplate::getTemplateIconUrl),
-            new SimpleExcelExportSupport.ColumnDef<>("主版本", t -> SimpleExcelExportSupport.text(t.getMajorVersion())),
-            new SimpleExcelExportSupport.ColumnDef<>("次版本", t -> SimpleExcelExportSupport.text(t.getMinorVersion())),
-            new SimpleExcelExportSupport.ColumnDef<>("模版唯一标识", SysReportTemplate::getTemplateKey)
-    );
-
     private static final List<SimpleExcelExportSupport.ColumnDef<SysProjectApi>> PROJECT_API_COLUMNS = List.of(
             new SimpleExcelExportSupport.ColumnDef<>("项目id", a -> SimpleExcelExportSupport.text(a.getProjectId())),
             new SimpleExcelExportSupport.ColumnDef<>("用户id", a -> SimpleExcelExportSupport.text(a.getUserId())),
@@ -257,7 +231,6 @@ public class SystemExcelExportService {
     );
 
     private static final SimpleDateFormat PLAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private static final SimpleDateFormat REPORT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     private static final SimpleDateFormat API_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     @Inject
@@ -304,12 +277,6 @@ public class SystemExcelExportService {
 
     @Inject
     SysPostService sysPostService;
-
-    @Inject
-    SysReportService sysReportService;
-
-    @Inject
-    SysReportTemplateService sysReportTemplateService;
 
     @Inject
     SysProjectApiService sysProjectApiService;
@@ -401,16 +368,6 @@ public class SystemExcelExportService {
                 sysPostService.selectPostListAll(query), "导出岗位数据失败");
     }
 
-    public byte[] exportReports(SysReport query) {
-        return SimpleExcelExportSupport.export("报告数据", REPORT_COLUMNS,
-                sysReportService.selectReportListAll(query), "导出报告数据失败");
-    }
-
-    public byte[] exportReportTemplates(SysReportTemplate query) {
-        return SimpleExcelExportSupport.export("报告模版数据", REPORT_TEMPLATE_COLUMNS,
-                sysReportTemplateService.selectTemplateListAll(query), "导出报告模版数据失败");
-    }
-
     public byte[] exportProjectApis(SysProjectApi query) {
         return SimpleExcelExportSupport.export("项目API数据", PROJECT_API_COLUMNS,
                 sysProjectApiService.selectProjectApiListAll(query), "导出项目API数据失败");
@@ -449,15 +406,6 @@ public class SystemExcelExportService {
         }
         synchronized (PLAN_DATE_FORMAT) {
             return PLAN_DATE_FORMAT.format(date);
-        }
-    }
-
-    private static String formatReportDate(Date date) {
-        if (date == null) {
-            return "";
-        }
-        synchronized (REPORT_DATE_FORMAT) {
-            return REPORT_DATE_FORMAT.format(date);
         }
     }
 

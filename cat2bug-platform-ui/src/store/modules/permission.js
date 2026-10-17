@@ -14,8 +14,12 @@ function isDevToolMenuComponent(component) {
   }
   return component === 'tool/build/index'
     || component === 'tool/gen/index'
+    || component === 'tool/swagger/index'
     || component.startsWith('tool/build/')
     || component.startsWith('tool/gen/')
+    || component.startsWith('tool/swagger/')
+    || component.startsWith('tool/project/browser')
+    || component.startsWith('tool/project/option/browser')
 }
 
 const permission = {

@@ -474,21 +474,21 @@ export default {
 .team-select-kbd-popper:not(.team-select-kbd-popper--dark) .el-select-dropdown__item {
   &.is-selected {
     background-color: rgba(64, 158, 255, 0.12) !important;
-    color: var(--el-color-primary, #409eff) !important;
+    color: var(--el-color-primary, #1890ff) !important;
     font-weight: 600;
   }
 
   &.is-selected.is-hovering,
   &.is-selected:hover {
     background-color: #ecf5ff !important;
-    color: var(--el-color-primary, #409eff) !important;
+    color: var(--el-color-primary, #1890ff) !important;
   }
 }
 
 .team-select-kbd-popper:not(.team-select-kbd-popper--dark) .team-select-footer .team-select-footer-btn.el-button {
   @include team-select-footer-btn-base;
-  border-color: var(--el-color-primary, #409eff) !important;
-  color: var(--el-color-primary, #409eff) !important;
+  border-color: var(--el-color-primary, #1890ff) !important;
+  color: var(--el-color-primary, #1890ff) !important;
 
   &:hover,
   &:focus {

@@ -1,10 +1,12 @@
 # project-scoped-module-routes Specification
 
-## Requirements
+## Purpose
 
+项目业务页使用 /{teamKey}/{projectKey}/{module} 路径。
+## Requirements
 ### Requirement: Project business pages use namespaced module paths
 
-The system SHALL expose project-scoped business UI under `/{teamKey}/{projectKey}/{module}/**`, where `{module}` is a singular segment from a documented whitelist aligned with existing project menus (including at least: `dashboard`, `defect`, `case`, `plan`, `report`, `document`, `module`, `notice`, `member`, `option`, `api`, `tools`, `code`). System, auth, and install routes (e.g. `/login`, `/setup`, `/system/**`) MUST remain outside this namespace.
+The system SHALL expose project-scoped business UI under `/{teamKey}/{projectKey}/{module}/**`, where `{module}` is a singular segment from a documented whitelist aligned with existing project menus (including at least: `dashboard`, `defect`, `case`, `plan`, `document`, `module`, `notice`, `member`, `option`, `api`, `tools`, `code`). System, auth, and install routes (e.g. `/login`, `/setup`, `/system/**`) MUST remain outside this namespace. The segment `report` MUST NOT be a project module.
 
 #### Scenario: Open defect list in project namespace
 
@@ -15,6 +17,11 @@ The system SHALL expose project-scoped business UI under `/{teamKey}/{projectKey
 
 - **WHEN** an administrator opens a platform system page such as dictionary management
 - **THEN** the path remains under the existing system prefix and MUST NOT be nested under `/{teamKey}/{projectKey}`
+
+#### Scenario: Report path is not a module
+
+- **WHEN** a project member opens `/{teamKey}/{projectKey}/report`
+- **THEN** the application does not render a report list or report detail
 
 ### Requirement: Empty or dashboard module opens project dashboard
 
@@ -51,3 +58,4 @@ Repository browse and related UI under the project namespace SHALL use `/{teamKe
 
 - **WHEN** a user with pull permission opens a repository from the project repository list
 - **THEN** the browser location is `/{teamKey}/{projectKey}/code/{slug}` (or a child path under that prefix for tabs/deep links)
+

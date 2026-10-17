@@ -414,7 +414,7 @@ export default {
 
 .git-release-detail__tag-icon {
   font-size: 16px;
-  color: var(--el-color-primary, #ffc107);
+  color: var(--el-color-primary, #1890ff);
 }
 
 .git-release-detail__side-time {
@@ -520,7 +520,7 @@ export default {
     h3 { font-size: 1.02em; }
 
     a {
-      color: var(--el-color-primary, #ffc107);
+      color: var(--el-color-primary, #1890ff);
     }
 
     code {
@@ -578,11 +578,11 @@ export default {
   align-items: center;
   gap: 8px;
   min-width: 0;
-  color: var(--el-color-primary, #ffc107);
+  color: var(--el-color-primary, #1890ff);
   text-decoration: none;
 
   &:hover {
-    color: var(--el-color-primary, #ffc107);
+    color: var(--el-color-primary, #1890ff);
     text-decoration: underline;
   }
 }

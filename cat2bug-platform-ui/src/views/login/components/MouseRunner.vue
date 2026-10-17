@@ -13,11 +13,12 @@ import mouseSpriteRunTop from '@/assets/images/mouse_sprite_run_top.png'
 import mouseSpriteRunBottom from '@/assets/images/mouse_sprite_run_bottom.png'
 import mouseSpriteSit from '@/assets/images/mouse_sprite_sit_v3.png'
 
-/** 横向奔跑精灵：1 行×8 列，朝右；朝左由 flipX 镜像 */
+/** 横向奔跑精灵：1 行×8 列，朝右；朝左由 flipX 镜像。整张图按登录页最大绘制高度等比缩小（含 2 倍屏） */
 const RUN_SPRITE_COLS = 8
-const RUN_SPRITE_FRAME_W = 214
-const RUN_SPRITE_FRAME_H = 96
-const RUN_SPRITE_DISPLAY_SCALE = 0.42
+const RUN_SPRITE_FRAME_W = 132
+const RUN_SPRITE_FRAME_H = 59
+/** 补回缩小倍数，屏幕尺寸仍等于原先 214×96、倍率 0.42，其它朝向也按这个参考帧换算 */
+const RUN_SPRITE_DISPLAY_SCALE = 0.42 * (96 / 59)
 /** 整体显示缩放（相对默认尺寸再小 1/4） */
 const MOUSE_DISPLAY_SCALE = 0.75
 /** 脚底阴影：宽高与偏移均按当前帧 drawW/drawH 同比缩放 */
@@ -30,30 +31,36 @@ const SHADOW_ALPHA_SIZE_FLOOR = 0.55
 const SHADOW_ALPHA_SIZE_CEIL = 1
 const RUN_SPRITE_FRAME_FOOT_Y = [1, 1, 1, 1, 1, 1, 1, 1]
 const RUN_TL_SPRITE_COLS = 8
-const RUN_TL_SPRITE_FRAME_W = 203
-const RUN_TL_SPRITE_FRAME_H = 117
+/** 整张图按登录页最大绘制高度缩小（含 2 倍屏）；切割跟新像素走，屏幕尺寸仍由横向参考帧换算 */
+const RUN_TL_SPRITE_FRAME_W = 99
+const RUN_TL_SPRITE_FRAME_H = 57
 const RUN_TL_SPRITE_DISPLAY_SCALE = 0.4
 const RUN_TL_SPRITE_FRAME_FOOT_Y = [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9]
 const RUN_BL_SPRITE_COLS = 8
-const RUN_BL_SPRITE_FRAME_W = 196
-const RUN_BL_SPRITE_FRAME_H = 156
+/** 整张图按登录页最大绘制高度缩小（含 2 倍屏）；切割跟新像素走，屏幕尺寸仍由横向参考帧换算 */
+const RUN_BL_SPRITE_FRAME_W = 83
+const RUN_BL_SPRITE_FRAME_H = 66
 const RUN_BL_SPRITE_DISPLAY_SCALE = 0.3
 const RUN_BL_SPRITE_FRAME_FOOT_Y = [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9]
 const RUN_T_SPRITE_COLS = 8
-const RUN_T_SPRITE_FRAME_W = 113
-const RUN_T_SPRITE_FRAME_H = 286
+/** 整张图按登录页最大绘制高度缩小（含 2 倍屏）；切割跟新像素走，屏幕尺寸仍由横向参考帧换算 */
+const RUN_T_SPRITE_FRAME_W = 39
+const RUN_T_SPRITE_FRAME_H = 98
 const RUN_T_SPRITE_DISPLAY_SCALE = 0.25
 const RUN_T_SPRITE_FRAME_FOOT_Y = [0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7]
 const RUN_B_SPRITE_COLS = 8
-const RUN_B_SPRITE_FRAME_W = 94
-const RUN_B_SPRITE_FRAME_H = 211
+/** 整张图按登录页最大绘制高度缩小（含 2 倍屏）；切割跟新像素走，屏幕尺寸仍由横向参考帧换算 */
+const RUN_B_SPRITE_FRAME_W = 37
+const RUN_B_SPRITE_FRAME_H = 82
 const RUN_B_SPRITE_DISPLAY_SCALE = 0.25
 const RUN_B_SPRITE_FRAME_FOOT_Y = [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9]
 
 const SIT_SPRITE_COLS = 8
-const SIT_SPRITE_FRAME_W = 179
-const SIT_SPRITE_FRAME_H = 191
-const SIT_SPRITE_DISPLAY_SCALE = 0.22
+/** 整张图按登录页最大绘制高度缩小（含 2 倍屏）；切割跟新像素走 */
+const SIT_SPRITE_FRAME_W = 57
+const SIT_SPRITE_FRAME_H = 61
+/** 补回缩小倍数，屏幕上的高度仍等于原先 179×191、倍率 0.22 */
+const SIT_SPRITE_DISPLAY_SCALE = 0.22 * (191 / 61)
 const SIT_SPRITE_FRAME_FOOT_Y = [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9]
 
 const SPRITE_ROW_RIGHT = 2

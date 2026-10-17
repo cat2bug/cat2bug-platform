@@ -4,7 +4,7 @@
 
 ## 概述
 
-- **Native**：Quarkus 关闭了 GraalVM 自动 ServiceLoader 注册，且 MyBatis / Jackson / fastjson2 / JJWT 大量依赖反射。`NativeRuntimeInitFeature` 在构建期按**包前缀批量注册反射**，并把会在镜像堆中留下随机数、线程或构建机状态的类**推迟到运行期初始化**。
+- **Native**：Quarkus 关闭了 GraalVM 自动 ServiceLoader 注册，且 MyBatis / Jackson / JJWT 大量依赖反射。`NativeRuntimeInitFeature` 在构建期按**包前缀批量注册反射**，并把会在镜像堆中留下随机数、线程或构建机状态的类**推迟到运行期初始化**。
 - **操作日志**：资源类上没有 `@Log` 注解；规则表 `oper-log-rules.tsv` 最初由原 Spring 控制器的 `@Log` 生成，`OperLogFilter` 按「HTTP 方法 + 路径模板」匹配后写 `sys_oper_log`，效果与原 Spring `LogAspect` 对等。Spring 控制器已删除，规则表现在需手工维护。
 
 ## 关键流程
@@ -13,12 +13,12 @@
 
 1. `--features=com.cat2bug.admin.nativeimage.NativeRuntimeInitFeature` 通过 `quarkus.native.additional-build-args` 注入（`cat2bug-platform-admin/pom.xml` 的 native profile 与 `application-native.properties` 各写了一份）。
 2. `beforeAnalysis`：
-   - 运行期初始化：Netty `PlatformDependent*`、JGit `WindowCache` / `WorkQueue` / `FileUtils` / `HttpAuthMethod$Digest`、Hutool `SmUtil` / `DefaultSSLInfo` / `HttpGlobalConfig` / `NanoId`、commons-compress、整个 `io.jsonwebtoken` 包等。
+   - 运行期初始化：Netty `PlatformDependent*`、JGit `WindowCache` / `WorkQueue` / `FileUtils` / `HttpAuthMethod$Digest`、`ProfileResource`（静态 `HttpClient`）、commons-compress、整个 `io.jsonwebtoken` 包等。Webhook 的 AES / HMAC 使用 JDK，不再初始化 Hutool。
    - 整类反射（构造器/方法/字段）前缀：`com.cat2bug.common.`、`com.cat2bug.system.git.browse.domain.`、`com.cat2bug.system.mybatis.`、`com.cat2bug.admin.domain.`、`com.cat2bug.framework.web.PageOrder`（Mapper OGNL 静态调用，见 [[列表排序与注入防护]]）、`io.jsonwebtoken.impl.`、`io.jsonwebtoken.jackson.`。
    - `org.eclipse.jgit.` 下只注册枚举（JGit `Config` 反射调 `values()`）。
    - ServiceLoader：扫描 classpath 中 JJWT `Serializer` / `Deserializer` / `CompressionCodec` 的 `META-INF/services` provider 并注册反射；对应资源由 `quarkus.native.resources.includes` 打入镜像。
    - 方法替换：第三方库引用了项目没有的可选依赖时，在 `nativeimage/` 下用 `@TargetClass` / `@Substitute` 切断该路径。现有 `Target_CommonsCompressZipFile`（commons-compress 1.28 的 zstd 入口改为抛 `IOException`），见 [[Quarkus3.27下commons-compress引用zstd导致Native构建失败]]。
-3. 打包：`./deploy/build-native.sh arm64|amd64`，默认产出原始 ELF 与 UPX 压缩版；冒烟用 `cat2bug-platform-admin/smoke-native-docker.sh`。
+3. 打包：`cat2bug-build/scripts/platform/build-linux-native.sh arm64|amd64`（平台仓库只打 JAR；`deploy/build-native.sh` 会转到该脚本），默认产出原始 ELF 与 UPX 压缩版；冒烟用 `deploy/smoke-native-docker.sh`。
 
 ### 操作日志
 
@@ -30,7 +30,7 @@
 - `cat2bug-platform-admin/src/main/java/com/cat2bug/admin/nativeimage/NativeRuntimeInitFeature.java`
 - `cat2bug-platform-admin/src/main/resources/application.properties`、`application-native.properties`（`quarkus.native.*`）
 - `cat2bug-platform-admin/pom.xml`（native profile）
-- `deploy/build-native.sh`、`cat2bug-platform-admin/smoke-native-docker.sh`
+- `cat2bug-build/scripts/platform/build-linux-native.sh`（`deploy/build-native.sh` 为转发）、`deploy/smoke-native-docker.sh`
 - `cat2bug-platform-admin/src/main/java/com/cat2bug/admin/log/OperLogRules.java`、`OperLogFilter.java`
 - `cat2bug-platform-admin/src/main/resources/oper-log-rules.tsv`
 - 交付记录：`openspec/changes/archive/2026-10-14-restore-quarkus-full-delivery/NATIVE-RELEASE.md`、`GATE-NOTES.md`

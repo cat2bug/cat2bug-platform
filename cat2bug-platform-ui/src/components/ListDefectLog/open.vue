@@ -42,7 +42,7 @@ export default {
   }
   .state {
     font-size: 14px;
-    color: #409EFF;
+    color: var(--cat2bug-primary, #1890ff);
   }
   .orange {
     color: rgb(255, 186, 0);

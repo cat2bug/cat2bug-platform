@@ -1031,7 +1031,7 @@ export default {
   border-radius: 4px;
 }
 .plan-defect-sidebar-expand-trigger:hover {
-  color: #409eff;
+  color: var(--cat2bug-primary, #1890ff);
   background-color: var(--sidebar-expand-trigger-hover-bg, #ecf5ff);
 }
 .plan-defect-sidebar-expand-trigger:focus-visible {

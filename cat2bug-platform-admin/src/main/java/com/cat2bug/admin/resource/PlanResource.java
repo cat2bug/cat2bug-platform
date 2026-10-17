@@ -46,7 +46,6 @@ public class PlanResource {
                               @QueryParam("planNumber") Long planNumber,
                               @QueryParam("createById") Long createById,
                               @QueryParam("updateById") Long updateById,
-                              @QueryParam("reportId") Long reportId,
                               @QueryParam("pageNum") Integer pageNum,
                               @QueryParam("pageSize") Integer pageSize) {
         SysPlan query = new SysPlan();
@@ -56,7 +55,6 @@ public class PlanResource {
         query.setPlanNumber(planNumber);
         query.setCreateById(createById);
         query.setUpdateById(updateById);
-        query.setReportId(reportId);
         return sysPlanService.selectPlanPage(query, pageNum, pageSize);
     }
 
@@ -70,8 +68,7 @@ public class PlanResource {
                            @RestForm("planVersion") String planVersion,
                            @RestForm("planNumber") Long planNumber,
                            @RestForm("createById") Long createById,
-                           @RestForm("updateById") Long updateById,
-                           @RestForm("reportId") Long reportId) {
+                           @RestForm("updateById") Long updateById) {
         SysPlan query = new SysPlan();
         query.setProjectId(projectId);
         query.setPlanName(planName);
@@ -79,7 +76,6 @@ public class PlanResource {
         query.setPlanNumber(planNumber);
         query.setCreateById(createById);
         query.setUpdateById(updateById);
-        query.setReportId(reportId);
         byte[] workbook = systemExcelExportService.exportPlans(query);
         return Response.ok(workbook).type(SPREADSHEET_MEDIA_TYPE).build();
     }

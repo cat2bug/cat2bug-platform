@@ -25,4 +25,4 @@ Quarkus Native 二进制全新安装（`/setup/submit`）时 Flyway 迁移失败
 
 - Quarkus 线新增 MySQL 迁移放 `db/mysql`，不要放回 `db/migration/mysql`。
 - 两套迁移目录名不能互为前缀。
-- Native 冒烟必须跑一次 `FRESH=true ./cat2bug-platform-admin/smoke-native-docker.sh` 全新安装（脚本随模块改名迁移，原路径 `cat2bug-platform-quarkus-admin/`）。
+- Native 冒烟必须跑一次 `FRESH=true ./deploy/smoke-native-docker.sh` 全新安装。

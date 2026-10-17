@@ -1412,7 +1412,7 @@ export default {
     background: linear-gradient(to right, var(--dropdown-bg, #252529) 50%, rgba(37, 37, 41, 0));
   }
   .el-popover.el-popper.select-module-popover .select-module-menu-prev:hover {
-    color: var(--cat2bug-primary, #409eff);
+    color: var(--cat2bug-primary, #1890ff);
   }
   .el-popover.el-popper.select-module-popover .select-module-menu-prev-level {
     font-size: 11px;
@@ -1501,7 +1501,7 @@ export default {
     color: #a8abb2;
   }
   .el-popover.el-popper.select-module-popover .module-menu-scroll-btn:hover {
-    color: var(--cat2bug-primary, #409eff);
+    color: var(--cat2bug-primary, #1890ff);
   }
   /* directMenu：占位锚点，不占视觉高度，供 popover 对齐 */
   .select-module-ref-minimal {

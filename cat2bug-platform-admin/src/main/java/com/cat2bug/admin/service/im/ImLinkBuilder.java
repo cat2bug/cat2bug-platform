@@ -27,14 +27,6 @@ public class ImLinkBuilder {
                 trimHost(srcHost), projectPath(projectId), projectId, defectId);
     }
 
-    public String report(String srcHost, Long projectId, Long reportId) {
-        if (StringUtils.isEmpty(srcHost) || reportId == null || projectId == null) {
-            return "";
-        }
-        return String.format("%s/%s/report?projectId=%d&reportId=%d",
-                trimHost(srcHost), projectPath(projectId), projectId, reportId);
-    }
-
     public String notice(String srcHost, Long projectId) {
         if (StringUtils.isEmpty(srcHost)) {
             return "";

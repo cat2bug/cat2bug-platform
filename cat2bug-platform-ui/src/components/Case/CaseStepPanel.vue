@@ -240,7 +240,7 @@ export default {
 
       &:focus,
       &:focus-visible {
-        outline: 2px solid var(--cat2bug-field-focus-color, #409eff);
+        outline: 2px solid var(--cat2bug-field-focus-color, #1890ff);
         outline-offset: 2px;
       }
     }

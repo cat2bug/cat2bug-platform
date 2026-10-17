@@ -37,7 +37,6 @@ export const DEFAULT_MENU_LETTERS = {
   plan: 'P', // 测试计划
   module: 'J', // 交付物
   dashboard: 'Y', // 仪表盘
-  report: 'R', // 项目报告
   document: 'F', // 文档管理（避免 ⇧⌘W 与浏览器冲突）
   option: 'O', // 项目设置
   'project-list': 'X', // 项目管理
@@ -167,11 +166,6 @@ export const MODULE_ACTION_DEFAULTS = [
   { key: 'create', defaultLetter: 'E', titleKey: 'keyboard.act.module-create' }
 ]
 
-/** 项目报告页默认动作 */
-export const REPORT_ACTION_DEFAULTS = [
-  { key: 'create', defaultLetter: 'E', titleKey: 'keyboard.act.report-create' }
-]
-
 /** 文档管理页默认动作 */
 export const DOCUMENT_ACTION_DEFAULTS = [
   { key: 'createFolder', defaultLetter: 'O', titleKey: 'keyboard.act.document-create-folder' },
@@ -284,8 +278,6 @@ export function getPageActionDefaults(scopeKey) {
       return PLAN_ACTION_DEFAULTS
     case 'module':
       return MODULE_ACTION_DEFAULTS
-    case 'report':
-      return REPORT_ACTION_DEFAULTS
     case 'document':
       return DOCUMENT_ACTION_DEFAULTS
     case 'project-option':

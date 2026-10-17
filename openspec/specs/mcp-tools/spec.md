@@ -1,7 +1,9 @@
 # mcp-tools Specification
 
-## Requirements
+## Purpose
 
+MCP 精做工具覆盖缺陷闭环、用例、计划、交付物、文档与代码。
+## Requirements
 ### Requirement: Current project is reported by the bound token
 
 The system SHALL provide `get_current_project`, returning the project bound to the access token (ID, team and project keys, names), the modules usable by the user in that project, and the project's code repositories. `resolve_project_by_git_remote` SHALL look up a repository only inside the bound project and MUST fail with a clear message when the URL belongs to another project or is not hosted on the platform. No other tool MUST accept a `project` argument.
@@ -31,7 +33,7 @@ The system SHALL provide `get_current_project`, returning the project bound to t
 
 ### Requirement: Curated tools cover the defect lifecycle and core project data
 
-The system SHALL provide curated tools for searching and reading defects (including logs, comments and linked commits), creating, updating, assigning, repairing, passing, rejecting, closing, reopening and commenting on defects; searching, reading, creating and updating cases; listing and reading plans, deliverables, reports and documents; and listing repositories, browsing trees, reading files, searching code, and reading commits. Each curated tool MUST apply the same business rules as the corresponding web action.
+The system SHALL provide curated tools for searching and reading defects (including logs, comments and linked commits), creating, updating, assigning, repairing, passing, rejecting, closing, reopening and commenting on defects; searching, reading, creating and updating cases; listing and reading plans, deliverables and documents; and listing repositories, browsing trees, reading files, searching code, and reading commits. Each curated tool MUST apply the same business rules as the corresponding web action. The system MUST NOT provide `list_reports` or `get_report`.
 
 #### Scenario: Pass a defect
 
@@ -42,6 +44,11 @@ The system SHALL provide curated tools for searching and reading defects (includ
 
 - **WHEN** a client tries to pass a defect that is still in "processing" state
 - **THEN** the tool returns the same error the web action would return
+
+#### Scenario: Report tools are absent
+
+- **WHEN** a client lists tools
+- **THEN** the list does not contain `list_reports` or `get_report`
 
 ### Requirement: Tools declare their risk
 
@@ -79,3 +86,4 @@ The system SHALL provide `list_operations`, `describe_operation`, and `call_oper
 
 - **WHEN** a client calls `create_defect` twice with the same `idempotency_key`
 - **THEN** only one defect exists and both calls return its ID
+

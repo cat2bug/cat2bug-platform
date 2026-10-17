@@ -5,17 +5,16 @@ import com.cat2bug.common.util.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 /**
  * Cat2AI 反向代理，对齐 Spring {@code Cat2AiProxyController} 与 {@code RouterConfig}。
@@ -24,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 public class Cat2AiProxyService {
 
     private static final Logger LOG = Logger.getLogger(Cat2AiProxyService.class);
-    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private static final String DEFAULT_PREFIX = "cat2ai";
 
     @ConfigProperty(name = "cat2bug.proxy.routes.ai.enabled", defaultValue = "false")
@@ -48,30 +46,30 @@ public class Cat2AiProxyService {
         String targetUrl = buildTargetUrl(uriInfo, targetHost, prefix);
         String requestBody = body == null ? "" : body;
         try {
-            OkHttpClient client = new OkHttpClient.Builder()
-                    .connectTimeout(timeoutSeconds, TimeUnit.SECONDS)
-                    .readTimeout(timeoutSeconds, TimeUnit.SECONDS)
-                    .writeTimeout(timeoutSeconds, TimeUnit.SECONDS)
+            HttpClient client = HttpClient.newBuilder()
+                    .followRedirects(HttpClient.Redirect.NORMAL)
+                    .connectTimeout(Duration.ofSeconds(timeoutSeconds))
                     .build();
-            RequestBody okhttpBody = RequestBody.create(requestBody, JSON);
-            Request request = new Request.Builder()
-                    .url(targetUrl)
-                    .method(method, okhttpBody)
-                    .addHeader("Content-Type", "application/json")
-                    .addHeader("Connection", "keep-alive")
+            HttpRequest request = HttpRequest.newBuilder(URI.create(targetUrl))
+                    .timeout(Duration.ofSeconds(timeoutSeconds))
+                    .header("Content-Type", "application/json")
+                    .header("Connection", "keep-alive")
+                    .method(method, HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
                     .build();
-            try (okhttp3.Response upstream = client.newCall(request).execute()) {
-                ResponseBody upstreamBody = upstream.body();
-                String responseText = upstreamBody != null ? upstreamBody.string() : "";
-                if (!upstream.isSuccessful()) {
-                    LOG.warnf("Cat2AI proxy upstream HTTP %d for %s", upstream.code(), targetUrl);
-                }
-                return Response.status(Response.Status.OK)
-                        .entity(responseText)
-                        .type("application/json")
-                        .build();
+            HttpResponse<String> upstream = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            String responseText = upstream.body() != null ? upstream.body() : "";
+            int status = upstream.statusCode();
+            if (status < 200 || status >= 300) {
+                LOG.warnf("Cat2AI proxy upstream HTTP %d for %s", status, targetUrl);
             }
-        } catch (IOException e) {
+            return Response.status(Response.Status.OK)
+                    .entity(responseText)
+                    .type("application/json")
+                    .build();
+        } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             LOG.errorf(e, "Cat2AI proxy failed for %s", targetUrl);
             return Response.status(Response.Status.OK)
                     .entity("Error " + e.getMessage())

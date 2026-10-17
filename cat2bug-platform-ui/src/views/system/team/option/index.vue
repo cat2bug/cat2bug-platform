@@ -93,7 +93,7 @@ export default {
       }
     }
     i, .svg-icon {
-      color: var(--cat2bug-option-card-icon-color, #409EFF);
+      color: var(--cat2bug-option-card-icon-color, #1890ff);
       fill: currentColor;
       margin-right: 10px;
       margin-top: 3px;

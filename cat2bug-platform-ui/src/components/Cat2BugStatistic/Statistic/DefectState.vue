@@ -8,7 +8,7 @@
         :open-delay="200"
         :content="formatStateTooltip($t('all'), total, stateDeltaTotal('d'), stateDeltaTotal('w'))"
       >
-        <cat2-but-label @click="clickHandle" class="defect-state-label" icon="all" icon-color="#409EFF" :label="$t('all').toString()" content="12">
+        <cat2-but-label @click="clickHandle" class="defect-state-label" icon="all" icon-color="#1890ff" :label="$t('all').toString()" content="12">
           <template #content>
             <span>{{ total }}</span>
             <span>{{ stateDeltaTotal('d') >= 0 ? '+' + stateDeltaTotal('d') : stateDeltaTotal('d') }}</span>
@@ -227,7 +227,7 @@ export default {
     }
 
     &:hover .cat2bug-statistic-label__name {
-      color: #409eff;
+      color: var(--cat2bug-primary, #1890ff);
     }
   }
 

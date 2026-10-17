@@ -568,7 +568,7 @@ export default {
       top: 0;
       bottom: 0;
       box-sizing: border-box;
-      border: var(--cat2bug-field-focus-ring-width, 2px) solid var(--cat2bug-field-focus-color, #409eff);
+      border: var(--cat2bug-field-focus-ring-width, 2px) solid var(--cat2bug-field-focus-color, #1890ff);
       border-radius: var(--cat2bug-border-radius, 4px);
       pointer-events: none;
     }

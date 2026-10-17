@@ -109,32 +109,51 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   row-gap: 4px;
-  .el-menu-item, :deep(.el-submenu){
+  width: max-content;
+  height: auto;
+  .el-menu-item,
+  :deep(.el-sub-menu),
+  :deep(.el-submenu) {
     height: 30px;
     width: 30px;
+    min-width: 30px;
+    max-width: 30px;
+    flex: 0 0 30px;
     line-height: 28px;
-    padding: 0px 8px;
+    padding: 0;
     border-radius: 3px;
     border: none;
+    justify-content: center;
     > * {
       padding: 0px;
     }
   }
-  .el-menu-item:hover, :deep(.el-submenu:hover){
+  :deep(.el-sub-menu__title),
+  :deep(.el-submenu__title),
+  :deep(.el-tooltip__trigger) {
+    height: 30px;
+    width: 30px;
+    min-width: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: none;
+  }
+  .el-menu-item:hover,
+  :deep(.el-sub-menu:hover),
+  :deep(.el-submenu:hover) {
     color: #1890ff;
     border-color: #badeff;
     background-color: #e8f4ff;
   }
-  .el-submenu :deep(.el-submenu__title){
-    height: 30px;
-    line-height: 28px;
-  }
-  .el-submenu :deep(.el-submenu__title:hover){
+  :deep(.el-sub-menu__title:hover),
+  :deep(.el-submenu__title:hover) {
     background-color: #00000000;
   }
   /* 图标按钮不展示下拉三角（如标题 H），悬停/点击仍可展开子菜单 */
-  .el-sub-menu :deep(.el-sub-menu__icon-arrow),
-  .el-submenu :deep(.el-submenu__icon-arrow) {
+  :deep(.el-sub-menu__icon-arrow),
+  :deep(.el-submenu__icon-arrow) {
     display: none !important;
   }
 }
@@ -147,9 +166,11 @@ export default {
 .siding {
   width: 1px;
   height: 15px;
+  flex: 0 0 1px;
   background-color: #dcdcdc;
   margin: 0px 5px;
-  float: left;
+  float: none;
+  align-self: center;
 }
 .siding:hover {
   background-color: #ffffff;

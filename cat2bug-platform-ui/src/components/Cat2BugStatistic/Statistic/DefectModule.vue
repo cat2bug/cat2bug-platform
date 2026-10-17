@@ -217,7 +217,7 @@ export default {
     background-color: rgba(64, 158, 255, 0.06);
   }
   .defect-module-row:hover h4 {
-    color: #409eff;
+    color: var(--cat2bug-primary, #1890ff);
   }
   :deep(.el-progress-bar){
     width: 100%;

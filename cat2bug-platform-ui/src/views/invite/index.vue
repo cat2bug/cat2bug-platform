@@ -329,7 +329,7 @@ export default {
   --invite-card-bg: #ffffff;
   --invite-card-shadow: rgba(0, 0, 0, 0.08);
   --invite-card-border: transparent;
-  --invite-accent: #409eff;
+  --invite-accent: #1890ff;
   --invite-accent-hover: #66b1ff;
   --invite-accent-active: #3a8ee6;
   --invite-on-accent: #ffffff;
@@ -360,17 +360,17 @@ html.dark .invite-page {
   --invite-card-shadow: rgba(0, 0, 0, 0.4);
   --invite-card-border: #2a2a2c;
   --invite-accent: #69b1ff;
-  --invite-accent-hover: #ffca28;
-  --invite-accent-active: #ffb300;
-  --invite-on-accent: #1a1a1a;
+  --invite-accent-hover: #4ea8ff;
+  --invite-accent-active: #096dd9;
+  --invite-on-accent: #ffffff;
   --invite-text-primary: #ffffff;
   --invite-text-secondary: #9ca3af;
   --invite-details-bg: #141416;
   --invite-outcome-bg: #252529;
   --invite-outcome-success-icon: #85ce61;
   --invite-outcome-success-ring: rgba(133, 206, 97, 0.2);
-  --invite-outcome-info-icon: #ffc107;
-  --invite-outcome-info-ring: rgba(255, 193, 7, 0.18);
+  --invite-outcome-info-icon: #69b1ff;
+  --invite-outcome-info-ring: rgba(105, 177, 255, 0.18);
   --invite-outcome-error-icon: #f78989;
   --invite-outcome-error-ring: rgba(247, 137, 137, 0.2);
 }

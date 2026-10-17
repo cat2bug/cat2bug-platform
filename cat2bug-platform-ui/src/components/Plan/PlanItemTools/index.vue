@@ -272,6 +272,6 @@ export default {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  color: #409EFF;
+  color: var(--cat2bug-primary, #1890ff);
 }
 </style>

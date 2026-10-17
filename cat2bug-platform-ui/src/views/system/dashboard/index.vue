@@ -13,9 +13,6 @@
           <module-statistics-chart />
         </el-card>
         <el-card class="box-card">
-          <report-statistics-chart />
-        </el-card>
-        <el-card class="box-card">
           <document-statistics-chart />
         </el-card>
         <el-card class="box-card">
@@ -58,7 +55,6 @@ import DefectStateChart from "@/views/system/dashboard/components/DefectStateCha
 import CaseStatisticsChart from "@/views/system/dashboard/components/CaseStatisticsChart";
 import DefectStatisticsChart from "@/views/system/dashboard/components/DefectStatisticsChart";
 import ModuleStatisticsChart from "@/views/system/dashboard/components/ModuleStatisticsChart";
-import ReportStatisticsChart from "@/views/system/dashboard/components/ReportStatisticsChart";
 import DocumentStatisticsChart from "@/views/system/dashboard/components/DocumentStatisticsChart";
 import MemberStatisticsChart from "@/views/system/dashboard/components/MemberStatisticsChart";
 import ActionList from "@/views/system/dashboard/components/ActionList";
@@ -69,7 +65,7 @@ import PlanStatisticsChart from "@/views/system/dashboard/components/PlanStatist
 export default {
   name: "index",
   components: { ProjectLabel, DefectStateChart, CaseStatisticsChart, DefectStatisticsChart, ModuleStatisticsChart,
-    ReportStatisticsChart, DocumentStatisticsChart, MemberStatisticsChart, ActionList, MemberOfDefectRank, PlanBurndownChart,
+    DocumentStatisticsChart, MemberStatisticsChart, ActionList, MemberOfDefectRank, PlanBurndownChart,
     MemberOfDefectLine, PlanStatisticsChart
   },
   data() {

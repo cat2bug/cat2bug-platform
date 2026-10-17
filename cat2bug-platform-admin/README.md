@@ -43,4 +43,4 @@ java -jar cat2bug-platform-admin/target/quarkus-app/quarkus-run.jar
 
 前端产物写入 `src/main/resources/META-INF/resources/`（Quarkus 静态根）。`-Pembedded` 将该目录打入 JAR；默认 dev 构建不包含该目录，避免无前端时打包失败。
 
-Native 构建：`./deploy/build-native.sh arm64|amd64`（embedded SPA + Native + UPX），冒烟：`smoke-native-docker.sh`（`FRESH=true` 测全新安装）。更多说明见 [deploy/README.md](../deploy/README.md)。
+本仓库编译只打 JAR。Native 构建在 `cat2bug-build/scripts/platform/build-linux-native.sh`（`./deploy/build-native.sh` 会转过去），冒烟：`./deploy/smoke-native-docker.sh`（`FRESH=true` 测全新安装）。更多说明见 [deploy/README.md](../deploy/README.md) 与 `docs/02-系统架构/部署.md`。

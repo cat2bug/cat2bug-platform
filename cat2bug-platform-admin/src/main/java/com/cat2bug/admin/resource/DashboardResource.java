@@ -54,13 +54,6 @@ public class DashboardResource {
     }
 
     @GET
-    @Path("/{projectId}/report")
-    @RequiresPermissions("system:dashboard:query")
-    public AjaxResult reportStatistics(@PathParam("projectId") Long projectId) {
-        return AjaxResult.success(sysDashboardService.reportStatistics(projectId));
-    }
-
-    @GET
     @Path("/{projectId}/document")
     @RequiresPermissions("system:dashboard:query")
     public AjaxResult documentStatistics(@PathParam("projectId") Long projectId) {

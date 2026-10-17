@@ -6,6 +6,7 @@
 import MarkdownIt from 'markdown-it'
 import { sanitizeHtml } from '@/utils/sanitize-html'
 import { handleImageErrorEvent } from '@/utils/upload-asset'
+import { loadMarkdownExtrasCss } from '@/components/Markdown/load-markdown-extras-css'
 
 let mdInstance
 
@@ -27,6 +28,9 @@ export default {
       type: String,
       default: ''
     }
+  },
+  created() {
+    loadMarkdownExtrasCss()
   },
   computed: {
     html() {

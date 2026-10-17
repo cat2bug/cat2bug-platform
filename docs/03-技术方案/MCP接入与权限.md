@@ -28,7 +28,6 @@ AI 客户端（Cursor、Claude Code、Codex、OpenCode、Claude Desktop / 网页
 | `case` | `system:case:` |
 | `plan` | `system:plan:`、`system:PlanItem:` |
 | `deliverable` | `system:module:` |
-| `report` | `system:report:` |
 | `document` | `system:document:` |
 | `code` | `system:git:` |
 | `dashboard` | `system:dashboard:` |
@@ -43,7 +42,7 @@ AI 客户端（Cursor、Claude Code、Codex、OpenCode、Claude Desktop / 网页
 - 项目定位：工具**没有** `project` 参数，统一作用于授权时选择的项目。`get_current_project` 返回该项目、可用模块，有代码权限时附带仓库列表；`resolve_project_by_git_remote` 按本地 `git remote` 地址（`/{team}/{project}/code/{slug}.git` 或旧式 `/git/p/{projectId}/{slug}.git`）找授权项目内的仓库，不属于该项目时报错。
 - 精做工具（`cat2bug-platform-admin/.../admin/mcp/`）：
   - 缺陷 `McpDefectTools`：`search_defects`、`get_defect`、`create_defect`、`update_defect`、`comment_defect`、`assign_defect`、`repair_defect`（可带 `commits`）、`reject_defect`、`pass_defect`、`close_defect`、`open_defect`、`list_project_members`。
-  - 用例 / 计划 / 交付物 / 报告 / 文档 / 统计 `McpWorkTools`：`search_cases`、`get_case`、`create_case`、`update_case`、`list_plans`、`list_plan_items`、`update_plan_item`、`list_modules`、`list_reports`、`get_report`、`list_documents`、`get_project_stats`。
+  - 用例 / 计划 / 交付物 / 文档 / 统计 `McpWorkTools`：`search_cases`、`get_case`、`create_case`、`update_case`、`list_plans`、`list_plan_items`、`update_plan_item`、`list_modules`、`list_documents`、`get_project_stats`。
   - 代码 `McpCodeTools`：`list_repositories`、`list_code_tree`、`read_code_file`、`search_code`、`list_commits`、`get_commit`。
 - 工具注解标明只读 / 破坏性 / 幂等；`create_defect`、`create_case`、`comment_defect` 支持 `idempotency_key`（表 `sys_mcp_idempotency`，同一用户同一工具同一键 24 小时内返回首次结果，每小时清理）。
 - 缺陷流转在工具层镜像网页按钮的处理人规则；后端 `SysDefectService.requireTransition` 另做状态校验，非法流转 409（与网页一致）。
@@ -55,7 +54,7 @@ AI 客户端（Cursor、Claude Code、Codex、OpenCode、Claude Desktop / 网页
 让 AI 像加载了 Skill 一样了解业务流程，并在每一步之后告诉用户下一步，决策见 [[ADR-017-MCP使用指南以工具加Prompt交付-正文放资源文件按项目实况拼接]]。
 
 - 初始化说明（`quarkus.mcp.server.server-info.instructions`）要求 AI 先调用 `get_guide`，每完成一步告诉用户结果、下一步、由谁来做；并提示修代码前按 `get_guide(topic=code)` 确认仓库与基线，单仓且 remote 对得上时不要反复追问。
-- 指南工具 `get_guide`（`McpGuideTools`，只读）：`topic` 取 `overview`（默认）/ `roles` / `defect` / `case` / `plan` / `deliverable` / `report` / `document` / `code`。返回「本项目实况」+ 主题正文：
+- 指南工具 `get_guide`（`McpGuideTools`，只读）：`topic` 取 `overview`（默认）/ `roles` / `defect` / `case` / `plan` / `deliverable` / `document` / `code`。返回「本项目实况」+ 主题正文：
   - 实况按当前用户与授权项目实时生成：项目、用户、项目角色、可用模块、各模块可执行操作（按 `McpProjectAccess.allows` 逐个权限判断，映射表 `McpGuideTools.OPERATIONS`）。`overview` / `roles` 附成员按角色分组（需项目成员查看权限，`roles` 列名字，每组最多 30 人）；`defect` 附启用的内置字段、自定义字段（键、类型、必填、选项）和「处理人包含我」的各状态数量；`plan` 附还有未执行子项的计划。
   - 主题模块不在可用模块里时只返回实况和开启方式，不返回操作步骤。
   - **`code` 主题含仓库 / 基线少打断规则**（软规则，无服务端硬闸）：单仓库且本地 `origin` 能 `resolve_project_by_git_remote` 到该仓时不问仓库；多仓或 remote 对不上必须问；基线默认 `defaultBranch`，说明或确认时列出本地常见分支。`fix_defect` Prompt 与 `get_current_project` 的 `repositoryConfirmHint` 同口径。
@@ -68,7 +67,7 @@ AI 客户端（Cursor、Claude Code、Codex、OpenCode、Claude Desktop / 网页
 
 - `list_operations` / `describe_operation` / `call_operation`（`McpGenericTools`），操作目录由 `McpOperationCatalog` 启动时扫描 `com.cat2bug.admin.resource.*` 生成，操作 ID 为「资源名去掉 Resource + 方法名」，如 `defect.list`、`defect.getInfo`。
 - 收录：带 `@RequiresPermissions`、权限全部属于已映射模块、返回 JSON、无表单参数。排除：路径含 export / import / upload / download / template / raw / archive / shard 等，`/ai`、`/git/`、`/api/`、`/monitor`、`/tool` 前缀，以及从 `sys_user_config` 读当前项目的接口（`EXCLUDED_TEMPLATES`）。
-- **对象归属**：网页接口按 ID 访问时不校验对象属于哪个项目，MCP 层转发前用 `McpObjects` 校验路径、查询、请求体里出现的 ID 都属于目标项目；未知的 `*Id` / `*Ids` 字段直接拒绝；`correlationId` 只接受 `defect_log` / `report`。新增可被收录的接口时，若有新的 ID 参数，要在 `OWNED_PARAMS` / `McpObjects` 中补归属校验，否则会被拒绝而不是放行。
+- **对象归属**：网页接口按 ID 访问时不校验对象属于哪个项目，MCP 层转发前用 `McpObjects` 校验路径、查询、请求体里出现的 ID 都属于目标项目；未知的 `*Id` / `*Ids` 字段直接拒绝；`correlationId` 只接受 `defect_log`。新增可被收录的接口时，若有新的 ID 参数，要在 `OWNED_PARAMS` / `McpObjects` 中补归属校验，否则会被拒绝而不是放行。
 - 结果截断到 60000 字符。
 
 ## 回环网关

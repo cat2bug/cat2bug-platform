@@ -3,7 +3,6 @@ export const PROJECT_LIST_PAGE_VIEWS = [
   'system/case/index',
   'system/defect/index',
   'system/plan/index',
-  'system/report/index',
   'system/document/index'
 ]
 
@@ -13,12 +12,11 @@ const PROJECT_LIST_ROUTE_NAMES = new Set([
   'Case',
   'Defect',
   'Plan',
-  'Report',
   'Document'
 ])
 
 /** 路由 path 末段（动态菜单 path 多为 case / defect 等） */
-const PROJECT_LIST_PATH_TAIL = /\/(case|defect|plan|report|document)(?:\/|$)/
+const PROJECT_LIST_PATH_TAIL = /\/(case|defect|plan|document)(?:\/|$)/
 
 /**
  * 是否为用例/缺陷/计划/报告/文档列表页（用于布局级 overflow，须在组件 mount 前判定）

@@ -194,7 +194,7 @@ export default {
             data: series,
             type: 'bar',
             itemStyle: {
-              color: '#409eff'
+              color: '#1890ff'
             },
             showBackground: true,
             backgroundStyle: {

@@ -36,7 +36,6 @@ const PROJECT_MODULE_LAZY_VIEWS = Object.freeze({
   defect: () => import('@/views/system/defect/index'),
   case: () => import('@/views/system/case/index'),
   plan: () => import('@/views/system/plan/index'),
-  report: () => import('@/views/system/report/index'),
   document: () => import('@/views/system/document/index'),
   module: () => import('@/views/system/module/index'),
   notice: () => import('@/views/notice/index'),
@@ -478,34 +477,6 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/report/template',
-    component: Layout,
-    hidden: true,
-    redirect: 'noredirect',
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/system/report/template/index'),
-        name: 'ReportTemplate',
-        meta: { title: i18n.global.t('report.template'), titleI18nKey:'report.template', icon: 'user' }
-      }
-    ]
-  },
-  {
-    path: '/report/template/add',
-    component: Layout,
-    hidden: true,
-    redirect: 'noredirect',
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/system/report/template/EditReportTemplate'),
-        name: 'AddDefectReport',
-        meta: { title: i18n.global.t('report.template'), titleI18nKey:'report.template', icon: 'user' }
-      }
-    ]
-  },
-  {
     path: '/system/project/add',
     component: Layout,
     hidden: true,
@@ -533,18 +504,6 @@ export const constantRoutes = [
       }
     ]
   },
-  ...(process.env.VUE_APP_ENABLE_DEV_TOOLS === 'true' ? [{
-    path: '/tool/gen-edit/',
-    component: Layout,
-    hidden: true,
-    children: [
-      {
-        path: 'index/:tableId(\\d+)',
-        component: () => import('@/views/tool/gen/editTable'),
-        name: 'GenEdit',
-      }
-    ]
-  }] : []),
   {
     path: '/notice',
     component: Layout,

@@ -30,6 +30,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import org.jboss.resteasy.reactive.RestForm;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
@@ -86,7 +87,8 @@ public class CaseResource {
     @GET
     @Path("/list")
     @RequiresPermissions("system:case:list")
-    public TableDataInfo list(@QueryParam("projectId") Long projectId,
+    public TableDataInfo list(@Context UriInfo uriInfo,
+                              @QueryParam("projectId") Long projectId,
                               @QueryParam("caseName") String caseName,
                               @QueryParam("moduleId") Long moduleId,
                               @QueryParam("caseType") Long caseType,
@@ -101,6 +103,7 @@ public class CaseResource {
         query.setCaseType(caseType);
         query.setCaseLevel(caseLevel);
         query.setCaseNum(caseNum);
+        sysCaseService.restrictToModuleTree(query, longQuery(uriInfo, "params[modulePid]"));
         TableDataInfo table = sysCaseService.selectCasePage(query, pageNum, pageSize);
         enrichCaseFocusList(table);
         return table;
@@ -214,7 +217,8 @@ public class CaseResource {
                            @RestForm("caseNum") Long caseNum,
                            @RestForm("params[exportScope]") String exportScope,
                            @RestForm("params[exportColumns]") String exportColumns,
-                           @RestForm("params[host]") String host) {
+                           @RestForm("params[host]") String host,
+                           @RestForm("params[modulePid]") Long modulePid) {
         SysCase query = new SysCase();
         query.setProjectId(projectId);
         query.setCaseName(caseName);
@@ -222,6 +226,7 @@ public class CaseResource {
         query.setCaseType(caseType);
         query.setCaseLevel(caseLevel);
         query.setCaseNum(caseNum);
+        sysCaseService.restrictToModuleTree(query, modulePid);
         Map<String, Object> params = buildExportParams(exportScope, exportColumns, host);
         byte[] workbook = caseExcelExportService.buildExportWorkbook(query, params, resolveLocale(headers));
         return Response.ok(workbook).type(SPREADSHEET_MEDIA_TYPE).build();
@@ -259,6 +264,21 @@ public class CaseResource {
         Map<String, Object> params = buildExportParams(exportScope, exportColumns, null);
         byte[] workbook = caseImportTemplateService.buildTemplateWorkbook(projectId, params, resolveLocale(headers));
         return Response.ok(workbook).type(SPREADSHEET_MEDIA_TYPE).build();
+    }
+
+    private static Long longQuery(UriInfo uriInfo, String name) {
+        if (uriInfo == null) {
+            return null;
+        }
+        String raw = uriInfo.getQueryParameters().getFirst(name);
+        if (StringUtils.isEmpty(raw)) {
+            return null;
+        }
+        try {
+            return Long.valueOf(raw.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private static SysCase buildNavQuery(Long projectId, String caseName, Long moduleId, Long caseType,

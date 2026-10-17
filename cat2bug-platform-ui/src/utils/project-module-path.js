@@ -6,7 +6,6 @@ export const PROJECT_MODULES = Object.freeze([
   'defect',
   'case',
   'plan',
-  'report',
   'document',
   'module',
   'notice',
@@ -47,7 +46,6 @@ export const PROJECT_MENU_PATH_TO_MODULE = Object.freeze({
   defect: 'defect',
   case: 'case',
   plan: 'plan',
-  report: 'report',
   document: 'document',
   module: 'module',
   notice: 'notice',
@@ -71,7 +69,6 @@ export const PROJECT_MODULE_VIEW = Object.freeze({
   defect: 'system/defect/index',
   case: 'system/case/index',
   plan: 'system/plan/index',
-  report: 'system/report/index',
   document: 'system/document/index',
   module: 'system/module/index',
   notice: 'notice/index',
@@ -91,7 +88,6 @@ export const LEGACY_MODULE_REDIRECT_MODULES = Object.freeze([
   'defect',
   'case',
   'plan',
-  'report',
   'document',
   'module',
   'notice',
@@ -104,7 +100,7 @@ export const LEGACY_MODULE_REDIRECT_MODULES = Object.freeze([
 /**
  * Legacy History paths that redirect to a whitelist module (5.2).
  * More-specific constant routes (`/defect/template`, `/document/c2d`,
- * `/report/template`, `/member/profile`) stay registered ahead of these.
+ * `/member/profile`) stay registered ahead of these.
  *
  * @type {ReadonlyArray<{ path: string, module: string, name: string }>}
  */
@@ -120,7 +116,6 @@ export const LEGACY_PROJECT_MODULE_REDIRECTS = Object.freeze([
   { path: '/project/defect/:pathMatch(.*)*', module: 'defect', name: 'LegacyProjectDefectRedirect' },
   { path: '/project/case/:pathMatch(.*)*', module: 'case', name: 'LegacyProjectCaseRedirect' },
   { path: '/project/plan/:pathMatch(.*)*', module: 'plan', name: 'LegacyProjectPlanRedirect' },
-  { path: '/project/report/:pathMatch(.*)*', module: 'report', name: 'LegacyProjectReportRedirect' },
   { path: '/project/document/:pathMatch(.*)*', module: 'document', name: 'LegacyProjectDocumentRedirect' },
   { path: '/project/module/:pathMatch(.*)*', module: 'module', name: 'LegacyProjectModuleRedirect' },
   { path: '/project/notice/:pathMatch(.*)*', module: 'notice', name: 'LegacyProjectNoticeRedirect' },

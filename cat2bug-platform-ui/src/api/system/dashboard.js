@@ -21,13 +21,6 @@ export function moduleStatistics(projectId) {
   })
 }
 
-export function reportStatistics(projectId) {
-  return request({
-    url: '/system/dashboard/'+projectId+'/report',
-    method: 'get',
-  })
-}
-
 export function documentStatistics(projectId) {
   return request({
     url: '/system/dashboard/'+projectId+'/document',

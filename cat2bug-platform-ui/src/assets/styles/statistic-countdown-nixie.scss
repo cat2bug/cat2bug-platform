@@ -66,7 +66,7 @@ html.dark .statistic-countdown-nixie {
 }
 
 .statistic-countdown-nixie--remain {
-  color: #409eff !important;
+  color: var(--cat2bug-primary, #1890ff) !important;
 }
 
 html.dark .statistic-countdown-nixie--remain {

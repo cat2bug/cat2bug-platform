@@ -364,7 +364,7 @@ export default {
 
   &:focus {
     outline: none;
-    border-color: var(--sidebar-active-text, #409eff);
+    border-color: var(--sidebar-active-text, #1890ff);
   }
   br {
     display: block;

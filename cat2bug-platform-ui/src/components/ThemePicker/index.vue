@@ -1,7 +1,7 @@
 <template>
   <el-color-picker
     v-model="theme"
-    :predefine="['#409EFF', '#1890ff', '#304156','#212121','#11a983', '#13c2c2', '#6959CD', '#f5222d', ]"
+    :predefine="['#1890ff', '#304156','#212121','#11a983', '#13c2c2', '#6959CD', '#f5222d', ]"
     :class="['theme-picker', { 'theme-picker--ghost': ghost }]"
     popper-class="theme-picker-dropdown"
   />
@@ -12,7 +12,7 @@ import { pinia } from '@/store/pinia'
 import { useSettingsStore } from '@/stores/settings'
 
 const version = '2.15.13'
-const ORIGINAL_THEME = '#409EFF' // default color
+const ORIGINAL_THEME = '#1890ff' // default color
 
 export default {
   props: {

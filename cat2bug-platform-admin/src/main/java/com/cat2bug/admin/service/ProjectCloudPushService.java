@@ -9,27 +9,26 @@ import com.cat2bug.system.mapper.SysDefectMapper;
 import com.cat2bug.system.mapper.SysDocumentMapper;
 import com.cat2bug.system.mapper.SysPlanMapper;
 import com.cat2bug.system.mapper.SysProjectMapper;
-import com.cat2bug.system.mapper.SysReportMapper;
-import com.cat2bug.system.mapper.SysReportTemplateMapper;
 import com.cat2bug.system.service.SysCaseService;
 import com.cat2bug.system.service.SysDefectLogService;
 import com.cat2bug.system.service.SysModuleService;
 import com.cat2bug.system.service.SysUserProjectService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -66,12 +65,6 @@ public class ProjectCloudPushService {
 
     @Inject
     SysModuleService sysModuleService;
-
-    @Inject
-    SysReportMapper sysReportMapper;
-
-    @Inject
-    SysReportTemplateMapper sysReportTemplateMapper;
 
     @Inject
     SysDocumentMapper sysDocumentMapper;
@@ -166,16 +159,6 @@ public class ProjectCloudPushService {
             moduleQuery.setProjectId(projectId);
             compressUtil.addJsonFile("module.json", sysModuleService.selectSysModuleList(moduleQuery));
 
-            SysReport reportQuery = new SysReport();
-            reportQuery.setProjectId(projectId);
-            compressUtil.addJsonFile("report.json",
-                    sysReportMapper.selectSysReportList(reportQuery, 0, LIST_ALL_LIMIT));
-
-            SysReportTemplate templateQuery = new SysReportTemplate();
-            templateQuery.setProjectId(projectId);
-            compressUtil.addJsonFile("report_template.json",
-                    sysReportTemplateMapper.selectSysReportTemplateList(templateQuery, 0, LIST_ALL_LIMIT));
-
             SysDocument documentQuery = new SysDocument();
             documentQuery.setProjectId(projectId);
             List<SysDocument> documentList =
@@ -196,25 +179,43 @@ public class ProjectCloudPushService {
         File compressFile = new File(compressFileName);
         try {
             String url = cloudUrl + "/api/project/push";
-            OkHttpClient client = new OkHttpClient();
-            RequestBody requestBody = new MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
-                    .addFormDataPart("version", systemVersion)
-                    .addFormDataPart("file", fileName,
-                            RequestBody.create(compressFile, MediaType.parse("application/zip")))
-                    .build();
-            Request request = new Request.Builder()
-                    .url(url)
-                    .post(requestBody)
-                    .header(AUTH_TOKEN_HEADER_NAME, pullKey.trim())
-                    .build();
-            try (Response response = client.newCall(request).execute()) {
-                return response.isSuccessful();
-            }
+            return postZip(url, pullKey.trim(), systemVersion, fileName, compressFile);
         } finally {
             if (!compressFile.delete()) {
                 LOG.warnf("临时同步文件删除失败: %s", compressFileName);
             }
+        }
+    }
+
+    private static boolean postZip(String url, String pullKey, String version, String fileName, File file)
+            throws IOException {
+        String boundary = "----Cat2Bug" + UUID.randomUUID().toString().replace("-", "");
+        byte[] fileBytes = Files.readAllBytes(file.toPath());
+        ByteArrayOutputStream body = new ByteArrayOutputStream();
+        String preamble = "--" + boundary + "\r\n"
+                + "Content-Disposition: form-data; name=\"version\"\r\n\r\n"
+                + version + "\r\n"
+                + "--" + boundary + "\r\n"
+                + "Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"\r\n"
+                + "Content-Type: application/zip\r\n\r\n";
+        body.write(preamble.getBytes(StandardCharsets.UTF_8));
+        body.write(fileBytes);
+        body.write(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .header(AUTH_TOKEN_HEADER_NAME, pullKey)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()))
+                .build();
+        try {
+            HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
+            return response.statusCode() >= 200 && response.statusCode() < 300;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException(e);
         }
     }
 

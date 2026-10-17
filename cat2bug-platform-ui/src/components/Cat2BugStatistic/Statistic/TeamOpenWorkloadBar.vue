@@ -164,7 +164,7 @@ export default {
 }
 
 .team-workload-row:hover h4 {
-  color: #409eff;
+  color: var(--cat2bug-primary, #1890ff);
 }
 
 h5 {

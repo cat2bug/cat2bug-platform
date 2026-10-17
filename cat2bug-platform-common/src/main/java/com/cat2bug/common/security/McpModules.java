@@ -23,7 +23,6 @@ public final class McpModules {
             new Module("case", List.of("system:case:")),
             new Module("plan", List.of("system:plan:", "system:PlanItem:")),
             new Module("deliverable", List.of("system:module:")),
-            new Module("report", List.of("system:report:")),
             new Module("document", List.of("system:document:")),
             new Module("code", List.of("system:git:")),
             new Module("dashboard", List.of("system:dashboard:")),

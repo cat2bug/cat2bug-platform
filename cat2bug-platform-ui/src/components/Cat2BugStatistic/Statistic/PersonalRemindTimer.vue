@@ -1134,7 +1134,7 @@ export default {
     position: relative;
     overflow: visible !important;
     font-size: 16px;
-    color: #409eff;
+    color: var(--cat2bug-primary, #1890ff);
   }
 
   .remind-delete-btn {

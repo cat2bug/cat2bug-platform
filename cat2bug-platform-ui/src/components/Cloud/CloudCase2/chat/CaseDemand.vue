@@ -74,7 +74,7 @@ export default {
   width: 100%;
   min-height: 50px;
   h3 {
-    color: #409EFF;
+    color: var(--cat2bug-primary, #1890ff);
     :deep(i){
       margin-right: 5px;
     }

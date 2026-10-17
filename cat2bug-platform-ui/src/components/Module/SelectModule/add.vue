@@ -193,7 +193,7 @@ export default {
 
           &:hover,
           &:focus {
-            color: var(--cat2bug-primary, #409eff);
+            color: var(--cat2bug-primary, #1890ff);
             outline: none !important;
             box-shadow: none !important;
           }

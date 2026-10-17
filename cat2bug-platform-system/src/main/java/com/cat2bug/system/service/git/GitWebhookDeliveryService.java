@@ -2,10 +2,7 @@ package com.cat2bug.system.service.git;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
-import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
 import com.cat2bug.common.util.DateUtils;
-import com.cat2bug.system.config.GitWebhookAsyncConfig;
 import com.cat2bug.system.config.GitWebhookProperties;
 import com.cat2bug.common.domain.SysGitRepositoryWebhook;
 import com.cat2bug.common.domain.SysGitWebhookDelivery;
@@ -14,6 +11,12 @@ import com.cat2bug.system.mapper.SysGitWebhookDeliveryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.UUID;
 
 /**
@@ -88,17 +91,22 @@ public class GitWebhookDeliveryService
     {
         try
         {
-            HttpResponse response = HttpRequest.post(url)
+            Duration timeout = Duration.ofMillis(properties.getHttpTimeoutMs());
+            HttpClient client = HttpClient.newBuilder()
+                    .followRedirects(HttpClient.Redirect.NEVER)
+                    .connectTimeout(timeout)
+                    .build();
+            HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                    .timeout(timeout)
                     .header("Content-Type", "application/json")
                     .header("User-Agent", "Cat2Bug-Webhooks")
                     .header("X-GitHub-Event", githubEvent)
                     .header("X-GitHub-Delivery", deliveryGuid)
                     .header("X-Hub-Signature-256", signature)
-                    .body(payloadJson)
-                    .timeout(properties.getHttpTimeoutMs())
-                    .setFollowRedirects(false)
-                    .execute();
-            int status = response.getStatus();
+                    .POST(HttpRequest.BodyPublishers.ofString(payloadJson, StandardCharsets.UTF_8))
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            int status = response.statusCode();
             String body = response.body();
             boolean ok = status >= 200 && status < 300;
             return new HttpOutcome(ok, status, body, null);

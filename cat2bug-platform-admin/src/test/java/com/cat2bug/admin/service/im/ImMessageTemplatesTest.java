@@ -1,7 +1,6 @@
 package com.cat2bug.admin.service.im;
 
 import com.cat2bug.common.domain.SysDefect;
-import com.cat2bug.common.domain.SysReport;
 import com.cat2bug.common.domain.SysUser;
 import org.junit.jupiter.api.Test;
 
@@ -57,21 +56,6 @@ class ImMessageTemplatesTest {
         assertFalse(html.contains("<img"));
         assertTrue(html.contains("&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt;"));
         assertTrue(html.contains("a &amp; b<br />&lt;img"));
-    }
-
-    @Test
-    void reportFormatsContainTitleAndLink() {
-        SysReport report = new SysReport();
-        report.setReportId(7L);
-        report.setProjectId(1L);
-        report.setReportTitle("周报 <1>");
-        String link = "http://h/team/proj/report?projectId=1&reportId=7";
-
-        ImMessageBody body = ImMessageTemplates.report(report, link);
-
-        assertEquals("## 周报 <1> \n\n点击查看 [" + link + "](" + link + ") \n\n", body.markdown());
-        assertTrue(body.text().contains("报告: 周报 <1>"));
-        assertTrue(body.html().contains("周报 &lt;1&gt;"));
     }
 
     @Test

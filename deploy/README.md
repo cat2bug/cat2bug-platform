@@ -1,16 +1,17 @@
 # Cat2Bug 部署脚本
 
-后端只有一条线：Quarkus 模块 `cat2bug-platform-admin`，默认 Maven reactor 直接构建，无需任何 profile。
+后端只有一条线：Quarkus 模块 `cat2bug-platform-admin`。本仓库的编译只打 JAR。Linux Native、UPX、RPM、Docker 前置打包的脚本在 `cat2bug-build/scripts/platform/`，这里的同名脚本只是转过去。
 
 | 脚本 | 说明 |
 |------|------|
 | [`build-embedded.sh`](build-embedded.sh) | 前端 `build:embedded` + 后端单 JAR（`cat2bug-platform-admin/target/cat2bug-admin.jar`） |
 | [`run-jar.sh`](run-jar.sh) | 启动单 JAR；自动加载 `config/install` 下的安装配置 |
-| [`build-native.sh`](build-native.sh) | embedded SPA + Native ELF（容器内 Mandrel 构建）+ UPX |
-| [`../cat2bug-platform-admin/smoke-native-docker.sh`](../cat2bug-platform-admin/smoke-native-docker.sh) | 在 Docker 中冒烟 Linux Native 二进制 |
-| [`docker/build.sh`](docker/build.sh) | Docker Compose 前置：前端 `build:prod` + MySQL 版单 JAR |
-| [`rpm/cat2bug/build-rpm.sh`](rpm/cat2bug/build-rpm.sh) | 用 nfpm 把 Native ELF 打成 rpm |
-| [`upx-native-binary.sh`](upx-native-binary.sh) | 单独对 Native 二进制做 UPX 压缩 |
+| [`build-native.sh`](build-native.sh) | 转发到 `cat2bug-build/scripts/platform/build-linux-native.sh` |
+| [`smoke-native-docker.sh`](smoke-native-docker.sh) | 在 Docker 中冒烟 Linux Native 二进制 |
+| [`smoke-upgrade-jvm.sh`](smoke-upgrade-jvm.sh) | JVM 单 JAR 升级冒烟（旧 JAR 安装后换新 JAR 比对数据） |
+| [`docker/build.sh`](docker/build.sh) | 转发到 `cat2bug-build/scripts/platform/build-docker-jar.sh` |
+| [`rpm/cat2bug/build-rpm.sh`](rpm/cat2bug/build-rpm.sh) | 转发到 `cat2bug-build/scripts/platform/build-rpm.sh` |
+| [`upx-native-binary.sh`](upx-native-binary.sh) | 转发到 `cat2bug-build/scripts/platform/upx-native-binary.sh` |
 | [`scripts/export-public.sh`](scripts/export-public.sh) | 生成剔除内部资料的公开发布提交（`public/master`），只打印推送命令 |
 
 ## JVM 单 JAR
@@ -29,19 +30,28 @@ QUARKUS_PROFILE=prod java -jar cat2bug-platform-admin/target/cat2bug-admin-runne
 
 ## Native
 
-```bash
-./deploy/build-native.sh               # 本机架构
-./deploy/build-native.sh x86_64        # linux/amd64
-./deploy/build-native.sh aarch64       # linux/arm64
-SKIP_EMBEDDED=true ./deploy/build-native.sh   # 跳过前端（API-only）
+脚本在 `cat2bug-build`（本目录的 `build-native.sh` 会转过去）：
 
-./cat2bug-platform-admin/smoke-native-docker.sh arm64
-FRESH=true ./cat2bug-platform-admin/smoke-native-docker.sh arm64   # 空数据目录走安装向导
+```bash
+../cat2bug-build/scripts/platform/build-linux-native.sh               # 本机架构
+../cat2bug-build/scripts/platform/build-linux-native.sh x86_64        # linux/amd64
+../cat2bug-build/scripts/platform/build-linux-native.sh aarch64       # linux/arm64
+SKIP_EMBEDDED=true ../cat2bug-build/scripts/platform/build-linux-native.sh   # 跳过前端（API-only）
+
+./deploy/smoke-native-docker.sh arm64
+FRESH=true ./deploy/smoke-native-docker.sh arm64   # 空数据目录走安装向导
 ```
 
 产物：`cat2bug-platform-admin/target/cat2bug-admin-linux-<goarch>`，UPX 后为同名 `.upx`。
 
 **amd64 在 Apple Silicon 上**：Docker `linux/amd64` 交叉编译内存占用高，`native-image` 若以 exit 137 结束，请调高 Docker Desktop 内存（建议 ≥16GB），或在 Linux x86_64 主机构建。
+
+## JVM 升级冒烟
+
+```bash
+OLD_JAR=/path/old.jar NEW_JAR=/path/new.jar ./deploy/smoke-upgrade-jvm.sh h2
+OLD_JAR=... NEW_JAR=... SMOKE_MYSQL_PASSWORD=*** ./deploy/smoke-upgrade-jvm.sh mysql
+```
 
 ## Docker Compose
 
@@ -50,8 +60,8 @@ FRESH=true ./cat2bug-platform-admin/smoke-native-docker.sh arm64   # 空数据�
 ## RPM
 
 ```bash
-./deploy/build-native.sh x86_64
-./deploy/rpm/cat2bug/build-rpm.sh x86_64      # 产物 dist/*.rpm；RPM_USE_UPX=true 改用 .upx
+../cat2bug-build/scripts/platform/build-linux-native.sh x86_64
+../cat2bug-build/scripts/platform/build-rpm.sh x86_64      # 产物 dist/*.rpm；RPM_USE_UPX=true 改用 .upx
 ```
 
 ## 公开发布

@@ -731,7 +731,7 @@ export default {
 
   .api-key-btn {
     cursor: pointer;
-    color: #409EFF;
+    color: var(--cat2bug-primary, #1890ff);
     font-size: 16px;
     transition: color 0.3s;
 

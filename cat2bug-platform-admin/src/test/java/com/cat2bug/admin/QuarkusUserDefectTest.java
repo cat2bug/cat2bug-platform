@@ -48,12 +48,5 @@ class QuarkusUserDefectTest {
                 .then()
                 .statusCode(200)
                 .body("code", equalTo(200));
-
-        given()
-                .header("Authorization", token)
-                .when().post("/system/report/close-edit-window")
-                .then()
-                .statusCode(200)
-                .body("code", equalTo(200));
     }
 }

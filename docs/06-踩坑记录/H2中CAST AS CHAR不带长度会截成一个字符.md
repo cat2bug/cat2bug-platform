@@ -23,4 +23,4 @@ MyBatis XML 里写了 `CAST(x AS CHAR)`。MySQL 把不带长度的 `CHAR` 当作
 ## 以后怎么避免
 
 - Mapper XML 里不要出现不带长度的 `AS CHAR)`，提交前用 `rg -n -i "as char\)" cat2bug-platform-admin/src/main/resources/mapper` 检查。
-- 集成测试连的是 MySQL 测试库，H2 方言差异只能靠 Native 冒烟或 H2 实库发现；改 SQL 后至少跑一次 `FRESH=true ./cat2bug-platform-admin/smoke-native-docker.sh arm64`，见 [[Quarkus数据源db-kind是构建期属性]]。
+- 集成测试连的是 MySQL 测试库，H2 方言差异只能靠 Native 冒烟或 H2 实库发现；改 SQL 后至少跑一次 `FRESH=true ./deploy/smoke-native-docker.sh arm64`，见 [[Quarkus数据源db-kind是构建期属性]]。

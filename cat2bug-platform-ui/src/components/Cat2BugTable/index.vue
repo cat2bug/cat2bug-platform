@@ -1785,7 +1785,7 @@ export default {
   --cat2bug-col-handle-bar-width: 2px;
   --cat2bug-col-handle-dot-size: 3px;
   --cat2bug-col-handle-grip-color: var(--text-color-placeholder, #c0c4cc);
-  --cat2bug-col-handle-grip-color-active: var(--cat2bug-primary, #409eff);
+  --cat2bug-col-handle-grip-color-active: var(--cat2bug-primary, #1890ff);
 
   /* 覆盖 Element UI 默认 .el-table { background: #FFF } / .el-table tr { background: #FFF } */
   :deep(.el-table){
@@ -2029,7 +2029,7 @@ export default {
 
 :deep(thead th.el-table__cell:hover .col-handle-drag__grip),
 :deep(thead th.el-table__cell:hover .col-handle-resize){
-  color: var(--cat2bug-col-handle-grip-color-active, #409eff);
+  color: var(--cat2bug-col-handle-grip-color-active, #1890ff);
 }
 
 /* .cell 铺满 th（含 padding 的整列头高度），手柄按列头算高 */
@@ -2078,7 +2078,7 @@ export default {
 
 .cat2-bug-table-wrap.is-column-resizing :deep(.col-handle-drag.is-resizing-active .col-handle-drag__grip),
 .cat2-bug-table-wrap.is-column-resizing :deep(.col-handle-resize.is-resizing-active){
-  color: var(--cat2bug-col-handle-grip-color-active, #409eff);
+  color: var(--cat2bug-col-handle-grip-color-active, #1890ff);
 }
 
 .table-header {

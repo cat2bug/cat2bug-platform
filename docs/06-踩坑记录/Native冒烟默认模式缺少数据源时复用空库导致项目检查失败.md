@@ -7,7 +7,7 @@ Native 冒烟脚本里「缺陷导入模板 500」「用例导入为空」不一
 
 ## 现象
 
-`./cat2bug-platform-admin/smoke-native-docker.sh arm64`（默认模式）只有两项失败：
+`./deploy/smoke-native-docker.sh arm64`（默认模式）只有两项失败：
 
 - `defect import template: FAIL (HTTP 500)`，接口返回 `当前项目不能为空`
 - `case excel import: FAIL`，返回「导入用例数据为空或格式不合法」

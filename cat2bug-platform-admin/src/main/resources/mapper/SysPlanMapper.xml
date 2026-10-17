@@ -17,7 +17,6 @@
         <result property="updateByAvatar" column="update_by_avatar"/>
         <result property="updateTime" column="update_time"/>
         <result property="projectId" column="project_id"/>
-        <result property="reportId" column="report_id"/>
         <result property="passCount" column="pass_count"/>
         <result property="failCount" column="fail_count"/>
         <result property="defectLevelUrgentCount" column="defect_level_urgent_count"/>
@@ -95,7 +94,6 @@
             p.update_by_id,
             p.update_time,
             p.project_id,
-            p.report_id,
             p.remark,
             u.nick_name AS update_by,
             u.avatar AS update_by_avatar,
@@ -231,9 +229,6 @@
             <if test="query != null and query.projectId != null">
                 AND p.project_id = #{query.projectId}
             </if>
-            <if test="query != null and query.reportId != null">
-                AND p.report_id = #{query.reportId}
-            </if>
         </where>
     </sql>
 
@@ -293,7 +288,6 @@
             <if test="updateById != null">update_by_id,</if>
             <if test="updateTime != null">update_time,</if>
             <if test="projectId != null">project_id,</if>
-            <if test="reportId != null">report_id,</if>
             <if test="remark != null and remark != ''">remark,</if>
         </trim>
         <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
@@ -308,7 +302,6 @@
             <if test="updateById != null">#{updateById},</if>
             <if test="updateTime != null">#{updateTime},</if>
             <if test="projectId != null">#{projectId},</if>
-            <if test="reportId != null">#{reportId},</if>
             <if test="remark != null">#{remark},</if>
         </trim>
     </insert>
@@ -326,7 +319,6 @@
             <if test="updateById != null">update_by_id = #{updateById},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="projectId != null">project_id = #{projectId},</if>
-            <if test="reportId != null">report_id = #{reportId},</if>
             <if test="remark != null and remark != ''">remark = #{remark},</if>
         </trim>
         WHERE plan_id = #{planId}

@@ -365,7 +365,7 @@ export default {
   }
 
   &.is-selected:not(.is-pad) {
-    outline: 2px solid #409eff;
+    outline: 2px solid var(--cat2bug-primary, #1890ff);
     outline-offset: -1px;
   }
 }

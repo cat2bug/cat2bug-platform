@@ -55,6 +55,23 @@ public class SysCaseService {
         return new TableDataInfo(rows, total);
     }
 
+    /** 左侧交付物树点击：按该节点及其全部子交付物筛选用例。 */
+    public void restrictToModuleTree(SysCase query, Long modulePid) {
+        if (query == null || modulePid == null) {
+            return;
+        }
+        Set<Long> moduleIds = sysModuleMapper.getAllChildIds(query.getProjectId(), modulePid);
+        if (query.getParams() == null) {
+            query.setParams(new HashMap<>());
+        }
+        if (moduleIds == null || moduleIds.isEmpty()) {
+            query.getParams().put("moduleIds", List.of(-1L));
+        } else {
+            query.getParams().put("moduleIds", new ArrayList<>(moduleIds));
+        }
+        query.setModuleId(null);
+    }
+
     public SysCase selectSysCaseByCaseId(Long caseId) {
         SysCase sysCase = sysCaseMapper.selectSysCaseByCaseId(caseId);
         if (sysCase == null) {

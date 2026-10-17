@@ -4,15 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import jakarta.inject.Inject;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * IM 平台 HTTP 客户端公共部分：JSON 请求、token 缓存与「token 失效刷新后重试一次」。
@@ -20,12 +19,11 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractImClient {
 
     static final ObjectMapper MAPPER = new ObjectMapper();
-    private static final MediaType JSON_TYPE = MediaType.parse("application/json;charset=utf-8");
 
     @Inject
     ImTokenCache tokenCache;
 
-    private volatile OkHttpClient httpClient;
+    private volatile HttpClient httpClient;
 
     @FunctionalInterface
     interface TokenCall<T> {
@@ -62,7 +60,10 @@ public abstract class AbstractImClient {
 
     protected HttpResult postJson(String url, Map<String, String> headers, Object body) throws IOException {
         String json = body instanceof String s ? s : MAPPER.writeValueAsString(body);
-        Request.Builder builder = new Request.Builder().url(url).post(RequestBody.create(json, JSON_TYPE));
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url))
+                .timeout(Duration.ofSeconds(30))
+                .header("Content-Type", "application/json;charset=utf-8")
+                .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8));
         if (headers != null) {
             headers.forEach(builder::header);
         }
@@ -70,25 +71,32 @@ public abstract class AbstractImClient {
     }
 
     protected HttpResult get(String url) throws IOException {
-        return execute(new Request.Builder().url(url).get().build());
+        return execute(HttpRequest.newBuilder(URI.create(url))
+                .timeout(Duration.ofSeconds(30))
+                .GET()
+                .build());
     }
 
-    private HttpResult execute(Request request) throws IOException {
-        try (Response response = client().newCall(request).execute()) {
-            String body = response.body() != null ? response.body().string() : "";
-            return new HttpResult(response.code(), body);
+    private HttpResult execute(HttpRequest request) throws IOException {
+        try {
+            HttpResponse<String> response = client().send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            String body = response.body() != null ? response.body() : "";
+            return new HttpResult(response.statusCode(), body);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException(e);
         }
     }
 
-    private OkHttpClient client() {
-        OkHttpClient client = httpClient;
+    private HttpClient client() {
+        HttpClient client = httpClient;
         if (client == null) {
             synchronized (this) {
                 client = httpClient;
                 if (client == null) {
-                    client = new OkHttpClient.Builder()
-                            .connectTimeout(10, TimeUnit.SECONDS)
-                            .readTimeout(30, TimeUnit.SECONDS)
+                    client = HttpClient.newBuilder()
+                            .followRedirects(HttpClient.Redirect.NORMAL)
+                            .connectTimeout(Duration.ofSeconds(10))
                             .build();
                     httpClient = client;
                 }

@@ -234,7 +234,7 @@ export default {
           data: series,
           type: 'bar',
           barMaxWidth: 14,
-          itemStyle: { color: '#409eff' },
+          itemStyle: { color: '#1890ff' },
           showBackground: true,
           backgroundStyle: { color: colors.barBg }
         }]

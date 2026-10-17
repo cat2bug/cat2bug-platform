@@ -340,13 +340,13 @@ export default {
   }
   .orange:hover,
   .orange:focus {
-    color: var(--cat2bug-operate-text-muted-hover, #409eff);
+    color: var(--cat2bug-operate-text-muted-hover, #1890ff);
   }
   .restore-orange {
     color: var(--cat2bug-operate-text-warning, #ffba00);
   }
   .restore-orange:hover,
   .restore-orange:focus {
-    color: var(--cat2bug-operate-text-warning-hover, #409eff);
+    color: var(--cat2bug-operate-text-warning-hover, #1890ff);
   }
 </style>

@@ -1187,7 +1187,7 @@ export default {
         display: inline-block;
       }
       :deep(.member-nameplate-content p), i {
-        color: #409eff;
+        color: var(--cat2bug-primary, #1890ff);
       }
     }
     .el-col:hover {

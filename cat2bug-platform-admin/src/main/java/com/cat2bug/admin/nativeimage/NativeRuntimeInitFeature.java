@@ -18,10 +18,8 @@ import java.util.stream.Stream;
  * Native 构建：
  * <ol>
  *   <li>把会在镜像堆里留下 Random、已启动线程或构建机状态的类推迟到运行期初始化。
- *   JGit {@code WindowCache} 静态字段持有 {@code Random}，{@code WorkQueue} 会 {@code prestartAllCoreThreads}；
- *   Hutool SM2/SM3 与 BouncyCastle 的静态曲线参数同样不能烤进镜像。
- *   {@code DefaultSSLInfo} 会在静态初始化里创建带 {@code SecureRandom} 的 SSLContext。</li>
- *   <li>按包前缀批量注册反射：MyBatis resultType/parameterType、Jackson/fastjson2 序列化的
+ *   JGit {@code WindowCache} 静态字段持有 {@code Random}，{@code WorkQueue} 会 {@code prestartAllCoreThreads}。</li>
+ *   <li>按包前缀批量注册反射：MyBatis resultType/parameterType、Jackson 序列化的
  *   domain/VO 都靠反射；JJWT 0.12 通过类名反射加载 {@code io.jsonwebtoken.impl.*}。</li>
  * </ol>
  */
@@ -61,10 +59,8 @@ public final class NativeRuntimeInitFeature implements Feature {
                 "org.eclipse.jgit.lib.internal.WorkQueue",
                 "org.eclipse.jgit.util.FileUtils",
                 "org.eclipse.jgit.transport.HttpAuthMethod$Digest",
-                "cn.hutool.crypto.SmUtil",
-                "cn.hutool.http.ssl.DefaultSSLInfo",
-                "cn.hutool.http.HttpGlobalConfig",
-                "cn.hutool.core.lang.id.NanoId",
+                // 静态 HttpClient 不能烤进镜像堆
+                "com.cat2bug.admin.resource.ProfileResource",
                 // JJWT 静态 SecureRandom / 算法注册表，反射可达后会被常量折叠进镜像堆
                 "io.jsonwebtoken",
                 // 静态 SecureRandom 生成访问令牌，烤进镜像会让所有实例共享种子

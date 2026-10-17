@@ -833,7 +833,7 @@ export default {
   border-radius: 4px;
 }
 .defect-sidebar-expand-trigger:hover {
-  color: #409eff;
+  color: var(--cat2bug-primary, #1890ff);
   background-color: var(--sidebar-expand-trigger-hover-bg, #ecf5ff);
 }
 .defect-sidebar-expand-trigger:focus-visible {

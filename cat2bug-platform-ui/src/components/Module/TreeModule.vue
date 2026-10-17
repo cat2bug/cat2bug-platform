@@ -283,7 +283,7 @@ export default {
   background: transparent;
 }
 .tree-sidebar-collapse-toggle:hover {
-  color: #409eff;
+  color: var(--cat2bug-primary, #1890ff);
   background-color: #ecf5ff;
 }
 .tree-sidebar-collapse-toggle:focus-visible {

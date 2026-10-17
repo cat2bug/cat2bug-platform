@@ -118,7 +118,7 @@
           <!--          项目图标-->
           <el-col :xs="24" :sm="24" :md="8" :lg="6" :xl="6" class="step2">
             <cat2-bug-image
-              style="width: 150px; height: 150px; border-radius: 4px; overflow: hidden;"
+              style="width: 96px; height: 96px; border-radius: 4px; overflow: hidden;"
               :key="projectIconPreviewUrl"
               :src="projectIconPreviewUrl"
               fit="cover"></cat2-bug-image>
@@ -128,7 +128,7 @@
                 v-model:visible="projectIconPopperVisible"
                 popper-class="project-icon-popper"
                 placement="bottom"
-                :width="560"
+                :width="348"
                 trigger="click">
                 <template #reference>
                   <el-button
@@ -154,7 +154,7 @@
                     ></el-image>
                   </div>
                   <div class="project-icon-item" role="button" :aria-label="$t('upload')" tabindex="-1">
-                    <image-upload v-model="projectIcon" :limit="1" :file-type="[]" :is-show-tip="false" :is-show-clipboard-button="false" buttonStyle="width: 130px; height: 130px;" @input="handleSelectSelfImage" />
+                    <image-upload v-model="projectIcon" :limit="1" :file-type="[]" :is-show-tip="false" :is-show-clipboard-button="false" buttonStyle="width: 72px; height: 72px; font-size: 22px;" @input="handleSelectSelfImage" />
                   </div>
                 </div>
               </el-popover>
@@ -171,7 +171,7 @@ import {addProject, listProjectRole} from "@/api/system/project";
 import { listMember } from "@/api/system/team";
 import MemberNameplate from "@/components/MemberNameplate"
 import { resolveProjectIconUrl } from '@/utils/upload-asset'
-import { getDefaultProjectIconUrl, getProjectIconStoragePath } from '@/utils/project-default-icons'
+import { getDefaultProjectIconUrl, getProjectIconStoragePath, projectIconThemeKey } from '@/utils/project-default-icons'
 import projectCreateFormKbd from '@/mixins/project-create-form-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { PROJECT_CREATE_KBD_SCOPE } from '@/mixins/project-create-kbd'
@@ -242,6 +242,7 @@ export default {
   },
   computed: {
     activeProjectIconUrl() {
+      projectIconThemeKey()
       return (index) => getDefaultProjectIconUrl(index)
     },
     selectRoleOptions: function (){

@@ -12,21 +12,19 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
 public class AiAccountService {
 
-    private static final MediaType JSON_UTF8 = MediaType.parse("application/json;charset=utf-8");
     private static final int TEST_HTTP_TIMEOUT_SEC = 45;
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -90,22 +88,22 @@ public class AiAccountService {
             throw new ApiException("构建请求失败：" + e.getMessage());
         }
 
-        OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(TEST_HTTP_TIMEOUT_SEC, TimeUnit.SECONDS)
-                .readTimeout(TEST_HTTP_TIMEOUT_SEC, TimeUnit.SECONDS)
-                .writeTimeout(TEST_HTTP_TIMEOUT_SEC, TimeUnit.SECONDS)
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(Duration.ofSeconds(TEST_HTTP_TIMEOUT_SEC))
                 .build();
-        RequestBody body = RequestBody.create(JSON_UTF8, payload);
-        Request request = new Request.Builder()
-                .url(account.getAiUrl().trim())
-                .post(body)
-                .addHeader("Authorization", "Bearer " + account.getApiKey().trim())
+        HttpRequest request = HttpRequest.newBuilder(URI.create(account.getAiUrl().trim()))
+                .timeout(Duration.ofSeconds(TEST_HTTP_TIMEOUT_SEC))
+                .header("Content-Type", "application/json;charset=utf-8")
+                .header("Authorization", "Bearer " + account.getApiKey().trim())
+                .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            ResponseBody rb = response.body();
-            String responseBody = rb != null ? rb.string() : "";
-            if (!response.isSuccessful()) {
-                throw new ApiException("请求失败 HTTP " + response.code() + "：" + summarizeErrorBody(responseBody));
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            String responseBody = response.body() != null ? response.body() : "";
+            int status = response.statusCode();
+            if (status < 200 || status >= 300) {
+                throw new ApiException("请求失败 HTTP " + status + "：" + summarizeErrorBody(responseBody));
             }
             JsonNode parsed = MAPPER.readTree(responseBody);
             JsonNode choices = parsed.path("choices");
@@ -114,6 +112,9 @@ public class AiAccountService {
             }
             return "OpenAI 接口连接正常";
         } catch (IOException e) {
+            throw new ApiException("网络请求失败：" + e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new ApiException("网络请求失败：" + e.getMessage());
         }
     }

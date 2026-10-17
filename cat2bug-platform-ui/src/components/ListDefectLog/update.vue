@@ -286,7 +286,7 @@ export default {
       padding-right: 2px;
     }
     .state {
-      color: #409EFF;
+      color: var(--cat2bug-primary, #1890ff);
     }
   }
 
