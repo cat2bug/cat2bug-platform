@@ -33,9 +33,9 @@ import java.util.concurrent.TimeUnit;
  * 把 MCP 工具调用转发到同进程的网页接口：为（用户，项目）建一个短时内部会话，
  * 让权限注解、数据范围、操作日志与网页走完全相同的路径。会话用完即删。
  *
- * <p>回环是「工作线程 A 阻塞等待 → 嵌套 REST 还要再占工作线程 B」。并发工具调用
- * 占满线程池时会自死锁（端口仍监听、CPU≈0）。因此用信号量限制在途回环数，
- * 为嵌套 REST 预留线程；详见踩坑「MCP回环占满工作线程导致Quarkus假死」。
+ * <p>回环是「工作线程 A 阻塞等待 → 嵌套 REST 还要再占工作线程 B」，并且内层请求要再占一条
+ * JDBC 连接。并发工具调用占满线程池时会自死锁；占满连接池时，令牌校验和网页接口一起拿不到连接，
+ * 变成 HTTP 500。因此用信号量限制在途回环数，同时按线程池和连接池取较小值。
  */
 @ApplicationScoped
 public class McpGateway {
@@ -60,12 +60,16 @@ public class McpGateway {
     @ConfigProperty(name = "cat2bug.mcp.loopback-url")
     Optional<String> loopbackUrl;
 
-    /** 显式上限；未配时按 {@link #resolveLoopbackPermits(int, OptionalInt)} 推算。 */
+    /** 显式上限；未配时按 {@link #resolveLoopbackPermits(int, int, OptionalInt)} 推算。 */
     @ConfigProperty(name = "cat2bug.mcp.loopback.max-in-flight")
     OptionalInt loopbackMaxInFlight;
 
     @ConfigProperty(name = "quarkus.thread-pool.max-threads")
     OptionalInt threadPoolMaxThreads;
+
+    /** 与网页、令牌校验共用。回环在途数不能超过这个池，否则鉴权拿不到连接，整站变 500。 */
+    @ConfigProperty(name = "quarkus.datasource.runtime-mysql.jdbc.max-size", defaultValue = "40")
+    int jdbcMaxSize;
 
     @Inject
     TokenService tokenService;
@@ -85,16 +89,19 @@ public class McpGateway {
     void initLoopbackLimiter() {
         loopbackPermits = resolveLoopbackPermits(
                 threadPoolMaxThreads.orElse(DEFAULT_THREAD_POOL_MAX),
+                jdbcMaxSize,
                 loopbackMaxInFlight);
         loopbackSlots = new Semaphore(loopbackPermits, true);
-        LOG.infof("MCP 回环并发上限 %d（为嵌套 REST 预留工作线程，避免自死锁）", loopbackPermits);
+        LOG.infof("MCP 回环并发上限 %d（同时受工作线程与 JDBC 连接池约束，避免占满连接导致全站 500）", loopbackPermits);
     }
 
     /**
-     * 在途回环许可数：显式配置优先；否则取 {@code max(4, maxThreads/3)}，
-     * 保证至少约 2/3 的工作线程可服务嵌套 REST / 网页请求。
+     * 在途回环许可数：显式配置优先。
+     * 否则取线程约束与连接池约束的较小值。
+     * 线程约束 {@code max(4, maxThreads/3)}，给嵌套 REST 留约 2/3 工作线程。
+     * 连接池约束最多用一半（至少留 1 个给网页和令牌校验）。
      */
-    public static int resolveLoopbackPermits(int maxThreads, OptionalInt explicit) {
+    public static int resolveLoopbackPermits(int maxThreads, int jdbcMaxSize, OptionalInt explicit) {
         if (explicit != null && explicit.isPresent()) {
             int n = explicit.getAsInt();
             if (n < 1) {
@@ -102,8 +109,11 @@ public class McpGateway {
             }
             return n;
         }
-        int pool = Math.max(1, maxThreads);
-        return Math.max(4, pool / 3);
+        int byThreads = Math.max(4, Math.max(1, maxThreads) / 3);
+        int pool = Math.max(1, jdbcMaxSize);
+        int reserve = Math.max(1, pool / 2);
+        int byDb = Math.max(1, pool - reserve);
+        return Math.min(byThreads, byDb);
     }
 
     public JsonNode get(McpScope scope, String path, Map<String, ?> query) {

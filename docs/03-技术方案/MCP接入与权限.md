@@ -77,7 +77,7 @@ AI 客户端（Cursor、Claude Code、Codex、OpenCode、Claude Desktop / 网页
 1. 为本次调用创建内部会话 `LoginUser`：角色、权限按目标项目计算（`contextPermissionsMerged=true`），`operChannel=mcp`、`clientName`（`initialize` 的 `clientInfo.name`）、`mcpProjectId`；TTL 120 秒，调用结束在 `finally` 中删除。
 2. 用 `java.net.http` 请求 `http://127.0.0.1:{quarkus.http.port}`（测试时 test-port；`cat2bug.mcp.loopback-url` 可覆盖），带 `X-Forwarded-For`（原客户端 IP）。发送用 `sendAsync` + 限时等待。
 3. 非 2xx 或 `code≠200` 转为工具错误，消息取接口 `msg`。
-4. **在途回环并发上限**（默认 `max(4, quarkus.thread-pool.max-threads/3)`，可用 `cat2bug.mcp.loopback.max-in-flight` 覆盖）：同步回环会占住工作线程，嵌套 REST 还要再占一条；不限制时并行工具可把线程池占满导致进程假死（端口仍监听）。见 [[MCP回环占满工作线程导致Quarkus假死]]。
+4. **在途回环并发上限**（默认 `min(max(4, 线程池/3), 连接池的一半)`，可用 `cat2bug.mcp.loopback.max-in-flight` 覆盖）：同步回环会占住工作线程，嵌套 REST 还要再占一条工作线程和一条 JDBC 连接。只按线程池限制时（曾到 66），并行工具会把默认连接池占满，令牌校验拿不到连接，`POST /mcp` 变成 HTTP 500，网页接口同时失败。见 [[MCP回环占满工作线程导致Quarkus假死]]、[[MCP回环占满数据库连接池导致全站500]]。
 
 内部会话只在 TCP 对端是回环地址时有效（`LoginUserResolver.fromLoopback`，不看转发头），且不能经 `resolveToken`（Cookie / iframe 场景）使用。
 
@@ -100,7 +100,7 @@ AI 客户端（Cursor、Claude Code、Codex、OpenCode、Claude Desktop / 网页
 
 只填 MCP 地址，首次连接时客户端打开浏览器 → 账号密码登录 → 授权页选团队和项目 → 允许。换项目需在客户端里重新登录授权（或配多个 MCP 服务）。
 
-- 项目设置弹窗「MCP 接入」展示的地址与示例：在 `cat2bug.public-url` 未配置、且推导结果为回环地址时，前端会把主机名与当前网页对齐（`localhost` ↔ `127.0.0.1` ↔ `::1`），端口仍用后端推导值；弹窗约 920px 宽，客户端按「国内 / 国际」两行横向标签一眼铺开，下方为说明与配置片段（右上角复制图标）。
+- 项目设置弹窗「MCP 接入」展示的地址与示例：在 `cat2bug.public-url` 未配置时，前端会把协议与主机与当前网页对齐（含 HTTPS 页面下把后端误推的 `http` 改成 `https`，以及回环主机名 `localhost` ↔ `127.0.0.1` ↔ `::1`）；OAuth issuer 仍以后端为准，故反向代理场景仍须配置 `cat2bug.public-url`。弹窗约 920px 宽，客户端按「国内 / 国际」两行横向标签一眼铺开，下方为说明与配置片段（右上角复制图标）。
 - Cursor（`~/.cursor/mcp.json` 或项目 `.cursor/mcp.json`）：`{"mcpServers":{"cat2bug":{"url":"https://<host>/mcp"}}}`，然后在 MCP 设置中点登录。
 - VS Code / GitHub Copilot（工作区 `.mcp.json`，或 `.vscode/mcp.json` 的 `servers`）：`type: http` + `url`。
 - Trae（`.trae/mcp.json` 或设置 → MCP）、腾讯 CodeBuddy（`~/.codebuddy/.mcp.json` / IDE MCP 页）：`mcpServers` + `type: http` + `url`。

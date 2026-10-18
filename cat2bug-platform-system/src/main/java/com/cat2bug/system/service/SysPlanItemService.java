@@ -39,6 +39,8 @@ public class SysPlanItemService {
     @Inject
     AuthContext authContext;
 
+    private final PlanUpdateTimeThrottle planUpdateTimeThrottle = new PlanUpdateTimeThrottle();
+
     public TableDataInfo selectPlanItemPage(SysPlanItem query, Integer pageNum, Integer pageSize) {
         applyModuleFilter(query);
         PageDomain page = PageDomain.of(pageNum, pageSize);
@@ -148,7 +150,7 @@ public class SysPlanItemService {
     }
 
     private void touchPlanUpdateTime(String planId, Long userId) {
-        if (planId == null || planId.isBlank()) {
+        if (!planUpdateTimeThrottle.shouldTouch(planId, System.currentTimeMillis())) {
             return;
         }
         SysPlan plan = new SysPlan();

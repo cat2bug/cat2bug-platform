@@ -49,9 +49,28 @@ public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
                 return response;
             }
         }
+        if (isAcquisitionTimeout(exception)) {
+            LOG.warn("数据库连接池已满", exception);
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                    .entity(AjaxResult.error(Response.Status.SERVICE_UNAVAILABLE.getStatusCode(), "系统繁忙，请稍后重试"))
+                    .build();
+        }
         LOG.error("Unhandled exception", exception);
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                 .entity(AjaxResult.error("服务器内部错误"))
                 .build();
+    }
+
+    /** Agroal 在连接池耗尽时抛出的文案。出现在 MyBatis 包装异常的 cause 链上。 */
+    static boolean isAcquisitionTimeout(Throwable exception) {
+        Throwable current = exception;
+        while (current != null) {
+            String message = current.getMessage();
+            if (message != null && message.contains("acquisition timeout")) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 }
