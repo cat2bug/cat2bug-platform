@@ -216,13 +216,13 @@ export default {
   border-radius: 5px;
   width: 28px;
   height: 28px;
-  background-color: white;
+  background-color: var(--card-bg);
   overflow: hidden;
 }
 .c2d-block:hover {
   .drop-tools {
-    border: 1px solid #EBEEF5;
-    background-color: #F2F6FC;
+    border: 1px solid var(--border-color-light);
+    background-color: var(--border-color-lighter);
   }
 }
 .content {

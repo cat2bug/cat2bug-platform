@@ -479,6 +479,20 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/document/md',
+    component: Layout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: ':docId',
+        component: () => import('@/views/system/document/HandleMarkdownDocument'),
+        name: 'HandleMarkdownDocument',
+        meta: { titleI18nKey: 'doc.md-page-title', activeMenu: '/document' }
+      }
+    ]
+  },
+  {
     path: '/defect/template',
     component: Layout,
     hidden: true,
@@ -716,6 +730,63 @@ export const dynamicRoutes = [
         component: () => import('@/views/monitor/job/log'),
         name: 'JobLog',
         meta: { title: '调度日志', activeMenu: '/monitor/job' }
+      }
+    ]
+  },
+  {
+    path: '/project/mcp-access',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:project:query'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/project/mcp/index'),
+        name: 'ProjectMcpSettings',
+        meta: {
+          title: i18n.global.t('project-mcp.title'),
+          titleI18nKey: 'project-mcp.title',
+          activeMenu: '/project/option',
+          projectListPage: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/project/case-types',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:project:case-type:list'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/project/case-types/index'),
+        name: 'ProjectCaseTypes',
+        meta: {
+          title: i18n.global.t('case.type.manage'),
+          titleI18nKey: 'case.type.manage',
+          activeMenu: '/project/option',
+          projectListPage: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/project/case-settings',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:project:case-type:list'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/project/case-settings/index'),
+        name: 'ProjectCaseSettings',
+        meta: {
+          title: i18n.global.t('case.review.template'),
+          titleI18nKey: 'case.review.template',
+          activeMenu: '/project/option',
+          projectListPage: true
+        }
       }
     ]
   },

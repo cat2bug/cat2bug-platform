@@ -117,6 +117,12 @@ function proceedAfterProjectContext(to, next) {
       next({ ...to, replace: true })
       return
     }
+    if (result === 'unauthorized') {
+      // 会话失效时不要落到 404，否则左侧每个项目模块都会再查一次并继续 404
+      useUserStore(pinia).FedLogOut()
+      next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
+      return
+    }
     if (result === 'forbidden') {
       next({ path: '/401', replace: true })
       return
@@ -316,6 +322,13 @@ router.beforeEach((to, from, next) => {
     }
 
     handleInstalledRouteGuards(to, from, next, setupStatus, upgradeStatus)
+  }).catch(() => {
+    // 安装/升级状态接口异常时仍放行白名单，避免登录页永久空白
+    if (isPublicPath(to.path)) {
+      next()
+      return
+    }
+    next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
   })
 })
 

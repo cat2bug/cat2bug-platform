@@ -914,8 +914,8 @@ export default {
     margin: 0px;
   }
 }
-/* 缺陷名称列：标题最多 4 行，超出省略；单元格内 \\n 仍可换行 */
-.defect-table-root :deep(td.defect-name-col .cell){
+/* 缺陷名称列：标题最多 3 行，超出省略；加上统计行后整行仍不超过 100px */
+.defect-table-root :deep(td.defect-name-col .cell:has(.table-defect-title)){
   display: flex !important;
   flex-direction: column;
   align-items: stretch !important;
@@ -945,8 +945,8 @@ export default {
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-pack: start;
     -webkit-box-align: start;
   }
@@ -1014,7 +1014,8 @@ export default {
   align-items: flex-start;
   align-content: flex-start;
   white-space: normal;
-  overflow: visible !important;
+  max-height: calc(var(--cat2bug-table-row-max-height, 100px) - 11px);
+  overflow: hidden !important;
 }
 
 .defect-table-root :deep(.cat2-bug-table-wrap:not([data-operate-at-cap='true']) td.cat2bug-operate-column .defect-operate-cell),

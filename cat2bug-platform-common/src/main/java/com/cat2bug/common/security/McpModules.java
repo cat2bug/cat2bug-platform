@@ -27,7 +27,7 @@ public final class McpModules {
             new Module("code", List.of("system:git:")),
             new Module("dashboard", List.of("system:dashboard:")),
             new Module("project", List.of("system:project:query", "system:project:list", "system:project:edit",
-                    "system:project:member", "system:project:defect-field:")));
+                    "system:project:member", "system:project:defect-field:", "system:project:case-type:")));
 
     private McpModules() {
     }

@@ -642,6 +642,11 @@ export default {
       this.multiple = !selection.length
     },
     handleView(doc) {
+      const ext = String((doc && doc.fileExtension) || '').toLowerCase()
+      if (ext === 'md' || ext === 'markdown') {
+        this.$router.push({ name: 'HandleMarkdownDocument', params: { docId: String(doc.docId) } })
+        return
+      }
       this.handleDownload(doc);
       // window.open('http://127.0.0.1:8012/onlinePreview?url='+encodeURIComponent(toBase64(doc.fileUrl)));
     },

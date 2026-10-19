@@ -175,6 +175,7 @@
           <el-collapse accordion>
             <el-collapse-item title="v1.1.0 - 2026-07-12">
               <ol>
+                <li>项目可配置用例类型；勾选用例可发起可选评审并生成 Markdown 纪要；测试计划中评审只作为筛选项</li>
                 <li>前端升级至 Vue 3、Vite 与 Element Plus</li>
                 <li>顶栏导航与项目选择交互优化</li>
                 <li>缺陷列表加载时分隔条滑块位置修复</li>

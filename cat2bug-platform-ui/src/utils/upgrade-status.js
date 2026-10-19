@@ -87,11 +87,27 @@ function fallbackUpgradeStatus() {
   }
 }
 
+const UPGRADE_STATUS_REQUEST_TIMEOUT_MS = 8000
+
+function withTimeout(promise, ms, onTimeout) {
+  let timer
+  return Promise.race([
+    promise.finally(() => clearTimeout(timer)),
+    new Promise(resolve => {
+      timer = setTimeout(() => resolve(onTimeout()), ms)
+    })
+  ])
+}
+
 function fetchUpgradeStatus() {
-  return getUpgradeStatus()
-    .then(normalizeUpgradeStatus)
-    .then(applyUpgradeStatus)
-    .catch(() => applyUpgradeStatus(fallbackUpgradeStatus()))
+  return withTimeout(
+    getUpgradeStatus()
+      .then(normalizeUpgradeStatus)
+      .then(applyUpgradeStatus)
+      .catch(() => applyUpgradeStatus(fallbackUpgradeStatus())),
+    UPGRADE_STATUS_REQUEST_TIMEOUT_MS,
+    () => applyUpgradeStatus(fallbackUpgradeStatus())
+  )
 }
 
 /**
@@ -100,16 +116,11 @@ function fetchUpgradeStatus() {
  */
 export function resolveUpgradeStatus(forceRefresh = false) {
   if (forceRefresh) {
+    // 保留快照/缓存作超时回退，避免接口挂起时路由永久等在空白页
     upgradeStatusPromise = null
-    upgradeStatusSnapshot = null
-    try {
-      sessionStorage.removeItem(UPGRADE_STATUS_CACHE_KEY)
-    } catch (e) {
-      /* ignore */
-    }
   }
   if (!upgradeStatusPromise) {
-    // 始终以网络结果为准；缓存仅作请求失败回退，避免「无需升级」陈旧结果锁死登录页
+    // 始终以网络结果为准；缓存仅作请求失败/超时回退
     upgradeStatusPromise = fetchUpgradeStatus()
   }
   return upgradeStatusPromise

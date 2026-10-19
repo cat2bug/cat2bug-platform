@@ -109,9 +109,9 @@ export default {
   margin-top: 5px;
 }
 :deep(.el-select.case-level-input.is-disabled .el-select__wrapper) {
-  background-color: white;
+  background-color: var(--input-bg);
   cursor: default;
-  color: #303133;
+  color: var(--text-color-primary);
 }
 :deep(.el-select.case-level-input.is-disabled .el-select__suffix) {
   display: none;

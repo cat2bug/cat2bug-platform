@@ -21,7 +21,7 @@
 | POST/PUT | `/api/defect` | 新建 / 编辑缺陷 | `defect.create` / `defect.update` |
 | POST | `/api/defect/{defectNum}/{assign\|reject\|repair\|pass\|close\|open}` | 缺陷流转 | `defect.assign` 等同名动作 |
 | GET | `/api/case`、`/api/case/{caseNum}` | 用例列表 / 详情（`OpenApiCaseResource`） | `case.list` / `case.query` |
-| POST/PUT | `/api/case` | 新建 / 编辑用例 | `case.create` / `case.update` |
+| POST/PUT | `/api/case` | 新建 / 编辑用例。`caseType` 须属于该项目，可空。编辑时只有显式更新类型才会清空 | `case.create` / `case.update` |
 | DELETE | `/api/case/{caseNum}` | 删除用例 | `case.delete` |
 | GET | `/api/deliverable` | 交付物子级列表（`parentDeliverablePath` 指定父级，缺省为根）（`OpenApiDeliverableResource`） | `deliverable.list` |
 | GET | `/api/deliverable/tree` | 全部交付物扁平全路径 | 未映射 |

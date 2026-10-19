@@ -67,7 +67,8 @@ public class McpGuideTools {
         OPERATIONS.put("case", ordered(
                 "system:case:list", "查询",
                 "system:case:add", "新建",
-                "system:case:edit", "修改"));
+                "system:case:edit", "修改",
+                "system:case:review", "评审"));
         OPERATIONS.put("plan", ordered(
                 "system:plan:list", "查询",
                 "system:plan:run", "执行（记录结果）",
@@ -134,6 +135,8 @@ public class McpGuideTools {
                 defectFacts(out, scope);
             } else if ("plan".equals(key)) {
                 planFacts(out, scope);
+            } else if ("case".equals(key)) {
+                caseFacts(out, scope);
             }
         }
         out.append("\n").append(content.topic(key));
@@ -262,6 +265,21 @@ public class McpGuideTools {
             s.append("，可选 ").append(String.join(" / ", labels));
         }
         return s.append("）").toString();
+    }
+
+    private void caseFacts(StringBuilder out, McpScope scope) {
+        if (!scope.access().allows("system:case:list")) {
+            return;
+        }
+        JsonNode types = McpJson.data(gateway.get(scope, "/system/project/" + scope.projectId() + "/case-types", null));
+        List<String> names = new ArrayList<>();
+        if (types != null && types.isArray()) {
+            for (JsonNode t : types) {
+                names.add(t.path("typeName").asText() + "（" + t.path("typeId").asText() + "）");
+            }
+        }
+        out.append("- 用例类型：").append(names.isEmpty() ? "（无）" : String.join("、", names)).append('\n');
+        out.append("- 评审可选。未评审或需修改的用例仍可加入测试计划。\n");
     }
 
     private void planFacts(StringBuilder out, McpScope scope) {

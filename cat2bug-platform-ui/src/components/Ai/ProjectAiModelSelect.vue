@@ -831,7 +831,7 @@ $c2b-combo-robot-caret-gap: 4px;
   letter-spacing: 0.02em;
   color: #1890ff;
   line-height: 1.35;
-  background: #fff;
+  background: var(--dropdown-bg);
   border: 1px solid rgba(24, 144, 255, 0.35);
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(24, 144, 255, 0.06);

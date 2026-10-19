@@ -143,6 +143,66 @@
   margin-bottom: 0 !important;
 }
 
+.project-list-page-host .case-settings-tools {
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* 列表页工具条：左筛选、右操作；窄时右侧换行。间距用 --project-list-section-v-gap */
+.list-page-toolbar {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  justify-content: space-between;
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px);
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: var(--project-list-section-v-gap, 10px);
+}
+
+.project-list-page-host > .project-add-page-header + .list-page-toolbar {
+  margin-top: var(--project-list-section-v-gap, 10px) !important;
+}
+
+.list-page-toolbar__filters {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--cat2bug-toolbar-item-gap, 10px);
+}
+
+.list-page-toolbar__actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: var(--cat2bug-toolbar-item-gap, 10px);
+}
+
+@media screen and (max-width: 576px) {
+  .list-page-toolbar__actions {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+.project-list-page-host .case-settings-tools {
+  margin-top: 12px;
+}
+
 /* 缺陷页查询条在表格组件内，与下方树表无父级 gap，须保留底边距 */
 .project-list-page-host .defect-page .defect-view-toolbar {
   margin-top: 0 !important;

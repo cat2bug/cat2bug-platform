@@ -166,14 +166,33 @@ export default {
   .el-menu-item:hover,
   :deep(.el-sub-menu:hover),
   :deep(.el-submenu:hover) {
-    color: #1890ff;
-    border-color: #badeff;
-    background-color: #e8f4ff;
+    color: var(--tools-menu-hover-color, #1890ff);
+    border-color: transparent;
+    background-color: var(--tools-menu-hover-bg, #e8f4ff);
+  }
+
+  .el-menu-item.is-active,
+  :deep(.el-sub-menu.is-active),
+  :deep(.el-submenu.is-active),
+  :deep(.el-sub-menu.is-opened > .el-sub-menu__title),
+  :deep(.el-submenu.is-opened > .el-submenu__title) {
+    color: var(--tools-menu-active-color, #1890ff) !important;
+    background-color: var(--tools-menu-active-bg, rgba(24, 144, 255, 0.12)) !important;
+    border-bottom: none !important;
+  }
+
+  :deep(.el-sub-menu.is-active > .el-sub-menu__title),
+  :deep(.el-submenu.is-active > .el-submenu__title),
+  :deep(.el-sub-menu.is-opened > .el-sub-menu__title),
+  :deep(.el-submenu.is-opened > .el-submenu__title) {
+    color: var(--tools-menu-active-color, #1890ff) !important;
+    background-color: var(--tools-menu-active-bg, rgba(24, 144, 255, 0.12)) !important;
+    border-bottom: none !important;
   }
 
   :deep(.el-sub-menu__title:hover),
   :deep(.el-submenu__title:hover) {
-    background-color: #00000000;
+    background-color: transparent;
   }
 
   /* 图标按钮不展示下拉三角（如标题 H），悬停/点击仍可展开子菜单 */
@@ -196,18 +215,18 @@ export default {
   width: 1px;
   height: 15px;
   flex: 0 0 1px;
-  background-color: #dcdcdc;
+  background-color: var(--tools-menu-siding-color, #dcdcdc);
   margin: 0 5px;
   float: none;
   align-self: center;
 }
 
 .siding:hover {
-  background-color: #ffffff;
+  background-color: var(--tools-menu-siding-color, #dcdcdc);
 }
 
 .icon {
-  color: #606266;
+  color: var(--tools-menu-icon-color, #606266);
   width: 16px !important;
   height: 16px !important;
   font-size: 16px;

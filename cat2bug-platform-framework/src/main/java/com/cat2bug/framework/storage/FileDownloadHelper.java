@@ -22,7 +22,7 @@ public class FileDownloadHelper {
     private static final String RESOURCE_PREFIX = "/profile";
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
             "bmp", "gif", "jpg", "jpeg", "png", "svg",
-            "doc", "docx", "xls", "xlsx", "ppt", "pptx", "html", "htm", "txt",
+            "doc", "docx", "xls", "xlsx", "ppt", "pptx", "html", "htm", "txt", "md", "markdown",
             "rar", "zip", "gz", "bz2",
             "mp4", "avi", "rmvb",
             "pdf"

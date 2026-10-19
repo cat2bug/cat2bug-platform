@@ -23,6 +23,8 @@ public interface SysCaseMapper {
 
     SysCase selectSysCaseByCaseId(@Param("caseId") Long caseId);
 
+    List<SysCase> selectSysCaseBriefByIds(@Param("caseIds") List<Long> caseIds);
+
     SysCase selectSysCaseByCaseNum(@Param("projectId") Long projectId, @Param("caseNum") Long caseNum);
 
     long getCaseMaxNumOfProject(@Param("projectId") Long projectId);

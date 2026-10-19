@@ -51,6 +51,8 @@ public class McpWorkTools {
                        @ToolArg(name = "keyword", description = "按用例标题模糊匹配", required = false) String keyword,
                        @ToolArg(name = "module_id", description = "交付物（模块）ID", required = false) Long moduleId,
                        @ToolArg(name = "case_num", description = "项目内用例编号", required = false) Long caseNum,
+                       @ToolArg(name = "case_type_id", description = "用例类型 ID", required = false) Long caseTypeId,
+                       @ToolArg(name = "review_status", description = "评审筛选：none 未评审、in_review 评审中、passed 通过、changes 需修改", required = false) String reviewStatus,
                        @ToolArg(name = "page", description = "页码", required = false) Integer page,
                        @ToolArg(name = "page_size", description = "每页条数，默认 20，最大 100", required = false) Integer pageSize) {
         McpScope scope = context.scope(connection, "system:case:list");
@@ -59,6 +61,8 @@ public class McpWorkTools {
         q.put("caseName", blankToNull(keyword));
         q.put("moduleId", moduleId);
         q.put("caseNum", caseNum);
+        q.put("caseType", caseTypeId);
+        q.put("reviewStatus", blankToNull(reviewStatus));
         q.put("pageNum", page == null || page < 1 ? 1 : page);
         q.put("pageSize", clampPageSize(pageSize));
         return json.write(json.page(gateway.get(scope, "/system/case/list", q), json::caseSummary));
@@ -85,6 +89,7 @@ public class McpWorkTools {
                       @ToolArg(name = "steps", description = "步骤列表", required = false) List<CaseStepArg> steps,
                       @ToolArg(name = "level", description = "用例等级 1～5，默认 2", required = false) Long level,
                       @ToolArg(name = "case_data", description = "测试数据", required = false) String caseData,
+                      @ToolArg(name = "case_type_id", description = "用例类型 ID，可空", required = false) Long caseTypeId,
                       @ToolArg(name = "idempotency_key", description = "幂等键", required = false) String idempotencyKey) {
         McpScope scope = context.scope(connection, "system:case:add");
         if (name == null || name.isBlank()) {
@@ -101,6 +106,10 @@ public class McpWorkTools {
             body.setCaseStep(toSteps(steps));
             body.setCaseLevel(level == null ? 2L : level);
             body.setCaseData(caseData);
+            if (caseTypeId != null) {
+                body.setCaseType(caseTypeId);
+                body.setUpdateCaseType(true);
+            }
             JsonNode data = McpJson.data(gateway.post(scope, "/system/case", body));
             if (data == null || !data.hasNonNull("caseId")) {
                 throw new ToolCallException("新建用例失败：接口未返回用例 ID");
@@ -123,7 +132,9 @@ public class McpWorkTools {
                       @ToolArg(name = "expect", description = "整体预期结果", required = false) String expect,
                       @ToolArg(name = "steps", description = "步骤列表", required = false) List<CaseStepArg> steps,
                       @ToolArg(name = "level", description = "用例等级", required = false) Long level,
-                      @ToolArg(name = "case_data", description = "测试数据", required = false) String caseData) {
+                      @ToolArg(name = "case_data", description = "测试数据", required = false) String caseData,
+                      @ToolArg(name = "case_type_id", description = "用例类型 ID", required = false) Long caseTypeId,
+                      @ToolArg(name = "clear_case_type", description = "为 true 时清空类型", required = false) Boolean clearCaseType) {
         McpScope scope = context.scope(connection, "system:case:edit");
         SysCase existing = objects.testCase(scope, caseId);
         if (moduleId != null) {
@@ -150,9 +161,161 @@ public class McpWorkTools {
         if (caseData != null) {
             existing.setCaseData(caseData);
         }
+        if (Boolean.TRUE.equals(clearCaseType)) {
+            existing.setCaseType(null);
+            existing.setUpdateCaseType(true);
+        } else if (caseTypeId != null) {
+            existing.setCaseType(caseTypeId);
+            existing.setUpdateCaseType(true);
+        }
         existing.setProjectId(scope.projectId());
         gateway.put(scope, "/system/case", existing);
         return json.write(json.caseDetail(json.valueToTree(objects.testCase(scope, caseId))));
+    }
+
+    @Tool(name = "list_case_types",
+            description = "列出当前项目的用例类型。",
+            annotations = @Tool.Annotations(title = "List case types", readOnlyHint = true, openWorldHint = false))
+    String listCaseTypes(McpConnection connection) {
+        McpScope scope = context.scope(connection, "system:case:list");
+        return json.write(McpJson.data(gateway.get(scope, "/system/project/" + scope.projectId() + "/case-types", null)));
+    }
+
+    @Tool(name = "create_case_type",
+            description = "新增项目用例类型。建议传 idempotency_key。",
+            annotations = @Tool.Annotations(title = "Create case type", readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+    String createCaseType(McpConnection connection,
+                          @ToolArg(name = "name", description = "类型名称") String name,
+                          @ToolArg(name = "idempotency_key", description = "幂等键", required = false) String idempotencyKey) {
+        McpScope scope = context.scope(connection, "system:project:case-type:add");
+        if (name == null || name.isBlank()) {
+            throw new ToolCallException("类型名称不能为空");
+        }
+        McpIdempotency.Outcome outcome = idempotency.run(scope.userId(), "create_case_type", idempotencyKey, () -> {
+            JsonNode data = McpJson.data(gateway.post(scope, "/system/project/" + scope.projectId() + "/case-types",
+                    Map.of("typeName", name.trim())));
+            if (data == null || !data.hasNonNull("typeId")) {
+                throw new ToolCallException("新增类型失败");
+            }
+            return data.get("typeId").asText();
+        });
+        ObjectNode out = json.object();
+        out.put("typeId", Long.valueOf(outcome.resultId()));
+        out.put("replayed", outcome.replayed());
+        return json.write(out);
+    }
+
+    @Tool(name = "update_case_type",
+            description = "重命名项目用例类型。",
+            annotations = @Tool.Annotations(title = "Update case type", readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+    String updateCaseType(McpConnection connection,
+                          @ToolArg(name = "type_id", description = "类型 ID") Long typeId,
+                          @ToolArg(name = "name", description = "新名称") String name) {
+        McpScope scope = context.scope(connection, "system:project:case-type:edit");
+        gateway.put(scope, "/system/project/" + scope.projectId() + "/case-types/" + typeId, Map.of("typeName", name == null ? "" : name.trim()));
+        return json.write(json.object().put("typeId", typeId));
+    }
+
+    @Tool(name = "delete_case_type",
+            description = "删除项目用例类型。仍被用例使用时会失败并说明条数。",
+            annotations = @Tool.Annotations(title = "Delete case type", readOnlyHint = false, destructiveHint = true, idempotentHint = true, openWorldHint = false))
+    String deleteCaseType(McpConnection connection,
+                          @ToolArg(name = "type_id", description = "类型 ID") Long typeId) {
+        McpScope scope = context.scope(connection, "system:project:case-type:remove");
+        gateway.call(scope, "DELETE", "/system/project/" + scope.projectId() + "/case-types/" + typeId, null, null);
+        return json.write(json.object().put("typeId", typeId));
+    }
+
+    @Tool(name = "start_case_review",
+            description = "对勾选的用例发起一次评审。其中任一用例已在进行中的评审里时整批失败。建议传 idempotency_key。",
+            annotations = @Tool.Annotations(title = "Start case review", readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+    String startCaseReview(McpConnection connection,
+                           @ToolArg(name = "case_ids", description = "用例 ID 列表") List<Long> caseIds,
+                           @ToolArg(name = "idempotency_key", description = "幂等键", required = false) String idempotencyKey) {
+        McpScope scope = context.scope(connection, "system:case:review");
+        McpIdempotency.Outcome outcome = idempotency.run(scope.userId(), "start_case_review", idempotencyKey, () -> {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("projectId", scope.projectId());
+            body.put("caseIds", caseIds);
+            JsonNode data = McpJson.data(gateway.post(scope, "/system/case-review", body));
+            if (data == null || !data.hasNonNull("reviewId")) {
+                throw new ToolCallException("发起评审失败");
+            }
+            return data.get("reviewId").asText();
+        });
+        ObjectNode out = reviewNode(scope, Long.valueOf(outcome.resultId()));
+        out.put("replayed", outcome.replayed());
+        return json.write(out);
+    }
+
+    @Tool(name = "comment_case_review",
+            description = "给评审中的一条用例填写结论：pending 待定、passed 通过、changes 需修改。",
+            annotations = @Tool.Annotations(title = "Comment case review", readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+    String commentCaseReview(McpConnection connection,
+                             @ToolArg(name = "review_id", description = "评审 ID") Long reviewId,
+                             @ToolArg(name = "case_id", description = "用例 ID") Long caseId,
+                             @ToolArg(name = "verdict", description = "pending / passed / changes") String verdict,
+                             @ToolArg(name = "comment", description = "评语", required = false) String comment) {
+        McpScope scope = context.scope(connection, "system:case:review");
+        requireReviewInProject(scope, reviewId);
+        gateway.put(scope, "/system/case-review/" + reviewId + "/item", Map.of(
+                "caseId", caseId,
+                "verdict", verdict == null ? "" : verdict,
+                "comment", comment == null ? "" : comment));
+        return json.write(reviewNode(scope, reviewId));
+    }
+
+    @Tool(name = "complete_case_review",
+            description = "完成评审：每条都须为通过或需修改，然后生成 Markdown 纪要并写回用例上的评审标记。",
+            annotations = @Tool.Annotations(title = "Complete case review", readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+    String completeCaseReview(McpConnection connection,
+                              @ToolArg(name = "review_id", description = "评审 ID") Long reviewId) {
+        McpScope scope = context.scope(connection, "system:case:review");
+        requireReviewInProject(scope, reviewId);
+        gateway.post(scope, "/system/case-review/" + reviewId + "/complete", Map.of());
+        return json.write(reviewNode(scope, reviewId));
+    }
+
+    @Tool(name = "update_case_review_report",
+            description = "修改已完成评审的纪要正文，不改变结论和用例上的评审标记。",
+            annotations = @Tool.Annotations(title = "Update case review report", readOnlyHint = false, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+    String updateCaseReviewReport(McpConnection connection,
+                                  @ToolArg(name = "review_id", description = "评审 ID") Long reviewId,
+                                  @ToolArg(name = "report_markdown", description = "纪要 Markdown") String reportMarkdown) {
+        McpScope scope = context.scope(connection, "system:case:review");
+        requireReviewInProject(scope, reviewId);
+        gateway.put(scope, "/system/case-review/" + reviewId + "/report", Map.of("reportMarkdown", reportMarkdown == null ? "" : reportMarkdown));
+        return json.write(reviewNode(scope, reviewId));
+    }
+
+    @Tool(name = "list_case_reviews",
+            description = "列出当前项目的用例评审。",
+            annotations = @Tool.Annotations(title = "List case reviews", readOnlyHint = true, openWorldHint = false))
+    String listCaseReviews(McpConnection connection) {
+        McpScope scope = context.scope(connection, "system:case:query");
+        return json.write(McpJson.data(gateway.get(scope, "/system/case-review", Map.of("projectId", scope.projectId()))));
+    }
+
+    @Tool(name = "get_case_review",
+            description = "读取一次用例评审及其条目和纪要。",
+            annotations = @Tool.Annotations(title = "Get case review", readOnlyHint = true, openWorldHint = false))
+    String getCaseReview(McpConnection connection,
+                         @ToolArg(name = "review_id", description = "评审 ID") Long reviewId) {
+        McpScope scope = context.scope(connection, "system:case:query");
+        return json.write(reviewNode(scope, reviewId));
+    }
+
+    private ObjectNode reviewNode(McpScope scope, Long reviewId) {
+        JsonNode data = requireReviewInProject(scope, reviewId);
+        return (ObjectNode) data;
+    }
+
+    private JsonNode requireReviewInProject(McpScope scope, Long reviewId) {
+        JsonNode data = McpJson.data(gateway.get(scope, "/system/case-review/" + reviewId, null));
+        if (data == null || data.path("projectId").asLong() != scope.projectId()) {
+            throw new ToolCallException("评审不存在");
+        }
+        return data;
     }
 
     // ---------------------------------------------------------------- 测试计划

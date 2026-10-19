@@ -109,8 +109,8 @@ public class McpJson {
 
     public ObjectNode caseSummary(JsonNode c) {
         ObjectNode o = object();
-        copy(c, o, "caseId", "caseNum", "caseName", "moduleId", "moduleName", "caseType", "caseLevel",
-                "updateTime");
+        copy(c, o, "caseId", "caseNum", "caseName", "moduleId", "moduleName", "caseType", "caseTypeName",
+                "reviewStatus", "caseLevel", "updateTime");
         return o;
     }
 

@@ -81,6 +81,32 @@
         )
     </sql>
 
+
+    <!-- 把逗号分隔的 defect_ids 拆成行，再按缺陷主键关联。禁止对全部缺陷做 LIKE，否则单个计划上千用例时列表会退化为交叉计算。 -->
+    <sql id="scopedPlanItemDefectPairs">
+        SELECT
+            pi.plan_item_id,
+            pi.plan_id,
+            CAST(REGEXP_SUBSTR(pi.defect_ids, '[0-9]+', 1, n.n) AS DECIMAL(20, 0)) AS defect_id
+        FROM sys_plan_item pi
+        JOIN sys_case c ON c.case_id = pi.case_id
+        JOIN sys_module m ON m.module_id = c.module_id
+        JOIN sys_plan sp ON sp.plan_id = pi.plan_id
+        JOIN (
+            SELECT 1 AS n UNION ALL SELECT 2 AS n UNION ALL SELECT 3 AS n UNION ALL SELECT 4 AS n UNION ALL SELECT 5 AS n UNION ALL SELECT 6 AS n UNION ALL SELECT 7 AS n UNION ALL SELECT 8 AS n UNION ALL SELECT 9 AS n UNION ALL SELECT 10 AS n UNION ALL SELECT 11 AS n UNION ALL SELECT 12 AS n UNION ALL SELECT 13 AS n UNION ALL SELECT 14 AS n UNION ALL SELECT 15 AS n UNION ALL SELECT 16 AS n UNION ALL SELECT 17 AS n UNION ALL SELECT 18 AS n UNION ALL SELECT 19 AS n UNION ALL SELECT 20 AS n UNION ALL SELECT 21 AS n UNION ALL SELECT 22 AS n UNION ALL SELECT 23 AS n UNION ALL SELECT 24 AS n UNION ALL SELECT 25 AS n UNION ALL SELECT 26 AS n UNION ALL SELECT 27 AS n UNION ALL SELECT 28 AS n UNION ALL SELECT 29 AS n UNION ALL SELECT 30 AS n UNION ALL SELECT 31 AS n UNION ALL SELECT 32 AS n UNION ALL SELECT 33 AS n UNION ALL SELECT 34 AS n UNION ALL SELECT 35 AS n UNION ALL SELECT 36 AS n UNION ALL SELECT 37 AS n UNION ALL SELECT 38 AS n UNION ALL SELECT 39 AS n UNION ALL SELECT 40 AS n UNION ALL SELECT 41 AS n UNION ALL SELECT 42 AS n UNION ALL SELECT 43 AS n UNION ALL SELECT 44 AS n UNION ALL SELECT 45 AS n UNION ALL SELECT 46 AS n UNION ALL SELECT 47 AS n UNION ALL SELECT 48 AS n UNION ALL SELECT 49 AS n UNION ALL SELECT 50 AS n UNION ALL SELECT 51 AS n UNION ALL SELECT 52 AS n UNION ALL SELECT 53 AS n UNION ALL SELECT 54 AS n UNION ALL SELECT 55 AS n UNION ALL SELECT 56 AS n UNION ALL SELECT 57 AS n UNION ALL SELECT 58 AS n UNION ALL SELECT 59 AS n UNION ALL SELECT 60 AS n UNION ALL SELECT 61 AS n UNION ALL SELECT 62 AS n UNION ALL SELECT 63 AS n UNION ALL SELECT 64 AS n UNION ALL SELECT 65 AS n UNION ALL SELECT 66 AS n UNION ALL SELECT 67 AS n UNION ALL SELECT 68 AS n UNION ALL SELECT 69 AS n UNION ALL SELECT 70 AS n UNION ALL SELECT 71 AS n UNION ALL SELECT 72 AS n UNION ALL SELECT 73 AS n UNION ALL SELECT 74 AS n UNION ALL SELECT 75 AS n UNION ALL SELECT 76 AS n UNION ALL SELECT 77 AS n UNION ALL SELECT 78 AS n UNION ALL SELECT 79 AS n UNION ALL SELECT 80 AS n UNION ALL SELECT 81 AS n UNION ALL SELECT 82 AS n UNION ALL SELECT 83 AS n UNION ALL SELECT 84 AS n UNION ALL SELECT 85 AS n UNION ALL SELECT 86 AS n UNION ALL SELECT 87 AS n UNION ALL SELECT 88 AS n UNION ALL SELECT 89 AS n UNION ALL SELECT 90 AS n UNION ALL SELECT 91 AS n UNION ALL SELECT 92 AS n UNION ALL SELECT 93 AS n UNION ALL SELECT 94 AS n UNION ALL SELECT 95 AS n UNION ALL SELECT 96 AS n UNION ALL SELECT 97 AS n UNION ALL SELECT 98 AS n UNION ALL SELECT 99 AS n UNION ALL SELECT 100 AS n UNION ALL SELECT 101 AS n UNION ALL SELECT 102 AS n UNION ALL SELECT 103 AS n UNION ALL SELECT 104 AS n UNION ALL SELECT 105 AS n UNION ALL SELECT 106 AS n UNION ALL SELECT 107 AS n UNION ALL SELECT 108 AS n UNION ALL SELECT 109 AS n UNION ALL SELECT 110 AS n UNION ALL SELECT 111 AS n UNION ALL SELECT 112 AS n UNION ALL SELECT 113 AS n UNION ALL SELECT 114 AS n UNION ALL SELECT 115 AS n UNION ALL SELECT 116 AS n UNION ALL SELECT 117 AS n UNION ALL SELECT 118 AS n UNION ALL SELECT 119 AS n UNION ALL SELECT 120 AS n UNION ALL SELECT 121 AS n UNION ALL SELECT 122 AS n UNION ALL SELECT 123 AS n UNION ALL SELECT 124 AS n UNION ALL SELECT 125 AS n UNION ALL SELECT 126 AS n UNION ALL SELECT 127 AS n UNION ALL SELECT 128 AS n
+        ) n
+            ON n.n &lt;= 1 + CHAR_LENGTH(pi.defect_ids) - CHAR_LENGTH(REPLACE(pi.defect_ids, ',', ''))
+        WHERE pi.defect_ids IS NOT NULL
+          AND TRIM(BOTH ',' FROM pi.defect_ids) != ''
+          AND REGEXP_SUBSTR(pi.defect_ids, '[0-9]+', 1, n.n) IS NOT NULL
+        <if test="scopeProjectId != null">
+            AND sp.project_id = #{scopeProjectId}
+        </if>
+        <if test="scopePlanId != null and scopePlanId != ''">
+            AND sp.plan_id = #{scopePlanId}
+        </if>
+    </sql>
+
     <sql id="selectSysPlanVo">
         SELECT
             p.plan_id,
@@ -119,93 +145,90 @@
         FROM
             sys_plan p
                 LEFT JOIN sys_user u ON u.user_id = p.update_by_id
-                LEFT JOIN (
+LEFT JOIN (
                 SELECT
                     pi2.plan_id,
-                    sum( CASE WHEN pi2.plan_item_state = 'pass' THEN 1 ELSE 0 END ) AS pass_count,
-                    sum( CASE WHEN pi2.plan_item_state = 'not_pass' THEN 1 ELSE 0 END ) AS fail_count,
-                    sum( CASE WHEN pi2.plan_item_state = 'unexecuted' THEN 1 ELSE 0 END ) AS unexecuted_count,
-                    count( pi2.plan_item_id ) AS item_total,
-                    IFNULL( sum( ds2.processing_state_count ), 0 ) processing_state_count,
-                    IFNULL( sum( ds2.audit_state_count ), 0 ) audit_state_count,
-                    IFNULL( sum( ds2.rejected_state_count ), 0 ) rejected_state_count,
-                    IFNULL( sum( ds2.close_state_count ), 0 ) close_state_count,
-                    IFNULL( sum( ds2.defect_level_urgent_count ), 0 ) defect_level_urgent_count,
-                    IFNULL( sum( ds2.defect_level_height_count ), 0 ) defect_level_height_count,
-                    IFNULL( sum( ds2.defect_level_middle_count ), 0 ) defect_level_middle_count,
-                    IFNULL( sum( ds2.defect_level_low_count ), 0 ) defect_level_low_count,
-                    IFNULL( sum( ds2.reopen_count ), 0 ) reopen_count,
-                    IFNULL( sum( ds2.closed_count ), 0 ) closed_count,
-                    IFNULL( sum( ds2.defect_count ), 0 ) defect_count,
-                    IFNULL( MAX( ms2.module_count ), 0 ) module_count,
-                    IFNULL( sum( rs2.create_defect_count_by_tester ), 0 ) create_defect_count_by_tester,
-                    IFNULL( sum( rs2.create_defect_count_by_outsider ), 0 ) create_defect_count_by_outsider,
-                    IFNULL( sum( ds2.defect_use_hour_time ), 0 ) defect_use_hour_time
-                FROM
-                    ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id JOIN sys_module m ON m.module_id = c.module_id ) pi2
-                        LEFT JOIN (
+                    SUM(CASE WHEN pi2.plan_item_state = 'pass' THEN 1 ELSE 0 END) AS pass_count,
+                    SUM(CASE WHEN pi2.plan_item_state = 'not_pass' THEN 1 ELSE 0 END) AS fail_count,
+                    SUM(CASE WHEN pi2.plan_item_state = 'unexecuted' THEN 1 ELSE 0 END) AS unexecuted_count,
+                    COUNT(pi2.plan_item_id) AS item_total,
+                    IFNULL(SUM(ds2.processing_state_count), 0) AS processing_state_count,
+                    IFNULL(SUM(ds2.audit_state_count), 0) AS audit_state_count,
+                    IFNULL(SUM(ds2.rejected_state_count), 0) AS rejected_state_count,
+                    IFNULL(SUM(ds2.close_state_count), 0) AS close_state_count,
+                    IFNULL(SUM(ds2.defect_level_urgent_count), 0) AS defect_level_urgent_count,
+                    IFNULL(SUM(ds2.defect_level_height_count), 0) AS defect_level_height_count,
+                    IFNULL(SUM(ds2.defect_level_middle_count), 0) AS defect_level_middle_count,
+                    IFNULL(SUM(ds2.defect_level_low_count), 0) AS defect_level_low_count,
+                    IFNULL(SUM(ds2.reopen_count), 0) AS reopen_count,
+                    IFNULL(SUM(ds2.closed_count), 0) AS closed_count,
+                    IFNULL(SUM(ds2.defect_use_hour_time), 0) AS defect_use_hour_time,
+                    IFNULL(SUM(ds2.defect_count), 0) AS defect_count,
+                    COUNT(DISTINCT c2.module_id) AS module_count,
+                    IFNULL(SUM(rs2.create_defect_count_by_tester), 0) AS create_defect_count_by_tester,
+                    IFNULL(SUM(rs2.create_defect_count_by_outsider), 0) AS create_defect_count_by_outsider
+                FROM sys_plan sp
+                JOIN sys_plan_item pi2 ON pi2.plan_id = sp.plan_id
+                JOIN sys_case c2 ON c2.case_id = pi2.case_id
+                JOIN sys_module m2 ON m2.module_id = c2.module_id
+                LEFT JOIN (
+                    SELECT
+                        pairs.plan_item_id,
+                        SUM(CASE WHEN d3.defect_state = 0 THEN 1 ELSE 0 END) AS processing_state_count,
+                        SUM(CASE WHEN d3.defect_state = 1 THEN 1 ELSE 0 END) AS audit_state_count,
+                        SUM(CASE WHEN d3.defect_state = 3 THEN 1 ELSE 0 END) AS rejected_state_count,
+                        SUM(CASE WHEN d3.defect_state = 4 THEN 1 ELSE 0 END) AS close_state_count,
+                        SUM(CASE WHEN d3.defect_level = 'urgent' THEN 1 ELSE 0 END) AS defect_level_urgent_count,
+                        SUM(CASE WHEN d3.defect_level = 'height' THEN 1 ELSE 0 END) AS defect_level_height_count,
+                        SUM(CASE WHEN d3.defect_level = 'middle' THEN 1 ELSE 0 END) AS defect_level_middle_count,
+                        SUM(CASE WHEN d3.defect_level = 'low' THEN 1 ELSE 0 END) AS defect_level_low_count,
+                        SUM(dl3.reopen_count) AS reopen_count,
+                        SUM(dl3.closed_count) AS closed_count,
+                        SUM(dl3.defect_use_time) AS defect_use_hour_time,
+                        COUNT(DISTINCT d3.defect_id) AS defect_count
+                    FROM (
+                        <include refid="scopedPlanItemDefectPairs"/>
+                    ) pairs
+                    JOIN sys_defect d3 ON d3.defect_id = pairs.defect_id
+                    JOIN (
                         SELECT
-                            pi3.plan_item_id,
-                            SUM( CASE WHEN d3.defect_state = 0 THEN 1 ELSE 0 END ) AS processing_state_count,
-                            SUM( CASE WHEN d3.defect_state = 1 THEN 1 ELSE 0 END ) AS audit_state_count,
-                            SUM( CASE WHEN d3.defect_state = 3 THEN 1 ELSE 0 END ) AS rejected_state_count,
-                            SUM( CASE WHEN d3.defect_state = 4 THEN 1 ELSE 0 END ) AS close_state_count,
-                            SUM( CASE WHEN d3.defect_level = 'urgent' THEN 1 ELSE 0 END ) AS defect_level_urgent_count,
-                            SUM( CASE WHEN d3.defect_level = 'height' THEN 1 ELSE 0 END ) AS defect_level_height_count,
-                            SUM( CASE WHEN d3.defect_level = 'middle' THEN 1 ELSE 0 END ) AS defect_level_middle_count,
-                            SUM( CASE WHEN d3.defect_level = 'low' THEN 1 ELSE 0 END ) AS defect_level_low_count,
-                            SUM( dl3.reopen_count ) AS reopen_count,
-                            SUM( dl3.closed_count ) AS closed_count,
-                            SUM( dl3.defect_use_time ) AS defect_use_hour_time,
-                            count(distinct d3.defect_id ) AS defect_count
-                        FROM
-                            ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id JOIN sys_module m ON m.module_id = c.module_id ) pi3
-                                JOIN sys_defect d3 ON <include refid="planItemDefectIdMatch"><property name="planItemAlias" value="pi3"/><property name="defectIdExpr" value="d3.defect_id"/></include>
-                                JOIN (
-                                SELECT
-                                    defect_id,
-                                    max( CASE WHEN defect_log_type = 7 or defect_log_type = 4 THEN 1 ELSE 0 END ) AS reopen_count,
-                                    sum( CASE WHEN defect_log_type = 6 THEN 1 ELSE 0 END ) AS closed_count,
-                                    ABS(
-                                            TIMESTAMPDIFF(
-                                                HOUR,
-                                                    MIN( create_time ),
-                                                    MAX( create_time ))) AS defect_use_time
-                                FROM
-                                    sys_defect_log
-                                GROUP BY
-                                    defect_id
-                            ) dl3 ON dl3.defect_id = d3.defect_id
-                        GROUP BY
-                            pi3.plan_item_id
-                    ) ds2 ON ds2.plan_item_id = pi2.plan_item_id
-                        LEFT JOIN (
-                        SELECT
-                            pi4.plan_id,
-                            COUNT(distinct c4.module_id) AS module_count
-                        FROM
-                            sys_plan_item pi4
-                                JOIN sys_case c4 ON pi4.case_id = c4.case_id
-                        GROUP BY
-                            pi4.plan_id
-                    ) ms2 ON ms2.plan_id = pi2.plan_id
-                        LEFT JOIN (
-                        SELECT
-                            pi5.plan_item_id,
-                            SUM( CASE WHEN upr5.role_id = 8 THEN 1 ELSE 0 END ) AS create_defect_count_by_tester,
-                            SUM( CASE WHEN upr5.role_id = 9 THEN 1 ELSE 0 END ) AS create_defect_count_by_outsider
-                        FROM
-                            ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id ) pi5
-                                JOIN sys_plan p5 ON p5.plan_id = pi5.plan_id
-                                JOIN sys_defect_log l5 ON l5.defect_log_type = 0
-                                AND (<include refid="planItemDefectIdMatch"><property name="planItemAlias" value="pi5"/><property name="defectIdExpr" value="l5.defect_id"/></include>)
-                                JOIN sys_user_project up5 ON up5.project_id = p5.project_id AND <include refid="defectLogReceiveByMatchUser"><property name="logAlias" value="l5"/><property name="userIdExpr" value="up5.user_id"/></include>
-                                JOIN sys_user_project_role upr5 ON up5.user_project_id = upr5.user_project_id
-                        GROUP BY
-                            pi5.plan_item_id
-                    ) rs2 ON rs2.plan_item_id = pi2.plan_item_id
-                GROUP BY
-                    pi2.plan_id
+                            l.defect_id,
+                            MAX(CASE WHEN l.defect_log_type = 7 OR l.defect_log_type = 4 THEN 1 ELSE 0 END) AS reopen_count,
+                            SUM(CASE WHEN l.defect_log_type = 6 THEN 1 ELSE 0 END) AS closed_count,
+                            ABS(TIMESTAMPDIFF(HOUR, MIN(l.create_time), MAX(l.create_time))) AS defect_use_time
+                        FROM sys_defect_log l
+                        JOIN (
+                            SELECT DISTINCT defect_id
+                            FROM (
+                                <include refid="scopedPlanItemDefectPairs"/>
+                            ) pair_ids
+                        ) ids ON ids.defect_id = l.defect_id
+                        GROUP BY l.defect_id
+                    ) dl3 ON dl3.defect_id = d3.defect_id
+                    GROUP BY pairs.plan_item_id
+                ) ds2 ON ds2.plan_item_id = pi2.plan_item_id
+                LEFT JOIN (
+                    SELECT
+                        pairs.plan_item_id,
+                        SUM(CASE WHEN upr5.role_id = 8 THEN 1 ELSE 0 END) AS create_defect_count_by_tester,
+                        SUM(CASE WHEN upr5.role_id = 9 THEN 1 ELSE 0 END) AS create_defect_count_by_outsider
+                    FROM (
+                        <include refid="scopedPlanItemDefectPairs"/>
+                    ) pairs
+                    JOIN sys_plan p5 ON p5.plan_id = pairs.plan_id
+                    JOIN sys_defect_log l5 ON l5.defect_id = pairs.defect_id AND l5.defect_log_type = 0
+                    JOIN sys_user_project up5 ON up5.project_id = p5.project_id AND <include refid="defectLogReceiveByMatchUser"><property name="logAlias" value="l5"/><property name="userIdExpr" value="up5.user_id"/></include>
+                    JOIN sys_user_project_role upr5 ON up5.user_project_id = upr5.user_project_id
+                    GROUP BY pairs.plan_item_id
+                ) rs2 ON rs2.plan_item_id = pi2.plan_item_id
+                WHERE 1 = 1
+                <if test="scopeProjectId != null">
+                    AND sp.project_id = #{scopeProjectId}
+                </if>
+                <if test="scopePlanId != null and scopePlanId != ''">
+                    AND sp.plan_id = #{scopePlanId}
+                </if>
+                GROUP BY pi2.plan_id
             ) s ON s.plan_id = p.plan_id
     </sql>
 
@@ -239,6 +262,8 @@
     </select>
 
     <select id="selectSysPlanList" resultMap="SysPlanResult">
+        <bind name="scopeProjectId" value="query != null ? query.projectId : null"/>
+        <bind name="scopePlanId" value="null"/>
         <include refid="selectSysPlanVo"/>
         <include refid="selectSysPlanWhere"/>
         <bind name="_pageOrder" value="@com.cat2bug.framework.web.PageOrder@current()"/>
@@ -250,6 +275,8 @@
     </select>
 
     <select id="selectSysPlanByPlanId" resultMap="SysPlanSysPlanItemResult">
+        <bind name="scopePlanId" value="planId"/>
+        <bind name="scopeProjectId" value="null"/>
         SELECT a.*,
                b.plan_item_id AS sub_plan_item_id,
                b.plan_id AS sub_plan_id,

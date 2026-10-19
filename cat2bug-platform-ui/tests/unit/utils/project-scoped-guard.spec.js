@@ -14,8 +14,9 @@ import {
 
 describe('project-scoped-guard', () => {
   describe('mapProjectResolveError', () => {
-    it('maps 401/403 to forbidden', () => {
-      expect(mapProjectResolveError({ code: 401 })).toBe('forbidden')
+    it('maps 401 to unauthorized and 403 to forbidden', () => {
+      expect(mapProjectResolveError({ code: 401 })).toBe('unauthorized')
+      expect(mapProjectResolveError(Object.assign(new Error('session'), { code: 401 }))).toBe('unauthorized')
       expect(mapProjectResolveError({ code: 403 })).toBe('forbidden')
     })
 

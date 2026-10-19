@@ -5,7 +5,7 @@ import { isPathKeyFormatValid, isPathKeyReserved } from '@/utils/path-key'
 import { parseProjectScopedPath } from '@/utils/project-module-path'
 
 /**
- * @typedef {'skip'|'ok'|'switched'|'forbidden'|'not_found'} ProjectScopedGuardResult
+ * @typedef {'skip'|'ok'|'switched'|'forbidden'|'unauthorized'|'not_found'} ProjectScopedGuardResult
  */
 
 function isProjectScopedMatch(route) {
@@ -56,11 +56,14 @@ export async function ensureProjectScopedContext(route) {
 
 /**
  * @param {unknown} err
- * @returns {'forbidden'|'not_found'}
+ * @returns {'forbidden'|'unauthorized'|'not_found'}
  */
 export function mapProjectResolveError(err) {
   const code = err && typeof err === 'object' ? err.code : undefined
-  if (code === 403 || code === 401) {
+  if (code === 401) {
+    return 'unauthorized'
+  }
+  if (code === 403) {
     return 'forbidden'
   }
   return 'not_found'

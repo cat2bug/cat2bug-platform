@@ -31,7 +31,8 @@ export default {
   flex-direction: row;
   align-items: center;
   border-radius: 50px;
-  background-color: white;
+  background-color: var(--card-bg);
+  color: var(--text-color-primary);
   padding: 2px 10px 2px 2px;
   gap: 5px;
   font-size: 12px;
@@ -65,8 +66,8 @@ export default {
   color: #FFFFFF;
 }
 .defect-flag[state="CLOSED"] {
-  background-color: white;
-  border: 1px solid #d3d4d6;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color-base);
   color: #C0C4CC;
 }
 </style>

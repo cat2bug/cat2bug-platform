@@ -65,6 +65,19 @@
               <el-form-item prop="caseLevel">
                 <cat2-bug-select-level v-model:level="caseQueryParams.caseLevel" @change="handleQuery" :icon="$legacyIcon('el-icon-s-data')" :clearable="true" />
               </el-form-item>
+              <el-form-item prop="caseType">
+                <el-select v-model="caseQueryParams.caseType" clearable filterable size="small" :placeholder="$t('case.type')" @change="handleQuery">
+                  <el-option v-for="item in caseTypes" :key="item.typeId" :label="item.typeName" :value="item.typeId" />
+                </el-select>
+              </el-form-item>
+              <el-form-item prop="reviewStatus">
+                <el-select v-model="caseQueryParams.reviewStatus" clearable size="small" :placeholder="$t('case.review-status')" @change="handleQuery">
+                  <el-option :label="$t('case.review.none')" value="none" />
+                  <el-option :label="$t('case.review.in_review')" value="in_review" />
+                  <el-option :label="$t('case.review.passed')" value="passed" />
+                  <el-option :label="$t('case.review.changes')" value="changes" />
+                </el-select>
+              </el-form-item>
             </el-form>
           </div>
         </div>
@@ -137,6 +150,12 @@
               </template>
             </el-table-column>
             <el-table-column :label="$t('module')" align="left" prop="moduleName" min-width="150" sortable />
+            <el-table-column :label="$t('case.type')" align="left" prop="caseTypeName" width="100" />
+            <el-table-column :label="$t('case.review-status')" align="left" prop="reviewStatus" width="100">
+              <template #default="scope">
+                <span>{{ reviewStatusLabel(scope.row.reviewStatus) }}</span>
+              </template>
+            </el-table-column>
             <el-table-column :label="$t('level')" align="left" prop="caseLevel" sortable width="80">
               <template #default="scope">
                 <cat2-bug-level :level="scope.row.caseLevel" />
@@ -212,6 +231,7 @@ import multipaneTreeTableHeightSync from '@/mixins/multipaneTreeTableHeightSync'
 import planAddDialogKbd from '@/mixins/plan-add-dialog-kbd';
 import {addPlan, getPlan, updatePlan} from "@/api/system/plan";
 import {listPlanItemCase} from "@/api/system/PlanItem";
+import { listCaseTypes } from "@/api/system/case-type";
 import {listCase, listPlanCaseId, listPlanCaseLevel} from "@/api/system/case";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
@@ -252,10 +272,12 @@ export default {
         caseLevel: null,
         casePreconditions: null,
         caseNum: null,
+        reviewStatus: null,
         projectId: this.projectId,
         params:{}
       },
       selectCaseIdSet: new Set(),
+      caseTypes: [],
       // 表单参数
       form: {
         params: {
@@ -357,7 +379,18 @@ export default {
     this.destroyPlanAddTableBodyResizeObserver();
   },
   methods: {
+    reviewStatusLabel(status) {
+      if (!status) return this.$t('case.review.none')
+      const key = 'case.review.' + status
+      const text = this.$t(key)
+      return text === key ? status : text
+    },
+    loadCaseTypes() {
+      if (!this.projectId) return
+      listCaseTypes(this.projectId).then(res => { this.caseTypes = res.data || [] }).catch(() => {})
+    },
     onPlanAddDialogOpened() {
+      this.loadCaseTypes()
       this.onPlanAddDialogOpenedKbd();
       this.$nextTick(() => {
         this.syncPlanAddTableBodyMaxHeight();

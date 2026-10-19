@@ -14,6 +14,13 @@
           <cat2-bug-select-level v-model:level="form.caseLevel" />
         </el-form-item>
       </el-col>
+      <el-col :span="12">
+        <el-form-item :label="$t('case.type')" prop="caseType">
+          <el-select v-model="form.caseType" clearable filterable style="width: 100%">
+            <el-option v-for="item in caseTypes" :key="item.typeId" :label="item.typeName" :value="item.typeId" />
+          </el-select>
+        </el-form-item>
+      </el-col>
     </el-row>
     <el-form-item :label="$t('preconditions')" prop="casePreconditions">
       <el-input type="textarea" v-model="form.casePreconditions" :placeholder="$t('case.please-enter-prerequisite')" maxlength="65535" rows="3" show-word-limit />
@@ -45,6 +52,7 @@ import CaseStepPanel from "./CaseStepPanel"
 import SelectModule from "@/components/Module/SelectModule"
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import { useUserStore } from "@/stores/user";
+import { listCaseTypes } from "@/api/system/case-type";
 const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 export default {
   name: "CaseForm",
@@ -52,6 +60,7 @@ export default {
   data() {
     return {
       caseStepSwitchType: '',
+      caseTypes: [],
       // 表单参数
       // form: {
       //   caseStep:[{}],
@@ -88,6 +97,13 @@ export default {
     projectId() {
       return parseInt(useUserStore().config.currentProjectId);
     },
+  },
+  created() {
+    if (this.projectId) {
+      listCaseTypes(this.projectId).then(res => {
+        this.caseTypes = res.data || []
+      }).catch(() => {})
+    }
   },
   methods: {
     setCase(caseModel) {

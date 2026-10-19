@@ -11,11 +11,14 @@ export const PROJECT_OPTION_CARD_CATALOG = [
   { key: 'delete-project', titleKey: 'project.delete', defaultLetter: '4' },
   { key: 'route-ollama', titleKey: 'project.ai-model-manager', defaultLetter: '5' },
   { key: 'route-openai', titleKey: 'project.ai-account-manager', defaultLetter: '6' },
+  { key: 'route-mcp-access', titleKey: 'project-mcp.entry', defaultLetter: 'M' },
   { key: 'route-defect-fields', titleKey: 'defect.custom-field.manage', defaultLetter: '7' },
   { key: 'route-ding', titleKey: 'ding', defaultLetter: '8' },
   { key: 'route-feishu', titleKey: 'feishu', defaultLetter: '9' },
   { key: 'route-enterprise-wechat', titleKey: 'enterprise-wechat', defaultLetter: 'E' },
-  { key: 'route-project-member', titleKey: 'member.manage', defaultLetter: 'F' }
+  { key: 'route-project-member', titleKey: 'member.manage', defaultLetter: 'F' },
+  { key: 'route-case-types', titleKey: 'case.type.manage', defaultLetter: 'C' },
+  { key: 'route-case-settings', titleKey: 'case.review.template', defaultLetter: 'S' }
 ]
 
 /** 团队设置枢纽页卡片入口 */

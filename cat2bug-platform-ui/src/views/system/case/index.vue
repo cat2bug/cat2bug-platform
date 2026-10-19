@@ -32,6 +32,20 @@
           <el-form-item prop="caseLevel" class="list-query-nav-item" data-query-key="caseLevel">
             <cat2-bug-select-level v-model:level="queryParams.caseLevel" :icon="$legacyIcon('el-icon-s-data')" :clearable="true" @change="handleQuery" />
           </el-form-item>
+          <el-form-item prop="caseType">
+            <el-select v-model="queryParams.caseType" clearable filterable size="small" :placeholder="$t('case.type')" @change="handleQuery">
+              <el-option v-for="item in caseTypes" :key="item.typeId" :label="item.typeName" :value="item.typeId" />
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="reviewStatus" class="case-review-status-item">
+            <el-select v-model="queryParams.reviewStatus" class="case-review-status-input" size="small" @change="handleQuery">
+              <el-option :label="$t('all')" value="all" />
+              <el-option :label="$t('case.review.none')" value="none" />
+              <el-option :label="$t('case.review.in_review')" value="in_review" />
+              <el-option :label="$t('case.review.passed')" value="passed" />
+              <el-option :label="$t('case.review.changes')" value="changes" />
+            </el-select>
+          </el-form-item>
         </el-form>
         </div>
 
@@ -62,6 +76,13 @@
             <el-button class="case-field-picker-btn case-list-hint-columns" style="padding: 9px;" plain :icon="$legacyIcon('el-icon-s-fold')" size="small" />
           </template>
         </el-popover>
+        <el-button
+          v-hasPermi="['system:case:review']"
+          size="small"
+          plain
+          :disabled="multiple"
+          @click="handleStartReview"
+        >{{ $t('case.review.start') }}</el-button>
         <el-button
           v-hasPermi="['system:case:remove']"
           class="case-batch-delete-btn case-hint-batch-delete"
@@ -189,6 +210,14 @@
                 <cat2-bug-text :content="scope.row.caseName" :tooltip="scope.row.caseName" />
               </div>
               <cat2-bug-level v-else-if="column.prop==='caseLevel'" :level="scope.row.caseLevel" />
+              <span v-else-if="column.prop==='caseTypeName'">{{ scope.row.caseTypeName }}</span>
+              <el-tag
+                v-else-if="column.prop==='reviewStatus'"
+                size="small"
+                :type="reviewStatusTagType(scope.row.reviewStatus)"
+                :class="{ 'case-review-status-tag--clickable': scope.row.reviewStatus==='in_review' }"
+                @click="scope.row.reviewStatus==='in_review' && handleOpenReview(scope.row)"
+              >{{ reviewStatusLabel(scope.row.reviewStatus) }}</el-tag>
               <cat2-bug-text v-else-if="column.prop==='casePreconditions'" :content="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
               <div v-else-if="column.prop==='caseStep'" class="table-row-full-height">
                 <step :steps="scope.row.caseStep" />
@@ -249,6 +278,7 @@
       </div>
     </multipane>
     <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="reloadData" />
+    <case-review-dialog ref="caseReviewDialog" @changed="getList" />
     <add-defect ref="addDefect" :project-id="projectId" @added="reloadData" />
     <cloud-case ref="cloudCaseDialog" @added="reloadData" />
     <cloud-case2 ref="cloudCaseDialog2" @added="reloadData" />
@@ -309,6 +339,8 @@ import TreeModule from '@/components/Module/TreeModule'
 import { Multipane, MultipaneResizer } from 'vue-multipane'
 import { listCase, delCase } from '@/api/system/case'
 import AddCase from '@/components/Case/AddCase'
+import CaseReviewDialog from '@/components/Case/CaseReviewDialog'
+import { listCaseTypes } from '@/api/system/case-type'
 import AddDefect from '@/components/Defect/AddDefect'
 import CloudCase from '@/components/Cloud/CloudCase'
 import CloudCase2 from '@/components/Cloud/CloudCase2'
@@ -355,7 +387,7 @@ const CASE_TREE_MODULE_VISIBLE_CACHE_KEY = 'case_tree_module_visible'
 export default {
   name: 'Case',
   mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd, splitDropdownKbd, caseImportDialogKbd],
-  components: { ProjectLabel, AddCase, Cat2BugLevel, Step, TreeModule, Multipane, MultipaneResizer, AddDefect, CloudCase, CloudCase2, FocusMemberList, Cat2BugPreviewImage, Cat2BugSelectLevel, Cat2BugText, Cat2BugTable },
+  components: { ProjectLabel, AddCase, CaseReviewDialog, Cat2BugLevel, Step, TreeModule, Multipane, MultipaneResizer, AddDefect, CloudCase, CloudCase2, FocusMemberList, Cat2BugPreviewImage, Cat2BugSelectLevel, Cat2BugText, Cat2BugTable },
   setup() {
     return {
       userStore: useUserStore()
@@ -403,6 +435,7 @@ export default {
       loading: false,
       // 选中数组
       ids: [],
+      selectedCases: [],
       // 非单个禁用
       single: true,
       // 非多个禁用
@@ -413,6 +446,7 @@ export default {
       total: 0,
       // 测试用例表格数据
       caseList: [],
+      caseTypes: [],
       /** el-table max-height（像素）：由右侧列可用高度减去分页区测量得到，不用 flex 撑表格高度 */
       caseTableBodyMaxHeight: null,
       // 弹出层标题
@@ -430,6 +464,7 @@ export default {
         caseLevel: null,
         casePreconditions: null,
         caseNum: null,
+        reviewStatus: 'all',
         projectId: this.projectId,
         orderByColumn: null,
         isAsc: null,
@@ -516,6 +551,9 @@ export default {
     this.queryParams.isAsc = this.$cache.local.get('case_table_sort_type_key') || null
     this.handleQuery()
     this.refreshUploadHeaders()
+    if (this.projectId) {
+      listCaseTypes(this.projectId).then(res => { this.caseTypes = res.data || [] }).catch(() => {})
+    }
   },
   mounted() {
     this.registerCaseShortcuts()
@@ -1070,10 +1108,17 @@ export default {
       })
     },
     /** 查询测试用例列表 */
+    caseListQuery() {
+      const query = { ...this.queryParams }
+      if (!query.reviewStatus || query.reviewStatus === 'all') {
+        delete query.reviewStatus
+      }
+      return query
+    },
     getList() {
       this.loading = true
       this.queryParams.projectId = this.projectId
-      listCase(this.queryParams).then(response => {
+      listCase(this.caseListQuery()).then(response => {
         this.loading = false
         this.caseList = response.rows
         this.total = response.total
@@ -1125,7 +1170,7 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       const host = resolveExportAssetHost()
-      const payload = { ...this.queryParams }
+      const payload = this.caseListQuery()
       if (host) {
         payload.params = { ...(payload.params || {}), host }
       }
@@ -1212,8 +1257,32 @@ export default {
       event.stopPropagation()
     },
     /** 多选框选中数据 */
+    reviewStatusLabel(status) {
+      if (!status) return this.$t('case.review.none')
+      const key = 'case.review.' + status
+      const text = this.$t(key)
+      return text === key ? status : text
+    },
+    reviewStatusTagType(status) {
+      if (status === 'passed') return 'success'
+      if (status === 'changes') return 'danger'
+      if (status === 'in_review') return 'warning'
+      return 'info'
+    },
+    handleStartReview() {
+      const rows = (this.selectedCases && this.selectedCases.length)
+        ? this.selectedCases
+        : (this.caseList || []).filter(item => this.ids.indexOf(item.caseId) > -1)
+      if (!rows.length) return
+      this.$refs.caseReviewDialog.start(this.projectId, rows)
+    },
+    handleOpenReview(row) {
+      if (!row || !row.caseId) return
+      this.$refs.caseReviewDialog.openCase(this.projectId, row.caseId)
+    },
     handleSelectionChange(selection) {
       this.ids = selection.map(item => item.caseId)
+      this.selectedCases = selection
       this.single = selection.length != 1
       this.multiple = !selection.length
     },
@@ -1288,6 +1357,16 @@ export default {
     display: flex;
     align-items: center;
     vertical-align: middle;
+  }
+  :deep(.case-review-status-item) {
+    flex: 0 0 auto;
+  }
+  :deep(.el-select.case-review-status-input) {
+    width: 120px;
+    min-width: 120px;
+  }
+  .case-review-status-tag--clickable {
+    cursor: pointer;
   }
   @media screen and (max-width: 576px) {
     flex: 1 1 100%;

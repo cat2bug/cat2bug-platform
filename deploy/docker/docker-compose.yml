@@ -56,6 +56,8 @@ services:
     environment:
       TZ: Asia/Shanghai
       CAT2BUG_IN_DOCKER: "true"
+      # 对外 HTTPS 域名（OAuth issuer / MCP 地址）。外层 nginx 终止 TLS 时必填，例如 https://cloud.example.com
+      # CAT2BUG_PUBLIC_URL: https://cloud.example.com
       # 存储根（上传、头像、Git bare 仓 git/ 子目录），须与下方卷挂载点一致
       CAT2BUG_PROFILE: /home/uploadPath
       # 运行期即生效：cache.type=redis 时必须同时给出 redis.hosts，否则启动失败

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysCaseTypeMapper">
+
+    <select id="selectByProjectId" resultType="com.cat2bug.common.domain.SysCaseType">
+        SELECT t.type_id AS typeId, t.project_id AS projectId, t.type_name AS typeName, t.sort_order AS sortOrder,
+               (SELECT COUNT(*) FROM sys_case c WHERE c.project_id = t.project_id AND c.case_type = t.type_id) AS caseCount
+        FROM sys_case_type t
+        WHERE t.project_id = #{projectId}
+        ORDER BY t.sort_order, t.type_id
+    </select>
+
+    <select id="selectById" resultType="com.cat2bug.common.domain.SysCaseType">
+        SELECT type_id AS typeId, project_id AS projectId, type_name AS typeName, sort_order AS sortOrder
+        FROM sys_case_type WHERE type_id = #{typeId}
+    </select>
+
+    <select id="selectByProjectAndName" resultType="com.cat2bug.common.domain.SysCaseType">
+        SELECT type_id AS typeId, project_id AS projectId, type_name AS typeName, sort_order AS sortOrder
+        FROM sys_case_type
+        WHERE project_id = #{projectId} AND type_name = #{typeName}
+    </select>
+
+    <select id="countCases" resultType="int">
+        SELECT COUNT(*) FROM sys_case WHERE project_id = #{projectId} AND case_type = #{typeId}
+    </select>
+
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysCaseType" useGeneratedKeys="true" keyProperty="typeId">
+        INSERT INTO sys_case_type (project_id, type_name, sort_order)
+        VALUES (#{projectId}, #{typeName}, #{sortOrder})
+    </insert>
+
+    <update id="updateName">
+        UPDATE sys_case_type SET type_name = #{typeName} WHERE type_id = #{typeId} AND project_id = #{projectId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM sys_case_type WHERE type_id = #{typeId}
+    </delete>
+
+    <select id="selectProjectName" resultType="string">
+        SELECT project_name FROM sys_project WHERE project_id = #{projectId}
+    </select>
+
+    <select id="selectReviewTemplate" resultType="string">
+        SELECT case_review_template FROM sys_project WHERE project_id = #{projectId}
+    </select>
+
+    <update id="updateReviewTemplate">
+        UPDATE sys_project SET case_review_template = #{template} WHERE project_id = #{projectId}
+    </update>
+</mapper>

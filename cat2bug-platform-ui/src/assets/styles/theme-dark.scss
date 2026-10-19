@@ -75,6 +75,14 @@ $cat2bug-ep-default-button: ':not(.el-button--primary):not(.el-button--success):
   --cat2bug-operate-text-warning: #ffba00;
   --cat2bug-operate-text-warning-hover: #1890ff;
 
+  /* Markdown / Cat2BugEditor 工具条图标按钮 */
+  --tools-menu-icon-color: #606266;
+  --tools-menu-hover-color: #1890ff;
+  --tools-menu-hover-bg: #e8f4ff;
+  --tools-menu-active-color: #1890ff;
+  --tools-menu-active-bg: rgba(24, 144, 255, 0.12);
+  --tools-menu-siding-color: #dcdcdc;
+
   /* 收藏星标 StarSwitch：未选中 / 已选中 */
   --star-switch-off-stroke: #c0c4cc;
   --star-switch-off-color: #ffffff;
@@ -287,6 +295,14 @@ html.dark {
   --action-row-stripe-bg: rgba(255, 255, 255, 0.05);
 
   --sidebar-expand-trigger-hover-bg: rgba(24, 144, 255, 0.12);
+
+  /* Markdown / Cat2BugEditor 工具条：禁止浅色白底高亮 */
+  --tools-menu-icon-color: #a8abb2;
+  --tools-menu-hover-color: #69b1ff;
+  --tools-menu-hover-bg: rgba(105, 177, 255, 0.14);
+  --tools-menu-active-color: #69b1ff;
+  --tools-menu-active-bg: rgba(105, 177, 255, 0.18);
+  --tools-menu-siding-color: #363637;
 
   --sidebar-bg: #1e1e20;
   --sidebar-text: #a8abb2;
@@ -4842,6 +4858,98 @@ html.dark {
   .view-panel, .templates-panel {
     background-color: var(--bg-color-base) !important;
     border: 1px solid var(--border-color-light) !important;
+  }
+
+  // 28a. 全局 Markdown / Cat2BugEditor 工具条（含文档页、报告、仓库预览等）
+  .tools-menu.el-menu,
+  .tools-menu.el-menu--horizontal {
+    --el-menu-bg-color: transparent;
+    --el-menu-hover-bg-color: var(--tools-menu-hover-bg);
+    --el-menu-hover-text-color: var(--tools-menu-hover-color);
+    --el-menu-active-color: var(--tools-menu-active-color);
+    --el-menu-text-color: var(--tools-menu-icon-color);
+    background-color: transparent !important;
+    border-bottom: none !important;
+
+    > .el-menu-item,
+    > .el-sub-menu > .el-sub-menu__title,
+    > .el-submenu > .el-submenu__title {
+      color: var(--tools-menu-icon-color) !important;
+      background-color: transparent !important;
+      border-bottom: none !important;
+    }
+
+    > .el-menu-item:hover,
+    > .el-menu-item:focus,
+    > .el-sub-menu:hover > .el-sub-menu__title,
+    > .el-sub-menu .el-sub-menu__title:hover,
+    > .el-submenu:hover > .el-submenu__title,
+    > .el-submenu .el-submenu__title:hover {
+      color: var(--tools-menu-hover-color) !important;
+      background-color: var(--tools-menu-hover-bg) !important;
+      border-bottom: none !important;
+      box-shadow: none !important;
+    }
+
+    > .el-menu-item.is-active,
+    > .el-sub-menu.is-active > .el-sub-menu__title,
+    > .el-sub-menu.is-opened > .el-sub-menu__title,
+    > .el-submenu.is-active > .el-submenu__title,
+    > .el-submenu.is-opened > .el-submenu__title {
+      color: var(--tools-menu-active-color) !important;
+      background-color: var(--tools-menu-active-bg) !important;
+      border-bottom: none !important;
+      box-shadow: none !important;
+    }
+
+    .siding {
+      background-color: var(--tools-menu-siding-color) !important;
+    }
+
+    .icon,
+    .svg-icon {
+      color: var(--tools-menu-icon-color) !important;
+    }
+
+    > .el-menu-item:hover .icon,
+    > .el-menu-item:hover .svg-icon,
+    > .el-menu-item.is-active .icon,
+    > .el-menu-item.is-active .svg-icon,
+    > .el-sub-menu:hover .svg-icon,
+    > .el-sub-menu.is-active .svg-icon,
+    > .el-sub-menu.is-opened .svg-icon,
+    > .el-submenu:hover .svg-icon,
+    > .el-submenu.is-active .svg-icon,
+    > .el-submenu.is-opened .svg-icon {
+      color: var(--tools-menu-hover-color) !important;
+    }
+  }
+
+  .cat2bug-editor__save:hover:not(:disabled) {
+    color: var(--tools-menu-hover-color) !important;
+    background-color: var(--tools-menu-hover-bg) !important;
+  }
+
+  .cat2bug-tools-menu-popper.el-popper {
+    background-color: var(--dropdown-bg, #252529) !important;
+    border-color: var(--border-color-light) !important;
+  }
+
+  .cat2bug-tools-menu-popper .el-menu--popup,
+  .cat2bug-tools-menu-popper .el-menu {
+    background-color: var(--dropdown-bg, #252529) !important;
+  }
+
+  .cat2bug-tools-menu-popper .el-menu-item {
+    color: var(--text-color-regular) !important;
+    background-color: transparent !important;
+  }
+
+  .cat2bug-tools-menu-popper .el-menu-item:hover,
+  .cat2bug-tools-menu-popper .el-menu-item:focus,
+  .cat2bug-tools-menu-popper .el-menu-item.is-active {
+    color: var(--tools-menu-hover-color) !important;
+    background-color: var(--tools-menu-hover-bg) !important;
   }
 
   // 28. 适配 Markdown 编辑器 (Cat2BugMarkdown) 暗黑模式

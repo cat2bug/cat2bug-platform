@@ -131,7 +131,8 @@ export default {
 <style lang="scss" scoped>
 .cat2bug-draggable-el {
   position: absolute;
-  background-color: white;
+  background-color: var(--card-bg);
+  color: var(--text-color-primary);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 .cat2bug-draggable-el .content {

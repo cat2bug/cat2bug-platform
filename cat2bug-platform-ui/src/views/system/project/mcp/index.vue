@@ -1,13 +1,14 @@
 <template>
-  <el-dialog :model-value="modelValue" :title="$t('project-mcp.title')" width="920px" append-to-body
-             class="mcp-settings-dialog"
-             @update:model-value="$emit('update:modelValue', $event)" @open="load">
-    <el-alert type="info" :closable="false" class="mcp-dialog__intro">
-      <template #title>{{ $t('project-mcp.intro') }}</template>
-    </el-alert>
+  <div class="app-container mcp-settings-page">
+    <el-row class="project-add-page-header project-option-sub-hint-back">
+      <el-page-header @back="goBack" :content="$t('project-mcp.title')" />
+    </el-row>
     <el-form v-loading="loading" label-width="110px" @submit.prevent>
       <el-form-item :label="$t('project-mcp.switch')">
-        <el-switch v-model="form.enabled" :disabled="!settings.editable" />
+        <div class="mcp-page__switch">
+          <el-switch v-model="form.enabled" :disabled="!settings.editable" />
+          <div class="mcp-page__warn">{{ $t('project-mcp.intro') }}</div>
+        </div>
       </el-form-item>
       <el-form-item :label="$t('project-mcp.modules')">
         <el-checkbox-group v-model="form.modules" :disabled="!settings.editable || !form.enabled">
@@ -15,7 +16,7 @@
             {{ $t('project-mcp.module.' + key) }}
           </el-checkbox>
         </el-checkbox-group>
-        <div class="mcp-dialog__hint">{{ $t('project-mcp.modules-hint') }}</div>
+        <div class="mcp-page__hint">{{ $t('project-mcp.modules-hint') }}</div>
       </el-form-item>
       <el-form-item :label="$t('project-mcp.mcp-url')">
         <el-input :model-value="displayMcpUrl" readonly>
@@ -23,23 +24,23 @@
             <el-button :icon="CopyDocument" :title="$t('project-mcp.copy')" @click="copy(displayMcpUrl)" />
           </template>
         </el-input>
-        <div v-if="!settings.publicUrlConfigured" class="mcp-dialog__warn">{{ $t('project-mcp.public-url-hint') }}</div>
+        <div v-if="!settings.publicUrlConfigured" class="mcp-page__warn">{{ $t('project-mcp.public-url-hint') }}</div>
       </el-form-item>
     </el-form>
 
-    <div class="mcp-dialog__clients">
-      <div class="mcp-dialog__clients-title">{{ $t('project-mcp.clients') }}</div>
-      <div class="mcp-dialog__hint">{{ $t('project-mcp.login-hint') }}</div>
+    <div class="mcp-page__clients">
+      <div class="mcp-page__clients-title">{{ $t('project-mcp.clients') }}</div>
+      <div class="mcp-page__hint">{{ $t('project-mcp.login-hint') }}</div>
 
-      <div class="mcp-dialog__picker" role="listbox" :aria-label="$t('project-mcp.clients')">
-        <div v-for="group in clientGroups" :key="group.key" class="mcp-dialog__row">
-          <span class="mcp-dialog__row-label">{{ group.label }}</span>
-          <div class="mcp-dialog__chips">
+      <div class="mcp-page__picker" role="listbox" :aria-label="$t('project-mcp.clients')">
+        <div v-for="group in clientGroups" :key="group.key" class="mcp-page__row">
+          <span class="mcp-page__row-label">{{ group.label }}</span>
+          <div class="mcp-page__chips">
             <button
               v-for="c in group.items"
               :key="c.key"
               type="button"
-              class="mcp-dialog__chip"
+              class="mcp-page__chip"
               :class="{ 'is-active': clientKey === c.key }"
               role="option"
               :aria-selected="clientKey === c.key"
@@ -50,48 +51,63 @@
       </div>
 
       <template v-if="activeClient">
-        <div class="mcp-dialog__hint mcp-dialog__client-hint">{{ activeClient.hint }}</div>
-        <div class="mcp-dialog__snippet-wrap">
+        <div class="mcp-page__hint mcp-page__client-hint">{{ activeClient.hint }}</div>
+        <div class="mcp-page__snippet-wrap">
           <el-button
-            class="mcp-dialog__snippet-copy"
+            class="mcp-page__snippet-copy"
             link
             :icon="CopyDocument"
             :title="$t('project-mcp.copy')"
             @click="copy(activeClient.snippet)"
           />
-          <pre class="mcp-dialog__snippet">{{ activeClient.snippet }}</pre>
+          <pre class="mcp-page__snippet">{{ activeClient.snippet }}</pre>
         </div>
       </template>
     </div>
 
-    <template #footer>
-      <span v-if="settings.updateTime" class="mcp-dialog__updated">
+    <div class="mcp-page__actions">
+      <span v-if="settings.updateTime" class="mcp-page__updated">
         {{ $t('project-mcp.updated', { by: settings.updateBy || '-', time: settings.updateTime }) }}
       </span>
-      <el-button size="small" @click="$emit('update:modelValue', false)">{{ $t('cancel') }}</el-button>
-      <el-button v-if="settings.editable" type="primary" size="small" :loading="saving" @click="save">
+      <el-button @click="goBack">{{ $t('cancel') }}</el-button>
+      <el-button v-if="settings.editable" type="primary" :loading="saving" @click="save">
         {{ $t('save') }}
       </el-button>
-    </template>
-  </el-dialog>
+    </div>
+  </div>
 </template>
 
 <script>
 import { markRaw } from 'vue'
 import { CopyDocument } from '@element-plus/icons-vue'
 import { getProjectMcp, updateProjectMcp } from '@/api/system/project-mcp'
+import { useUserStore } from '@/stores/user'
 
-/** 回环地址在展示时与当前网页主机名对齐（localhost ↔ 127.0.0.1 ↔ ::1） */
+/**
+ * 未配置 cat2bug.public-url 时，展示地址与当前网页协议/主机对齐。
+ * 反代漏传 X-Forwarded-Proto 时后端常推导成 http，而用户实际在 https 页面上打开。
+ */
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
 
-function alignMcpUrlWithPage(rawUrl) {
+function alignMcpUrlWithPage(rawUrl, publicUrlConfigured) {
   if (!rawUrl || typeof window === 'undefined') {
     return rawUrl || ''
   }
   try {
     const u = new URL(rawUrl)
-    const pageHost = window.location.hostname
-    if (LOOPBACK.has(u.hostname) && LOOPBACK.has(pageHost) && u.hostname !== pageHost) {
+    const page = window.location
+    const pageHost = page.hostname
+    if (!publicUrlConfigured) {
+      if (page.protocol === 'https:' || page.protocol === 'http:') {
+        u.protocol = page.protocol
+      }
+      const sameHost = u.hostname === pageHost
+      const bothLoopback = LOOPBACK.has(u.hostname) && LOOPBACK.has(pageHost)
+      if (sameHost || bothLoopback) {
+        u.hostname = pageHost
+        u.port = page.port || ''
+      }
+    } else if (LOOPBACK.has(u.hostname) && LOOPBACK.has(pageHost) && u.hostname !== pageHost) {
       u.hostname = pageHost
     }
     let out = u.toString()
@@ -105,18 +121,7 @@ function alignMcpUrlWithPage(rawUrl) {
 }
 
 export default {
-  name: 'McpSettingsDialog',
-  props: {
-    modelValue: {
-      type: Boolean,
-      default: false
-    },
-    projectId: {
-      type: Number,
-      default: null
-    }
-  },
-  emits: ['update:modelValue'],
+  name: 'ProjectMcpSettings',
   data() {
     return {
       CopyDocument: markRaw(CopyDocument),
@@ -128,11 +133,14 @@ export default {
     }
   },
   computed: {
+    projectId() {
+      return parseInt(useUserStore().config.currentProjectId)
+    },
     moduleKeys() {
       return (this.settings.availableModules || []).map(m => (typeof m === 'string' ? m : m.key))
     },
     displayMcpUrl() {
-      return alignMcpUrlWithPage(this.settings.mcpUrl || '')
+      return alignMcpUrlWithPage(this.settings.mcpUrl || '', !!this.settings.publicUrlConfigured)
     },
     clients() {
       const url = this.displayMcpUrl || 'https://<host>/mcp'
@@ -185,7 +193,13 @@ export default {
       return this.clients.find(c => c.key === this.clientKey) || this.clients[0] || null
     }
   },
+  created() {
+    this.load()
+  },
   methods: {
+    goBack() {
+      this.$router.push('/project/option')
+    },
     load() {
       if (!this.projectId) return
       this.loading = true
@@ -206,7 +220,7 @@ export default {
       this.saving = true
       updateProjectMcp(this.projectId, { enabled: this.form.enabled, modules: this.form.modules }).then(() => {
         this.$modal.msgSuccess(this.$t('modify-success'))
-        this.$emit('update:modelValue', false)
+        this.load()
       }).finally(() => {
         this.saving = false
       })
@@ -240,41 +254,48 @@ export default {
 </script>
 
 <style scoped>
-.mcp-dialog__hint,
-.mcp-dialog__updated {
+.mcp-settings-page {
+  max-width: 960px;
+}
+.mcp-page__hint,
+.mcp-page__updated {
   font-size: 12px;
   color: var(--text-color-secondary);
 }
-.mcp-dialog__warn {
+.mcp-page__switch {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+.mcp-page__warn {
   font-size: 12px;
+  line-height: 1.5;
   color: var(--el-color-warning);
 }
-.mcp-dialog__intro {
-  margin-bottom: 12px;
+.mcp-page__switch .mcp-page__warn {
+  margin-top: 4px;
 }
-.mcp-dialog__updated {
-  margin-right: 12px;
-}
-.mcp-dialog__clients-title {
+.mcp-page__clients-title {
   font-weight: 600;
   margin: 4px 0;
 }
-.mcp-dialog__picker {
+.mcp-page__picker {
   margin-top: 10px;
   padding: 10px 12px;
   border: 1px solid var(--border-color-light);
   border-radius: var(--cat2bug-border-radius, 4px);
   background: var(--bg-color-block);
 }
-.mcp-dialog__row {
+.mcp-page__row {
   display: flex;
   align-items: flex-start;
   gap: 10px;
 }
-.mcp-dialog__row + .mcp-dialog__row {
+.mcp-page__row + .mcp-page__row {
   margin-top: 8px;
 }
-.mcp-dialog__row-label {
+.mcp-page__row-label {
   flex: 0 0 36px;
   padding-top: 8px;
   font-size: 12px;
@@ -282,14 +303,14 @@ export default {
   color: var(--text-color-secondary);
   white-space: nowrap;
 }
-.mcp-dialog__chips {
+.mcp-page__chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   flex: 1;
   min-width: 0;
 }
-.mcp-dialog__chip {
+.mcp-page__chip {
   height: var(--cat2bug-control-height, 32px);
   padding: 0 12px;
   border: 1px solid var(--border-color-light);
@@ -301,37 +322,37 @@ export default {
   cursor: pointer;
   white-space: nowrap;
 }
-.mcp-dialog__chip:hover {
+.mcp-page__chip:hover {
   border-color: var(--el-color-primary);
   color: var(--el-color-primary);
 }
-.mcp-dialog__chip.is-active {
+.mcp-page__chip.is-active {
   border-color: var(--el-color-primary);
   background: var(--el-color-primary);
   color: var(--bg-color-base);
   font-weight: 600;
 }
-html:not(.dark) .mcp-dialog__chip.is-active {
+html:not(.dark) .mcp-page__chip.is-active {
   color: #fff;
 }
-.mcp-dialog__client-hint {
+.mcp-page__client-hint {
   margin-top: 12px;
 }
-.mcp-dialog__snippet-wrap {
+.mcp-page__snippet-wrap {
   position: relative;
   margin: 6px 0 0;
 }
-.mcp-dialog__snippet-copy {
+.mcp-page__snippet-copy {
   position: absolute;
   top: 6px;
   right: 6px;
   z-index: 1;
   color: var(--text-color-secondary);
 }
-.mcp-dialog__snippet-copy:hover {
+.mcp-page__snippet-copy:hover {
   color: var(--el-color-primary);
 }
-.mcp-dialog__snippet {
+.mcp-page__snippet {
   min-height: 96px;
   max-height: 220px;
   overflow: auto;
@@ -344,5 +365,15 @@ html:not(.dark) .mcp-dialog__chip.is-active {
   white-space: pre-wrap;
   word-break: break-all;
   margin: 0;
+}
+.mcp-page__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+.mcp-page__updated {
+  margin-right: auto;
 }
 </style>

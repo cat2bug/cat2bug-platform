@@ -103,6 +103,8 @@ const DEFAULT_OPERATE_COLUMN_MIN_WIDTH = 88;
 const DEFAULT_OPERATE_COLUMN_HEADER_MIN = 56;
 /** 操作列 .cell 左右内边距（单侧 px，列宽计算时按两侧合计） */
 const DEFAULT_OPERATE_COLUMN_PADDING_X = 20;
+/** 数据行最高高度（含单元格上下 padding）；超出部分在列内省略 */
+const DATA_ROW_MAX_HEIGHT_PX = 100;
 
 export default {
   name: "Cat2BugTable",
@@ -210,7 +212,8 @@ export default {
     operateColumnWrapStyle() {
       return {
         '--cat2bug-operate-col-max-width': `${this.operateColumnMaxWidth}px`,
-        '--cat2bug-operate-col-padding-x': `${this.operateColumnPaddingX}px`
+        '--cat2bug-operate-col-padding-x': `${this.operateColumnPaddingX}px`,
+        '--cat2bug-table-row-max-height': `${DATA_ROW_MAX_HEIGHT_PX}px`
       };
     },
     elTableMaxHeight() {
@@ -598,7 +601,7 @@ export default {
         if (rightRows && rightRows[i]) {
           h = Math.max(h, this.measureDataRowContentHeight(rightRows[i]));
         }
-        heights.push(Math.max(1, Math.ceil(h)));
+        heights.push(Math.min(DATA_ROW_MAX_HEIGHT_PX, Math.max(1, Math.ceil(h))));
       }
 
       const prevHeights = this._lastSyncedRowHeights;
@@ -625,7 +628,7 @@ export default {
         if (rightRows && rightRows[i]) {
           h = Math.max(h, this.measureDataRowContentHeight(rightRows[i]));
         }
-        heights[i] = Math.max(1, Math.ceil(h));
+        heights[i] = Math.min(DATA_ROW_MAX_HEIGHT_PX, Math.max(1, Math.ceil(h)));
       }
 
       for (let i = 0; i < n; i++) {
@@ -2195,7 +2198,8 @@ export default {
   align-items: flex-start;
   align-content: flex-start;
   white-space: normal;
-  overflow: visible !important;
+  max-height: calc(var(--cat2bug-table-row-max-height, 100px) - 11px);
+  overflow: hidden !important;
 }
 
 :deep(td.cat2bug-operate-column .cat2bug-operate-tools),
@@ -2254,6 +2258,75 @@ export default {
 .cat2-bug-table-wrap .el-table__fixed-right tbody tr:hover > td.el-table__cell,
 .cat2-bug-table-wrap .el-table__fixed-right tbody tr.hover-row > td.el-table__cell {
   background-color: var(--table-row-hover-bg) !important;
+}
+
+/*
+ * 数据行最高 100px。高度限制写在 .cell 上（表格 td 的 max-height 经常被忽略）。
+ * 普通文本列 4 行 × 22px = 88px，加上 td 上下 padding 与底边后仍不超过 100px。
+ */
+.cat2-bug-table-wrap .el-table__body-wrapper tbody tr.el-table__row > td.el-table__cell > .cell,
+.cat2-bug-table-wrap .el-table__fixed .el-table__fixed-body-wrapper tbody tr.el-table__row > td.el-table__cell > .cell,
+.cat2-bug-table-wrap .el-table__fixed-right .el-table__fixed-body-wrapper tbody tr.el-table__row > td.el-table__cell > .cell {
+  max-height: calc(var(--cat2bug-table-row-max-height, 100px) - 11px);
+  overflow: hidden;
+}
+
+.cat2-bug-table-wrap .el-table__body-wrapper tbody tr.el-table__row > td.el-table__cell:not(.cat2bug-operate-column):not(.defect-state-col):not(.el-table-column--selection):not(:has(.table-row-full-height)) > .cell,
+.cat2-bug-table-wrap .el-table__fixed .el-table__fixed-body-wrapper tbody tr.el-table__row > td.el-table__cell:not(.cat2bug-operate-column):not(.defect-state-col):not(.el-table-column--selection):not(:has(.table-row-full-height)) > .cell,
+.cat2-bug-table-wrap .el-table__fixed-right .el-table__fixed-body-wrapper tbody tr.el-table__row > td.el-table__cell:not(.cat2bug-operate-column):not(.defect-state-col):not(.el-table-column--selection):not(:has(.table-row-full-height)) > .cell {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  line-height: 22px;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* 附件等多行列表：省略发生在列表自身，避免被外层 flex 吃掉 */
+.cat2-bug-table-wrap .el-table__body td.el-table__cell > .cell > .annex-list {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  line-height: 22px;
+  max-height: 88px;
+  overflow: hidden;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* 步骤列铺满行高后在格内滚动，不参与文本截断 */
+.cat2-bug-table-wrap .el-table__body td.el-table__cell:has(.table-row-full-height) > .cell,
+.cat2-bug-table-wrap .el-table__fixed-body-wrapper td.el-table__cell:has(.table-row-full-height) > .cell {
+  display: block;
+  position: relative;
+  height: 100%;
+  max-height: calc(var(--cat2bug-table-row-max-height, 100px) - 11px);
+  overflow: hidden;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+}
+
+/* 操作列保持按钮布局，超出行高裁切；压过 data-operate-at-cap 的 overflow:visible */
+.cat2-bug-table-wrap td.cat2bug-operate-column > .cell,
+.cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column > .cell {
+  max-height: calc(var(--cat2bug-table-row-max-height, 100px) - 11px);
+  overflow: hidden !important;
+}
+
+/* 状态列保持整词可见，单行标记本身超不过行高上限 */
+.cat2-bug-table-wrap .el-table__body-wrapper tbody tr.el-table__row > td.defect-state-col.el-table__cell > .cell,
+.cat2-bug-table-wrap .el-table__fixed .el-table__fixed-body-wrapper tbody tr.el-table__row > td.defect-state-col.el-table__cell > .cell,
+.cat2-bug-table-wrap .el-table__fixed-right .el-table__fixed-body-wrapper tbody tr.el-table__row > td.defect-state-col.el-table__cell > .cell {
+  display: block;
+  max-height: none;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  line-height: inherit;
+  white-space: nowrap;
 }
 
 /* 调宽拖动全程锁定 col-resize，避免经过 pin/标题等元素时光标闪烁 */

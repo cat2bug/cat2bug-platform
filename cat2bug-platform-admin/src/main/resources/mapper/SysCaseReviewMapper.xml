@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysCaseReviewMapper">
+
+    <insert id="insertReview" parameterType="com.cat2bug.common.domain.SysCaseReview"
+            useGeneratedKeys="true" keyProperty="reviewId">
+        INSERT INTO sys_case_review (project_id, status, report_markdown, create_by, create_time)
+        VALUES (#{projectId}, #{status}, #{reportMarkdown}, #{createBy}, #{createTime})
+    </insert>
+
+    <insert id="insertItem" parameterType="com.cat2bug.common.domain.SysCaseReviewItem"
+            useGeneratedKeys="true" keyProperty="itemId">
+        INSERT INTO sys_case_review_item (review_id, case_id, verdict, item_comment)
+        VALUES (#{reviewId}, #{caseId}, #{verdict}, #{comment})
+    </insert>
+
+    <select id="selectReview" resultType="com.cat2bug.common.domain.SysCaseReview">
+        SELECT review_id AS reviewId, project_id AS projectId, status, report_markdown AS reportMarkdown,
+               create_by AS createBy, create_time AS createTime, complete_by AS completeBy, complete_time AS completeTime
+        FROM sys_case_review WHERE review_id = #{reviewId}
+    </select>
+
+    <select id="selectByProject" resultType="com.cat2bug.common.domain.SysCaseReview">
+        SELECT review_id AS reviewId, project_id AS projectId, status, report_markdown AS reportMarkdown,
+               create_by AS createBy, create_time AS createTime, complete_by AS completeBy, complete_time AS completeTime
+        FROM sys_case_review
+        WHERE project_id = #{projectId}
+        ORDER BY review_id DESC
+    </select>
+
+    <select id="selectItems" resultType="com.cat2bug.common.domain.SysCaseReviewItem">
+        SELECT i.item_id AS itemId, i.review_id AS reviewId, i.case_id AS caseId, i.verdict,
+               i.item_comment AS comment, c.case_num AS caseNum, c.case_name AS caseName, t.type_name AS caseTypeName
+        FROM sys_case_review_item i
+        LEFT JOIN sys_case c ON c.case_id = i.case_id
+        LEFT JOIN sys_case_type t ON t.type_id = c.case_type
+        WHERE i.review_id = #{reviewId}
+        ORDER BY i.item_id
+    </select>
+
+    <select id="selectItem" resultType="com.cat2bug.common.domain.SysCaseReviewItem">
+        SELECT item_id AS itemId, review_id AS reviewId, case_id AS caseId, verdict, item_comment AS comment
+        FROM sys_case_review_item
+        WHERE review_id = #{reviewId} AND case_id = #{caseId}
+    </select>
+
+    <update id="updateItem">
+        UPDATE sys_case_review_item
+        SET verdict = #{verdict}, item_comment = #{comment}
+        WHERE review_id = #{reviewId} AND case_id = #{caseId}
+    </update>
+
+    <update id="completeReview">
+        UPDATE sys_case_review
+        SET status = 'completed', report_markdown = #{reportMarkdown},
+            complete_by = #{completeBy}, complete_time = #{completeTime}
+        WHERE review_id = #{reviewId} AND status = 'open'
+    </update>
+
+    <update id="updateReport">
+        UPDATE sys_case_review SET report_markdown = #{reportMarkdown}
+        WHERE review_id = #{reviewId} AND status = 'completed'
+    </update>
+
+    <select id="selectOpenCaseIds" resultType="long">
+        SELECT i.case_id
+        FROM sys_case_review r
+        JOIN sys_case_review_item i ON i.review_id = r.review_id
+        WHERE r.status = 'open' AND i.case_id IN
+        <foreach collection="caseIds" item="caseId" open="(" separator="," close=")">
+            #{caseId}
+        </foreach>
+    </select>
+
+    <select id="selectOpenReviewIdByCase" resultType="java.lang.Long">
+        SELECT r.review_id
+        FROM sys_case_review r
+        JOIN sys_case_review_item i ON i.review_id = r.review_id
+        WHERE r.status = 'open' AND i.case_id = #{caseId}
+        LIMIT 1
+    </select>
+
+    <update id="updateCaseReviewStatus">
+        UPDATE sys_case SET review_status = #{reviewStatus,jdbcType=VARCHAR} WHERE case_id = #{caseId}
+    </update>
+
+    <delete id="deleteOpenItemsByCase">
+        DELETE FROM sys_case_review_item
+        WHERE case_id = #{caseId}
+          AND review_id IN (SELECT review_id FROM sys_case_review WHERE status = 'open')
+    </delete>
+
+    <select id="countItems" resultType="int">
+        SELECT COUNT(*) FROM sys_case_review_item WHERE review_id = #{reviewId}
+    </select>
+
+    <delete id="deleteReview">
+        DELETE FROM sys_case_review WHERE review_id = #{reviewId} AND status = 'open'
+    </delete>
+
+    <select id="selectOpenReviewIdsByCase" resultType="long">
+        SELECT r.review_id
+        FROM sys_case_review r
+        JOIN sys_case_review_item i ON i.review_id = r.review_id
+        WHERE r.status = 'open' AND i.case_id = #{caseId}
+    </select>
+</mapper>

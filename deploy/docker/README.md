@@ -32,6 +32,7 @@ docker compose up -d
 | 变量 | 说明 |
 |------|------|
 | `CAT2BUG_IN_DOCKER=true` | 容器模式：安装完成后不自行重启进程，交给容器重启策略 |
+| `CAT2BUG_PUBLIC_URL` | 对外访问根地址（无尾斜杠），如 `https://cloud.example.com`；映射为 `cat2bug.public-url`。外层 nginx 终止 TLS 时建议必填，否则 OAuth issuer / MCP 地址可能被推导成 `http://` |
 | `CAT2BUG_PROFILE` | 存储根目录 |
 | `CAT2BUG_CACHE_TYPE` | `redis` 时必须同时设置 `CAT2BUG_REDIS_HOSTS`，否则启动失败 |
 | `CAT2BUG_REDIS_HOSTS` | 如 `redis://cat2bug-platform-redis:6379` |

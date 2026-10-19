@@ -100,32 +100,45 @@ function probeInstalledViaSetupFilter() {
     })
 }
 
-function fetchSetupStatus() {
-  return getSetupStatus()
-    .then(res => {
-      const normalized = normalizeSetupStatus(res)
-      if (!normalized) {
-        return probeInstalledViaSetupFilter()
-      }
-      return applySetupStatus(normalized)
+const SETUP_STATUS_REQUEST_TIMEOUT_MS = 8000
+
+function withTimeout(promise, ms, onTimeout) {
+  let timer
+  return Promise.race([
+    promise.finally(() => clearTimeout(timer)),
+    new Promise(resolve => {
+      timer = setTimeout(() => resolve(onTimeout()), ms)
     })
-    .catch(() => probeInstalledViaSetupFilter())
+  ])
+}
+
+function fetchSetupStatus() {
+  return withTimeout(
+    getSetupStatus()
+      .then(res => {
+        const normalized = normalizeSetupStatus(res)
+        if (!normalized) {
+          return probeInstalledViaSetupFilter()
+        }
+        return applySetupStatus(normalized)
+      })
+      .catch(() => probeInstalledViaSetupFilter()),
+    SETUP_STATUS_REQUEST_TIMEOUT_MS,
+    () => fallbackFromCacheOrUnknown()
+  )
 }
 
 export function resolveSetupStatus(forceRefresh = false) {
   if (forceRefresh) {
+    // 仅作废进行中的请求；保留内存/会话缓存作超时回退，避免接口挂起时误判未安装把登录导去向导
     setupStatusPromise = null
-    setupStatusSnapshot = null
-    try {
-      sessionStorage.removeItem(SETUP_STATUS_CACHE_KEY)
-    } catch (e) {
-      /* ignore */
-    }
   }
   if (!setupStatusPromise) {
-    const cached = !forceRefresh ? readSetupStatusCache() : null
-    if (cached) {
+    const cached = readSetupStatusCache()
+    if (cached && !setupStatusSnapshot) {
       setupStatusSnapshot = cached
+    }
+    if (cached && !forceRefresh) {
       setupStatusPromise = Promise.resolve(cached)
       // 后台刷新并更新内存快照，避免 SPA 会话内一直用陈旧的 installed:false
       fetchSetupStatus().catch(() => {})

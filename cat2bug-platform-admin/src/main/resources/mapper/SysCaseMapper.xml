@@ -9,6 +9,8 @@
         <result property="moduleId" column="module_id"/>
         <result property="moduleName" column="module_name"/>
         <result property="caseType" column="case_type"/>
+        <result property="caseTypeName" column="case_type_name"/>
+        <result property="reviewStatus" column="review_status"/>
         <result property="caseExpect" column="case_expect"/>
         <result property="caseStep" column="case_step"
                 typeHandler="com.cat2bug.system.mybatis.CaseStepListJsonTypeHandler"/>
@@ -31,7 +33,8 @@
     </resultMap>
 
     <sql id="selectSysCaseVo">
-        SELECT c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect,
+        SELECT c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, ct.type_name AS case_type_name,
+               c.review_status, c.case_expect,
                c.case_step, c.case_level,
                CASE WHEN c.case_level IS NOT NULL THEN CONCAT('P', c.case_level - 1) END AS case_level_name,
                c.case_preconditions, c.create_by, c.create_time, c.update_by, c.update_time,
@@ -41,6 +44,7 @@
                IFNULL(d.defect_close_count, 0) AS defect_close_count
         FROM sys_case c
         LEFT JOIN sys_module m ON m.module_id = c.module_id
+        LEFT JOIN sys_case_type ct ON ct.type_id = c.case_type
         LEFT JOIN (
             SELECT case_id,
                    IFNULL(SUM(CASE WHEN defect_state = 0 OR defect_state = 3 THEN 1 END), 0) AS defect_processing_count,
@@ -62,6 +66,12 @@
             </if>
             <if test="query != null and query.caseType != null">
                 AND c.case_type = #{query.caseType}
+            </if>
+            <if test="query != null and query.reviewStatus != null and query.reviewStatus == 'none'">
+                AND (c.review_status IS NULL OR c.review_status = '')
+            </if>
+            <if test="query != null and query.reviewStatus != null and query.reviewStatus != '' and query.reviewStatus != 'none'">
+                AND c.review_status = #{query.reviewStatus}
             </if>
             <if test="query != null and query.caseLevel != null">
                 AND c.case_level = #{query.caseLevel}
@@ -145,6 +155,16 @@
         WHERE c.case_id = #{caseId}
     </select>
 
+    <select id="selectSysCaseBriefByIds" resultMap="SysCaseResult">
+        SELECT c.case_id, c.case_name, c.case_num, c.project_id, c.review_status, ct.type_name AS case_type_name
+        FROM sys_case c
+        LEFT JOIN sys_case_type ct ON ct.type_id = c.case_type
+        WHERE c.case_id IN
+        <foreach collection="caseIds" item="caseId" open="(" separator="," close=")">
+            #{caseId}
+        </foreach>
+    </select>
+
     <select id="getCaseMaxNumOfProject" resultType="long">
         SELECT IFNULL(MAX(case_num), 0) FROM sys_case WHERE project_id = #{projectId}
     </select>
@@ -197,7 +217,8 @@
         <trim prefix="SET" suffixOverrides=",">
             <if test="caseName != null">case_name = #{caseName},</if>
             <if test="moduleId != null">module_id = #{moduleId},</if>
-            <if test="caseType != null">case_type = #{caseType},</if>
+            <if test="updateCaseType != null and updateCaseType">case_type = #{caseType},</if>
+            <if test="(updateCaseType == null or updateCaseType == false) and caseType != null">case_type = #{caseType},</if>
             <if test="caseExpect != null">case_expect = #{caseExpect},</if>
             <if test="caseStep != null">case_step = #{caseStep,typeHandler=com.cat2bug.system.mybatis.CaseStepListJsonTypeHandler},</if>
             <if test="caseLevel != null">case_level = #{caseLevel},</if>

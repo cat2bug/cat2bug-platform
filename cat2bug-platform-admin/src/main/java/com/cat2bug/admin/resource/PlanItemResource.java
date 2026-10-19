@@ -101,12 +101,14 @@ public class PlanItemResource {
 
     @GET
     @Path("/case/list")
-    @RequiresPermissions(value = {"system:plan:run", "system:plan:edit"}, logical = RequiresPermissions.Logical.OR)
+    @RequiresPermissions(value = {"system:plan:run", "system:plan:edit", "system:plan:add"}, logical = RequiresPermissions.Logical.OR)
     public TableDataInfo caseList(@QueryParam("projectId") Long projectId,
                                   @QueryParam("moduleId") Long moduleId,
                                   @QueryParam("caseName") String caseName,
+                                  @QueryParam("caseNum") Long caseNum,
                                   @QueryParam("caseType") Long caseType,
                                   @QueryParam("caseLevel") Long caseLevel,
+                                  @QueryParam("reviewStatus") String reviewStatus,
                                   @QueryParam("params[planId]") String planId,
                                   @QueryParam("pageNum") Integer pageNum,
                                   @QueryParam("pageSize") Integer pageSize) {
@@ -114,8 +116,10 @@ public class PlanItemResource {
         query.setProjectId(projectId);
         query.setModuleId(moduleId);
         query.setCaseName(caseName);
+        query.setCaseNum(caseNum);
         query.setCaseType(caseType);
         query.setCaseLevel(caseLevel);
+        query.setReviewStatus(reviewStatus);
         query.setParams(new HashMap<>());
         if (planId != null) {
             query.getParams().put("planId", planId);

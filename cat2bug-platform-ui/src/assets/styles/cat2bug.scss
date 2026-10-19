@@ -1440,6 +1440,8 @@ img.cat2bug-image-error__img {
 .report-tools,
 .notice-tools,
 .defect-field-tools,
+.list-page-toolbar,
+.case-settings-tools,
 .project-manage-tools,
 .project-option-list-tools,
 .git-tools,
@@ -1532,6 +1534,8 @@ img.cat2bug-image-error__img {
 .report-tools,
 .notice-tools,
 .defect-field-tools,
+.list-page-toolbar,
+.case-settings-tools,
 .project-manage-tools,
 .project-option-list-tools,
 .git-tools,
@@ -2126,7 +2130,8 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   align-content: flex-start;
   white-space: normal;
   word-break: break-word;
-  overflow: visible !important;
+  max-height: calc(var(--cat2bug-table-row-max-height, 100px) - 11px);
+  overflow: hidden !important;
 }
 
 .cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .defect-operate-cell,
@@ -2154,8 +2159,8 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 }
 
 /* 缺陷名称列：标题与统计信息左对齐，避免宽列内视觉居中 */
-.el-table td.defect-name-col .cell,
-.cat2-bug-table-wrap td.defect-name-col .cell,
+.el-table td.defect-name-col .cell:has(.table-defect-title),
+.cat2-bug-table-wrap td.defect-name-col .cell:has(.table-defect-title),
 .el-table td.doc-name-col .cell,
 .cat2-bug-table-wrap td.doc-name-col .cell,
 .el-table td.report-title-col .cell,

@@ -376,7 +376,8 @@ export default {
 .popup-main {
   position: relative;
   margin: 10px auto;
-  background: #fff;
+  background: var(--card-bg);
+  color: var(--text-color-primary);
   border-radius: 5px;
   font-size: 12px;
   overflow: hidden;
@@ -385,14 +386,15 @@ export default {
   overflow: hidden;
   line-height: 34px;
   padding-top: 6px;
-  background: #f2f2f2;
+  background: var(--bg-color-block);
+  color: var(--text-color-primary);
 }
 .popup-result {
   box-sizing: border-box;
   line-height: 24px;
   margin: 25px auto;
   padding: 15px 10px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color-base);
   position: relative;
 }
 .popup-result .title {
@@ -404,7 +406,7 @@ export default {
   margin-left: -70px;
   text-align: center;
   line-height: 30px;
-  background: #fff;
+  background: var(--card-bg);
 }
 .popup-result table {
   text-align: center;

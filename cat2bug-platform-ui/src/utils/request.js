@@ -143,7 +143,9 @@ service.interceptors.response.use(res => {
           });
         })
       }
-      return Promise.reject(i18n.global.t('http.invalid-session'))
+      const invalidSession = new Error(i18n.global.t('http.invalid-session'))
+      invalidSession.code = 401
+      return Promise.reject(invalidSession)
     } else if (code > 10000) {
       return Promise.reject(res.data)
     } else if (code === 500) {
@@ -183,7 +185,9 @@ service.interceptors.response.use(res => {
     } else if (message.includes("timeout")) {
       message = i18n.global.t('http.system-interface-timeout');
     } else if (message.includes("Request failed with status code")) {
-      message = i18n.global.t('system.interface') + ' ' + message.substr(message.length - 3) + ' ' + i18n.global.t('exception');
+      const body = error.response && error.response.data
+      const serverMsg = body && typeof body === 'object' ? body.msg : ''
+      message = serverMsg || (i18n.global.t('system.interface') + ' ' + message.substr(message.length - 3) + ' ' + i18n.global.t('exception'))
     }
     const silent = error.config && error.config.silentError === true
     if (!silent) {

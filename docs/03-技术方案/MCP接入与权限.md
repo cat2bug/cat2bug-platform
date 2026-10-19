@@ -16,7 +16,7 @@ AI 客户端（Cursor、Claude Code、Codex、OpenCode、Claude Desktop / 网页
 - 表 `sys_project_mcp`（`project_id` 主键、`enabled`、`modules` JSON 数组、`update_by`、`update_time`）。**没有行 = 关闭**：老项目升级后默认关闭；新建项目在 `SysProjectService.insertSysProject` 中写入「开启 + 当时全部模块」。
 - 存「已勾选列表」：以后在 `McpModules.ALL` 末尾新增模块，已有项目默认不勾选。
 - 接口 `GET/PUT /system/project/{projectId}/mcp`（`ProjectMcpResource`）：读要求 `system:project:query`，改要求 `system:project:edit`，且都按**目标项目**的角色权限再校验一次（不依赖网页当前项目）；修改写操作日志「项目MCP设置」。返回值带 `editable`、`mcpUrl`、`publicUrlConfigured`、`teamKey`、`projectKey`。
-- 前端：项目设置页「AI 管理」卡片里的「MCP 接入」链接（要求 `system:project:query`），打开弹窗 `views/system/project/option/dialog/McpSettingsDialog.vue`（放在卡片自动加载目录 `option/item/` 之外），含开关、模块勾选（按 `availableModules[].key` 显示本地化名称）、MCP 地址与客户端示例。
+- 前端：项目设置页「AI 管理」卡片里的「MCP 接入」链接（要求 `system:project:query`）进入页面 `views/system/project/mcp/index.vue`（路由 `/project/mcp-access`，头部带返回；`/project/mcp` 仍是菜单里的外部 MCP Client），含开关、模块勾选（按 `availableModules[].key` 显示本地化名称）、MCP 地址与客户端示例。
 
 ## 有效权限
 
@@ -31,7 +31,7 @@ AI 客户端（Cursor、Claude Code、Codex、OpenCode、Claude Desktop / 网页
 | `document` | `system:document:` |
 | `code` | `system:git:` |
 | `dashboard` | `system:dashboard:` |
-| `project` | `system:project:query` / `list` / `edit` / `member`、`system:project:defect-field:` |
+| `project` | `system:project:query` / `list` / `edit` / `member`、`system:project:defect-field:`、`system:project:case-type:` |
 
 - **实际权限 = 用户在该项目的角色权限 ∩ 项目已勾选模块的权限**。不在表内的权限（用户、角色、菜单、字典、团队、项目 API Key、新建 / 删除 / 推送项目等）一律视为系统级，MCP 不可用。
 - 计算服务 `McpAccessService`（system，`service/mcp/`，结果类型 `McpProjectAccess`）：按项目找团队，调用 `selectRolePermissionByUserId(teamId, projectId, userId)`；结果按（用户，项目）缓存 30 秒。修改项目 MCP 设置时立即清除（`invalidateProject`），成员角色变更最多延迟 30 秒生效。**不读写 `sys_user_config`**，AI 操作别的项目不会切走网页当前项目。
@@ -42,7 +42,7 @@ AI 客户端（Cursor、Claude Code、Codex、OpenCode、Claude Desktop / 网页
 - 项目定位：工具**没有** `project` 参数，统一作用于授权时选择的项目。`get_current_project` 返回该项目、可用模块，有代码权限时附带仓库列表；`resolve_project_by_git_remote` 按本地 `git remote` 地址（`/{team}/{project}/code/{slug}.git` 或旧式 `/git/p/{projectId}/{slug}.git`）找授权项目内的仓库，不属于该项目时报错。
 - 精做工具（`cat2bug-platform-admin/.../admin/mcp/`）：
   - 缺陷 `McpDefectTools`：`search_defects`、`get_defect`、`create_defect`、`update_defect`、`comment_defect`、`assign_defect`、`repair_defect`（可带 `commits`）、`reject_defect`、`pass_defect`、`close_defect`、`open_defect`、`list_project_members`。
-  - 用例 / 计划 / 交付物 / 文档 / 统计 `McpWorkTools`：`search_cases`、`get_case`、`create_case`、`update_case`、`list_plans`、`list_plan_items`、`update_plan_item`、`list_modules`、`list_documents`、`get_project_stats`。
+  - 用例 / 计划 / 交付物 / 文档 / 统计 `McpWorkTools`：`search_cases`、`get_case`、`create_case`、`update_case`、`list_case_types`、`create_case_type`、`update_case_type`、`delete_case_type`、`start_case_review`、`comment_case_review`、`complete_case_review`、`update_case_review_report`、`list_case_reviews`、`get_case_review`、`list_plans`、`list_plan_items`、`update_plan_item`、`list_modules`、`list_documents`、`get_project_stats`。类型与评审挂在已有 `case` / `project` 模块上，不新增 MCP 模块键。`create_case_type`、`start_case_review` 支持 `idempotency_key`。
   - 代码 `McpCodeTools`：`list_repositories`、`list_code_tree`、`read_code_file`、`search_code`、`list_commits`、`get_commit`。
 - 工具注解标明只读 / 破坏性 / 幂等；`create_defect`、`create_case`、`comment_defect` 支持 `idempotency_key`（表 `sys_mcp_idempotency`，同一用户同一工具同一键 24 小时内返回首次结果，每小时清理）。
 - 缺陷流转在工具层镜像网页按钮的处理人规则；后端 `SysDefectService.requireTransition` 另做状态校验，非法流转 409（与网页一致）。
@@ -59,7 +59,7 @@ AI 客户端（Cursor、Claude Code、Codex、OpenCode、Claude Desktop / 网页
   - 主题模块不在可用模块里时只返回实况和开启方式，不返回操作步骤。
   - **`code` 主题含仓库 / 基线少打断规则**（软规则，无服务端硬闸）：单仓库且本地 `origin` 能 `resolve_project_by_git_remote` 到该仓时不问仓库；多仓或 remote 对不上必须问；基线默认 `defaultBranch`，说明或确认时列出本地常见分支。`fix_defect` Prompt 与 `get_current_project` 的 `repositoryConfirmHint` 同口径。
 - 引导命令（MCP Prompts，`McpGuidePrompts`）：`report_defect`、`fix_defect`、`review_defect`、`run_test_plan`、`write_test_cases`、`project_status`，参数全部可选。只生成分步指令（先读指南 → 定位对象 → 写操作前确认 → 每步汇报），不读写数据，权限仍由工具校验。
-- 正文是 Markdown 资源：`cat2bug-platform-admin/src/main/resources/mcp-guide/zh-CN/<topic>.md`、`prompts/<name>.md`（`{{参数}}` 占位，空值替换为「（未提供）」），由 `McpGuideContent` 读取并缓存。目录已加入两处 `quarkus.native.resources.includes`。
+- 正文是 Markdown 资源：`cat2bug-platform-admin/src/main/resources/mcp-guide/zh-CN/<topic>.md`、`prompts/<name>.md`（`{{参数}}` 占位，空值替换为「（未提供）」），由 `McpGuideContent` 读取并缓存。目录已加入两处 `quarkus.native.resources.includes`。用例评审内置模板在 `case-review/**`（见 [[用例评审纪要模板]]），同样须打进 Native。
 - **改缺陷流转规则（`McpDefectTools` 的处理人校验、`SysDefectService.requireTransition`）或默认角色权限时，同步改 `mcp-guide/zh-CN/defect.md`、`roles.md`**；测试对状态表关键句有断言。
 - 目前只有简体中文；以后加语言时按 `mcp-guide/<语言>/` 分目录。
 

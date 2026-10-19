@@ -46,15 +46,20 @@
         <el-form-item :label="$t('case.name')" prop="caseName">
           <el-input type="textarea" v-model="form.caseName" :placeholder="$t('case.please-enter-title')" rows="3" maxlength="255" show-word-limit />
         </el-form-item>
+        <div class="case-module-level-row">
+          <el-form-item class="case-pair-field" :label="$t('module')" prop="moduleId">
+            <select-module ref="selectModule" size="medium" v-model:moduleId="form.moduleId" :project-id="projectId"/>
+          </el-form-item>
+          <el-form-item class="case-pair-field" :label="$t('level')" prop="caseLevel">
+            <cat2-bug-select-level v-model:level="form.caseLevel" />
+          </el-form-item>
+        </div>
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$t('module')" prop="moduleId">
-              <select-module ref="selectModule" size="medium" v-model:moduleId="form.moduleId" :project-id="projectId"/>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item :label="$t('level')" prop="caseLevel">
-              <cat2-bug-select-level v-model:level="form.caseLevel" />
+            <el-form-item :label="$t('case.type')" prop="caseType">
+              <el-select v-model="form.caseType" clearable filterable :placeholder="$t('case.type')" style="width: 100%">
+                <el-option v-for="item in caseTypes" :key="item.typeId" :label="item.typeName" :value="item.typeId" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -105,6 +110,7 @@ import dialogFormShortcuts from "@/mixins/dialog-form-shortcuts";
 import formFieldHints from "@/mixins/form-field-hints";
 import caseDrawerClose from "@/mixins/case-drawer-close";
 import { useUserStore } from "@/stores/user";
+import { listCaseTypes } from "@/api/system/case-type";
 
 const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 
@@ -116,6 +122,7 @@ export default {
     return {
       loading: false,
       caseStepSwitchType: '',
+      caseTypes: [],
       // 是否显示创建组件
       visible: false,
       // 是否连续创建用例
@@ -208,9 +215,16 @@ export default {
       })
       return hints
     },
+    loadCaseTypes() {
+      if (!this.projectId) return
+      listCaseTypes(this.projectId).then(res => {
+        this.caseTypes = res.data || []
+      }).catch(() => {})
+    },
     open(caseId, params) {
       let self = this;
       this.params = params;
+      this.loadCaseTypes();
       this.reset();
       if(caseId) {
         this.loading = true;
@@ -307,6 +321,7 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.form.caseStep = this.form.caseStep.filter(c=>c.stepDescribe || c.stepExpect);
+          this.form.updateCaseType = true;
           if (this.isAddMode) {
             addCase(this.form).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('create-success'));
@@ -424,5 +439,25 @@ export default {
   background-color: #f0f9eb;
   border: 1px solid #c2e7b0;
   color: #67c23a;
+}
+/* 抽屉够宽时交付物与等级并排；放不下时等级换到下一行并占满 */
+.case-module-level-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.case-pair-field {
+  flex: 1 1 360px;
+  max-width: 100%;
+  min-width: min(100%, 360px);
+  box-sizing: border-box;
+}
+.case-pair-field :deep(.select-module-input) {
+  max-width: 100%;
+}
+.case-pair-field :deep(.case-level-input) {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 </style>

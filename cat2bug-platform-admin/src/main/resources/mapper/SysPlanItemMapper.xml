@@ -36,6 +36,8 @@
         <result property="moduleId" column="module_id"/>
         <result property="moduleName" column="module_name"/>
         <result property="caseType" column="case_type"/>
+        <result property="caseTypeName" column="case_type_name"/>
+        <result property="reviewStatus" column="review_status"/>
         <result property="caseExpect" column="case_expect"/>
         <result property="caseStep" column="case_step"
                 typeHandler="com.cat2bug.system.mybatis.CaseStepListJsonTypeHandler"/>
@@ -71,10 +73,11 @@
     </sql>
 
     <sql id="selectSysCaseVo">
-        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.case_num, c.project_id, c.remark, c.img_urls, c.annex_urls, c.case_data,
+        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, ct.type_name as case_type_name, c.review_status, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.case_num, c.project_id, c.remark, c.img_urls, c.annex_urls, c.case_data,
                pi.plan_item_id, pi.plan_id, pi.case_id as pi_case_id, pi.plan_item_state, pi.update_by_id, pi.update_time, pi.defect_ids
         from sys_case c
                  LEFT JOIN sys_module m on m.module_id = c.module_id
+                 LEFT JOIN sys_case_type ct on ct.type_id = c.case_type
                  LEFT JOIN sys_plan_item pi ON c.case_id = pi.case_id
         <if test="query.params != null and query.params.planId != null and query.params.planId != ''"> and (pi.plan_id = #{query.params.planId})</if>
     </sql>
@@ -164,6 +167,8 @@
             </if>
             <if test="query.caseName != null and query.caseName != ''"> and c.case_name like concat('%', #{query.caseName}, '%')</if>
             <if test="query.caseType != null"> and c.case_type = #{query.caseType}</if>
+            <if test="query.reviewStatus != null and query.reviewStatus == 'none'"> and (c.review_status is null or c.review_status = '')</if>
+            <if test="query.reviewStatus != null and query.reviewStatus != '' and query.reviewStatus != 'none'"> and c.review_status = #{query.reviewStatus}</if>
             <if test="query.caseExpect != null and query.caseExpect != ''"> and c.case_expect = #{query.caseExpect}</if>
             <if test="query.caseLevel != null"> and c.case_level = #{query.caseLevel}</if>
             <if test="query.casePreconditions != null and query.casePreconditions != ''"> and c.case_preconditions = #{query.casePreconditions}</if>

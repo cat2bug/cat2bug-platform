@@ -220,7 +220,7 @@ export default {
     }
     .el-icon-arrow-left:hover {
       cursor: pointer;
-      color: #909399;
+      color: var(--text-color-secondary);
     }
     .case-search-title-name {
       max-width: 400px;
@@ -229,7 +229,7 @@ export default {
       overflow: hidden;
       text-overflow: ellipsis;
       font-size: 20px;
-      color: #303133;
+      color: var(--text-color-primary);
       font-weight: 500;
       margin-top: 10px;
       margin-bottom: 10px;
@@ -250,13 +250,13 @@ export default {
   position: absolute;
   width: 100%;
   margin: 0px;
-  background-color: white;
+  background-color: var(--card-bg);
   > div {
     display: inline-flex;
     flex-direction: row;
     width: calc(100% - 60px);
     margin: 10px 30px 20px 30px;
-    border: 1px solid #DCDFE6;
+    border: 1px solid var(--border-color-base);
     border-radius: 4px;
   }
   .el-input {
@@ -268,7 +268,7 @@ export default {
   .el-button {
     flex-shrink: 0;
     border-width: 0px;
-    border-left: 1px solid #DCDFE6;
+    border-left: 1px solid var(--border-color-base);
   }
 }
 .chat {

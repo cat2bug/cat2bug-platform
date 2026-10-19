@@ -94,6 +94,7 @@ public class CaseResource {
                               @QueryParam("caseType") Long caseType,
                               @QueryParam("caseLevel") Long caseLevel,
                               @QueryParam("caseNum") Long caseNum,
+                              @QueryParam("reviewStatus") String reviewStatus,
                               @QueryParam("pageNum") Integer pageNum,
                               @QueryParam("pageSize") Integer pageSize) {
         SysCase query = new SysCase();
@@ -103,6 +104,7 @@ public class CaseResource {
         query.setCaseType(caseType);
         query.setCaseLevel(caseLevel);
         query.setCaseNum(caseNum);
+        query.setReviewStatus(reviewStatus);
         sysCaseService.restrictToModuleTree(query, longQuery(uriInfo, "params[modulePid]"));
         TableDataInfo table = sysCaseService.selectCasePage(query, pageNum, pageSize);
         enrichCaseFocusList(table);

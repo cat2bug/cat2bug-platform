@@ -14,6 +14,11 @@ public class SysCase {
     private Long moduleId;
     private String moduleName;
     private Long caseType;
+    private String caseTypeName;
+    /** 为 true 时更新类型，允许把类型清空为 null */
+    private Boolean updateCaseType;
+    /** null 未评审，in_review 评审中，passed 通过，changes 需修改 */
+    private String reviewStatus;
     private String caseExpect;
     private List<SysCaseStep> caseStep;
     private Long caseLevel;
@@ -92,6 +97,30 @@ public class SysCase {
 
     public void setCaseType(Long caseType) {
         this.caseType = caseType;
+    }
+
+    public String getCaseTypeName() {
+        return caseTypeName;
+    }
+
+    public void setCaseTypeName(String caseTypeName) {
+        this.caseTypeName = caseTypeName;
+    }
+
+    public Boolean getUpdateCaseType() {
+        return updateCaseType;
+    }
+
+    public void setUpdateCaseType(Boolean updateCaseType) {
+        this.updateCaseType = updateCaseType;
+    }
+
+    public String getReviewStatus() {
+        return reviewStatus;
+    }
+
+    public void setReviewStatus(String reviewStatus) {
+        this.reviewStatus = reviewStatus;
     }
 
     public String getCaseExpect() {

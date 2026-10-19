@@ -1,7 +1,7 @@
 <template>
   <!-- 添加或修改测试计划对话框 -->
   <el-drawer
-    custom-class="handle-plan-dialog"
+    class="handle-plan-dialog"
     size="90%"
     v-model="visible"
     direction="rtl"
@@ -481,7 +481,7 @@ export default {
   }
   .el-icon-arrow-left:hover {
     cursor: pointer;
-    color: #909399;
+    color: var(--text-color-secondary);
   }
   .plan-run-title-name {
     //flex: 1;
@@ -506,7 +506,7 @@ export default {
   }
   .plan-run-title-num, .plan-run-title-name {
     font-size: 20px;
-    color: #303133;
+    color: var(--text-color-primary);
     font-weight: 500;
     float: left;
     margin-right:10px;
@@ -544,10 +544,10 @@ export default {
   max-width: 100%;
   box-sizing: border-box;
   border-radius: 4px;
-  border: 1px solid #ebeef5;
-  background-color: #fff;
+  border: 1px solid var(--border-color-light);
+  background-color: var(--card-bg);
   overflow: hidden;
-  color: #303133;
+  color: var(--text-color-primary);
   transition: 0.3s;
   /* 与仪表盘项 padding 左右 5px 接近；保留略大的上下留白 */
   padding: 10px 5px;

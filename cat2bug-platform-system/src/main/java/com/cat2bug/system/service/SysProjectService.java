@@ -39,6 +39,9 @@ public class SysProjectService {
 
     @Inject
     SysProjectMcpService sysProjectMcpService;
+
+    @Inject
+    SysCaseTypeService sysCaseTypeService;
     public TableDataInfo selectProjectPage(Long userId, SysProject query, Integer pageNum, Integer pageSize) {
         if (query.getTeamId() == null) {
             throw new ApiException("团队不能为空");
@@ -126,6 +129,7 @@ public class SysProjectService {
             throw new ApiException("创建项目角色失败");
         }
         sysProjectMcpService.createDefault(sysProject.getProjectId(), String.valueOf(userId));
+        sysCaseTypeService.seedDefaults(sysProject.getProjectId());
         return 1;
     }
     public int updateSysProject(SysProject sysProject, Long userId) {

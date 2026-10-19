@@ -571,6 +571,83 @@ class QuarkusMcpServerTest {
         }
     }
 
+    @Test
+    void caseTypeAndReview() {
+        var types = given().header("Authorization", admin)
+                .when().get("/system/project/" + projectId + "/case-types")
+                .then().statusCode(200).body("code", equalTo(200))
+                .extract().path("data");
+        assertTrue(types.toString().contains("功能"), types.toString());
+
+        String typeName = "回归类型" + Long.toString(System.nanoTime(), 36);
+        Number typeId = given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body("{\"typeName\":\"" + typeName + "\"}")
+                .when().post("/system/project/" + projectId + "/case-types")
+                .then().statusCode(200).body("code", equalTo(200))
+                .extract().path("data.typeId");
+
+        Number moduleId = given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body("{\"projectId\":" + projectId + ",\"modulePid\":0,\"moduleName\":\"类型模块\"}")
+                .when().post("/system/module")
+                .then().statusCode(200).body("code", equalTo(200))
+                .extract().path("data[0].moduleId");
+        Number caseId = given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body("{\"projectId\":" + projectId + ",\"moduleId\":" + moduleId
+                        + ",\"caseName\":\"带类型用例\",\"caseLevel\":1,\"caseType\":" + typeId
+                        + ",\"updateCaseType\":true,\"caseExpect\":\"ok\",\"caseStep\":[{\"stepDescribe\":\"a\",\"stepExpect\":\"b\"}]}")
+                .when().post("/system/case")
+                .then().statusCode(200).body("code", equalTo(200))
+                .extract().path("data.caseId");
+
+        String blocked = given().header("Authorization", admin)
+                .when().delete("/system/project/" + projectId + "/case-types/" + typeId)
+                .then().extract().asString();
+        assertTrue(blocked.contains("仍有"), blocked);
+
+        String foreign = given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body("{\"projectId\":" + projectId + ",\"moduleId\":" + moduleId
+                        + ",\"caseName\":\"跨项目类型\",\"caseLevel\":1,\"caseType\":999999999,\"caseExpect\":\"ok\",\"caseStep\":[]}")
+                .when().post("/system/case")
+                .then().extract().asString();
+        assertTrue(foreign.contains("不属于"), foreign);
+
+        Number plainId = given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body("{\"projectId\":" + projectId + ",\"moduleId\":" + moduleId
+                        + ",\"caseName\":\"未评审用例\",\"caseLevel\":1,\"caseExpect\":\"ok\",\"caseStep\":[]}")
+                .when().post("/system/case")
+                .then().statusCode(200).body("code", equalTo(200))
+                .extract().path("data.caseId");
+        given().header("Authorization", admin).contentType(ContentType.JSON)
+                .body("{\"planName\":\"未评审计划\",\"planVersion\":\"1.0\",\"projectId\":" + projectId
+                        + ",\"sysPlanItemList\":[{\"caseId\":" + plainId + "}]}")
+                .when().post("/system/plan")
+                .then().statusCode(200).body("code", equalTo(200));
+
+        McpTestClient mcp = new McpTestClient(pat).initialize("Cursor-Test");
+        String key = "review-" + Long.toString(System.nanoTime(), 36);
+        JsonNode started = McpTestClient.json(ok(mcp.callTool("start_case_review", Map.of(
+                "case_ids", List.of(caseId.longValue(), plainId.longValue()), "idempotency_key", key))));
+        long reviewId = started.path("reviewId").asLong();
+        JsonNode replay = McpTestClient.json(ok(mcp.callTool("start_case_review", Map.of(
+                "case_ids", List.of(caseId.longValue(), plainId.longValue()), "idempotency_key", key))));
+        assertTrue(replay.path("replayed").asBoolean(), replay.toString());
+        assertEquals(reviewId, replay.path("reviewId").asLong());
+
+        JsonNode conflict = mcp.callTool("start_case_review", Map.of("case_ids", List.of(caseId.longValue())));
+        assertTrue(conflict.path("isError").asBoolean(), McpTestClient.text(conflict));
+        assertTrue(McpTestClient.text(conflict).contains("进行中的评审"), McpTestClient.text(conflict));
+
+        ok(mcp.callTool("comment_case_review", Map.of("review_id", reviewId, "case_id", caseId.longValue(), "verdict", "passed", "comment", "可以")));
+        ok(mcp.callTool("comment_case_review", Map.of("review_id", reviewId, "case_id", plainId.longValue(), "verdict", "changes", "comment", "改标题")));
+        JsonNode done = McpTestClient.json(ok(mcp.callTool("complete_case_review", Map.of("review_id", reviewId))));
+        assertTrue(done.path("reportMarkdown").asText().contains("可以") || done.toString().contains("通过"), done.toString());
+
+        String stamped = given().header("Authorization", admin)
+                .when().get("/system/case/" + caseId)
+                .then().statusCode(200).extract().asString();
+        assertTrue(stamped.contains("passed"), stamped);
+    }
+
     private static JsonNode ok(JsonNode result) {
         assertFalse(result.path("isError").asBoolean(), McpTestClient.text(result));
         return result;
