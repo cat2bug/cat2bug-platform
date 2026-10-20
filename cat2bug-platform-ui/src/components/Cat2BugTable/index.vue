@@ -1,7 +1,10 @@
 <template>
   <div
     class="cat2-bug-table-wrap"
-    :class="{ 'is-column-resizing': columnResizeActive }"
+    :class="{
+      'is-column-resizing': columnResizeActive,
+      'is-layout-ready': tableLayoutReady
+    }"
     :style="operateColumnWrapStyle"
   >
     <el-table ref="elTable"
@@ -67,6 +70,23 @@
           <slot name="columns" :scope="scope" :column="col"></slot>
         </template>
       </el-table-column>
+      <!-- 操作列前幽灵弹性列：吃掉主区剩余宽度，使 fixed-right 操作列贴容器右缘 -->
+      <el-table-column
+        v-if="operateSpacerEnabled && spacerColumnWidth > 0"
+        key="cat2bug-operate-spacer"
+        class-name="no-drag cat2bug-operate-spacer-column"
+        label-class-name="cat2bug-operate-spacer-column"
+        :width="spacerColumnWidth"
+        :resizable="false"
+        align="left"
+      >
+        <template #header>
+          <span class="cat2bug-operate-spacer-header" aria-hidden="true" />
+        </template>
+        <template #default>
+          <span class="cat2bug-operate-spacer-cell" aria-hidden="true" />
+        </template>
+      </el-table-column>
       <slot name="append"></slot>
     </el-table>
     <!-- 原生横向条无法在不错位 DOM 的情况下区间显示；自定义条同步 scrollLeft，轨道从左/右固定列内侧起算 -->
@@ -100,6 +120,8 @@ const COLUMN_WIDTH_PERSIST_DEBOUNCE_MS = 300;
 const COLUMN_RESIZE_BODY_CLASS = 'cat2bug-table-column-resizing';
 /** append 操作列 class-name 需含此类名以启用自动列宽 */
 const OPERATE_COLUMN_CLASS = 'cat2bug-operate-column';
+/** 操作列前幽灵弹性列（不进列配置 / 选择器） */
+const OPERATE_SPACER_COLUMN_CLASS = 'cat2bug-operate-spacer-column';
 /** 操作列内容容器 class，用于测量与换行；无此 class 时回退测量 .cell 内可见子节点 */
 const OPERATE_TOOLS_CLASS = 'cat2bug-operate-tools';
 const DEFAULT_OPERATE_COLUMN_MAX_WIDTH = 450;
@@ -138,6 +160,12 @@ export default {
       _columnResizeSession: null,
       _columnResizeLayoutRaf: null,
       flexColumnWidths: {},
+      /** 操作列前 spacer 宽度（px）；0 表示不渲染 */
+      spacerColumnWidth: 0,
+      /** 是否检测到 append 操作列（layout 时更新） */
+      operateSpacerEnabled: false,
+      /** 首屏 layout（含 spacer/操作列测宽）完成后再显示，避免刷新列宽跳动 */
+      tableLayoutReady: false,
       _lastSyncedRowHeights: null,
       _layoutPassRunning: false,
     }
@@ -269,12 +297,61 @@ export default {
       });
     },
     data() {
-      this.$nextTick(() => this.scheduleDoLayout());
+      // 首屏未揭开才重算；已揭开或刷新 loading 中不跑 layout（实测 doLayout 会让行高可见收窄）
+      if (this.loading) return;
+      if (this.tableLayoutReady) {
+        // 刷新后行 DOM 可能重建，把已锁行高写回；对不上再测时只加不减
+        this.$nextTick(() => {
+          requestAnimationFrame(() => {
+            if (!this.tableLayoutReady || this.loading) return;
+            if (!this.reapplyLastSyncedRowHeights()) {
+              this.syncFixedDataRowHeights({ force: true, preserveMin: true });
+            }
+          });
+        });
+        return;
+      }
+      this.$nextTick(() => this.scheduleDoLayout(true));
     },
     loading(val) {
-      if (val === false) {
-        this.$nextTick(() => this.scheduleDoLayout());
+      if (val === true) {
+        // 已揭开后的刷新：只靠 v-loading，不藏表、不解锁 flex、不重跑 layout
+        if (this.tableLayoutReady) {
+          return;
+        }
+        // 首屏：藏表并清会话 flex，等数据后再赋一次
+        this.tableLayoutReady = false;
+        this._lastSyncedRowHeights = null;
+        this._revealStableSig = null;
+        this._revealStableCount = 0;
+        this._rowSyncRetryCount = 0;
+        this.clearSessionFlexColumnWidths();
+        if (this._rowSyncRafId != null) {
+          cancelAnimationFrame(this._rowSyncRafId);
+          this._rowSyncRafId = null;
+        }
+        if (this._layoutReadyFallbackTimer) {
+          clearTimeout(this._layoutReadyFallbackTimer);
+        }
+        this._layoutReadyFallbackTimer = setTimeout(() => {
+          this._layoutReadyFallbackTimer = null;
+          this.forceTableLayoutReady();
+        }, 800);
+        return;
       }
+      // 已揭开：刷新结束不再 scheduleDoLayout，避免行高可见跳动
+      if (this.tableLayoutReady) {
+        this.$nextTick(() => this.updateCustomHorizontalScrollbar());
+        return;
+      }
+      if (this._layoutReadyFallbackTimer) {
+        clearTimeout(this._layoutReadyFallbackTimer);
+      }
+      this._layoutReadyFallbackTimer = setTimeout(() => {
+        this._layoutReadyFallbackTimer = null;
+        this.forceTableLayoutReady();
+      }, 800);
+      this.$nextTick(() => this.scheduleDoLayout(true));
     },
     columns: {
       deep: true,
@@ -303,11 +380,21 @@ export default {
       this.setupOperateColumnResizeGuard();
       this.setupCustomHorizontalScrollbar();
       this.hydrateFlexColumnWidthsFromTableFieldList();
-      this.scheduleDoLayout();
+      // 首屏立即 layout，避免 50ms 防抖内先画出错误列宽再跳动
+      this.scheduleDoLayout(true);
+      // 兜底：超时仍未就绪则强制揭开（空表/异常），正常路径走 markTableLayoutReady 等行挂上
+      this._layoutReadyFallbackTimer = setTimeout(() => {
+        this._layoutReadyFallbackTimer = null;
+        this.forceTableLayoutReady();
+      }, 800);
     });
   },
   beforeDestroy() {
     this.teardownOperateColumnResizeGuard();
+    if (this._layoutReadyFallbackTimer) {
+      clearTimeout(this._layoutReadyFallbackTimer);
+      this._layoutReadyFallbackTimer = null;
+    }
     if (this._doLayoutTimer) {
       clearTimeout(this._doLayoutTimer);
       this._doLayoutTimer = null;
@@ -363,7 +450,10 @@ export default {
       return this.columnTableWidth(col) !== undefined;
     },
     columnShouldAutoFlex(col) {
-      return this.isFlexColumn(col) && !this.columnHasUserWidth(col);
+      if (!this.isFlexColumn(col) || this.columnHasUserWidth(col)) return false;
+      // 本会话已算过弹性宽则锁定，避免操作列测宽/数据到达后名称列反复伸缩跳动
+      if (this.flexColumnWidths[col.key] !== undefined) return false;
+      return true;
     },
     columnBindWidth(col) {
       if (this.isFlexColumn(col)) {
@@ -378,6 +468,132 @@ export default {
      * 固定列区域是独立 table，主表体与固定列行高依赖同一套列宽与 scrollY gutter。
      * 数据/插槽渲染后延迟 doLayout，避免中间列换行高度与固定列不一致。
      */
+    refreshOperateSpacerEnabled() {
+      const enabled = this.getOperateColumns().length > 0;
+      if (this.operateSpacerEnabled !== enabled) {
+        this.operateSpacerEnabled = enabled;
+      }
+      if (!enabled && this.spacerColumnWidth !== 0) {
+        this.spacerColumnWidth = 0;
+        return true;
+      }
+      return false;
+    },
+    isOperateSpacerStoreColumn(col) {
+      if (!col) return false;
+      const cn = this.resolveOperateColumnClassName(col);
+      return cn.indexOf(OPERATE_SPACER_COLUMN_CLASS) !== -1;
+    },
+    /** 主区已占用宽度：可见业务列 + prepend 等非操作/非 spacer 列 */
+    sumMainAreaOccupiedWidth(t) {
+      if (!t || !t.$el) return 0;
+      let fixedTotal = 0;
+      const columns = getTableColumns(t);
+      const managedProps = new Set(this.showTableFieldList.map(c => c.prop).filter(Boolean));
+      // 拖宽过程中 store.realWidth 滞后，优先用我们刚写入的 bind 宽，避免 spacer 晚一拍
+      const preferBound = this.columnResizeActive;
+
+      this.showTableFieldList.forEach(col => {
+        if (!col.visible) return;
+        if (preferBound) {
+          const bound = this.columnBindWidth(col);
+          fixedTotal += bound !== undefined ? bound : this.columnMinWidth(col);
+          return;
+        }
+        const storeCol = columns.find(c => c && c.property === col.prop);
+        const realW = storeCol && storeCol.realWidth;
+        if (realW > 0) {
+          fixedTotal += realW;
+          return;
+        }
+        const bound = this.columnBindWidth(col);
+        fixedTotal += bound !== undefined ? bound : this.columnMinWidth(col);
+      });
+
+      columns.forEach(col => {
+        if (!col) return;
+        if (col.property && managedProps.has(col.property)) return;
+        if (this.isOperateColumn(col) || this.isOperateSpacerStoreColumn(col)) return;
+        const realW = Number(col.realWidth) || this.sanitizeColumnWidthPx(col.width) || 0;
+        if (realW > 0) {
+          fixedTotal += realW;
+          return;
+        }
+        if (col.type === 'selection') {
+          fixedTotal += this.sanitizeColumnWidthPx(col.width) || 50;
+        }
+      });
+      return fixedTotal;
+    },
+    setSpacerColumnWidth(nextPx) {
+      const next = Math.max(0, Math.floor(Number(nextPx) || 0));
+      const prev = this.spacerColumnWidth;
+      if (Math.abs(prev - next) <= FLEX_COLUMN_WIDTH_TOLERANCE_PX) {
+        return false;
+      }
+      this.spacerColumnWidth = next;
+      return true;
+    },
+    /**
+     * 无业务 auto-flex 列可吃剩余时，用 spacer 填满主区，使操作列贴右。
+     */
+    computeSpacerColumnWidth() {
+      const t = this.$refs.elTable;
+      if (!t || !t.$el) return false;
+      this.refreshOperateSpacerEnabled();
+      if (!this.operateSpacerEnabled) {
+        return this.setSpacerColumnWidth(0);
+      }
+
+      const containerWidth = this.resolveFlexContainerWidth(t);
+      if (containerWidth <= 0) {
+        return this.setSpacerColumnWidth(0);
+      }
+
+      const occupied = this.sumMainAreaOccupiedWidth(t);
+      const remaining = containerWidth - occupied;
+      if (remaining <= FLEX_COLUMN_WIDTH_TOLERANCE_PX) {
+        return this.setSpacerColumnWidth(0);
+      }
+      return this.setSpacerColumnWidth(remaining);
+    },
+    /** 清掉未手拖过的业务 flex 会话宽，下次 layout 可按真实操作列再赋一次 */
+    clearSessionFlexColumnWidths() {
+      (this.showTableFieldList || []).forEach(col => {
+        if (!this.isFlexColumn(col) || this.columnHasUserWidth(col)) return;
+        if (this.flexColumnWidths[col.key] !== undefined) {
+          delete this.flexColumnWidths[col.key];
+        }
+      });
+    },
+    /**
+     * 有未锁定的业务 flex 列时先赋一次会话宽并清 spacer；
+     * 之后（或无 auto-flex 时）用 spacer 吃剩余，避免名称列随操作列测宽跳动。
+     */
+    computeFlexOrSpacerColumnWidths() {
+      this.refreshOperateSpacerEnabled();
+      // loading 中不锁定 flex（空表/窄操作列会写错宽）；只先用 spacer 顶住
+      if (this.loading) {
+        if (this.operateSpacerEnabled) {
+          return this.computeSpacerColumnWidth();
+        }
+        return false;
+      }
+      const flexCols = this.showTableFieldList.filter(c => this.columnShouldAutoFlex(c));
+      if (flexCols.length) {
+        const cleared = this.setSpacerColumnWidth(0);
+        const flexChanged = this.computeFlexColumnWidths();
+        // 拖宽中 preferBound；刚写入 flex 后 store.realWidth 可能仍是旧值，spacer 延到后续 pass
+        const spacerChanged = this.operateSpacerEnabled && this.columnResizeActive
+          ? this.computeSpacerColumnWidth()
+          : false;
+        return cleared || flexChanged || spacerChanged;
+      }
+      if (this.operateSpacerEnabled) {
+        return this.computeSpacerColumnWidth();
+      }
+      return this.setSpacerColumnWidth(0);
+    },
     computeFlexColumnWidths() {
       const t = this.$refs.elTable;
       if (!t || !t.$el) return false;
@@ -405,6 +621,12 @@ export default {
       const managedProps = new Set(this.showTableFieldList.map(c => c.prop).filter(Boolean));
       columns.forEach(col => {
         if (!col || (col.property && managedProps.has(col.property))) return;
+        if (this.isOperateColumn(col) || this.isOperateSpacerStoreColumn(col)) return;
+        const realW = Number(col.realWidth) || this.sanitizeColumnWidthPx(col.width) || 0;
+        if (realW > 0) {
+          fixedTotal += realW;
+          return;
+        }
         if (col.type === 'selection') {
           fixedTotal += this.sanitizeColumnWidthPx(col.width) || 50;
         }
@@ -425,7 +647,7 @@ export default {
         if (prev !== undefined && Math.abs(prev - next) <= FLEX_COLUMN_WIDTH_TOLERANCE_PX) {
           return;
         }
-        this.$set(this.flexColumnWidths, fc.key, next);
+        this.flexColumnWidths[fc.key] = next;
         changed = true;
       };
 
@@ -454,7 +676,7 @@ export default {
 
       const next = Math.max(this.columnMinWidth(fc), Math.floor(current - overflow));
       if (next >= current) return false;
-      this.$set(this.flexColumnWidths, fc.key, next);
+      this.flexColumnWidths[fc.key] = next;
       return true;
     },
     hydrateFlexColumnWidthsFromTableFieldList() {
@@ -462,7 +684,7 @@ export default {
         if (!this.isFlexColumn(col) || !this.columnHasUserWidth(col)) return;
         const w = this.columnTableWidth(col);
         if (w !== undefined) {
-          this.$set(this.flexColumnWidths, col.key, w);
+          this.flexColumnWidths[col.key] = w;
         }
       });
     },
@@ -490,7 +712,17 @@ export default {
       }
       return containerWidth;
     },
-    runTableLayoutPass() {
+    /**
+     * @param {{ force?: boolean }} [options]
+     * force=true：列宽拖拽结束等场景，即使已揭开也重跑 layout
+     */
+    runTableLayoutPass(options = {}) {
+      const force = options.force === true;
+      // 已揭开后禁止整表 layout（window resize / RO 误触发），否则 flex/操作列再收会让行高可见变矮
+      if (this.tableLayoutReady && !force && !this.columnResizeActive) {
+        this.updateCustomHorizontalScrollbar();
+        return;
+      }
       if (this._layoutPassRunning) return;
       this._layoutPassRunning = true;
       const t = this.$refs.elTable;
@@ -504,30 +736,46 @@ export default {
         requestAnimationFrame(() => {
           this.syncOperateColumnWidths();
           requestAnimationFrame(() => {
-            const flexChanged = this.computeFlexColumnWidths();
+            this.refreshOperateSpacerEnabled();
+            const flexChanged = this.computeFlexOrSpacerColumnWidths();
             const finish = () => {
               const shrunk = this.shrinkFlexColumnsToFit();
+              const afterLayout = () => {
+                this._layoutPassRunning = false;
+                this.updateCustomHorizontalScrollbar();
+                if (this.tableLayoutReady) {
+                  // 拖列等强制 layout：可见态重锁行高（只加不减）
+                  this.syncFixedDataRowHeights({ force: true });
+                } else {
+                  this.markTableLayoutReady();
+                }
+              };
               if (shrunk) {
                 this.$nextTick(() => {
                   t.doLayout();
-                  requestAnimationFrame(() => {
-                    this._layoutPassRunning = false;
-                    this.requestFixedRowHeightSync();
-                    this.updateCustomHorizontalScrollbar();
-                  });
+                  requestAnimationFrame(afterLayout);
                 });
                 return;
               }
-              this._layoutPassRunning = false;
-              this.requestFixedRowHeightSync();
-              this.updateCustomHorizontalScrollbar();
+              afterLayout();
             };
             if (flexChanged) {
               this.$nextTick(() => {
                 t.doLayout();
                 requestAnimationFrame(() => {
                   this.syncOperateColumnWidths();
-                  requestAnimationFrame(finish);
+                  // flex 写入并 doLayout 后再定 spacer，有变化则再 layout 一次再揭开
+                  const spacerAfterFlex = this.operateSpacerEnabled && !this.loading
+                    ? this.computeSpacerColumnWidth()
+                    : false;
+                  if (spacerAfterFlex) {
+                    this.$nextTick(() => {
+                      t.doLayout();
+                      requestAnimationFrame(finish);
+                    });
+                  } else {
+                    requestAnimationFrame(finish);
+                  }
                 });
               });
             } else {
@@ -537,12 +785,110 @@ export default {
         });
       });
     },
-    scheduleDoLayout() {
-      if (this._doLayoutTimer) clearTimeout(this._doLayoutTimer);
+    /** immediate=true 时跳过防抖，用于首屏/loading 结束，减少列宽闪动 */
+    scheduleDoLayout(immediate = false) {
+      // 与 doLayout 一致：已揭开不再整表重算（仅拖列中例外）
+      if (this.tableLayoutReady && !this.columnResizeActive) {
+        if (this._doLayoutTimer) {
+          clearTimeout(this._doLayoutTimer);
+          this._doLayoutTimer = null;
+        }
+        this.$nextTick(() => this.updateCustomHorizontalScrollbar());
+        return;
+      }
+      if (this._doLayoutTimer) {
+        clearTimeout(this._doLayoutTimer);
+        this._doLayoutTimer = null;
+      }
+      if (immediate) {
+        this.runTableLayoutPass();
+        return;
+      }
       this._doLayoutTimer = setTimeout(() => {
         this._doLayoutTimer = null;
         this.runTableLayoutPass();
       }, 50);
+    },
+    forceTableLayoutReady() {
+      if (this.tableLayoutReady) return;
+      if (this.loading) {
+        // loading 中不强揭，等 loading 结束再走正常/兜底
+        return;
+      }
+      if (this.$el && this.$el.querySelector('.el-loading-mask')) {
+        requestAnimationFrame(() => this.forceTableLayoutReady());
+        return;
+      }
+      this.syncFixedDataRowHeights({ force: true });
+      this._revealStableHeight = null;
+      this._revealStableCount = 0;
+      this._rowSyncRetryCount = 0;
+      this.tableLayoutReady = true;
+      if (this._layoutReadyFallbackTimer) {
+        clearTimeout(this._layoutReadyFallbackTimer);
+        this._layoutReadyFallbackTimer = null;
+      }
+    },
+    /** 揭开前采样首行高度，连续稳定才揭开，避免 flex/操作列收完后行高再矮一截 */
+    isRevealRowHeightStable() {
+      const t = this.$refs.elTable;
+      const tr = t && t.$el && t.$el.querySelector('.el-table__body-wrapper tbody tr.el-table__row');
+      if (!tr) {
+        // 空表：无行可稳，直接视为稳定
+        return (this.data || []).length === 0;
+      }
+      const h = Math.round(tr.getBoundingClientRect().height * 100) / 100;
+      const operateW = this._lastOperateWidth != null ? String(this._lastOperateWidth) : '';
+      const sig = `${h}|${operateW}`;
+      if (this._revealStableSig !== sig) {
+        this._revealStableSig = sig;
+        this._revealStableCount = 1;
+        return false;
+      }
+      this._revealStableCount = (this._revealStableCount || 0) + 1;
+      return this._revealStableCount >= 3;
+    },
+    markTableLayoutReady() {
+      if (this.tableLayoutReady) return;
+      // 仍在 loading 时先不揭开：等数据行渲染后再测操作列并锁定 flex/spacer，避免名称列揭开后回缩
+      if (this.loading) return;
+      // v-loading 遮罩未卸完时延后，避免揭开后行高再收一截
+      if (this.$el && this.$el.querySelector('.el-loading-mask')) {
+        requestAnimationFrame(() => this.markTableLayoutReady());
+        return;
+      }
+      if (this._rowSyncRafId != null) {
+        cancelAnimationFrame(this._rowSyncRafId);
+        this._rowSyncRafId = null;
+      }
+      // 行 DOM / 固定列未就绪时延后；有数据时不要在重试耗尽后强行揭开空表
+      if (!this.syncFixedDataRowHeights({ force: true })) {
+        if (this._rowSyncRetryCount == null) this._rowSyncRetryCount = 0;
+        if (this._rowSyncRetryCount < 40) {
+          this._rowSyncRetryCount += 1;
+          requestAnimationFrame(() => this.markTableLayoutReady());
+          return;
+        }
+        if ((this.data || []).length > 0) return;
+      }
+      // 行高/操作列宽连续 3 帧不变再揭开（透明态把收窄吃掉）
+      if (!this.isRevealRowHeightStable()) {
+        if (this._rowSyncRetryCount == null) this._rowSyncRetryCount = 0;
+        if (this._rowSyncRetryCount < 60) {
+          this._rowSyncRetryCount += 1;
+          requestAnimationFrame(() => this.markTableLayoutReady());
+          return;
+        }
+      }
+      this.syncFixedDataRowHeights({ force: true });
+      this._rowSyncRetryCount = 0;
+      this._revealStableSig = null;
+      this._revealStableCount = 0;
+      this.tableLayoutReady = true;
+      if (this._layoutReadyFallbackTimer) {
+        clearTimeout(this._layoutReadyFallbackTimer);
+        this._layoutReadyFallbackTimer = null;
+      }
     },
 
     /** 主表与左右固定表各行 tr 上的行内 height，便于重新测量 */
@@ -581,26 +927,25 @@ export default {
       return max;
     },
 
-    /**
-     * Element 固定列为独立 table，仅靠 is-hidden + visibility 仍可能出现行高与斑马纹逐行错位。
-     * 以主表体行为基准，取主表 / 左固定 / 右固定同一索引行的最大高度，写回三处 tr。
-     */
-    syncFixedDataRowHeights() {
-      const t = this.$refs.elTable;
-      if (!t || !t.$el) return;
-      const root = t.$el;
+    applySyncedRowHeightsToDom(mainRows, leftRows, rightRows, heights) {
+      const n = heights.length;
+      for (let i = 0; i < n; i++) {
+        const px = `${heights[i]}px`;
+        if (mainRows[i]) mainRows[i].style.height = px;
+        if (leftRows && leftRows[i]) leftRows[i].style.height = px;
+        if (rightRows && rightRows[i]) rightRows[i].style.height = px;
+      }
+    },
+
+    collectFixedBodyRows(root) {
       const fixedL = root.querySelector(".el-table__fixed");
       const fixedR = root.querySelector(".el-table__fixed-right");
-      if (!fixedL && !fixedR) return;
-
       const mainBw = root.querySelector(".el-table__body-wrapper");
-      if (!mainBw) return;
-
+      if (!mainBw) {
+        return { fixedL, fixedR, mainRows: null, leftRows: null, rightRows: null };
+      }
       const sel = "tbody tr.el-table__row";
-
       const mainRows = mainBw.querySelectorAll(sel);
-      if (!mainRows.length) return;
-
       let leftRows = null;
       let rightRows = null;
       if (fixedL) {
@@ -611,10 +956,75 @@ export default {
         const fbw = fixedR.querySelector(".el-table__fixed-body-wrapper");
         if (fbw) rightRows = fbw.querySelectorAll(sel);
       }
+      return { fixedL, fixedR, mainRows, leftRows, rightRows };
+    },
 
-      let n = mainRows.length;
-      if (leftRows && leftRows.length < n) n = leftRows.length;
-      if (rightRows && rightRows.length < n) n = rightRows.length;
+    /** doLayout / max-height 变化后把已结算行高写回，不 clear 重测 */
+    reapplyLastSyncedRowHeights() {
+      const heights = this._lastSyncedRowHeights;
+      if (!heights || !heights.length) return false;
+      const t = this.$refs.elTable;
+      if (!t || !t.$el) return false;
+      const { fixedL, fixedR, mainRows, leftRows, rightRows } = this.collectFixedBodyRows(t.$el);
+      if (!mainRows || mainRows.length !== heights.length) return false;
+      // EP sticky：无独立 fixed 表，仍写回主表行高，避免揭开后自然高再被压矮
+      if (fixedL && (!leftRows || leftRows.length !== heights.length)) return false;
+      if (fixedR && (!rightRows || rightRows.length !== heights.length)) return false;
+      this.applySyncedRowHeightsToDom(mainRows, leftRows, rightRows, heights);
+      return true;
+    },
+
+    /**
+     * Element 旧版固定列为独立 table；EP sticky 无独立 fixed 表，仍锁主表 tr 高度，
+     * 避免揭开后 flex/doLayout 让行高可见收窄。
+     * @returns {boolean} false 表示行尚未对齐，调用方应延后揭开
+     */
+    syncFixedDataRowHeights(options = {}) {
+      const forceRemeasure = options.force === true;
+      const t = this.$refs.elTable;
+      if (!t || !t.$el) return false;
+      const root = t.$el;
+      const { fixedL, fixedR, mainRows, leftRows, rightRows } = this.collectFixedBodyRows(root);
+      // 必须先等主表行挂上。旧逻辑在无行时也 return true，会空表揭开再缩行高
+      if (!mainRows || !mainRows.length) {
+        // 有数据：等 DOM；无数据：也不要立刻揭开（等请求回来或 800ms fallback），避免先空后跳
+        return false;
+      }
+
+      // 固定表行数未对齐时不要用 0 截断，否则揭开后补同步会跳一下
+      if (fixedL && (!leftRows || leftRows.length !== mainRows.length)) return false;
+      if (fixedR && (!rightRows || rightRows.length !== mainRows.length)) return false;
+
+      const n = mainRows.length;
+
+      // 已揭开：只写回缓存高度，禁止 clear→重测（文档页 max-height/doLayout 后常见）
+      if (this.tableLayoutReady && !forceRemeasure && this._lastSyncedRowHeights
+        && this._lastSyncedRowHeights.length === n) {
+        this.applySyncedRowHeightsToDom(mainRows, leftRows, rightRows, this._lastSyncedRowHeights);
+        return true;
+      }
+
+      // 已揭开 + 刷新写回：禁止 clear→自然高→再锁（可见态会闪成「行高变小」）；只许加高
+      if (this.tableLayoutReady && forceRemeasure && options.preserveMin === true) {
+        const heights = [];
+        for (let i = 0; i < n; i++) {
+          let h = this.measureDataRowContentHeight(mainRows[i]);
+          if (leftRows && leftRows[i]) {
+            h = Math.max(h, this.measureDataRowContentHeight(leftRows[i]));
+          }
+          if (rightRows && rightRows[i]) {
+            h = Math.max(h, this.measureDataRowContentHeight(rightRows[i]));
+          }
+          let next = Math.min(DATA_ROW_MAX_HEIGHT_PX, Math.max(1, Math.ceil(h)));
+          if (this._lastSyncedRowHeights && this._lastSyncedRowHeights[i] != null) {
+            next = Math.max(next, this._lastSyncedRowHeights[i]);
+          }
+          heights.push(next);
+        }
+        this.applySyncedRowHeightsToDom(mainRows, leftRows, rightRows, heights);
+        this._lastSyncedRowHeights = heights.slice();
+        return true;
+      }
 
       const heights = [];
       for (let i = 0; i < n; i++) {
@@ -632,44 +1042,45 @@ export default {
       if (prevHeights
         && prevHeights.length === heights.length
         && heights.every((h, i) => Math.abs(h - prevHeights[i]) <= 1)) {
-        return;
+        this.applySyncedRowHeightsToDom(mainRows, leftRows, rightRows, prevHeights);
+        return true;
       }
 
-      this.clearDataRowHeights(root);
-
-      for (let i = 0; i < n; i++) {
-        mainRows[i].style.height = "auto";
-        if (leftRows && leftRows[i]) leftRows[i].style.height = "auto";
-        if (rightRows && rightRows[i]) rightRows[i].style.height = "auto";
-      }
-      void root.offsetHeight;
-
-      for (let i = 0; i < n; i++) {
-        let h = this.measureDataRowContentHeight(mainRows[i]);
-        if (leftRows && leftRows[i]) {
-          h = Math.max(h, this.measureDataRowContentHeight(leftRows[i]));
+      // 已有行内 height 时需清掉再测自然高；新行无锁高则直接写（揭开前，用户看不见）
+      const hasLockedHeight = Array.from(mainRows).some((tr) => tr.style.height);
+      if (hasLockedHeight) {
+        this.clearDataRowHeights(root);
+        for (let i = 0; i < n; i++) {
+          mainRows[i].style.height = "auto";
+          if (leftRows && leftRows[i]) leftRows[i].style.height = "auto";
+          if (rightRows && rightRows[i]) rightRows[i].style.height = "auto";
         }
-        if (rightRows && rightRows[i]) {
-          h = Math.max(h, this.measureDataRowContentHeight(rightRows[i]));
+        void root.offsetHeight;
+
+        for (let i = 0; i < n; i++) {
+          let h = this.measureDataRowContentHeight(mainRows[i]);
+          if (leftRows && leftRows[i]) {
+            h = Math.max(h, this.measureDataRowContentHeight(leftRows[i]));
+          }
+          if (rightRows && rightRows[i]) {
+            h = Math.max(h, this.measureDataRowContentHeight(rightRows[i]));
+          }
+          heights[i] = Math.min(DATA_ROW_MAX_HEIGHT_PX, Math.max(1, Math.ceil(h)));
         }
-        heights[i] = Math.min(DATA_ROW_MAX_HEIGHT_PX, Math.max(1, Math.ceil(h)));
       }
 
-      for (let i = 0; i < n; i++) {
-        const px = `${heights[i]}px`;
-        mainRows[i].style.height = px;
-        if (leftRows && leftRows[i]) leftRows[i].style.height = px;
-        if (rightRows && rightRows[i]) rightRows[i].style.height = px;
-      }
+      this.applySyncedRowHeightsToDom(mainRows, leftRows, rightRows, heights);
       this._lastSyncedRowHeights = heights.slice();
+      return true;
     },
 
-    /** ResizeObserver 可能高频触发，合并到单次 rAF */
+    /** ResizeObserver 可能高频触发，合并到单次 rAF；揭开后只 reapply，不重测 */
     requestFixedRowHeightSync() {
+      if (!this.tableLayoutReady || this._layoutPassRunning) return;
       if (this._rowSyncRafId != null) cancelAnimationFrame(this._rowSyncRafId);
       this._rowSyncRafId = requestAnimationFrame(() => {
         this._rowSyncRafId = null;
-        this.syncFixedDataRowHeights();
+        this.reapplyLastSyncedRowHeights();
       });
     },
     columnsStorageKey() {
@@ -900,18 +1311,24 @@ export default {
         if (idx < 0) return;
         if (this.isFlexColumn(col)) {
           if (this.tableFieldList[idx].width === next && this.flexColumnWidths[col.key] === next) return;
-          this.$set(this.tableFieldList, idx, { ...this.tableFieldList[idx], width: next });
-          this.$set(this.flexColumnWidths, col.key, next);
+          this.tableFieldList[idx] = { ...this.tableFieldList[idx], width: next };
+          this.flexColumnWidths[col.key] = next;
         } else {
           if (this.tableFieldList[idx].width === next) return;
-          this.$set(this.tableFieldList, idx, { ...this.tableFieldList[idx], width: next });
+          this.tableFieldList[idx] = { ...this.tableFieldList[idx], width: next };
         }
         if (this._columnResizeLayoutRaf != null) return;
         this._columnResizeLayoutRaf = requestAnimationFrame(() => {
           this._columnResizeLayoutRaf = null;
-          const t = this.$refs.elTable;
-          if (t) t.doLayout();
-          this.updateCustomHorizontalScrollbar();
+          if (!this.$refs.elTable) return;
+          // 拖宽过程中用 bind 宽即时重算 spacer，避免松手前右侧空洞
+          this.refreshOperateSpacerEnabled();
+          this.computeFlexOrSpacerColumnWidths();
+          this.$nextTick(() => {
+            if (!this.$refs.elTable) return;
+            this.$refs.elTable.doLayout();
+            this.updateCustomHorizontalScrollbar();
+          });
         });
       };
       const onUp = (ev) => {
@@ -924,13 +1341,8 @@ export default {
         this.schedulePersistColumnWidths();
         this.$emit('columns-change', this.tableFieldList.map(c => ({ ...c })));
         this.$nextTick(() => {
-          if (!this.$refs.elTable) return;
-          this.$refs.elTable.doLayout();
-          requestAnimationFrame(() => {
-            this.syncOperateColumnWidths();
-            this.syncFixedDataRowHeights();
-            this.updateCustomHorizontalScrollbar();
-          });
+          // 已揭开：拖列结束必须强制重跑 layout（否则会被 ready 守卫挡住）
+          this.runTableLayoutPass({ force: true });
         });
       };
       this._columnResizeSession = { onMove, onUp };
@@ -1069,7 +1481,10 @@ export default {
 
       this._customXRo = new ResizeObserver(() => {
         this.updateCustomHorizontalScrollbar();
-        this.requestFixedRowHeightSync();
+        // 揭开前不跟 RO 刷行高，避免与 layout 结算叠成两次
+        if (this.tableLayoutReady && !this._layoutPassRunning) {
+          this.requestFixedRowHeightSync();
+        }
       });
       this._customXRo.observe(wrap);
       this._customXRo.observe(scrollEl);
@@ -1260,7 +1675,7 @@ export default {
           ghostClass: 'table-header-ghost',
           group: zone,
           handle: '.col-handle-drag',
-          filter: 'th.gutter, .el-table__gutter, .no-drag, .cat2bug-operate-column, .table-header-pin, .col-handle-resize',
+          filter: 'th.gutter, .el-table__gutter, .no-drag, .cat2bug-operate-column, .cat2bug-operate-spacer-column, .table-header-pin, .col-handle-resize',
           preventOnFilter: false,
           onStart: () => {
             this.mouseFlag = false;
@@ -1331,7 +1746,12 @@ export default {
       if (!this.$refs.elTable || prop == null) return;
       this.$refs.elTable.sort(prop, order);
     },
-    doLayout() {
+    doLayout(force = false) {
+      // 已揭开后父页 v-resize / max-height 触发的 doLayout 不再整表重算，避免行高可见收窄
+      if (this.tableLayoutReady && force !== true && !this.columnResizeActive) {
+        this.$nextTick(() => this.updateCustomHorizontalScrollbar());
+        return;
+      }
       this.runTableLayoutPass();
     },
     /** 拦截 el-table.doLayout，防止布局重算后操作列被内容再次撑开 */
@@ -1343,6 +1763,10 @@ export default {
         orig.apply(t, args);
         if (this._lastOperateWidth != null) {
           this.applyOperateColumnDomWidth(this._lastOperateWidth);
+        }
+        // max-height / 列宽重算后写回已结算行高，避免可见态从自然高再锁高
+        if (this.tableLayoutReady) {
+          this.reapplyLastSyncedRowHeights();
         }
       };
       t.__cat2bugOperatePatch = true;
@@ -1379,6 +1803,9 @@ export default {
     },
     isOperateColumn(col) {
       const className = this.resolveOperateColumnClassName(col);
+      if (className.indexOf(OPERATE_SPACER_COLUMN_CLASS) !== -1) {
+        return false;
+      }
       if (className.indexOf(OPERATE_COLUMN_CLASS) !== -1) {
         return true;
       }
@@ -1622,7 +2049,7 @@ export default {
       });
       this._lastOperateWidth = cap;
       this.applyOperateColumnDomWidth(cap);
-      this.syncFixedDataRowHeights();
+      this.requestFixedRowHeightSync();
       return true;
     },
     /** 累加容器内可见子节点宽度（勿用容器 scrollWidth，会被单元格撑满） */
@@ -1724,6 +2151,11 @@ export default {
 
       this._lastOperateWidth = next;
       this.applyOperateColumnDomWidth(next);
+      // layout pass 内由 markTableLayoutReady 统一同步行高，避免揭开后再异步清高/写高
+      if (this._layoutPassRunning) {
+        this.enforceOperateColumnWrapIfOverflow();
+        return;
+      }
       this.$nextTick(() => {
         requestAnimationFrame(() => {
           this.applyOperateColumnDomWidth(next);
@@ -1731,7 +2163,7 @@ export default {
             this.updateCustomHorizontalScrollbar();
             return;
           }
-          this.syncFixedDataRowHeights();
+          this.requestFixedRowHeightSync();
           this.updateCustomHorizontalScrollbar();
         });
       });
@@ -1754,7 +2186,7 @@ export default {
           this.$refs.elTable.doLayout();
           requestAnimationFrame(() => {
             this.syncOperateColumnWidths();
-            this.syncFixedDataRowHeights();
+            this.syncFixedDataRowHeights({ force: true });
             this.updateCustomHorizontalScrollbar();
           });
         });
@@ -1789,7 +2221,7 @@ export default {
         this.$nextTick(() => {
           requestAnimationFrame(() => {
             this.syncOperateColumnWidths();
-            this.syncFixedDataRowHeights();
+            this.syncFixedDataRowHeights({ force: true });
             this.updateCustomHorizontalScrollbar();
           });
         });
@@ -1802,6 +2234,11 @@ export default {
 <style lang="scss" scoped>
 .cat2-bug-table-wrap {
   position: relative;
+  /* 首屏 layout 完成前隐藏，避免弹性列/spacer/操作列测宽造成列宽跳动 */
+  opacity: 0;
+  &.is-layout-ready {
+    opacity: 1;
+  }
   /* 未测出内容前用下限占位，避免首帧顶满 450 再被 live 宽回灌锁死 */
   --cat2bug-operate-col-applied-width: 88px;
   --cat2bug-col-drag-handle-width: 12px;
@@ -2165,6 +2602,26 @@ export default {
 :deep(.el-table__fixed .el-table__fixed-body-wrapper td.el-table__cell),
 :deep(.el-table__fixed-right .el-table__fixed-body-wrapper td.el-table__cell){
   vertical-align: middle;
+}
+
+/* 操作列前幽灵弹性列：与业务列表头同高/底边，无手柄无文案 */
+:deep(th.cat2bug-operate-spacer-column),
+:deep(td.cat2bug-operate-spacer-column) {
+  padding: 0 !important;
+  border-left: none !important;
+}
+:deep(th.cat2bug-operate-spacer-column .cell),
+:deep(td.cat2bug-operate-spacer-column .cell) {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+.cat2bug-operate-spacer-header,
+.cat2bug-operate-spacer-cell {
+  display: block;
+  width: 100%;
+  height: 1px;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* append 操作列：class-name 含 cat2bug-operate-column，内容包在 cat2bug-operate-tools 内 */

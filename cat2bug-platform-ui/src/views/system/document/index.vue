@@ -124,6 +124,7 @@
               cache-key="document-table"
               sort-column-cache-key="document_table_sort_column_key"
               sort-type-cache-key="document_table_sort_type_key"
+              row-key="docId"
               :operate-column-max-width="320"
               :columns="documentTableColumnDefaults"
               :data="documentList"
@@ -611,27 +612,32 @@ export default {
         this._documentListBodyResizeObserver = null;
       }
     },
+    /** 同步计算文档表体 max-height（不包 nextTick）；返回是否发生变化 */
+    applyDocumentTableBodyMaxHeight() {
+      const body = this.$refs.documentListBody;
+      if (!body || !body.clientHeight) return false;
+      const pagEl = this.$refs.documentPaginationBand;
+      let reserveBelowTable = 0;
+      if (this.total > 0 && pagEl && pagEl.offsetParent !== null) {
+        const st = window.getComputedStyle(pagEl);
+        reserveBelowTable =
+          pagEl.offsetHeight +
+          parseFloat(st.marginTop || "0") +
+          parseFloat(st.marginBottom || "0");
+      }
+      const next = Math.max(120, Math.floor(body.clientHeight - reserveBelowTable - 2));
+      if (this.documentTableBodyMaxHeight === next) return false;
+      this.documentTableBodyMaxHeight = next;
+      return true;
+    },
     syncDocumentTableBodyMaxHeight() {
       this.$nextTick(() => {
-        const body = this.$refs.documentListBody;
-        if (!body || !body.clientHeight) return;
-        const pagEl = this.$refs.documentPaginationBand;
-        let reserveBelowTable = 0;
-        if (this.total > 0 && pagEl && pagEl.offsetParent !== null) {
-          const st = window.getComputedStyle(pagEl);
-          reserveBelowTable =
-            pagEl.offsetHeight +
-            parseFloat(st.marginTop || "0") +
-            parseFloat(st.marginBottom || "0");
-        }
-        const next = Math.max(120, Math.floor(body.clientHeight - reserveBelowTable - 2));
-        if (this.documentTableBodyMaxHeight !== next) {
-          this.documentTableBodyMaxHeight = next;
-          this.$nextTick(() => {
-            const tbl = this.$refs.cat2BugTable;
-            if (tbl && typeof tbl.doLayout === "function") tbl.doLayout();
-          });
-        }
+        const changed = this.applyDocumentTableBodyMaxHeight();
+        if (!changed) return;
+        this.$nextTick(() => {
+          const tbl = this.$refs.cat2BugTable;
+          if (tbl && typeof tbl.doLayout === "function") tbl.doLayout();
+        });
       });
     },
     syncDocumentToolsWrapped() {
@@ -905,12 +911,15 @@ export default {
           this.documentList = rows;
         }
         this.total = response.total;
-        this.loading = false;
         this.syncDocumentToolsWrapped();
+        // 先定好 table max-height 再结束 loading，避免揭开后高度变化触发行高再跳
         this.$nextTick(() => {
-          this.syncDocumentTableBodyMaxHeight();
-          this.syncDocumentTreeToolbarWithTableHeader();
-          this.initDocumentTableHeaderHeightSync();
+          this.applyDocumentTableBodyMaxHeight();
+          this.loading = false;
+          this.$nextTick(() => {
+            this.syncDocumentTreeToolbarWithTableHeader();
+            this.initDocumentTableHeaderHeightSync();
+          });
         });
       });
     },

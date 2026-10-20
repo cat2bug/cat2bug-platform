@@ -14,9 +14,19 @@
       <div
         ref="defectToolsTab"
         class="defect-tools-tab defect-list-hint-tabs"
-        :class="{ 'defect-tab-keyboard-nav': defectTabNavActive }"
+        :class="{
+          'defect-tab-keyboard-nav': defectTabNavActive,
+          'is-tabs-ready': defectTabsReady,
+          'is-tabs-skip-transition': defectTabsSkipTransition
+        }"
       >
-        <el-tabs ref="defectTabs" v-model="activeDefectTabName" @tab-change="selectDefectTabHandle">
+        <!-- 等 config.tabs 与 active 定稿后再挂载，避免先渲染「全部」再滑到缓存页签 -->
+        <el-tabs
+          v-if="defectTabsReady"
+          ref="defectTabs"
+          v-model="activeDefectTabName"
+          @tab-change="selectDefectTabHandle"
+        >
           <el-tab-pane v-for="tab in config.tabs" :key="tab.tabId+''" :name="tab.tabId+''">
             <template #label>
               <span class="defect-tab-label">
@@ -54,6 +64,7 @@
             </template>
           </el-tab-pane>
         </el-tabs>
+        <div v-else class="defect-tabs-hydrate-placeholder" aria-hidden="true" />
         <div class="defect-tools-tab-right">
           <span class="defect-list-hint-statistic-panel" aria-hidden="true" />
           <span class="defect-list-hint-statistic">
@@ -384,6 +395,10 @@ export default {
       defectAddTabPaneName: DEFECT_ADD_TAB_PANE_NAME,
       // 当前缺陷的tab页名
       activeDefectTabName: ALL_TAB_NAME, // this.$i18n.t('project.my-participated-in'),
+      /** 配置拉取并定稿 active 后再挂载 el-tabs，避免刷新时指示条从「全部」滑到缓存页签 */
+      defectTabsReady: false,
+      /** 首挂一帧关掉 active-bar transition，防止 EP 仍做入场滑动 */
+      defectTabsSkipTransition: false,
 
       // 显示搜索条件
       showSearch: true,
@@ -2499,43 +2514,62 @@ export default {
         return obj
       }
     },
+    /** 定稿激活页签并挂载 el-tabs（须在 config.tabs 已写入后调用） */
+    finalizeDefectTabsMount() {
+      if (!this.config) {
+        this.config = { tabs: [] }
+      }
+      if (!Array.isArray(this.config.tabs)) {
+        this.config.tabs = []
+      }
+      const tab = getDefectTempTab()
+      if (tab) {
+        removeDefectTempTab()
+        this.config.tabs.unshift(tab)
+        this.activeDefectTabName = tab.tabId + ''
+      } else {
+        let cachedTab = readDefectTabCache(this.$cache.local, this.projectId)
+        if (cachedTab === this.deletedTab) {
+          cachedTab = this.allTab
+          persistDefectTabCache(this.$cache.local, this.allTab, this.projectId)
+        }
+        const resolved = resolveDefectTabFromCache(cachedTab)
+        if (resolved) {
+          this.activeDefectTabName = resolved
+        }
+        if (!this.activeDefectTabName ||
+          this.activeDefectTabName === this.defectAddTabPaneName ||
+          (this.activeDefectTabName !== this.allTab &&
+            this.activeDefectTabName !== this.deletedTab &&
+            this.config.tabs.filter(t => String(t.tabId) === String(this.activeDefectTabName)).length === 0)) {
+          this.activeDefectTabName = this.allTab
+        }
+      }
+      // 先定 active，再挂载：首帧即目标页签，无「全部 → 缓存」滑动
+      this.defectTabsSkipTransition = true
+      this.defectTabsReady = true
+      this.$nextTick(() => {
+        this.selectDefectTabHandle()
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            this.defectTabsSkipTransition = false
+          })
+        })
+        if (this.$route.query.openDefectTabDialog === '1') {
+          this.$nextTick(() => this.addDefectTabHandle())
+        }
+      })
+    },
     /** 获取当前用户缺陷配置 */
     getDefectConfig() {
       configDefect().then(res => {
-        this.config = res.data
-        // 等自定义页签 pane 挂上后再恢复，避免 name 对不上时被 el-tabs 落到默认项
-        this.$nextTick(() => {
-          const tab = getDefectTempTab() // 获取临时缓存tab
-          if (tab) {
-            removeDefectTempTab()
-            this.config.tabs = this.config.tabs || []
-            this.config.tabs.unshift(tab)
-            this.activeDefectTabName = tab.tabId + ''
-          } else if (this.config.tabs) {
-            let cachedTab = readDefectTabCache(this.$cache.local, this.projectId)
-            if (cachedTab === this.deletedTab) {
-              cachedTab = this.allTab
-              persistDefectTabCache(this.$cache.local, this.allTab, this.projectId)
-            }
-            const resolved = resolveDefectTabFromCache(cachedTab)
-            if (resolved) {
-              this.activeDefectTabName = resolved
-            }
-            // 查看所有页标签里是否包含激活页标签，如果没有，设置页标签为"全部"
-            if (!this.activeDefectTabName ||
-              this.activeDefectTabName === this.defectAddTabPaneName ||
-              (this.activeDefectTabName !== this.allTab &&
-                this.activeDefectTabName !== this.deletedTab &&
-                this.config.tabs.filter(t => String(t.tabId) === String(this.activeDefectTabName)).length === 0)) {
-              this.activeDefectTabName = this.allTab
-            }
-          }
-          // 执行激活页标签方法
-          this.selectDefectTabHandle()
-          if (this.$route.query.openDefectTabDialog === '1') {
-            this.$nextTick(() => this.addDefectTabHandle())
-          }
-        })
+        this.config = res.data || { tabs: [] }
+        this.finalizeDefectTabsMount()
+      }).catch(() => {
+        if (!this.config || typeof this.config !== 'object') {
+          this.config = { tabs: [] }
+        }
+        this.finalizeDefectTabsMount()
       })
     },
     /** 查找缺陷状态改变的处理 */
@@ -3127,6 +3161,15 @@ export default {
   flex-shrink: 0;
   overflow: visible;
   box-sizing: border-box;
+  .defect-tabs-hydrate-placeholder {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+  }
+  /* 首挂关闭指示条动画，避免仍出现从左滑入 */
+  &.is-tabs-skip-transition :deep(.el-tabs__active-bar) {
+    transition: none !important;
+  }
   /* 伪元素底线与 active-bar 同处 bottom:0，避免 border-bottom 挤占内容区导致蓝条偏高 */
   &::after {
     content: '';
