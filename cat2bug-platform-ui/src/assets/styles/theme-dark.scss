@@ -297,6 +297,7 @@ html.dark {
   --action-row-stripe-bg: rgba(255, 255, 255, 0.05);
 
   --sidebar-expand-trigger-hover-bg: rgba(24, 144, 255, 0.12);
+  --tree-sidebar-toggle-color: var(--text-color-secondary, #a8abb2);
 
   /* Markdown / Cat2BugEditor 工具条：禁止浅色白底高亮 */
   --tools-menu-icon-color: #a8abb2;
@@ -2855,12 +2856,9 @@ html.dark {
     background-color: rgba(64, 158, 255, 0.18) !important;
   }
 
-  // 列表页表头「展开交付物树」按钮（缺陷/用例/测试计划等共用 class 后缀）
-  .case-sidebar-expand-trigger,
-  .defect-sidebar-expand-trigger,
-  .plan-case-sidebar-expand-trigger,
-  .plan-defect-sidebar-expand-trigger,
-  .plan-add-sidebar-expand-trigger {
+  // 列表页表头「展开侧栏树」按钮（全局 .tree-sidebar-*）
+  .tree-sidebar-expand-trigger,
+  .tree-sidebar-collapse-toggle {
     color: var(--text-color-secondary) !important;
 
     &:hover {
@@ -2873,27 +2871,15 @@ html.dark {
     }
   }
 
-  .case-sidebar-expand-header-cell,
-  .defect-sidebar-expand-header-cell,
-  .plan-case-sidebar-expand-header-cell,
-  .plan-defect-sidebar-expand-header-cell,
-  .plan-add-sidebar-expand-header-cell {
+  .tree-sidebar-expand-header-cell {
     background-color: var(--table-header-bg) !important;
   }
 
-  .el-dialog .case-sidebar-expand-header-cell,
-  .el-dialog .defect-sidebar-expand-header-cell,
-  .el-dialog .plan-case-sidebar-expand-header-cell,
-  .el-dialog .plan-defect-sidebar-expand-header-cell,
-  .el-dialog .plan-add-sidebar-expand-header-cell {
+  .el-dialog .tree-sidebar-expand-header-cell {
     background-color: var(--table-row-hover-bg) !important;
   }
 
-  .case-sidebar-expand-body-cell,
-  .defect-sidebar-expand-body-cell,
-  .plan-case-sidebar-expand-body-cell,
-  .plan-defect-sidebar-expand-body-cell,
-  .plan-add-sidebar-expand-body-cell {
+  .tree-sidebar-expand-body-cell {
     background-color: var(--cat2bug-table-fixed-row-bg, var(--table-bg)) !important;
     border-right: none !important;
   }
@@ -3456,15 +3442,6 @@ html.dark {
     background-color: var(--table-header-bg) !important;
     border-bottom: 1px solid var(--border-color-light) !important;
     color: var(--text-color-primary) !important;
-  }
-
-  .tree-sidebar-collapse-toggle {
-    color: var(--text-color-regular) !important;
-
-    &:hover {
-      background-color: rgba(24, 144, 255, 0.12) !important;
-      color: var(--cat2bug-primary) !important;
-    }
   }
 
   .tree-node-remove-btn {

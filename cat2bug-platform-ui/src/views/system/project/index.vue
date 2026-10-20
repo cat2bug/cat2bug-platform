@@ -18,23 +18,16 @@
             </div>
           </template>
           <div class="project-collects-card-tools">
-<!--            <svg-icon icon-class="nested"-->
-<!--                      @click="goCaseHandle($event, project)"-->
-<!--                      v-hasPermi="['system:case:list']"></svg-icon>-->
-            <svg-icon icon-class="bug"
-               @click="goDefectHandle($event, project)"
-               v-hasPermi="['system:defect:list']"></svg-icon>
-            <svg-icon icon-class="system"
-                @click="goProjectOptionHandle($event, project)"
-                v-hasPermi="['system:project:option']"></svg-icon>
-<!--            <legacy-icon icon="el-icon-s-platform"></legacy-icon>-->
-<!--            <legacy-icon icon="el-icon-s-operation"></legacy-icon>-->
-            <legacy-icon
-              icon="el-icon-delete"
-              class="project-collect-delete"
-              @click="handleDelete($event, project)"
-              v-hasPermi="['system:project:remove']"
-            />
+            <template v-if="collectShortcuts(project).length">
+              <svg-icon
+                v-for="item in collectShortcuts(project)"
+                :key="item.module"
+                :icon-class="item.icon"
+                :title="$t(item.titleKey)"
+                @click="goCollectShortcut($event, project, item)"
+              />
+            </template>
+            <span v-else class="project-collect-no-permission">{{ $t('project.collect-no-permission') }}</span>
           </div>
         </el-card>
       </el-col>
@@ -212,6 +205,18 @@ import { projectOptionHref } from '@/utils/project-option-card'
 
 const PROJECT_MANAGE_KBD_SCOPE = 'project-manage'
 
+/** 收藏卡片快捷入口：与项目菜单 order_num 一致 */
+const COLLECT_SHORTCUTS = Object.freeze([
+  { module: 'dashboard', perms: ['system:dashboard:query'], icon: 'dashboard', titleKey: 'dashboard', fallbackName: 'ProjectDashboard' },
+  { module: 'code', perms: ['system:git:repo:list'], icon: 'code', titleKey: 'git.repo.menu', fallbackName: 'ProjectGitRepo' },
+  { module: 'case', perms: ['system:case:list'], icon: 'case', titleKey: 'case', fallbackName: 'ProjectCase' },
+  { module: 'plan', perms: ['system:plan:list'], icon: 'time', titleKey: 'plan', fallbackName: 'ProjectPlan' },
+  { module: 'defect', perms: ['system:defect:list'], icon: 'bug', titleKey: 'defect.manage', fallbackName: 'ProjectDefect' },
+  { module: 'module', perms: ['system:module:list'], icon: 'cascader', titleKey: 'module', fallbackName: 'ProjectModule' },
+  { module: 'document', perms: ['system:document:list'], icon: 'library', titleKey: 'doc', fallbackName: 'ProjectDocument' },
+  { module: 'option', perms: ['system:project:option'], icon: 'system', titleKey: 'project.option', fallbackName: 'ProjectOption' }
+])
+
 export default {
   name: "Project",
   mixins: [pageActionHints, listQueryKeyboardNav],
@@ -300,13 +305,20 @@ export default {
     /** 是否可切换进入该项目（名称链接） */
     canAccessProject() {
       return function (project) {
-        return this.isViewDefect(project)
+        return this.hasCollectShortcut(project)
       }
     },
-    /** 是否可以访问缺陷页面 */
-    isViewDefect() {
+    /** 收藏卡片可见的快捷入口（按菜单顺序，有权限才显示） */
+    collectShortcuts() {
       return function (project) {
-        return checkPermi(['system:defect:list']) && this.isProjectMemberOrCreator(project)
+        if (!this.isProjectMemberOrCreator(project)) return []
+        return COLLECT_SHORTCUTS.filter(item => checkPermi(item.perms))
+      }
+    },
+    /** 是否至少有一个收藏卡片快捷入口权限 */
+    hasCollectShortcut() {
+      return function (project) {
+        return this.collectShortcuts(project).length > 0
       }
     }
   },
@@ -382,7 +394,7 @@ export default {
         if (!isRowIntersectingContainer(tr, bodyWrap)) return
         const row = resolveElTableRowData(tr) || list[rowIndex]
         if (!row || row.projectId == null) return
-        if (!this.isViewDefect(row)) return
+        if (!this.hasCollectShortcut(row)) return
         const projectId = String(row.projectId)
         if (seen.has(projectId)) return
         seen.add(projectId)
@@ -658,36 +670,22 @@ export default {
         this.$router.push({ name: fallbackName })
       }
     },
-    /** 点击项目跳转 */
+    /** 点击项目跳转：进入首个有权限的模块 */
     clickProject(project) {
-      let _this = this;
-      if(this.isViewDefect(project)) {
-        useUserStore().SwitchCurrentProject(project.projectId).then(() => {
-          _this.pushProjectModule(project, 'dashboard', 'ProjectDashboard')
-        });
-      } else {
-        this.$message.warning(this.$i18n.t('project.no-permission-access-project').toString());
+      const shortcuts = this.collectShortcuts(project)
+      if (!shortcuts.length) {
+        this.$message.warning(this.$i18n.t('project.no-permission-access-project').toString())
+        return
       }
+      this.goCollectShortcut(null, project, shortcuts[0])
     },
-    /** 跳转到缺陷管理 */
-    goDefectHandle(e, project) {
-      this.clickProject(project);
-      e.stopPropagation();
-    },
-    /** 跳转到项目设置 */
-    goProjectOptionHandle(e,project) {
-      let _this = this;
+    /** 收藏卡片快捷入口跳转 */
+    goCollectShortcut(e, project, item) {
+      if (e && e.stopPropagation) e.stopPropagation()
+      if (!project || !project.projectId || !item) return
       useUserStore().SwitchCurrentProject(project.projectId).then(() => {
-        _this.pushProjectModule(project, 'option', 'ProjectOption')
-      });
-      e.stopPropagation();
-    },
-    /** 跳转到测试用例 */
-    goCaseHandle(e,project) {
-      let _this = this;
-      useUserStore().SwitchCurrentProject(project.projectId).then(() => {
-        _this.pushProjectModule(project, 'case', 'ProjectCase')
-      });
+        this.pushProjectModule(project, item.module, item.fallbackName)
+      })
     }
   }
 }
@@ -740,21 +738,25 @@ h4 {
     .project-collects-card-tools {
       display: inline-flex;
       flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
       gap: var(--cat2bug-operate-tools-gap, 10px);
-      >* {
-        padding: 1px;
+      > .svg-icon {
+        padding: 2px;
         color: #909399;
-        font-size: var(--cat2bug-operate-icon-size, 14px);
+        font-size: 18px;
+        width: 1em;
+        height: 1em;
       }
-      >*:hover {
+      > .svg-icon:hover {
         cursor: pointer;
         color: #606266;
       }
-      .project-collect-delete {
-        color: var(--cat2bug-operate-text-danger, #f56c6c);
-      }
-      .project-collect-delete:hover {
-        color: var(--cat2bug-operate-text-danger-hover, #f78989);
+      .project-collect-no-permission {
+        color: #909399;
+        font-size: 12px;
+        line-height: 1.4;
+        cursor: default;
       }
     }
     .el-col {

@@ -433,6 +433,7 @@ export function resolveDefectTableRowHintAnchor(tr) {
     tr.querySelector('.module-row-kbd-hint-anchor') ||
     tr.querySelector('.report-row-kbd-hint-anchor') ||
     tr.querySelector('.ai-account-row-kbd-hint-anchor') ||
+    tr.querySelector('td.tree-sidebar-expand-body-cell') ||
     tr.querySelector('td.defect-sidebar-expand-body-cell') ||
     tr.querySelector('td:not(.is-hidden) .cell') ||
     tr.querySelector('td .cell') ||

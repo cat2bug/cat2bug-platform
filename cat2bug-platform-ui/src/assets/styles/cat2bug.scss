@@ -92,6 +92,11 @@
   --cat2bug-operate-icon-size: 14px;
   --cat2bug-operate-tools-gap: 10px;
   --cat2bug-operate-tools-row-gap: 0;
+  /* 侧栏树折叠/展开触发器（缺陷树、文档树等）：触发区 18、图标 12 */
+  --tree-sidebar-toggle-size: 18px;
+  --tree-sidebar-toggle-icon-size: 12px;
+  --tree-sidebar-toggle-font-size: 12px;
+  --tree-sidebar-toggle-color: #909399;
 
   /* 危险/删除语义色：删除按钮、角标、NEW 标签等实心红标记统一引用 */
   --cat2bug-delete-color: #e64545;

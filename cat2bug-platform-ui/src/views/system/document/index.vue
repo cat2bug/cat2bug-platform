@@ -141,24 +141,24 @@
                   fixed
                   width="30"
                   align="center"
-                  label-class-name="document-sidebar-expand-header-cell"
-                  class-name="document-sidebar-expand-body-cell"
+                  label-class-name="tree-sidebar-expand-header-cell"
+                  class-name="tree-sidebar-expand-body-cell"
                 >
                   <template #header>
                     <el-tooltip :content="$t('doc.show-folder-tree')" placement="bottom">
                       <span
-                        class="document-sidebar-expand-trigger"
+                        class="tree-sidebar-expand-trigger"
                         role="button"
                         tabindex="0"
                         @click.stop="toggleFolderTreeVisible"
                         @keyup.enter.stop.prevent="toggleFolderTreeVisible"
                       >
-                        <svg-icon icon-class="menu" class-name="document-sidebar-expand-svg" />
+                        <svg-icon icon-class="menu" class-name="tree-sidebar-expand-svg" />
                       </span>
                     </el-tooltip>
                   </template>
                   <template #default>
-                    <span class="document-sidebar-expand-body-placeholder" />
+                    <span class="tree-sidebar-expand-body-placeholder" />
                   </template>
                 </el-table-column>
                 <el-table-column type="selection" width="50" align="center" fixed :selectable="rowSelectable" />
@@ -1420,25 +1420,6 @@ export default {
   display: flex;
   flex-direction: column;
   position: relative;
-}
-.document-sidebar-expand-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #909399;
-}
-.document-sidebar-expand-trigger:hover {
-  color: var(--cat2bug-primary, #1890ff);
-}
-.document-sidebar-expand-svg {
-  width: 16px;
-  height: 16px;
-}
-.document-sidebar-expand-body-placeholder {
-  display: block;
-  width: 1px;
-  height: 1px;
 }
 .document-table-x-scroll {
   width: 100%;

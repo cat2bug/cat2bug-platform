@@ -313,6 +313,7 @@
   "project.add-member": "Добавить участника",
   "project.set-role-group": "Установить группу прав доступа",
   "project.no-permission-access-project": "Нет прав доступа к этому проекту!",
+  "project.collect-no-permission": "Нет прав. Обратитесь к руководителю проекта.",
   "project.push": "Синхронизация с облаком",
   "project.push.key": "Ключ синхронизации",
   "project.push.key-cannot-empty": "Ключ синхронизации не может быть пустым!",

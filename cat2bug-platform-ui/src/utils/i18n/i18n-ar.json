@@ -313,6 +313,7 @@
   "project.add-member": "إضافة عضو",
   "project.set-role-group": "تحديد مجموعة الصلاحيات",
   "project.no-permission-access-project": "لا توجد صلاحيات للوصول إلى هذا المشروع!",
+  "project.collect-no-permission": "لا توجد صلاحيات، يرجى التواصل مع مسؤول المشروع.",
   "project.push": "مزامنة بالسحابة",
   "project.push.key": "مفتاح المزامنة",
   "project.push.key-cannot-empty": "مفتاح المزامنة لا يمكن أن يكون فارغًا!",

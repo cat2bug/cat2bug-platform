@@ -313,6 +313,7 @@
   "project.add-member": "新增成員",
   "project.set-role-group": "設定權限群組",
   "project.no-permission-access-project": "沒有權限存取此專案！",
+  "project.collect-no-permission": "無權限，請聯繫專案負責人",
   "project.push": "同步到雲端",
   "project.push.key": "同步金鑰",
   "project.push.key-cannot-empty": "同步金鑰不能為空！",

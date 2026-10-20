@@ -112,24 +112,24 @@
               fixed
               width="30"
               align="center"
-              label-class-name="plan-add-sidebar-expand-header-cell"
-              class-name="plan-add-sidebar-expand-body-cell"
+              label-class-name="tree-sidebar-expand-header-cell"
+              class-name="tree-sidebar-expand-body-cell"
             >
               <template #header>
                 <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
                   <span
-                    class="plan-add-sidebar-expand-trigger"
+                    class="tree-sidebar-expand-trigger"
                     role="button"
                     tabindex="0"
                     @click.stop="toggleModuleTreeVisible"
                     @keyup.enter.stop.prevent="toggleModuleTreeVisible"
                   >
-                    <svg-icon icon-class="menu" class-name="plan-add-sidebar-expand-svg" />
+                    <svg-icon icon-class="menu" class-name="tree-sidebar-expand-svg" />
                   </span>
                 </el-tooltip>
               </template>
               <template #default>
-                <span class="plan-add-sidebar-expand-body-placeholder" />
+                <span class="tree-sidebar-expand-body-placeholder" />
               </template>
             </el-table-column>
             <el-table-column type="selection" width="50" align="center" fixed />
@@ -804,60 +804,6 @@ export default {
 .custom-resizer--tree-hidden > .case-context {
   flex: 1 1 100%;
   width: 100%;
-}
-.plan-add-sidebar-expand-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  box-sizing: border-box;
-  cursor: pointer;
-  color: #909399;
-  font-size: 12px;
-  line-height: 1;
-  flex-shrink: 0;
-  border-radius: 4px;
-}
-.plan-add-sidebar-expand-trigger:hover {
-  color: var(--cat2bug-primary, #1890ff);
-  background-color: var(--sidebar-expand-trigger-hover-bg, #ecf5ff);
-}
-.plan-add-sidebar-expand-trigger:focus-visible {
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
-}
-.plan-add-sidebar-expand-trigger :deep(.plan-add-sidebar-expand-svg){
-  width: 12px;
-  height: 12px;
-  vertical-align: middle;
-  display: block;
-}
-:deep(.plan-add-sidebar-expand-header-cell){
-  padding: 0 !important;
-  text-align: center;
-}
-:deep(.plan-add-sidebar-expand-header-cell .cell){
-  padding: 0 !important;
-  overflow: visible !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-}
-:deep(.el-table__fixed-header-wrapper .plan-add-sidebar-expand-header-cell .cell){
-  overflow: visible !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-}
-:deep(.plan-add-sidebar-expand-body-cell .cell){
-  padding: 4px 0 !important;
-}
-.plan-add-sidebar-expand-body-placeholder {
-  display: block;
-  width: 1px;
-  height: 1px;
-  visibility: hidden;
 }
 .custom-resizer > .multipane-resizer {
   flex-shrink: 0;

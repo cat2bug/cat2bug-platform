@@ -178,24 +178,24 @@
                 fixed
                 width="30"
                 align="center"
-                label-class-name="case-sidebar-expand-header-cell"
-                class-name="case-sidebar-expand-body-cell"
+                label-class-name="tree-sidebar-expand-header-cell"
+                class-name="tree-sidebar-expand-body-cell"
               >
                 <template #header>
                   <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
                     <span
-                      class="case-sidebar-expand-trigger case-hint-module-tree"
+                      class="tree-sidebar-expand-trigger case-hint-module-tree"
                       role="button"
                       tabindex="0"
                       @click.stop="toggleModuleTreeVisible"
                       @keyup.enter.stop.prevent="toggleModuleTreeVisible"
                     >
-                      <svg-icon icon-class="menu" class-name="case-sidebar-expand-svg" />
+                      <svg-icon icon-class="menu" class-name="tree-sidebar-expand-svg" />
                     </span>
                   </el-tooltip>
                 </template>
                 <template #default>
-                  <span class="case-sidebar-expand-body-placeholder" />
+                  <span class="tree-sidebar-expand-body-placeholder" />
                 </template>
               </el-table-column>
               <el-table-column type="selection" width="50" align="center" fixed />
@@ -1514,60 +1514,6 @@ export default {
 }
 .case-table-pagination-band {
   flex-shrink: 0;
-}
-.case-sidebar-expand-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  box-sizing: border-box;
-  cursor: pointer;
-  color: #909399;
-  font-size: 12px;
-  line-height: 1;
-  flex-shrink: 0;
-  border-radius: 4px;
-}
-.case-sidebar-expand-trigger:hover {
-  color: var(--cat2bug-primary, #1890ff);
-  background-color: var(--sidebar-expand-trigger-hover-bg, #ecf5ff);
-}
-.case-sidebar-expand-trigger:focus-visible {
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
-}
-.case-sidebar-expand-trigger :deep(.case-sidebar-expand-svg){
-  width: 12px;
-  height: 12px;
-  vertical-align: middle;
-  display: block;
-}
-:deep(.case-sidebar-expand-header-cell){
-  padding: 0 !important;
-  text-align: center;
-}
-:deep(.case-sidebar-expand-header-cell .cell){
-  padding: 0 !important;
-  overflow: visible !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-}
-:deep(.el-table__fixed-header-wrapper .case-sidebar-expand-header-cell .cell){
-  overflow: visible !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-}
-:deep(.case-sidebar-expand-body-cell .cell){
-  padding: 4px 0 !important;
-}
-.case-sidebar-expand-body-placeholder {
-  display: block;
-  width: 1px;
-  height: 1px;
-  visibility: hidden;
 }
 /* 查询条上下留白（与缺陷页 --defect-toolbar-v-gap 一致） */
 /* 与项目条、列表区间距由 .project-list-page-host gap（--project-list-section-v-gap）承担 */

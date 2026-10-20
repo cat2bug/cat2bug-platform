@@ -313,6 +313,7 @@
   "project.add-member": "멤버 추가",
   "project.set-role-group": "권한 그룹 설정",
   "project.no-permission-access-project": "이 프로젝트에 접근할 권한이 없습니다!",
+  "project.collect-no-permission": "권한이 없습니다. 프로젝트 담당자에게 문의하세요.",
   "project.push": "클라우드에 동기화",
   "project.push.key": "동기화 키",
   "project.push.key-cannot-empty": "동기화 키는 비워둘 수 없습니다!",

@@ -539,21 +539,6 @@ export default {
   text-overflow: ellipsis;
   gap: 8px;
 }
-.tree-sidebar-collapse-toggle {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  cursor: pointer;
-  color: #909399;
-  border-radius: 4px;
-}
-.tree-sidebar-collapse-toggle:hover {
-  color: var(--cat2bug-primary, #1890ff);
-  background-color: #ecf5ff;
-}
 .tree-search {
   flex-shrink: 0;
   padding: 8px 10px;

@@ -264,35 +264,6 @@ export default {
     flex-shrink: 0;
   }
 }
-.tree-sidebar-collapse-toggle {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  box-sizing: border-box;
-  cursor: pointer;
-  color: #909399;
-  font-size: 12px;
-  line-height: 1;
-  border-radius: 4px;
-  border: none;
-  outline: none;
-  background: transparent;
-}
-.tree-sidebar-collapse-toggle:hover {
-  color: var(--cat2bug-primary, #1890ff);
-  background-color: #ecf5ff;
-}
-.tree-sidebar-collapse-toggle:focus-visible {
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
-}
-.tree-sidebar-collapse-toggle > i {
-  font-size: 12px;
-  transform: scale(0.92);
-}
 .tree-node {
   flex: 1;
   display: flex;

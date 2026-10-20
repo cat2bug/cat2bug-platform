@@ -89,23 +89,23 @@
               fixed
               width="30"
               align="center"
-              label-class-name="defect-sidebar-expand-header-cell"
-              class-name="defect-sidebar-expand-body-cell">
+              label-class-name="tree-sidebar-expand-header-cell"
+              class-name="tree-sidebar-expand-body-cell">
               <template #header>
                 <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
                   <span
-                    class="defect-sidebar-expand-trigger"
+                    class="tree-sidebar-expand-trigger"
                     role="button"
                     tabindex="0"
                     @click.stop="toggleModuleTreeVisible"
                     @keyup.enter.stop.prevent="toggleModuleTreeVisible"
                   >
-                    <svg-icon icon-class="menu" class-name="defect-sidebar-expand-svg defect-list-hint-module-tree" />
+                    <svg-icon icon-class="menu" class-name="tree-sidebar-expand-svg defect-list-hint-module-tree" />
                   </span>
                 </el-tooltip>
               </template>
               <template #default>
-                <span class="defect-sidebar-expand-body-placeholder" />
+                <span class="tree-sidebar-expand-body-placeholder" />
               </template>
             </el-table-column>
           </template>
@@ -824,63 +824,11 @@ export default {
 .defect-table-pagination-band {
   flex-shrink: 0;
 }
-.defect-sidebar-expand-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  box-sizing: border-box;
-  cursor: pointer;
-  color: var(--text-color-secondary);
-  font-size: 12px;
-  line-height: 1;
-  flex-shrink: 0;
-  border-radius: 4px;
-}
-.defect-sidebar-expand-trigger:hover {
-  color: var(--cat2bug-primary, #1890ff);
-  background-color: var(--sidebar-expand-trigger-hover-bg, #ecf5ff);
-}
-.defect-sidebar-expand-trigger:focus-visible {
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
-}
-.defect-sidebar-expand-trigger :deep(.defect-sidebar-expand-svg){
-  width: 12px;
-  height: 12px;
-  vertical-align: middle;
-  display: block;
-}
-:deep(.defect-sidebar-expand-header-cell){
-  padding: 0 !important;
-  text-align: center;
+:deep(.tree-sidebar-expand-header-cell){
   border-top-left-radius: 4px;
 }
 .defect-table-root :deep(.cat2-bug-table-wrap){
   background: transparent;
-}
-:deep(.defect-sidebar-expand-header-cell .cell){
-  padding: 0 !important;
-  overflow: visible !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-}
-:deep(.el-table__fixed-header-wrapper .defect-sidebar-expand-header-cell .cell){
-  overflow: visible !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-}
-:deep(.defect-sidebar-expand-body-cell .cell){
-  padding: 4px 0 !important;
-}
-.defect-sidebar-expand-body-placeholder {
-  display: block;
-  width: 1px;
-  height: 1px;
-  visibility: hidden;
 }
 .defect-table-tools {
   display: flex;

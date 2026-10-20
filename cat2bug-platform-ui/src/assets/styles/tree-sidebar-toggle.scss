@@ -1,0 +1,86 @@
+/**
+ * 侧栏树折叠 / 展开触发器（缺陷、用例、计划、文档等共用）。
+ * 尺寸以缺陷列表为准：触发区 18×18、图标 12×12。
+ *
+ * 展开（表头）：.tree-sidebar-expand-trigger + .tree-sidebar-expand-svg
+ * 折叠（树顶栏）：.tree-sidebar-collapse-toggle
+ * 表头/表体列：.tree-sidebar-expand-header-cell / .tree-sidebar-expand-body-cell
+ */
+
+.tree-sidebar-expand-trigger,
+.tree-sidebar-collapse-toggle {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tree-sidebar-toggle-size, 18px);
+  height: var(--tree-sidebar-toggle-size, 18px);
+  padding: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: var(--tree-sidebar-toggle-color, #909399);
+  font-size: var(--tree-sidebar-toggle-font-size, 12px);
+  line-height: 1;
+  border-radius: 4px;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
+.tree-sidebar-expand-trigger:hover,
+.tree-sidebar-collapse-toggle:hover {
+  color: var(--cat2bug-primary, #1890ff);
+  background-color: var(--sidebar-expand-trigger-hover-bg, #ecf5ff);
+}
+
+.tree-sidebar-expand-trigger:focus-visible,
+.tree-sidebar-collapse-toggle:focus-visible {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
+}
+
+.tree-sidebar-expand-trigger .tree-sidebar-expand-svg,
+.tree-sidebar-expand-trigger .svg-icon.tree-sidebar-expand-svg {
+  width: var(--tree-sidebar-toggle-icon-size, 12px) !important;
+  height: var(--tree-sidebar-toggle-icon-size, 12px) !important;
+  vertical-align: middle;
+  display: block;
+}
+
+.tree-sidebar-collapse-toggle > i,
+.tree-sidebar-collapse-toggle .legacy-icon,
+.tree-sidebar-collapse-toggle .el-icon {
+  font-size: var(--tree-sidebar-toggle-font-size, 12px);
+  line-height: 1;
+  transform: scale(0.92);
+}
+
+.tree-sidebar-expand-body-placeholder {
+  display: block;
+  width: 1px;
+  height: 1px;
+  visibility: hidden;
+}
+
+.el-table .tree-sidebar-expand-header-cell {
+  padding: 0 !important;
+  text-align: center;
+}
+
+.el-table .tree-sidebar-expand-header-cell > .cell {
+  padding: 0 !important;
+  overflow: visible !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.el-table__fixed-header-wrapper .tree-sidebar-expand-header-cell > .cell {
+  overflow: visible !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.el-table .tree-sidebar-expand-body-cell > .cell {
+  padding: 4px 0 !important;
+}

@@ -313,6 +313,7 @@
   "project.add-member": "メンバーを追加",
   "project.set-role-group": "権限グループを設定",
   "project.no-permission-access-project": "このプロジェクトにアクセスする権限がありません！",
+  "project.collect-no-permission": "権限がありません。プロジェクト責任者に連絡してください。",
   "project.push": "クラウドに同期",
   "project.push.key": "同期キー",
   "project.push.key-cannot-empty": "同期キーは空にできません！",
