@@ -6,6 +6,8 @@ public class SysCaseType {
     private Long projectId;
     private String typeName;
     private Integer sortOrder;
+    /** 1 启用 / 0 停用 */
+    private Integer enabled;
     private Integer caseCount;
 
     public Long getTypeId() {
@@ -38,6 +40,14 @@ public class SysCaseType {
 
     public void setSortOrder(Integer sortOrder) {
         this.sortOrder = sortOrder;
+    }
+
+    public Integer getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Integer enabled) {
+        this.enabled = enabled;
     }
 
     public Integer getCaseCount() {

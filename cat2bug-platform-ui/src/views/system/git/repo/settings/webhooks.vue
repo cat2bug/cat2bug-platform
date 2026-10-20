@@ -48,7 +48,7 @@
       </el-table-column>
       <el-table-column :label="$t('git.repo.settings.webhooks.column-actions')" width="360" align="right">
         <template #default="{ row }">
-          <el-button link type="primary" size="small" :icon="Edit" @click="openEditDialog(row)">
+          <el-button link class="green" size="small" :icon="Edit" @click="openEditDialog(row)">
             {{ $t('modify') }}
           </el-button>
           <el-button

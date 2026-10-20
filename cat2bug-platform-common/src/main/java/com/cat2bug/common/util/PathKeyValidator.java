@@ -22,7 +22,9 @@ public final class PathKeyValidator
             "home", "api", "oauth", "mcp", "actuator", "error", "favicon.ico", "code",
             // SPA 第一路径段，不可作 teamKey（与前端 PATH_KEY_RESERVED 对齐）
             "invite", "redirect", "404", "401", "tools", "tool", "shard", "monitor", "admin",
-            "team", "team-options"
+            "team", "team-options",
+            // /member/profile、/member/keyboard；/notice 等常量路由首段
+            "member", "notice"
     )));
 
     private PathKeyValidator()

@@ -43,7 +43,7 @@
       class="kbd-settings__section"
     >
       <template #header>{{ section.title }}</template>
-      <el-table :data="section.items" size="small" :show-header="true">
+      <el-table :data="section.items" size="small" class="cat2bug-table-compact" :show-header="true">
         <el-table-column :label="$t('keyboard.col-action')" prop="title" min-width="120" show-overflow-tooltip />
         <el-table-column :label="$t('keyboard.col-shortcut')" min-width="240">
           <template #default="{ row }">

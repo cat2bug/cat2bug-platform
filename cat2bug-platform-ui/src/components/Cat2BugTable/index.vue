@@ -9,6 +9,10 @@
               v-loading="loading"
               :data="data"
               :fit="true"
+              :row-key="rowKey || undefined"
+              :tree-props="treeProps || undefined"
+              :default-expand-all="defaultExpandAll"
+              :highlight-current-row="highlightCurrentRow"
               :max-height="elTableMaxHeight"
               @selection-change="handleSelectionChange"
               @sort-change="sortChangeHandle"
@@ -185,6 +189,26 @@ export default {
     tableMaxHeight: {
       type: [Number, String],
       default: null
+    },
+    /**
+     * 树表透传（交付物等）：与 el-table 同名能力。
+     * 展开图标在首列；表头拖序/pin 手柄在 th 上，不拦截树节点展开点击。
+     */
+    rowKey: {
+      type: [String, Function],
+      default: null
+    },
+    treeProps: {
+      type: Object,
+      default: null
+    },
+    defaultExpandAll: {
+      type: Boolean,
+      default: false
+    },
+    highlightCurrentRow: {
+      type: Boolean,
+      default: false
     },
     /** 为 true 时，对 class-name 含 cat2bug-operate-column 的 append 列按内容自动设宽 */
     operateColumnAutoWidth: {
@@ -1664,17 +1688,10 @@ export default {
       const cells = fixedCells.length
         ? fixedCells
         : t.$el.querySelectorAll(`td.${OPERATE_COLUMN_CLASS}:not(.is-hidden) .cell`);
-      const innerMax = Math.max(0, cap - this.operateColumnPaddingX * 2);
+      // 只测内容固有宽；禁止用已被列宽撑开的 tools.scrollWidth / getBoundingClientRect 回灌
       let maxSingleRowInner = 0;
       cells.forEach((cell) => {
         maxSingleRowInner = Math.max(maxSingleRowInner, this.measureOperateRowInnerWidth(cell));
-        const tools = cell.querySelector(`.${OPERATE_TOOLS_CLASS}`);
-        if (tools) {
-          const liveW = Math.ceil(
-            Math.max(tools.scrollWidth || 0, tools.getBoundingClientRect().width || 0)
-          );
-          maxSingleRowInner = Math.max(maxSingleRowInner, liveW);
-        }
       });
 
       const operateHeader = t.$el.querySelector(
@@ -1684,9 +1701,12 @@ export default {
         ? this.measureOperateHeaderContentWidth(operateHeader)
         : this.operateColumnHeaderMin;
 
-      const contentWithPad = Math.ceil(
-        Math.max(maxSingleRowInner, headerContentW) + this.operateColumnPaddingX * 2
-      );
+      const floor = this.operateColumnMinWidth;
+      // 行内测宽为 0 时回退 max(表头固有宽, minWidth)，不得抬到 maxWidth
+      const contentInner = maxSingleRowInner > 0
+        ? Math.max(maxSingleRowInner, headerContentW)
+        : Math.max(headerContentW, floor);
+      const contentWithPad = Math.ceil(contentInner + this.operateColumnPaddingX * 2);
       const atCap = contentWithPad > cap;
       if (this.$el) {
         this.$el.setAttribute('data-operate-at-cap', atCap ? 'true' : 'false');
@@ -1694,9 +1714,8 @@ export default {
 
       const next = atCap
         ? cap
-        : Math.max(this.operateColumnMinWidth, Math.min(cap, contentWithPad));
+        : Math.max(floor, Math.min(cap, contentWithPad));
 
-      const floor = this.operateColumnMinWidth;
       operateCols.forEach((col) => {
         col.width = next;
         col.minWidth = floor;
@@ -1783,7 +1802,8 @@ export default {
 <style lang="scss" scoped>
 .cat2-bug-table-wrap {
   position: relative;
-  --cat2bug-operate-col-applied-width: 450px;
+  /* 未测出内容前用下限占位，避免首帧顶满 450 再被 live 宽回灌锁死 */
+  --cat2bug-operate-col-applied-width: 88px;
   --cat2bug-col-drag-handle-width: 12px;
   --cat2bug-col-handle-bar-width: 2px;
   --cat2bug-col-handle-dot-size: 3px;
@@ -1797,7 +1817,7 @@ export default {
 
   :deep(.el-table__fixed-right){
     max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
-    width: var(--cat2bug-operate-col-applied-width, 450px) !important;
+    width: var(--cat2bug-operate-col-applied-width, 88px) !important;
     box-sizing: border-box;
     z-index: 31 !important;
   }
@@ -1821,7 +1841,7 @@ export default {
   :deep(th.cat2bug-operate-column),
   :deep(td.cat2bug-operate-column){
     max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
-    width: var(--cat2bug-operate-col-applied-width, 450px) !important;
+    width: var(--cat2bug-operate-col-applied-width, 88px) !important;
     min-width: 0 !important;
     box-sizing: border-box;
   }
@@ -2130,8 +2150,14 @@ export default {
   background-color: var(--table-header-bg);
 }
 
+/* 跟随全站表格轨（勿写死 5px，否则会盖掉 --cat2bug-table-cell-padding-y） */
 :deep(tbody > .el-table__row > .el-table__cell){
-  padding: 5px 0;
+  padding-top: var(--cat2bug-table-cell-padding-y, 16px);
+  padding-bottom: var(--cat2bug-table-cell-padding-y, 16px);
+  padding-left: 0;
+  padding-right: 0;
+  min-height: var(--cat2bug-table-row-min-height, 56px);
+  box-sizing: border-box;
 }
 
 /* 行高由 syncFixedDataRowHeights 按内容逐行同步三表 tr；单元格内容垂直居中 */

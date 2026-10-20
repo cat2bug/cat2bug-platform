@@ -52,7 +52,7 @@ import CaseStepPanel from "./CaseStepPanel"
 import SelectModule from "@/components/Module/SelectModule"
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import { useUserStore } from "@/stores/user";
-import { listCaseTypes } from "@/api/system/case-type";
+import { filterSelectableCaseTypes, listCaseTypes } from "@/api/system/case-type";
 const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 export default {
   name: "CaseForm",
@@ -60,7 +60,7 @@ export default {
   data() {
     return {
       caseStepSwitchType: '',
-      caseTypes: [],
+      allCaseTypes: [],
       // 表单参数
       // form: {
       //   caseStep:[{}],
@@ -97,11 +97,14 @@ export default {
     projectId() {
       return parseInt(useUserStore().config.currentProjectId);
     },
+    caseTypes() {
+      return filterSelectableCaseTypes(this.allCaseTypes, this.form && this.form.caseType)
+    },
   },
   created() {
     if (this.projectId) {
       listCaseTypes(this.projectId).then(res => {
-        this.caseTypes = res.data || []
+        this.allCaseTypes = res.data || []
       }).catch(() => {})
     }
   },

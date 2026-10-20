@@ -180,15 +180,19 @@ export default {
     this.loadMyAccess()
   },
   methods: {
+    /** 供详情页关闭/合并后刷新顶栏「Pull Request」开启数 */
     loadOpenPullCount() {
       if (!this.repositoryId) {
         this.openPullCount = 0
         return
       }
-      listGitPullRequests(this.repositoryId, 'open').then(res => {
+      const repoId = this.repositoryId
+      listGitPullRequests(repoId, 'open').then(res => {
+        if (repoId !== this.repositoryId) return
         const list = res.data || []
         this.openPullCount = Array.isArray(list) ? list.length : 0
       }).catch(() => {
+        if (repoId !== this.repositoryId) return
         this.openPullCount = 0
       })
     },

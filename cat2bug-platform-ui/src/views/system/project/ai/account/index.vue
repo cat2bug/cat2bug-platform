@@ -4,85 +4,94 @@
       <el-page-header @back="goBack" :content="$t('project.ai-account-manager')">
       </el-page-header>
     </el-row>
-    <div class="ai-account-tools project-option-list-tools">
-      <el-form
-        :model="queryParams"
-        ref="queryForm"
-        size="small"
-        :inline="true"
-        v-show="showSearch"
-        label-width="80px"
-        class="left"
-        :class="{ 'list-query-keyboard-nav': listQueryNavActive }"
-      >
-        <el-form-item label="" prop="accountName" class="list-query-nav-item project-ai-account-hint-query-name" data-query-key="accountName">
-          <el-input
-            :prefix-icon="$legacyIcon('el-icon-setting')"
-            v-model="queryParams.accountName"
-            placeholder="请输入配置名称"
-            clearable
-            @keyup.enter="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item label="" prop="modelName" class="list-query-nav-item" data-query-key="modelName">
-          <el-input
-            :prefix-icon="$legacyIcon('el-icon-coin')"
-            v-model="queryParams.modelName"
-            placeholder="请输入模型名称"
-            clearable
-            @keyup.enter="handleQuery"
-          />
-        </el-form-item>
-      </el-form>
-      <div ref="aiAccountToolsRight" class="project-option-list-tools-right">
+    <div class="list-page-toolbar ai-account-tools project-option-list-tools">
+      <div class="list-page-toolbar__filters">
+        <el-form
+          :model="queryParams"
+          ref="queryForm"
+          :inline="true"
+          v-show="showSearch"
+          label-width="80px"
+          class="left"
+          :class="{ 'list-query-keyboard-nav': listQueryNavActive }"
+        >
+          <el-form-item label="" prop="accountName" class="list-query-nav-item project-ai-account-hint-query-name" data-query-key="accountName">
+            <el-input
+              :prefix-icon="$legacyIcon('el-icon-setting')"
+              v-model="queryParams.accountName"
+              placeholder="请输入配置名称"
+              clearable
+              @keyup.enter="handleQuery"
+            />
+          </el-form-item>
+          <el-form-item label="" prop="modelName" class="list-query-nav-item" data-query-key="modelName">
+            <el-input
+              :prefix-icon="$legacyIcon('el-icon-coin')"
+              v-model="queryParams.modelName"
+              placeholder="请输入模型名称"
+              clearable
+              @keyup.enter="handleQuery"
+            />
+          </el-form-item>
+        </el-form>
+      </div>
+      <div ref="aiAccountToolsRight" class="list-page-toolbar__actions project-option-list-tools-right">
         <el-button
-          class="project-ai-account-hint-create"
+          class="project-ai-account-hint-create cat2bug-btn-outline"
           type="primary"
           plain
           :icon="$legacyIcon('el-icon-plus')"
-          size="small"
           @click="handleAdd"
           v-hasPermi="['ai:account:add']"
         >{{ $t('project.ai.new-account') }}</el-button>
       </div>
     </div>
-    <el-table ref="aiAccountTable" v-loading="loading" :data="accountList" @selection-change="handleSelectionChange">
-<!--      <el-table-column type="selection" width="55" align="center" />-->
-      <el-table-column :label="$t('project.ai.account-name')" align="center" prop="accountName" width="200">
-        <template #default="scope">
+    <cat2-bug-table
+      ref="cat2BugTable"
+      cache-key="ai-account-table"
+      :columns="aiAccountTableColumns"
+      :data="accountList"
+      :loading="loading"
+      :enable-header-sort="false"
+      :operate-column-max-width="280"
+      @selection-change="handleSelectionChange"
+    >
+      <template #columns="{ scope, column }">
+        <template v-if="column.prop === 'accountName'">
           <span class="ai-account-row-kbd-hint-anchor">{{ scope.row.accountName }}</span>
         </template>
-      </el-table-column>
-      <el-table-column :label="$t('project.ai.url')" align="center" prop="aiUrl" />
-      <el-table-column :label="$t('project.ai.model-name')" align="center" prop="modelName" width="200" />
-      <el-table-column :label="$t('project.ai.max-token')" align="center" prop="maxCompletionTokens" width="100" />
-      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="220">
-        <template #default="scope">
-          <el-button
-            size="small"
-            link
-            :icon="$legacyIcon('el-icon-video-play')"
-            :loading="scope.row._testing === true"
-            @click="handleTest(scope.row)"
-            v-hasPermi="['ai:account:edit']"
-          >{{ $t('project.ai.test') }}</el-button>
-          <el-button
-            size="small"
-            link
-            :icon="$legacyIcon('el-icon-edit')"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['ai:account:edit']"
-          >修改</el-button>
-          <el-button
-            size="small"
-            link
-            :icon="$legacyIcon('el-icon-delete')"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['ai:account:remove']"
-          >删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+        <span v-else>{{ scope.row[column.prop] }}</span>
+      </template>
+      <template #append>
+        <el-table-column :label="$t('operate')" align="center" class-name="no-drag cat2bug-operate-column" fixed="right">
+          <template #default="scope">
+            <div class="cat2bug-operate-tools">
+              <el-button
+                link
+                :icon="$legacyIcon('el-icon-video-play')"
+                :loading="scope.row._testing === true"
+                @click="handleTest(scope.row)"
+                v-hasPermi="['ai:account:edit']"
+              >{{ $t('project.ai.test') }}</el-button>
+              <el-button
+                link
+                class="green"
+                :icon="$legacyIcon('el-icon-edit')"
+                @click="handleUpdate(scope.row)"
+                v-hasPermi="['ai:account:edit']"
+              >修改</el-button>
+              <el-button
+                link
+                :icon="$legacyIcon('el-icon-delete')"
+                class="red"
+                @click="handleDelete(scope.row)"
+                v-hasPermi="['ai:account:remove']"
+              >删除</el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </template>
+    </cat2-bug-table>
 
     <pagination
       class="project-ai-account-table-pagination"
@@ -142,6 +151,7 @@
 
 <script>
 import { listAccount, getAccount, delAccount, addAccount, updateAccount, testAccount } from "@/api/ai/AIAccount";
+import Cat2BugTable from '@/components/Cat2BugTable'
 import projectOptionSubListKbd from '@/mixins/project-option-sub-list-kbd'
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
@@ -156,6 +166,13 @@ import {
   resolveTableRowFirstColumnHintAnchor,
   resolveTableRowFirstColumnKbdBadgeLayout
 } from '@/utils/defect-row-kbd-hints'
+
+const AI_ACCOUNT_TABLE_COLUMNS = [
+  { key: 'project.ai.account-name', prop: 'accountName', fixed: true, visible: true, align: 'center', width: 200, pinFixedToggle: false, sortable: false },
+  { key: 'project.ai.url', prop: 'aiUrl', fixed: false, visible: true, align: 'center', minWidth: 180, pinFixedToggle: false, sortable: false },
+  { key: 'project.ai.model-name', prop: 'modelName', fixed: false, visible: true, align: 'center', width: 200, pinFixedToggle: false, sortable: false },
+  { key: 'project.ai.max-token', prop: 'maxCompletionTokens', fixed: false, visible: true, align: 'center', width: 100, pinFixedToggle: false, sortable: false }
+]
 
 function validateAiUrl(rule, value, callback) {
   if (value === null || value === undefined || String(value).trim() === "") {
@@ -184,6 +201,7 @@ import { useUserStore } from '@/stores/user'
 
 export default {
   name: "Account",
+  components: { Cat2BugTable },
   mixins: [projectOptionSubListKbd, defectToolDialogKbd],
   setup() {
     const userStore = useUserStore()
@@ -192,6 +210,7 @@ export default {
   },
   data() {
     return {
+      aiAccountTableColumns: AI_ACCOUNT_TABLE_COLUMNS.map((c) => ({ ...c })),
       // 遮罩层
       loading: true,
       // 选中数组
@@ -321,19 +340,22 @@ export default {
       collectHintLettersFromToolbar(this.getPageActionHints()).forEach((ch) => used.add(ch))
       return this.buildAiAccountTableRowActionHints(used)
     },
+    getAiAccountTableRootEl() {
+      const cat = this.$refs.cat2BugTable
+      return cat && cat.$el ? cat.$el : null
+    },
     getPageActionHintScrollRoots() {
-      const table = this.$refs.aiAccountTable
-      if (!table || !table.$el) return []
-      const bodyWrap = getDefectTableScrollBody(table.$el)
+      const root = this.getAiAccountTableRootEl()
+      if (!root) return []
+      const bodyWrap = getDefectTableScrollBody(root)
       return bodyWrap ? [bodyWrap] : []
     },
     buildAiAccountTableRowActionHints(usedLetters) {
       if (this.loading || this.open || !checkPermi(['ai:account:edit'])) return []
-      const table = this.$refs.aiAccountTable
-      if (!table || !table.$el) return []
-      const bodyWrap = getDefectTableScrollBody(table.$el)
+      const tableRoot = this.getAiAccountTableRootEl()
+      if (!tableRoot) return []
+      const bodyWrap = getDefectTableScrollBody(tableRoot)
       if (!bodyWrap) return []
-      const tableRoot = table.$el
       const list = this.accountList || []
       const seen = new Set()
       const anchors = []
@@ -507,18 +529,8 @@ export default {
 </script>
 <style lang="scss" scoped>
 .ai-account-tools {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  > * {
-    display: inline-block;
-    justify-content: flex-start;
-    margin-bottom: 0px;
-    :deep(.el-form-item){
-      margin-bottom: 0px;
-    }
+  :deep(.el-form-item) {
+    margin-bottom: 0;
   }
 }
 </style>

@@ -7,7 +7,9 @@ export const PATH_KEY_RESERVED = new Set([
   'home', 'api', 'oauth', 'mcp', 'actuator', 'error', 'favicon.ico', 'code',
   // SPA first-segment routes that must never be parsed as teamKey
   'invite', 'redirect', '404', '401', 'tools', 'tool', 'shard', 'monitor', 'admin',
-  'team', 'team-options'
+  'team', 'team-options',
+  // /member/profile、/member/keyboard；/notice 等常量路由首段
+  'member', 'notice'
 ])
 
 export function isPathKeyReserved(key) {

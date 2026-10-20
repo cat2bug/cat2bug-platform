@@ -110,7 +110,7 @@ import dialogFormShortcuts from "@/mixins/dialog-form-shortcuts";
 import formFieldHints from "@/mixins/form-field-hints";
 import caseDrawerClose from "@/mixins/case-drawer-close";
 import { useUserStore } from "@/stores/user";
-import { listCaseTypes } from "@/api/system/case-type";
+import { filterSelectableCaseTypes, listCaseTypes } from "@/api/system/case-type";
 
 const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 
@@ -215,16 +215,15 @@ export default {
       })
       return hints
     },
-    loadCaseTypes() {
+    loadCaseTypes(currentTypeId) {
       if (!this.projectId) return
       listCaseTypes(this.projectId).then(res => {
-        this.caseTypes = res.data || []
+        this.caseTypes = filterSelectableCaseTypes(res.data || [], currentTypeId)
       }).catch(() => {})
     },
     open(caseId, params) {
       let self = this;
       this.params = params;
-      this.loadCaseTypes();
       this.reset();
       if(caseId) {
         this.loading = true;
@@ -232,12 +231,14 @@ export default {
           this.loading = false;
           this.visible = true;
           this.form = response.data;
+          this.loadCaseTypes(this.form && this.form.caseType);
           this.$nextTick(()=>{
             self.$refs['caseStepPanel'].reset();
             self.captureCaseFormCloseBaseline();
           });
         }).catch(()=>this.loading = true);
       } else {
+        this.loadCaseTypes(null);
         this.visible = true;
         this.$nextTick(()=>{
           self.$refs['caseStepPanel'].reset();

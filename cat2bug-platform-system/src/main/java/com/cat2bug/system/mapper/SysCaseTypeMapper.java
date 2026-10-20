@@ -24,6 +24,8 @@ public interface SysCaseTypeMapper {
 
     int updateName(SysCaseType type);
 
+    int updateEnabled(SysCaseType type);
+
     int deleteById(@Param("typeId") Long typeId);
 
     String selectProjectName(@Param("projectId") Long projectId);

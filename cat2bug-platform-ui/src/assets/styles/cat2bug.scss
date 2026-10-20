@@ -82,8 +82,12 @@
   --cat2bug-table-pagination-gap-bottom: 10px;
   --cat2bug-table-pagination-gap-x: 20px;
   --defect-pagination-v-gap: var(--cat2bug-table-pagination-gap-top);
-  /* 全站表格操作列默认最大宽度 */
+  /* 表格轨：单行最小约 56px、cell 上下 16px（控件轨仍为 32px；相对 EP default 8px/~39px 肉眼可感） */
+  --cat2bug-table-row-min-height: 56px;
+  --cat2bug-table-cell-padding-y: 16px;
+  /* 全站表格操作列：上限 450；未测出内容前 applied 占位用下限，避免首帧顶满上限 */
   --cat2bug-operate-col-max-width: 450px;
+  --cat2bug-operate-col-applied-width: 88px;
 
   /* 危险/删除语义色：删除按钮、角标、NEW 标签等实心红标记统一引用 */
   --cat2bug-delete-color: #e64545;
@@ -1069,6 +1073,35 @@ img.cat2bug-image-error__img {
   background-color: var(--cat2bug-image-placeholder-bg) !important;
 }
 
+/* 表格轨：抬高 cell 上下留白，使单行约达 --cat2bug-table-row-min-height。
+   须显式压过 ConfigProvider size=small 产生的 .el-table--small（EP 同级选择器常赢）。 */
+.el-table .el-table__cell,
+.el-table--small .el-table__cell,
+.el-table.el-table--small .el-table__cell {
+  padding-top: var(--cat2bug-table-cell-padding-y, 16px) !important;
+  padding-bottom: var(--cat2bug-table-cell-padding-y, 16px) !important;
+  box-sizing: border-box;
+}
+
+.el-table .el-table__body td.el-table__cell,
+.el-table--small .el-table__body td.el-table__cell,
+.el-table.el-table--small .el-table__body td.el-table__cell {
+  min-height: var(--cat2bug-table-row-min-height, 56px);
+  vertical-align: middle;
+}
+
+/* 嵌套/说明性小表：刻意保持 EP small 紧凑行高（键盘页、对话框枚举编辑等） */
+.el-table.cat2bug-table-compact .el-table__cell,
+.el-table--small.cat2bug-table-compact .el-table__cell {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+.el-table.cat2bug-table-compact .el-table__body td.el-table__cell,
+.el-table--small.cat2bug-table-compact .el-table__body td.el-table__cell {
+  min-height: 0;
+}
+
 /* 列表图片列：缩略图在单元格内水平/垂直居中（对齐 Vue2） */
 .el-table td.cat2bug-table-image-col.el-table__cell,
 .el-table th.cat2bug-table-image-col.el-table__cell,
@@ -1927,6 +1960,17 @@ img.cat2bug-image-error__img {
     }
   }
 
+  /* 列表操作列「添加」：蓝（显式语义，勿依赖无 class 默认色） */
+  .el-button--text.blue,
+  .el-button.is-link.blue {
+    color: var(--cat2bug-operate-text-primary, var(--cat2bug-primary, #1890ff));
+
+    &:hover,
+    &:focus {
+      color: var(--cat2bug-operate-text-primary-hover, #66b1ff);
+    }
+  }
+
   .el-button--text.restore-orange,
   .el-button.is-link.restore-orange {
     color: var(--cat2bug-operate-text-warning, #ffba00);
@@ -1938,9 +1982,9 @@ img.cat2bug-image-error__img {
   }
 }
 
-/* 全站表格操作列：默认最大 450px，超出换行（未测量前先用 450px 封顶，避免被内容撑开） */
+/* 全站表格操作列：最大 450px；未测量前用下限占位（88），测完由 Cat2BugTable 写入 applied */
 .el-table th.cat2bug-operate-column {
-  width: var(--cat2bug-operate-col-applied-width, 450px) !important;
+  width: var(--cat2bug-operate-col-applied-width, 88px) !important;
   max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
   min-width: 0 !important;
   overflow: visible;
@@ -1950,7 +1994,7 @@ img.cat2bug-image-error__img {
 .el-table td.cat2bug-operate-column {
   @include cat2bug-table-operate-link-button-reset;
 
-  width: var(--cat2bug-operate-col-applied-width, 450px) !important;
+  width: var(--cat2bug-operate-col-applied-width, 88px) !important;
   max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
   min-width: 0 !important;
   overflow: hidden;
@@ -1994,7 +2038,7 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 
 .cat2-bug-table-wrap .el-table__fixed-right {
   max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
-  width: var(--cat2bug-operate-col-applied-width, 450px) !important;
+  width: var(--cat2bug-operate-col-applied-width, 88px) !important;
   box-sizing: border-box;
   z-index: 31 !important;
 }
@@ -2077,6 +2121,8 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
+  justify-content: flex-start;
+  min-height: calc(var(--cat2bug-table-row-min-height, 56px) - 2 * var(--cat2bug-table-cell-padding-y, 16px));
   white-space: nowrap;
   word-break: normal;
   width: 100%;
@@ -2104,6 +2150,7 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-start;
+  min-height: calc(var(--cat2bug-table-row-min-height, 56px) - 2 * var(--cat2bug-table-cell-padding-y, 16px));
   white-space: nowrap;
   word-break: normal;
   width: 100%;
@@ -2803,7 +2850,7 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   }
 }
 
-/* 列表页「新建/添加」等 primary plain 按钮：白底蓝字改为蓝底白字（仅浅色主题） */
+/* 列表页「新建/添加」等 primary plain 按钮：白底蓝字改为蓝底白字（仅浅色主题；列表工具栏除外） */
 html:not(.dark) .el-button--primary.is-plain:not(.cat2bug-btn-outline) {
   background-color: var(--cat2bug-primary, #1890ff) !important;
   border-color: var(--cat2bug-primary, #1890ff) !important;
@@ -2823,8 +2870,11 @@ html:not(.dark) .el-button--primary.is-plain:not(.cat2bug-btn-outline) {
   }
 }
 
-/* 保持 Element 默认朴素 primary 样式（如「邀请成员」） */
-html:not(.dark) .el-button--primary.is-plain.cat2bug-btn-outline {
+/* 保持 Element 默认朴素 primary 样式（如「邀请成员」、列表工具栏主操作） */
+html:not(.dark) .el-button--primary.is-plain.cat2bug-btn-outline,
+html:not(.dark) .list-page-toolbar .el-button--primary.is-plain,
+html:not(.dark) .module-tools .el-button--primary.is-plain,
+html:not(.dark) .project-option-list-tools .el-button--primary.is-plain {
   background-color: #ecf5ff !important;
   border-color: #b3d8ff !important;
   color: var(--cat2bug-primary, #1890ff) !important;

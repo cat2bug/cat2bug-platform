@@ -122,6 +122,7 @@
               <el-button
                 size="small"
                 link
+                class="green"
                 :icon="$legacyIcon('el-icon-edit')"
                 @click="handleUpdate(scope.row)"
                 v-hasPermi="['system:plan:edit']"

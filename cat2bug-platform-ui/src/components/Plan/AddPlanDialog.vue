@@ -387,7 +387,7 @@ export default {
     },
     loadCaseTypes() {
       if (!this.projectId) return
-      listCaseTypes(this.projectId).then(res => { this.caseTypes = res.data || [] }).catch(() => {})
+      listCaseTypes(this.projectId, { enabledOnly: true }).then(res => { this.caseTypes = res.data || [] }).catch(() => {})
     },
     onPlanAddDialogOpened() {
       this.loadCaseTypes()

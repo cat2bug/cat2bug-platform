@@ -11,19 +11,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class SysCaseTypeService {
 
     public static final List<String> DEFAULT_NAMES = List.of("功能", "接口", "界面");
     public static final String BUILTIN_REVIEW_TEMPLATE_RESOURCE = "case-review/default-template.md";
+    public static final int ENABLED = 1;
+    public static final int DISABLED = 0;
 
     @Inject
     SysCaseTypeMapper sysCaseTypeMapper;
 
     public List<SysCaseType> list(Long projectId) {
+        return list(projectId, false);
+    }
+
+    public List<SysCaseType> list(Long projectId, boolean enabledOnly) {
         requireProject(projectId);
-        return sysCaseTypeMapper.selectByProjectId(projectId);
+        List<SysCaseType> list = sysCaseTypeMapper.selectByProjectId(projectId);
+        if (!enabledOnly) {
+            return list;
+        }
+        return list.stream().filter(SysCaseTypeService::isEnabled).collect(Collectors.toList());
     }
 
     @Transactional
@@ -38,6 +50,7 @@ public class SysCaseTypeService {
                 type.setProjectId(projectId);
                 type.setTypeName(name);
                 type.setSortOrder(sort);
+                type.setEnabled(ENABLED);
                 sysCaseTypeMapper.insert(type);
             }
             sort++;
@@ -58,6 +71,25 @@ public class SysCaseTypeService {
         }
     }
 
+    /**
+     * 新建或改绑类型时要求目标类型已启用；保留当前类型时允许停用项（编辑旧用例）。
+     */
+    public void requireAssignable(Long projectId, Long typeId, Long currentTypeId) {
+        if (typeId == null) {
+            return;
+        }
+        SysCaseType type = sysCaseTypeMapper.selectById(typeId);
+        if (type == null || type.getProjectId() == null || !type.getProjectId().equals(projectId)) {
+            throw new ApiException("用例类型不属于当前项目");
+        }
+        if (Objects.equals(typeId, currentTypeId)) {
+            return;
+        }
+        if (!isEnabled(type)) {
+            throw new ApiException("该类型已停用");
+        }
+    }
+
     @Transactional
     public SysCaseType create(Long projectId, String typeName) {
         requireProject(projectId);
@@ -69,6 +101,7 @@ public class SysCaseTypeService {
         type.setProjectId(projectId);
         type.setTypeName(name);
         type.setSortOrder(nextSort(projectId));
+        type.setEnabled(ENABLED);
         sysCaseTypeMapper.insert(type);
         return type;
     }
@@ -83,6 +116,14 @@ public class SysCaseTypeService {
         }
         existing.setTypeName(name);
         sysCaseTypeMapper.updateName(existing);
+    }
+
+    @Transactional
+    public void setEnabled(Long projectId, Long typeId, Integer enabled) {
+        SysCaseType existing = requireOwned(projectId, typeId);
+        int value = normalizeEnabled(enabled);
+        existing.setEnabled(value);
+        sysCaseTypeMapper.updateEnabled(existing);
     }
 
     @Transactional
@@ -160,6 +201,20 @@ public class SysCaseTypeService {
             throw new ApiException("类型名称不能超过 64 个字符");
         }
         return name;
+    }
+
+    private static int normalizeEnabled(Integer enabled) {
+        if (enabled == null) {
+            throw new ApiException("启用状态不能为空");
+        }
+        if (enabled != ENABLED && enabled != DISABLED) {
+            throw new ApiException("启用状态无效");
+        }
+        return enabled;
+    }
+
+    public static boolean isEnabled(SysCaseType type) {
+        return type != null && Objects.equals(type.getEnabled(), ENABLED);
     }
 
     private static void requireProject(Long projectId) {

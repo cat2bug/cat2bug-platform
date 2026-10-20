@@ -246,6 +246,7 @@
                       v-hasPermi="['system:case:edit']"
                       size="small"
                       link
+                      class="green"
                       :icon="$legacyIcon('el-icon-edit')"
                       @click="handleUpdate(scope.row)"
                     >
@@ -552,7 +553,7 @@ export default {
     this.handleQuery()
     this.refreshUploadHeaders()
     if (this.projectId) {
-      listCaseTypes(this.projectId).then(res => { this.caseTypes = res.data || [] }).catch(() => {})
+      listCaseTypes(this.projectId, { enabledOnly: true }).then(res => { this.caseTypes = res.data || [] }).catch(() => {})
     }
   },
   mounted() {

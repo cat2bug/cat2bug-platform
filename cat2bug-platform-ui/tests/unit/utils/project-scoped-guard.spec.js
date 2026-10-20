@@ -1,4 +1,4 @@
-import { mapProjectResolveError } from '@/utils/project-scoped-guard'
+import { ensureProjectScopedContext, mapProjectResolveError } from '@/utils/project-scoped-guard'
 import {
   isProjectModule,
   parseProjectScopedPath,
@@ -25,6 +25,17 @@ describe('project-scoped-guard', () => {
       expect(mapProjectResolveError({ code: 500 })).toBe('not_found')
       expect(mapProjectResolveError('error')).toBe('not_found')
       expect(mapProjectResolveError(null)).toBe('not_found')
+    })
+  })
+
+  describe('ensureProjectScopedContext', () => {
+    it('skips non-namespaced routes even when path looks like /a/b', async () => {
+      const result = await ensureProjectScopedContext({
+        path: '/member/keyboard',
+        params: {},
+        matched: [{ meta: { title: 'keyboard' } }]
+      })
+      expect(result).toBe('skip')
     })
   })
 })
@@ -70,6 +81,15 @@ describe('project-module-path (scoped routes)', () => {
     expect(parseProjectScopedPath('/team-options/team-option')).toBeNull()
     expect(parseProjectScopedPath('/team-options/team-base-info')).toBeNull()
     expect(parseProjectScopedPath('/team-options/team-member')).toBeNull()
+  })
+
+  it('does not treat /member/* or /notice/* as project-scoped path', () => {
+    expect(parseProjectScopedPath('/member/keyboard')).toBeNull()
+    expect(parseProjectScopedPath('/member/profile')).toBeNull()
+    expect(parseProjectScopedPath('/notice')).toBeNull()
+    expect(parseProjectScopedPath('/notice/option')).toBeNull()
+    expect(isNonProjectMenuRoot({ path: 'member' })).toBe(true)
+    expect(isNonProjectMenuRoot({ name: 'notice' })).toBe(true)
   })
 })
 

@@ -119,7 +119,7 @@ public class SysCaseService {
         sysCase.setUpdateBy(loginUser.getUsername());
         sysCase.setCreateTime(now);
         sysCase.setUpdateTime(now);
-        sysCaseTypeService.requireBelongsToProject(sysCase.getProjectId(), sysCase.getCaseType());
+        sysCaseTypeService.requireAssignable(sysCase.getProjectId(), sysCase.getCaseType(), null);
         if (sysCaseMapper.insertSysCase(sysCase) <= 0) {
             throw new ApiException("新增测试用例失败");
         }
@@ -140,7 +140,7 @@ public class SysCaseService {
             sysCase.setUpdateBy(String.valueOf(loginUser.getUserId()));
             sysCase.setCreateTime(now);
             sysCase.setUpdateTime(now);
-            sysCaseTypeService.requireBelongsToProject(sysCase.getProjectId(), sysCase.getCaseType());
+            sysCaseTypeService.requireAssignable(sysCase.getProjectId(), sysCase.getCaseType(), null);
             if (sysCaseMapper.insertSysCase(sysCase) <= 0) {
                 throw new ApiException("批量新增测试用例失败");
             }
@@ -155,7 +155,7 @@ public class SysCaseService {
         SysCase existing = selectSysCaseByCaseId(sysCase.getCaseId());
         if (Boolean.TRUE.equals(sysCase.getUpdateCaseType()) || sysCase.getCaseType() != null) {
             Long projectId = sysCase.getProjectId() != null ? sysCase.getProjectId() : existing.getProjectId();
-            sysCaseTypeService.requireBelongsToProject(projectId, sysCase.getCaseType());
+            sysCaseTypeService.requireAssignable(projectId, sysCase.getCaseType(), existing.getCaseType());
         }
         LoginUser loginUser = requireLoginUser();
         sysCase.setUpdateBy(loginUser.getUsername());
@@ -294,7 +294,7 @@ public class SysCaseService {
                     }).collect(Collectors.toList());
                     c.setCaseStep(steps);
                 }
-                sysCaseTypeService.requireBelongsToProject(projectId, c.getCaseType());
+                sysCaseTypeService.requireAssignable(projectId, c.getCaseType(), null);
                 int count = sysCaseMapper.insertSysCase(c);
                 if (count == 0) {
                     repeatRowList.add(rowNum++);

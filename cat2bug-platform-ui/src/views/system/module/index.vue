@@ -1,35 +1,33 @@
 <template>
   <div class="app-container case-body module-page module-list-layout project-list-page-host" ref="moduleMain">
     <project-label class="module-project-label" />
-    <div ref="moduleTools" class="module-tools" :class="{ 'wrapped-tools': moduleToolsWrapped }">
-      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px" :class="{ 'list-query-keyboard-nav': listQueryNavActive }">
-        <el-form-item prop="moduleName" class="module-hint-query list-query-nav-item" data-query-key="moduleName">
-          <el-input
-            v-model="queryParams.moduleName"
-            size="small"
-            :placeholder="$t('module.enter-module-name')"
-            :prefix-icon="$legacyIcon('el-icon-files')"
-            clearable
-            @input="handleQuery"
-          />
-        </el-form-item>
-      </el-form>
-
-      <div ref="moduleToolsRight" class="module-tools-right">
+    <div ref="moduleTools" class="list-page-toolbar module-tools" :class="{ 'wrapped-tools': moduleToolsWrapped }">
+      <div class="list-page-toolbar__filters">
+        <el-form class="left" :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="120px" :class="{ 'list-query-keyboard-nav': listQueryNavActive }">
+          <el-form-item prop="moduleName" class="module-hint-query list-query-nav-item" data-query-key="moduleName">
+            <el-input
+              v-model="queryParams.moduleName"
+              :placeholder="$t('module.enter-module-name')"
+              :prefix-icon="$legacyIcon('el-icon-files')"
+              clearable
+              @input="handleQuery"
+            />
+          </el-form-item>
+        </el-form>
+      </div>
+      <div ref="moduleToolsRight" class="list-page-toolbar__actions module-tools-right">
           <el-button
             class="module-hint-toggle"
             type="info"
             plain
             :icon="$legacyIcon('el-icon-sort')"
-            size="small"
             @click="toggleExpandAll"
           >{{ $t('module.expand-collapse') }}</el-button>
           <el-button
-            class="module-hint-create"
+            class="module-hint-create cat2bug-btn-outline"
             type="primary"
             plain
             :icon="$legacyIcon('el-icon-plus')"
-            size="small"
             @click="handleAdd"
             v-hasPermi="['system:module:add']"
           >{{ $t('module.new') }}</el-button>
@@ -43,57 +41,62 @@
       @focusin="onModuleTableFocusIn"
       @focusout="onModuleTableFocusOut"
     >
-    <el-table
-      ref="moduleTable"
-      highlight-current-row
+    <cat2-bug-table
       v-if="refreshTable"
-      v-loading="loading"
+      ref="cat2BugTable"
+      cache-key="module-deliverable-table"
+      :columns="moduleTableColumns"
       :data="moduleList"
-      :max-height="moduleTableMaxHeight"
+      :loading="loading"
+      :table-max-height="moduleTableMaxHeight"
       row-key="moduleId"
+      :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
       :default-expand-all="isExpandAll"
-      :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      highlight-current-row
+      :enable-header-sort="false"
+      :operate-column-max-width="220"
     >
-      <el-table-column :label="$t('module.name')" align="start" prop="moduleName">
-        <template #default="scope">
+      <template #columns="{ scope, column }">
+        <template v-if="column.prop === 'moduleName'">
           <span class="module-row-kbd-hint-anchor">{{ scope.row.moduleName }}</span>
         </template>
-      </el-table-column>
-      <el-table-column :label="$t('annex')" align="left" prop="annexUrls">
-        <template #default="scope">
+        <template v-else-if="column.prop === 'annexUrls'">
           <div>
             <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
           </div>
         </template>
-      </el-table-column>
-      <el-table-column :label="$t('remark')" align="center" prop="remark" />
-      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="200">
-        <template #default="scope">
-          <el-button
-            size="small"
-            link
-            :icon="$legacyIcon('el-icon-edit')"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:module:edit']"
-          >{{ $t('modify') }}</el-button>
-          <el-button
-            size="small"
-            link
-            :icon="$legacyIcon('el-icon-plus')"
-            @click="handleAdd(scope.row)"
-            v-hasPermi="['system:module:add']"
-          >{{ $t('add') }}</el-button>
-          <el-button
-            size="small"
-            link
-            :icon="$legacyIcon('el-icon-delete')"
-            class="red"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['system:module:remove']"
-          >{{ $t('delete') }}</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+        <span v-else>{{ scope.row[column.prop] }}</span>
+      </template>
+      <template #append>
+        <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
+          <template #default="scope">
+            <div class="cat2bug-operate-tools">
+              <el-button
+                link
+                class="green"
+                :icon="$legacyIcon('el-icon-edit')"
+                @click="handleUpdate(scope.row)"
+                v-hasPermi="['system:module:edit']"
+              >{{ $t('modify') }}</el-button>
+              <el-button
+                link
+                class="blue"
+                :icon="$legacyIcon('el-icon-plus')"
+                @click="handleAdd(scope.row)"
+                v-hasPermi="['system:module:add']"
+              >{{ $t('add') }}</el-button>
+              <el-button
+                link
+                :icon="$legacyIcon('el-icon-delete')"
+                class="red"
+                @click="handleDelete(scope.row)"
+                v-hasPermi="['system:module:remove']"
+              >{{ $t('delete') }}</el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </template>
+    </cat2-bug-table>
     </div>
     </div>
 
@@ -107,6 +110,7 @@ import { listModule, getModule, delModule, addModule, updateModule } from "@/api
 import ModuleDialog from "@/components/Module/ModuleDialog";
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import Cat2BugText from "@/components/Cat2BugText";
+import Cat2BugTable from '@/components/Cat2BugTable'
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
@@ -129,16 +133,24 @@ import {
 
 const MODULE_KBD_SCOPE = 'module'
 
+const MODULE_TABLE_COLUMNS = [
+  { key: 'module.name', prop: 'moduleName', fixed: true, visible: true, align: 'left', minWidth: 200, pinFixedToggle: false, sortable: false },
+  { key: 'annex', prop: 'annexUrls', fixed: false, visible: true, align: 'left', minWidth: 160, pinFixedToggle: false, sortable: false },
+  { key: 'remark', prop: 'remark', fixed: false, visible: true, align: 'center', minWidth: 120, pinFixedToggle: false, sortable: false }
+]
+
 export default {
   name: "Module",
   mixins: [pageActionHints, listQueryKeyboardNav],
   components: {
     ProjectLabel,
     ModuleDialog,
-    Cat2BugText
+    Cat2BugText,
+    Cat2BugTable
   },
   data() {
     return {
+      moduleTableColumns: MODULE_TABLE_COLUMNS.map((c) => ({ ...c })),
       // 遮罩层
       loading: true,
       // 显示搜索条件
@@ -209,6 +221,15 @@ export default {
     if (this.$shortcut) this.$shortcut.unregisterPage(MODULE_KBD_SCOPE);
   },
   methods: {
+    /** Cat2BugTable 内层 el-table（树键盘导航依赖） */
+    getModuleElTable() {
+      const cat = this.$refs.cat2BugTable
+      return cat && cat.$refs ? cat.$refs.elTable : null
+    },
+    getModuleTableRootEl() {
+      const cat = this.$refs.cat2BugTable
+      return cat && cat.$el ? cat.$el : null
+    },
     registerModuleShortcuts() {
       if (!this.$shortcut) return
       this.$shortcut.registerPage(MODULE_KBD_SCOPE, [
@@ -247,18 +268,17 @@ export default {
       return this.buildModuleTableRowActionHints(used, rowFloat)
     },
     getPageActionHintScrollRoots() {
-      const table = this.$refs.moduleTable
-      if (!table || !table.$el) return []
-      const bodyWrap = getDefectTableScrollBody(table.$el)
+      const root = this.getModuleTableRootEl()
+      if (!root) return []
+      const bodyWrap = getDefectTableScrollBody(root)
       return bodyWrap ? [bodyWrap] : []
     },
     buildModuleTableRowActionHints(usedLetters, rowFloat) {
       if (!checkPermi(['system:module:edit'])) return []
-      const table = this.$refs.moduleTable
-      if (!table || !table.$el || this.loading) return []
-      const bodyWrap = getDefectTableScrollBody(table.$el)
+      const tableRoot = this.getModuleTableRootEl()
+      if (!tableRoot || this.loading) return []
+      const bodyWrap = getDefectTableScrollBody(tableRoot)
       if (!bodyWrap) return []
-      const tableRoot = table.$el
       const seen = new Set()
       const anchors = []
       bodyWrap.querySelectorAll('tbody tr.el-table__row').forEach((tr) => {
@@ -314,7 +334,7 @@ export default {
       }
       this.moduleTableFocused = true
       const visible = this.getVisibleModuleTableRows()
-      const table = this.$refs.moduleTable
+      const table = this.getModuleElTable()
       if (!table || !visible.length) return
       const current = getElTableCurrentRow(table)
       const idx = current
@@ -324,9 +344,9 @@ export default {
       this.$nextTick(() => this.scrollModuleTableRowIntoView(getElTableCurrentRow(table)))
     },
     getVisibleModuleTableRows() {
-      const table = this.$refs.moduleTable
-      if (!table || !table.$el) return []
-      const bodyWrap = getDefectTableScrollBody(table.$el)
+      const root = this.getModuleTableRootEl()
+      if (!root) return []
+      const bodyWrap = getDefectTableScrollBody(root)
       if (!bodyWrap) return []
       const rows = []
       bodyWrap.querySelectorAll('tbody tr.el-table__row').forEach((tr) => {
@@ -338,24 +358,24 @@ export default {
       return rows
     },
     getCurrentModuleTableRow() {
-      return getElTableCurrentRow(this.$refs.moduleTable)
+      return getElTableCurrentRow(this.getModuleElTable())
     },
     moduleRowHasChildren(row) {
       return !!(row && row.children && row.children.length)
     },
     isModuleRowExpanded(row) {
-      const treeData = getElTableTreeDataMap(this.$refs.moduleTable)
+      const treeData = getElTableTreeDataMap(this.getModuleElTable())
       if (!row || !treeData) return false
       const node = treeData[row.moduleId]
       return !!(node && node.expanded)
     },
     expandModuleRow(row) {
-      const table = this.$refs.moduleTable
+      const table = this.getModuleElTable()
       if (!table || !this.moduleRowHasChildren(row)) return
       toggleElTableTreeExpansion(table, row, true)
     },
     collapseModuleRow(row) {
-      const table = this.$refs.moduleTable
+      const table = this.getModuleElTable()
       if (!table) return
       toggleElTableTreeExpansion(table, row, false)
     },
@@ -394,7 +414,7 @@ export default {
           this.handleUpdate(row)
         } else if (e.key === 'Escape' || e.key === 'Esc') {
           e.preventDefault()
-          const table = this.$refs.moduleTable
+          const table = this.getModuleElTable()
           if (table) table.setCurrentRow(null)
           this.moduleTableFocused = false
           const wrap = this.$refs.moduleTableWrap
@@ -415,7 +435,7 @@ export default {
       this.moduleTableFocused = false
     },
     navigateModuleRow(delta) {
-      const table = this.$refs.moduleTable
+      const table = this.getModuleElTable()
       if (!table) return
       const visible = this.getVisibleModuleTableRows()
       if (!visible.length) return
@@ -470,8 +490,12 @@ export default {
         if (this.moduleTableMaxHeight !== next) {
           this.moduleTableMaxHeight = next;
           this.$nextTick(() => {
-            const table = this.$refs.moduleTable;
-            if (table && typeof table.doLayout === 'function') table.doLayout();
+            const cat = this.$refs.cat2BugTable;
+            if (cat && typeof cat.doLayout === 'function') cat.doLayout();
+            else {
+              const table = this.getModuleElTable();
+              if (table && typeof table.doLayout === 'function') table.doLayout();
+            }
           });
         }
       });

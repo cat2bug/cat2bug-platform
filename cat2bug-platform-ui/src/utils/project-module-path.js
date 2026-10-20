@@ -25,7 +25,9 @@ export const NON_PROJECT_MENU_ROOTS = Object.freeze([
   'tool',
   'team',
   'team-options',
-  'admin'
+  'admin',
+  'member',
+  'notice'
 ])
 
 export const NON_PROJECT_MENU_ROOT_SET = new Set(NON_PROJECT_MENU_ROOTS)

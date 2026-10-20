@@ -1,6 +1,11 @@
 <template>
   <div class="app-container git-pr-detail" v-loading="loading">
-    <git-repo-shell :repository-id="repositoryId" :repo-name="repoName" active-tab="pulls">
+    <git-repo-shell
+      ref="repoShell"
+      :repository-id="repositoryId"
+      :repo-name="repoName"
+      active-tab="pulls"
+    >
       <template v-if="pull">
         <section class="git-pr-detail__summary">
           <div class="git-pr-detail__summary-head">
@@ -377,16 +382,30 @@ export default {
         this.loadComments()
       }).finally(() => { this.commenting = false })
     },
+    refreshOpenPullTabCount() {
+      const shell = this.$refs.repoShell
+      if (shell && typeof shell.loadOpenPullCount === 'function') {
+        shell.loadOpenPullCount()
+      }
+    },
     closePullRequest() {
       this.$modal.confirm(this.$t('git.repo.pr.close-confirm')).then(() => {
         this.closing = true
-        return closeGitPullRequest(this.repositoryId, this.number).then(() => { this.$modal.msgSuccess(this.$t('git.repo.pr.close-success')); this.loadDetail() }).finally(() => { this.closing = false })
+        return closeGitPullRequest(this.repositoryId, this.number).then(() => {
+          this.$modal.msgSuccess(this.$t('git.repo.pr.close-success'))
+          this.refreshOpenPullTabCount()
+          return this.loadDetail()
+        }).finally(() => { this.closing = false })
       }).catch(() => {})
     },
     mergePullRequest() {
       this.$modal.confirm(this.$t('git.repo.pr.merge-confirm')).then(() => {
         this.merging = true
-        return mergeGitPullRequest(this.repositoryId, this.number).then(() => { this.$modal.msgSuccess(this.$t('git.repo.pr.merge-success')); this.loadDetail() }).finally(() => { this.merging = false })
+        return mergeGitPullRequest(this.repositoryId, this.number).then(() => {
+          this.$modal.msgSuccess(this.$t('git.repo.pr.merge-success'))
+          this.refreshOpenPullTabCount()
+          return this.loadDetail()
+        }).finally(() => { this.merging = false })
       }).catch(() => {})
     }
   }

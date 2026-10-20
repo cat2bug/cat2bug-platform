@@ -1,9 +1,10 @@
 import request from '@/utils/request'
 
-export function listCaseTypes(projectId) {
+export function listCaseTypes(projectId, params) {
   return request({
     url: '/system/project/' + projectId + '/case-types',
-    method: 'get'
+    method: 'get',
+    params: params || {}
   })
 }
 
@@ -20,6 +21,22 @@ export function updateCaseType(projectId, typeId, typeName) {
     url: '/system/project/' + projectId + '/case-types/' + typeId,
     method: 'put',
     data: { typeName }
+  })
+}
+
+export function updateCaseTypeEnabled(projectId, typeId, enabled) {
+  return request({
+    url: '/system/project/' + projectId + '/case-types/' + typeId,
+    method: 'put',
+    data: { enabled: enabled ? 1 : 0 }
+  })
+}
+
+/** 表单/筛选用：仅启用；编辑时保留当前已选（即使已停用） */
+export function filterSelectableCaseTypes(types, currentTypeId) {
+  return (types || []).filter((t) => {
+    if (t && Number(t.enabled) === 1) return true
+    return currentTypeId != null && t && t.typeId === currentTypeId
   })
 }
 

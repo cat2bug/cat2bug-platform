@@ -168,6 +168,7 @@
               v-if="canEditDefectField"
               size="small"
               link
+              class="green"
               :icon="$legacyIcon('el-icon-edit')"
               @click="handleUpdate(scope.row)"
             >{{ $t('modify') }}</el-button>
@@ -244,7 +245,7 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="form.fieldType === 'enum'" :label="$t('defect.custom-field.enum-options')">
-          <el-table :data="enumOptions" size="small" border class="enum-options-table defect-field-enum-table">
+          <el-table :data="enumOptions" size="small" border class="enum-options-table defect-field-enum-table cat2bug-table-compact">
             <el-table-column :label="$t('defect.custom-field.option-key')" min-width="120">
               <template #default="scope">
                 <el-input v-model="scope.row.key" size="small" maxlength="64" />

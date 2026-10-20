@@ -21,11 +21,16 @@ function isProjectScopedMatch(route) {
  * @returns {Promise<ProjectScopedGuardResult>}
  */
 export async function ensureProjectScopedContext(route) {
+  // 非项目命名空间路由（如 /member/keyboard）即使 path 形似 /a/b 也不得当项目解析
+  if (!isProjectScopedMatch(route)) {
+    return 'skip'
+  }
+
   const path = (route && route.path) || ''
   const parsed = parseProjectScopedPath(path)
   if (!parsed) {
     // Matched namespaced parent/child but keys or module are invalid → 404
-    return isProjectScopedMatch(route) ? 'not_found' : 'skip'
+    return 'not_found'
   }
 
   const teamKey = (route.params && route.params.teamKey) || parsed.teamKey
