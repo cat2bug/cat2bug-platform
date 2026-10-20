@@ -43,12 +43,30 @@
             </template>
           </el-popover>
           <el-button
+            class="document-hint-batch-move"
+            type="primary"
+            plain
+            size="small"
+            :disabled="multiple"
+            @click="handleBatchMove"
+            v-hasPermi="['system:document:edit']"
+          ><svg-icon class="button-icon" icon-class="file-move" />{{ $t('doc.batch-move') }}</el-button>
+          <el-button
+            class="document-hint-batch-delete"
+            type="danger"
+            plain
+            size="small"
+            :icon="$legacyIcon('el-icon-delete')"
+            :disabled="multiple"
+            @click="handleBatchDelete"
+          >{{ $t('batch-delete') }}</el-button>
+          <el-button
             class="document-hint-create-folder"
             type="primary"
             plain
             :icon="$legacyIcon('el-icon-plus')"
             size="small"
-            @click="handleAddDir"
+            @click="handleAddDir()"
             v-hasPermi="['system:document:add']"
           >{{ $t('doc.create-folder') }}</el-button>
           <span v-hasPermi="['system:document:add']" class="document-create-dropdown-wrap">
@@ -78,100 +96,160 @@
     </div>
 
     <div ref="documentListBody" class="document-list-body">
-      <div class="document-table-x-scroll document-table-root">
-    <cat2-bug-table
-      ref="cat2BugTable"
-      cache-key="document-table"
-      sort-column-cache-key="document_table_sort_column_key"
-      sort-type-cache-key="document_table_sort_type_key"
-      :operate-column-max-width="320"
-      :columns="documentTableColumnDefaults"
-      :data="documentList"
-      :loading="loading"
-      :table-max-height="documentTableBodyMaxHeight"
-      @selection-change="handleSelectionChange"
-      @columns-change="onDocTableColumnsChange"
-      @sort-change="handleSortChange"
-    >
-      <template #columns="{ scope, column }">
-        <template v-if="column.prop==='docName'">
-          <div class="document-title">
-            <svg-icon class="file-icon" :icon-class="fileIcon(scope.row)" />
-            <el-link v-if="scope.row.docType<=0" @click="goFolder(scope.row)" type="primary" :title="scope.row.docType===-1 ? $t('doc.upper-level-dir') : scope.row.docName">
-              <template v-if="scope.row.docType===-1">{{ '... ' + $t('doc.upper-level-dir') }}</template>
-              <template v-else>{{ scope.row.docName }}</template>
-            </el-link>
-            <el-link v-else @click="handleView(scope.row)" type="primary" :title="scope.row.docName">{{ scope.row.docName }}</el-link>
+      <multipane
+        layout="vertical"
+        ref="multiPane"
+        class="custom-resizer document-multipane"
+        :class="{ 'custom-resizer--tree-hidden': !showFolderTree }"
+        @paneResizeStop="dragStopHandle"
+      >
+        <div v-if="showFolderTree" ref="treeModule" class="document-tree-module" :style="treeModuleStyle">
+          <document-folder-tree
+            ref="documentFolderTree"
+            :project-id="getProjectId()"
+            :current-doc-id="currentFolderDocId"
+            :show-sidebar-toggle="true"
+            :toolbar-sync-height="documentTreeToolbarHeight"
+            @toggle-sidebar="toggleFolderTreeVisible"
+            @node-click="onFolderTreeNodeClick"
+            @create-folder="handleAddDir"
+            v-resize="setDragComponentSize"
+          />
+        </div>
+        <multipane-resizer ref="paneResizer" v-show="showFolderTree" :style="[multipaneStyle, paneResizerRuleVars]" />
+        <div ref="documentTableContext" class="document-table-context">
+          <div class="document-table-x-scroll document-table-root">
+            <cat2-bug-table
+              ref="cat2BugTable"
+              cache-key="document-table"
+              sort-column-cache-key="document_table_sort_column_key"
+              sort-type-cache-key="document_table_sort_type_key"
+              :operate-column-max-width="320"
+              :columns="documentTableColumnDefaults"
+              :data="documentList"
+              :loading="loading"
+              :table-max-height="documentTableBodyMaxHeight"
+              v-resize="setDragComponentSize"
+              @selection-change="handleSelectionChange"
+              @columns-change="onDocTableColumnsChange"
+              @sort-change="handleSortChange"
+            >
+              <template #prepend>
+                <el-table-column
+                  v-if="!showFolderTree"
+                  key="document-sidebar-expand-col"
+                  fixed
+                  width="30"
+                  align="center"
+                  label-class-name="document-sidebar-expand-header-cell"
+                  class-name="document-sidebar-expand-body-cell"
+                >
+                  <template #header>
+                    <el-tooltip :content="$t('doc.show-folder-tree')" placement="bottom">
+                      <span
+                        class="document-sidebar-expand-trigger"
+                        role="button"
+                        tabindex="0"
+                        @click.stop="toggleFolderTreeVisible"
+                        @keyup.enter.stop.prevent="toggleFolderTreeVisible"
+                      >
+                        <svg-icon icon-class="menu" class-name="document-sidebar-expand-svg" />
+                      </span>
+                    </el-tooltip>
+                  </template>
+                  <template #default>
+                    <span class="document-sidebar-expand-body-placeholder" />
+                  </template>
+                </el-table-column>
+                <el-table-column type="selection" width="50" align="center" fixed :selectable="rowSelectable" />
+              </template>
+              <template #columns="{ scope, column }">
+                <template v-if="column.prop==='docName'">
+                  <div class="document-title">
+                    <svg-icon class="file-icon" :icon-class="fileIcon(scope.row)" />
+                    <el-link v-if="scope.row.docType<=0" @click="goFolder(scope.row)" type="primary" :title="scope.row.docType===-1 ? $t('doc.upper-level-dir') : scope.row.docName">
+                      <template v-if="scope.row.docType===-1">{{ '... ' + $t('doc.upper-level-dir') }}</template>
+                      <template v-else>{{ scope.row.docName }}</template>
+                    </el-link>
+                    <el-link v-else @click="handleView(scope.row)" type="primary" :title="scope.row.docName">{{ scope.row.docName }}</el-link>
+                  </div>
+                </template>
+                <template v-else-if="column.prop==='fileExtension'">
+                  <span v-if="scope.row.docType===0">{{ $t('folder') }}</span>
+                  <span v-else>{{ scope.row.fileExtension }}</span>
+                </template>
+                <template v-else-if="column.prop==='updateByName'">
+                  <el-tooltip v-if="scope.row.updateBy" class="item" effect="dark" :content="scope.row.updateBy" placement="top">
+                    <cat2-bug-avatar :member="member(scope.row)" />
+                  </el-tooltip>
+                </template>
+                <span v-else>{{ scope.row[column.prop] }}</span>
+              </template>
+              <template #append>
+                <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
+                  <template #default="scope">
+                    <div v-show="scope.row.docType>-1" class="cat2bug-operate-tools">
+                      <el-button
+                        v-if="scope.row.docType==1"
+                        size="small"
+                        link
+                        :icon="$legacyIcon('el-icon-edit')"
+                        @click="handleDownload(scope.row)"
+                        v-hasPermi="['system:document:export']"
+                      >{{ $t('download') }}</el-button>
+                      <el-button
+                        size="small"
+                        link
+                        @click="handleOpenMoveDialog(scope.row)"
+                        v-hasPermi="['system:document:edit']"
+                      ><svg-icon class="button-icon" icon-class="file-move"></svg-icon>{{ $t('move') }}</el-button>
+                      <el-button
+                        size="small"
+                        link
+                        class="green"
+                        :icon="$legacyIcon('el-icon-edit')"
+                        @click="handleUpdate(scope.row)"
+                        v-hasPermi="['system:document:edit']"
+                      >{{ $t('update') }}</el-button>
+                      <el-button
+                        size="small"
+                        link
+                        :icon="$legacyIcon('el-icon-delete')"
+                        class="red"
+                        @click="handleDelete(scope.row)"
+                        v-if="hasDeletePermi(scope.row)"
+                      >{{ $t('delete') }}</el-button>
+                    </div>
+                  </template>
+                </el-table-column>
+              </template>
+            </cat2-bug-table>
           </div>
-        </template>
-        <template v-else-if="column.prop==='fileExtension'">
-          <span v-if="scope.row.docType===0">{{ $t('folder') }}</span>
-          <span v-else>{{ scope.row.fileExtension }}</span>
-        </template>
-        <template v-else-if="column.prop==='updateByName'">
-          <el-tooltip v-if="scope.row.updateBy" class="item" effect="dark" :content="scope.row.updateBy" placement="top">
-            <cat2-bug-avatar :member="member(scope.row)" />
-          </el-tooltip>
-        </template>
-        <span v-else>{{ scope.row[column.prop] }}</span>
-      </template>
-      <template #append>
-        <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
-          <template #default="scope">
-            <div v-show="scope.row.docType>-1" class="cat2bug-operate-tools">
-              <el-button
-                v-if="scope.row.docType==1"
-                size="small"
-                link
-                :icon="$legacyIcon('el-icon-edit')"
-                @click="handleDownload(scope.row)"
-                v-hasPermi="['system:document:export']"
-              >{{ $t('download') }}</el-button>
-              <el-button
-                size="small"
-                link
-                @click="handleOpenMoveDialog(scope.row)"
-                v-hasPermi="['system:document:edit']"
-              ><svg-icon class="button-icon" icon-class="file-move"></svg-icon>{{ $t('move') }}</el-button>
-              <el-button
-                size="small"
-                link
-                class="green"
-                :icon="$legacyIcon('el-icon-edit')"
-                @click="handleUpdate(scope.row)"
-                v-hasPermi="['system:document:edit']"
-              >{{ $t('update') }}</el-button>
-              <el-button
-                size="small"
-                link
-                :icon="$legacyIcon('el-icon-delete')"
-                class="red"
-                @click="handleDelete(scope.row)"
-                v-if="hasDeletePermi(scope.row)"
-              >{{ $t('delete') }}</el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </template>
-    </cat2-bug-table>
-      </div>
-
-    <div v-show="total>0" ref="documentPaginationBand" class="document-table-pagination-band table-pagination-band">
-      <pagination
-        class="document-table-pagination"
-        :total="total"
-        v-model:page="queryParams.pageNum"
-        v-model:limit="queryParams.pageSize"
-        @pagination="getList"
-      />
-    </div>
+          <div v-show="total>0" ref="documentPaginationBand" class="document-table-pagination-band table-pagination-band">
+            <pagination
+              class="document-table-pagination"
+              :total="total"
+              v-model:page="queryParams.pageNum"
+              v-model:limit="queryParams.pageSize"
+              @pagination="onPagination"
+            />
+          </div>
+        </div>
+      </multipane>
     </div>
 
     <!-- 添加或修改文档对话框 -->
     <el-dialog :title="title" v-model="open" width="500px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onCreateDialogOpened">
-      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
+      <!-- 单输入框回车会触发表单原生 submit → 整页刷新；须 prevent 并改走 submitForm -->
+      <el-form ref="form" :model="form" :rules="rules" label-width="100px" @submit.prevent="submitForm">
         <el-form-item :label="fileFieldName" prop="docName">
-          <el-input ref="docNameInput" v-model="form.docName" :placeholder="$t('doc.please-enter-name')" maxlength="255" />
+          <el-input
+            ref="docNameInput"
+            v-model="form.docName"
+            :placeholder="$t('doc.please-enter-name')"
+            maxlength="255"
+            @keyup.enter="submitForm"
+          />
         </el-form-item>
 <!--        <el-form-item label="备注" prop="docRemark">-->
 <!--          <el-input v-model="form.docRemark" placeholder="请输入备注" />-->
@@ -183,18 +261,18 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-        <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+        <el-button class="defect-kbd-hint-host" type="primary" native-type="button" @click="submitForm">
           {{ $t('ok') }}
           <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
         </el-button>
-        <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
+        <el-button native-type="button" @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
 
     <!-- 移动文档对话框 -->
     <el-dialog :title="$t('doc.move-to')" v-model="moveDialogVisible" width="500px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onMoveDialogOpened">
-      <el-form ref="moveForm" :model="folderForm" :rules="rules" label-width="0px">
+      <el-form ref="moveForm" :model="folderForm" :rules="rules" label-width="0px" @submit.prevent>
         <el-form-item class="margin-bottom-0" label="" prop="docId">
           <el-tree
             lazy
@@ -214,11 +292,11 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-        <el-button class="defect-kbd-hint-host" type="primary" :disabled="!isClickFolder" @click="handleMoveFolder">
+        <el-button class="defect-kbd-hint-host" type="primary" native-type="button" :disabled="!isClickFolder" @click="handleMoveFolder">
           {{ $t('ok') }}
           <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
         </el-button>
-        <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
+        <el-button native-type="button" @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -229,6 +307,8 @@
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import Cat2BugTable from "@/components/Cat2BugTable";
+import DocumentFolderTree from "@/components/Document/DocumentFolderTree";
+import { Multipane, MultipaneResizer } from "vue-multipane";
 import { DocumentTableColumnDefaults } from "@/views/system/document/document-table-options";
 import { listDocument, getDocument, delDocument, addDocument, updateDocument } from "@/api/system/document";
 import {strFormat} from "@/utils";
@@ -238,27 +318,73 @@ import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
 import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
+import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport'
+import multipaneTreeTableHeightSync from '@/mixins/multipaneTreeTableHeightSync'
 import { serializeToolDialogFormCloseState } from '@/utils/defect-tool-dialog-close-state'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { getCurrentProjectId, getCurrentUserId } from '@/utils/store-context'
 import { consumeDocumentReturnFolder } from '@/utils/document-folder-state'
 
 const DOCUMENT_KBD_SCOPE = 'document'
+const DOCUMENT_PAGE_SIZE_CACHE_KEY = 'document.pageSize'
+const DOCUMENT_FOLDER_TREE_VISIBLE_CACHE_KEY = 'document_folder_tree_visible'
+const DOCUMENT_FOLDER_TREE_WIDTH_CACHE_KEY = 'document_folder_tree_width'
 
 export default {
   name: "Document",
-  mixins: [pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd, defectToolDialogKbd],
-  components: { ProjectLabel, Cat2BugAvatar, Cat2BugTable },
+  mixins: [
+    pageActionHints,
+    listQueryKeyboardNav,
+    columnPickerPopoverKbd,
+    defectToolDialogKbd,
+    paneResizerHandleViewport,
+    multipaneTreeTableHeightSync
+  ],
+  components: {
+    ProjectLabel,
+    Cat2BugAvatar,
+    Cat2BugTable,
+    DocumentFolderTree,
+    Multipane,
+    MultipaneResizer
+  },
+  directives: {
+    resize: {
+      mounted(el, binding) {
+        let width = ""
+        let height = ""
+        function isResize() {
+          const style = document.defaultView.getComputedStyle(el)
+          if (width !== style.width || height !== style.height) {
+            binding.value({ width: style.width, height: style.height })
+          }
+          width = style.width
+          height = style.height
+        }
+        el.__vueSetInterval__ = setInterval(isResize, 300)
+      },
+      unmounted(el) {
+        clearInterval(el.__vueSetInterval__)
+      }
+    }
+  },
   data() {
     return {
       // 移动对话框是否显示
       moveDialogVisible: false,
       // 在移动时，记录是否点击了要移动的文件夹
       isClickFolder: false,
+      /** 单条或批量移动的目标 id 列表 */
+      moveTargetIds: [],
       // 文件夹表单
       folderForm: {},
       folderTree: [],
       currentFolder: null,
+      showFolderTree: true,
+      /** 与右侧列表表头行同高（px），测完后传给左侧树标题栏 */
+      documentTreeToolbarHeight: null,
+      treeModuleStyle: { "--treeModuleWidth": "280px" },
+      multipaneStyle: {},
       defaultProps: {
         children: 'children',
         label: 'docName',
@@ -325,6 +451,19 @@ export default {
     $_formShortcutSurfaceVisible() {
       return this.open === true || this.moveDialogVisible === true
     },
+    /** multipaneTreeTableHeightSync 约定名 */
+    showModuleTree() {
+      return this.showFolderTree
+    },
+    currentFolderDocId() {
+      return this.currentFolder && this.currentFolder.docId > 0 ? this.currentFolder.docId : 0
+    },
+    paneResizerRuleVars() {
+      const h = this.documentTreeToolbarHeight
+      return {
+        '--multipane-header-rule-offset': h != null && h > 0 ? `${h}px` : '48px'
+      }
+    },
     documentColumnPickerOptions() {
       const ordered = this.docPickerColumnList;
       if (ordered && ordered.length) {
@@ -344,6 +483,16 @@ export default {
   created() {
     this.queryParams.orderByColumn = this.$cache.local.get('document_table_sort_column_key') || null
     this.queryParams.isAsc = this.$cache.local.get('document_table_sort_type_key') || null
+    const cachedSize = this.$cache.local.get(DOCUMENT_PAGE_SIZE_CACHE_KEY)
+    if (cachedSize != null && cachedSize !== '') {
+      const n = Number(cachedSize)
+      if (Number.isFinite(n) && n > 0) {
+        this.queryParams.pageSize = n
+      }
+    }
+    const treeVis = this.$cache.local.get(DOCUMENT_FOLDER_TREE_VISIBLE_CACHE_KEY)
+    this.showFolderTree = !(treeVis === '0' || treeVis === 'false')
+    this.getFolderTreeWidth()
     this.restoreFolderThenList()
   },
   mounted() {
@@ -351,6 +500,8 @@ export default {
       this.syncDocumentToolsWrapped();
       this.initDocumentListBodyResizeObserver();
       this.syncDocumentTableBodyMaxHeight();
+      this.setDragComponentSize();
+      this.initDocumentTableHeaderHeightSync();
     });
     window.addEventListener("resize", this.syncDocumentToolsWrapped);
     window.addEventListener("resize", this.syncDocumentTableBodyMaxHeight);
@@ -367,9 +518,11 @@ export default {
     window.removeEventListener("resize", this.syncDocumentToolsWrapped);
     window.removeEventListener("resize", this.syncDocumentTableBodyMaxHeight);
     this.destroyDocumentListBodyResizeObserver();
+    this.destroyDocumentTableHeaderHeightSync();
     if (this.$shortcut) this.$shortcut.unregisterPage(DOCUMENT_KBD_SCOPE);
   },
   beforeDestroy() {
+    this.destroyDocumentTableHeaderHeightSync();
     if (this.$shortcut) this.$shortcut.unregisterPage(DOCUMENT_KBD_SCOPE);
   },
   methods: {
@@ -534,6 +687,7 @@ export default {
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
         this.syncDocumentTableBodyMaxHeight();
+        this.syncDocumentTreeToolbarWithTableHeader();
       });
     },
     onDocColumnPickerChange(keys) {
@@ -572,6 +726,12 @@ export default {
       if (!folder || !folder.docId || folder.docId <= 0) {
         this.currentFolder = null
         this.queryParams.docPid = 0
+        this.$nextTick(() => {
+          const tree = this.$refs.documentFolderTree
+          if (tree && typeof tree.ensureFolderVisible === 'function') {
+            tree.ensureFolderVisible(null)
+          }
+        })
         return
       }
       this.currentFolder = {
@@ -581,6 +741,154 @@ export default {
         docType: folder.docType != null ? folder.docType : 0
       }
       this.queryParams.docPid = folder.docId
+      this.$nextTick(() => {
+        const tree = this.$refs.documentFolderTree
+        if (tree && typeof tree.ensureFolderVisible === 'function') {
+          tree.ensureFolderVisible(this.currentFolder)
+        }
+      })
+    },
+    onFolderTreeNodeClick(folder) {
+      this.reset()
+      this.queryParams.docType = null
+      this.queryParams.pageNum = 1
+      this.applyFolder(folder)
+      this.getList()
+    },
+    toggleFolderTreeVisible() {
+      this.showFolderTree = !this.showFolderTree
+      this.$cache.local.set(DOCUMENT_FOLDER_TREE_VISIBLE_CACHE_KEY, this.showFolderTree ? '1' : '0')
+      this.$nextTick(() => {
+        this.setDragComponentSize()
+        if (this.$refs.cat2BugTable) {
+          this.$refs.cat2BugTable.doLayout()
+        }
+        this.$nextTick(() => this.syncDocumentTreeToolbarWithTableHeader())
+      })
+    },
+    syncDocumentTreeToolbarWithTableHeader() {
+      this.$nextTick(() => {
+        const cat = this.$refs.cat2BugTable
+        const elTable = cat && cat.$refs && cat.$refs.elTable
+        if (!elTable || !elTable.$el) {
+          return
+        }
+        const headerWrap = elTable.$el.querySelector('.el-table__header-wrapper')
+        if (!headerWrap) {
+          return
+        }
+        if (
+          this._documentTableHeaderObservedEl &&
+          this._documentTableHeaderObservedEl !== headerWrap
+        ) {
+          this.destroyDocumentTableHeaderHeightSync()
+          this.initDocumentTableHeaderHeightSync()
+          return
+        }
+        const tr = headerWrap.querySelector('thead tr')
+        if (!tr) {
+          return
+        }
+        const rect = tr.getBoundingClientRect()
+        const h = Math.round(rect.height || tr.offsetHeight || 0)
+        if (h > 0 && h !== this.documentTreeToolbarHeight) {
+          this.documentTreeToolbarHeight = h
+        }
+      })
+    },
+    initDocumentTableHeaderHeightSync() {
+      this.destroyDocumentTableHeaderHeightSync()
+      const cat = this.$refs.cat2BugTable
+      const elTable = cat && cat.$refs && cat.$refs.elTable
+      if (!elTable || !elTable.$el) {
+        this.syncDocumentTreeToolbarWithTableHeader()
+        return
+      }
+      const headerWrap = elTable.$el.querySelector('.el-table__header-wrapper')
+      if (!headerWrap) {
+        this.syncDocumentTreeToolbarWithTableHeader()
+        return
+      }
+      this._documentTableHeaderObservedEl = headerWrap
+      this.syncDocumentTreeToolbarWithTableHeader()
+      if (typeof ResizeObserver === 'undefined') {
+        return
+      }
+      this._documentTableHeaderResizeObserver = new ResizeObserver(() => {
+        this.syncDocumentTreeToolbarWithTableHeader()
+      })
+      this._documentTableHeaderResizeObserver.observe(headerWrap)
+    },
+    destroyDocumentTableHeaderHeightSync() {
+      if (this._documentTableHeaderResizeObserver) {
+        this._documentTableHeaderResizeObserver.disconnect()
+        this._documentTableHeaderResizeObserver = null
+      }
+      this._documentTableHeaderObservedEl = null
+    },
+    getFolderTreeWidth() {
+      const w = this.$cache.session.get(DOCUMENT_FOLDER_TREE_WIDTH_CACHE_KEY)
+      this.treeModuleStyle['--treeModuleWidth'] = (w ? w : 280) + 'px'
+    },
+    cacheFolderTreeWidth() {
+      if (this.$refs.treeModule) {
+        this.$cache.session.set(DOCUMENT_FOLDER_TREE_WIDTH_CACHE_KEY, this.$refs.treeModule.clientWidth)
+      }
+    },
+    dragStopHandle() {
+      if (this.showFolderTree) {
+        this.cacheFolderTreeWidth()
+      }
+      this.setDragComponentSize()
+    },
+    setDragComponentSize() {
+      this.syncDocumentTableBodyMaxHeight()
+      this.$nextTick(() => {
+        this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout()
+        this.syncMultipaneTreeTableHeight('cat2BugTable')
+        this.syncDocumentTreeToolbarWithTableHeader()
+      })
+    },
+    onPagination() {
+      this.$cache.local.set(DOCUMENT_PAGE_SIZE_CACHE_KEY, String(this.queryParams.pageSize))
+      this.getList()
+    },
+    rowSelectable(row) {
+      return row && row.docType > -1
+    },
+    folderTreeRef() {
+      return this.$refs.documentFolderTree
+    },
+    /** @deprecated 全量刷新会收起树；优先用局部方法 */
+    refreshFolderTree() {
+      const tree = this.folderTreeRef()
+      if (tree && typeof tree.invalidateAndRefresh === 'function') {
+        tree.invalidateAndRefresh()
+      }
+    },
+    notifyFolderCreated(folder) {
+      const tree = this.folderTreeRef()
+      if (tree && typeof tree.addFolderNode === 'function') {
+        tree.addFolderNode(folder)
+      }
+    },
+    notifyFoldersRemoved(docIds) {
+      const tree = this.folderTreeRef()
+      if (tree && typeof tree.removeFolderNodes === 'function') {
+        tree.removeFolderNodes(docIds)
+      }
+    },
+    notifyFolderRenamed(folder) {
+      const tree = this.folderTreeRef()
+      if (tree && typeof tree.renameFolderNode === 'function') {
+        tree.renameFolderNode(folder)
+      }
+    },
+    notifyFolderParentsReloaded(parentIds) {
+      const tree = this.folderTreeRef()
+      if (tree && typeof tree.reloadChildren === 'function') {
+        tree.reloadChildren(parentIds)
+      }
     },
     /** 查询文档列表 */
     getList() {
@@ -601,6 +909,8 @@ export default {
         this.syncDocumentToolsWrapped();
         this.$nextTick(() => {
           this.syncDocumentTableBodyMaxHeight();
+          this.syncDocumentTreeToolbarWithTableHeader();
+          this.initDocumentTableHeaderHeightSync();
         });
       });
     },
@@ -681,7 +991,7 @@ export default {
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
-      this.queryParams.projectId = this.projectId;
+      this.queryParams.projectId = this.getProjectId();
       this.getList();
     },
     handleSortChange(column) {
@@ -695,11 +1005,12 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    /** 多选框选中数据 */
+    /** 多选框选中数据（排除「上级目录」行） */
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.docId)
-      this.single = selection.length!==1
-      this.multiple = !selection.length
+      const rows = (selection || []).filter(item => item && item.docType > -1)
+      this.ids = rows.map(item => item.docId)
+      this.single = rows.length !== 1
+      this.multiple = !rows.length
     },
     handleView(doc) {
       const ext = String((doc && doc.fileExtension) || '').toLowerCase()
@@ -715,15 +1026,22 @@ export default {
       this.handleDownload(doc);
       // window.open('http://127.0.0.1:8012/onlinePreview?url='+encodeURIComponent(toBase64(doc.fileUrl)));
     },
-    /** 新增文件夹按钮操作 */
-    handleAddDir() {
+    /** 新增文件夹；可从树节点传入父夹 */
+    handleAddDir(parentFolder) {
       this.reset();
-      this.form.docType=0;
+      this.form.docType = 0;
+      if (parentFolder && parentFolder.docId != null && parentFolder.docId > 0) {
+        this.form.docPid = parentFolder.docId;
+      } else if (this.currentFolder && this.currentFolder.docId > 0) {
+        this.form.docPid = this.currentFolder.docId;
+      } else {
+        this.form.docPid = 0;
+      }
       this.open = true;
       this.title = this.$i18n.t('doc.create-folder');
       this.fileFieldName = this.$i18n.t('doc.folder-name');
       this.$nextTick(() => {
-        this.$refs.docNameInput.focus();
+        this.$refs.docNameInput && this.$refs.docNameInput.focus();
       });
     },
     /** 上传文档（原新建上传对话框） */
@@ -806,20 +1124,43 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          // doCloseToolDialog → reset 会清空 form，须先记下
+          const isFolder = this.form.docType === 0 || this.form.docType === '0'
+          const snapshot = {
+            docId: this.form.docId,
+            docName: this.form.docName,
+            docPid: this.form.docPid != null ? this.form.docPid : 0
+          }
           if (this.form.docId != null) {
             updateDocument(this.form).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('modify-success'));
               this.doCloseToolDialog();
               this.getList();
+              if (isFolder) {
+                this.notifyFolderRenamed(snapshot);
+              }
             });
           } else {
-            if(this.currentFolder) {
-              this.form.docPid = this.currentFolder.docId;
+            if (this.form.docPid == null) {
+              this.form.docPid = this.currentFolder && this.currentFolder.docId > 0
+                ? this.currentFolder.docId
+                : 0;
             }
+            snapshot.docPid = this.form.docPid
             addDocument(this.form).then(response => {
+              const newId = response && response.data
               this.$modal.msgSuccess(this.$i18n.t('create-success'));
               this.doCloseToolDialog();
               this.getList();
+              if (isFolder && newId) {
+                this.notifyFolderCreated({
+                  docId: newId,
+                  docName: snapshot.docName,
+                  docPid: snapshot.docPid,
+                  docType: 0,
+                  leaf: true
+                });
+              }
             });
           }
         }
@@ -836,23 +1177,81 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const docIds = row.docId || this.ids;
+      const folderIds = row && row.docType == 0
+        ? [row.docId]
+        : (this.documentList || [])
+            .filter(d => d && d.docType == 0 && (Array.isArray(docIds) ? docIds.includes(d.docId) : d.docId === docIds))
+            .map(d => d.docId)
       let msg = null;
-      if(row.docType==0) {
-        msg = strFormat(this.$i18n.t('doc.is-delete-dir'),row.docName);
+      if (row && row.docType == 0) {
+        msg = strFormat(this.$i18n.t('doc.is-delete-dir'), row.docName);
+      } else if (row && row.docName) {
+        msg = strFormat(this.$i18n.t('doc.is-delete-file'), row.docName);
       } else {
-        msg = strFormat(this.$i18n.t('doc.is-delete-file'),row.docName);
+        msg = this.$i18n.t('doc.is-batch-delete');
       }
       this.$modal.confirm(msg).then(function() {
         return delDocument(docIds);
       }).then(() => {
         this.getList();
+        if (folderIds.length) {
+          this.notifyFoldersRemoved(folderIds);
+        }
         this.$modal.msgSuccess(this.$i18n.t('delete-success'));
       }).catch(() => {});
+    },
+    handleBatchDelete() {
+      if (!this.ids || !this.ids.length) return
+      const can = this.ids.every(id => {
+        const row = this.documentList.find(d => d.docId === id)
+        return row && this.hasDeletePermi(row)
+      })
+      if (!can) {
+        this.$modal.msgWarning(this.$t('doc.batch-delete-no-permi'))
+        return
+      }
+      const folderIds = (this.documentList || [])
+        .filter(d => d && d.docType == 0 && this.ids.includes(d.docId))
+        .map(d => d.docId)
+      const ids = [...this.ids]
+      this.$modal.confirm(this.$t('doc.is-batch-delete')).then(() => {
+        return delDocument(ids)
+      }).then(() => {
+        this.getList()
+        if (folderIds.length) {
+          this.notifyFoldersRemoved(folderIds)
+        }
+        this.$modal.msgSuccess(this.$t('delete-success'))
+      }).catch(() => {})
+    },
+    handleBatchMove() {
+      if (!this.ids || !this.ids.length) return
+      this.moveTargetIds = [...this.ids]
+      this.folderForm = { docPid: null }
+      this.isClickFolder = false
+      this.moveDialogVisible = true
     },
     /** 跳转文件夹按钮操作 */
     goFolder(dir) {
       this.reset();
       this.queryParams.docType = null;
+      this.queryParams.pageNum = 1;
+      if (dir && dir.docType === -1) {
+        if (dir.docId && dir.docId > 0) {
+          getDocument(dir.docId).then(res => {
+            const folder = res && res.data
+            this.applyFolder(folder && folder.docId ? folder : { docId: dir.docId })
+            this.getList()
+          }).catch(() => {
+            this.applyFolder({ docId: dir.docId })
+            this.getList()
+          })
+        } else {
+          this.applyFolder(null)
+          this.getList()
+        }
+        return
+      }
       if (dir && dir.docId) {
         this.applyFolder(dir)
       } else {
@@ -891,34 +1290,65 @@ export default {
     /** 打开移动对话框 */
     handleOpenMoveDialog(doc) {
       this.moveDialogVisible = true;
-      this.folderForm = doc;
+      this.folderForm = { ...doc };
+      this.moveTargetIds = doc && doc.docId ? [doc.docId] : [];
       this.isClickFolder = false;
     },
     /** 取消移动对话框 */
     cancelFolderDialog() {
       this.requestCloseToolDialog();
     },
-    /** 移动文件夹 */
+    /** 移动文件夹（单条或批量） */
     handleMoveFolder() {
+      const targetPid = this.folderForm.docPid;
+      if (targetPid == null) return;
+      const ids = (this.moveTargetIds && this.moveTargetIds.length)
+        ? this.moveTargetIds
+        : (this.folderForm.docId ? [this.folderForm.docId] : []);
+      if (!ids.length) return;
       // 不能移动到自己头上
-      if(this.folderForm.docId==this.folderForm.docPid) {
+      if (ids.some(id => id === targetPid)) {
         return;
       }
-      updateDocument(this.folderForm).then(response => {
-        this.$modal.msgSuccess(strFormat(this.$i18n.t('doc.move-success'),));
+      const projectId = this.getProjectId();
+      const fromPids = ids.map(id => {
+        const row = this.documentList.find(d => d.docId === id)
+        if (row && row.docPid != null) return row.docPid
+        if (this.currentFolder && this.currentFolder.docId) return this.currentFolder.docId
+        return 0
+      })
+      const movedFolderIds = ids.filter(id => {
+        const row = this.documentList.find(d => d.docId === id)
+        return row && row.docType == 0
+      })
+      Promise.all(ids.map(docId => updateDocument({
+        docId,
+        docPid: targetPid > 0 ? targetPid : 0,
+        projectId
+      }))).then(() => {
+        this.$modal.msgSuccess(this.$i18n.t('doc.move-success'));
         this.doCloseToolDialog();
+        this.moveTargetIds = [];
         this.getList();
+        if (movedFolderIds.length) {
+          // 源父夹去掉节点，目标父夹重载子列表（其它展开分支不动）
+          this.notifyFoldersRemoved(movedFolderIds)
+          this.notifyFolderParentsReloaded([targetPid, ...fromPids])
+        }
       });
     },
     /** 移动树节点点击 */
     handleNodeClick(doc) {
-      this.folderForm.docPid = doc.docId;
+      // 根节点 docId=-1 → 落到根 docPid=0
+      this.folderForm.docPid = doc.docId > 0 ? doc.docId : 0;
       this.isClickFolder = true;
     }
   }
 };
 </script>
 <style lang="scss" scoped>
+@import "~@/assets/styles/multipane-resizer-grip.scss";
+
 .app-container.case-body {
   padding: 20px 20px 0;
   box-sizing: border-box;
@@ -939,6 +1369,76 @@ export default {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+.custom-resizer.multipane.document-multipane {
+  flex: 1 1 0%;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  align-items: stretch;
+  user-select: none;
+}
+.custom-resizer--tree-hidden > .document-table-context {
+  flex: 1 1 100%;
+  width: 100%;
+}
+.custom-resizer > .multipane-resizer {
+  flex-shrink: 0;
+  margin: 0 0 0 -8px;
+  left: 4px;
+  width: 8px;
+  cursor: col-resize;
+  position: relative;
+  box-sizing: border-box;
+  z-index: 350;
+  background-image: linear-gradient(#dfe6ec, #dfe6ec);
+  background-size: 100% 1px;
+  background-position: 0 calc(var(--multipane-header-rule-offset, 48px) - 1px);
+  background-repeat: no-repeat;
+  @include multipane-resizer-vertical-appearance;
+}
+.document-tree-module {
+  width: var(--treeModuleWidth);
+  max-width: 75%;
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.document-tree-module :deep(> .document-folder-tree) {
+  flex: 1 1 0%;
+  min-height: 0;
+}
+.document-table-context {
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.document-sidebar-expand-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #909399;
+}
+.document-sidebar-expand-trigger:hover {
+  color: var(--cat2bug-primary, #1890ff);
+}
+.document-sidebar-expand-svg {
+  width: 16px;
+  height: 16px;
+}
+.document-sidebar-expand-body-placeholder {
+  display: block;
+  width: 1px;
+  height: 1px;
 }
 .document-table-x-scroll {
   width: 100%;

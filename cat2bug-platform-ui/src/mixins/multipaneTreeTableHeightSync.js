@@ -19,6 +19,7 @@ export default {
         const fallbackPaneEl =
           this.$refs.defectTableContext ||
           this.$refs.caseTableContext ||
+          this.$refs.documentTableContext ||
           null;
         if (!treeEl) return;
         syncMultipaneTreeModuleWithTable(treeEl, tableRef, resizerEl, fallbackPaneEl);

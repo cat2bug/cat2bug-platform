@@ -12,7 +12,9 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @ApplicationScoped
 public class SysDocumentService {
@@ -68,15 +70,50 @@ public class SysDocumentService {
         return sysDocumentMapper.updateSysDocument(sysDocument);
     }
 
+    /**
+     * 按 id 删除；文件夹（docType=0）会递归收集子孙后一并删除，与前端「删除文件夹含其下全部」文案一致。
+     */
     @Transactional
     public int deleteSysDocumentByDocIds(Long[] docIds) {
         if (docIds == null || docIds.length == 0) {
             throw new ApiException("文档ID不能为空");
         }
-        return sysDocumentMapper.deleteSysDocumentByDocIds(docIds);
+        Set<Long> cascadeIds = new LinkedHashSet<>();
+        for (Long docId : docIds) {
+            collectCascadeDeleteIds(docId, cascadeIds);
+        }
+        if (cascadeIds.isEmpty()) {
+            throw new ApiException("文档ID不能为空");
+        }
+        return sysDocumentMapper.deleteSysDocumentByDocIds(cascadeIds.toArray(new Long[0]));
+    }
+
+    /** 收集待删 id：文件只含自身；文件夹含自身及全部子孙。 */
+    void collectCascadeDeleteIds(Long docId, Set<Long> out) {
+        if (docId == null || out.contains(docId)) {
+            return;
+        }
+        SysDocument doc = sysDocumentMapper.selectSysDocumentByDocId(docId);
+        if (doc == null) {
+            out.add(docId);
+            return;
+        }
+        out.add(docId);
+        if (doc.getDocType() != null && doc.getDocType() == 0L) {
+            SysDocument query = new SysDocument();
+            query.setDocPid(docId);
+            query.setProjectId(doc.getProjectId());
+            for (SysDocument child : selectDocumentListAll(query)) {
+                collectCascadeDeleteIds(child.getDocId(), out);
+            }
+        }
     }
 
     private boolean checkDuplication(SysDocument sysDocument) {
+        // 仅改父夹等局部字段、未带名称时不做同名校验
+        if (sysDocument.getDocName() == null || sysDocument.getDocName().isEmpty()) {
+            return false;
+        }
         SysDocument query = new SysDocument();
         query.setDocId(sysDocument.getDocId());
         query.setExactDocName(sysDocument.getDocName());
