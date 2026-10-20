@@ -86,6 +86,15 @@
     >
       <template #columns="{ scope, column }">
         <span v-if="column.prop==='planNumber'">{{ planNumber(scope.row) }}</span>
+        <div v-else-if="column.prop==='planName'" class="table-plan-title">
+          <el-link
+            v-if="canRunPlan"
+            type="primary"
+            :title="scope.row.planName"
+            @click="handlePlanRun(scope.row)"
+          >{{ scope.row.planName }}</el-link>
+          <span v-else :title="scope.row.planName">{{ scope.row.planName }}</span>
+        </div>
         <div v-else-if="column.prop==='planStartTime'" class="col col-center" v-show="scope.row.planStartTime && scope.row.planEndTime">
           <span>{{$t('time-form')}}: {{ parseTime(scope.row.planStartTime, strFormat($t('year-month-day-hour-minute-second'),'{y}','{m}','{d}','{h}','{i}','{s}')) }}</span>
           <span>{{$t('time-to')}}: {{ parseTime(scope.row.planEndTime, strFormat($t('year-month-day-hour-minute-second'),'{y}','{m}','{d}','{h}','{i}','{s}')) }}</span>
@@ -262,6 +271,9 @@ export default {
         return ordered.map(c => ({ ...c }));
       }
       return PlanTableColumnDefaults.filter(c => c.showInColumnPicker !== false);
+    },
+    canRunPlan() {
+      return checkPermi(['system:plan:run'])
     },
     /** 用于显示的用例编号 */
     planNumber: function () {

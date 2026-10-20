@@ -276,6 +276,7 @@
   "team.base-info-describe": "إعداد معلومات فريق أساسية",
   "team.team-and-member": "المنظمة والأعضاء",
   "team.team-and-member-describe": "هيكل تنظيم الفريق، إدارة الأعضاء والإجراءات الجماعية",
+  "team.member": "أعضاء الفريق",
   "team.invite-members": "دعوة الأعضاء",
   "team.search-placeholder": "ابحث بلقب العضو",
   "team.name-cannot-empty": "اسم الفريق لا يمكن أن يكون فارغًا",
@@ -394,7 +395,7 @@
   "defect.custom-field.title": "إدارة سمات العيوب",
   "defect.custom-field.settings": "إعدادات العيوب",
   "defect.custom-field.settings-describe": "إدارة الحقول الموسعة والقيم الافتراضية وعرض القائمة",
-  "defect.custom-field.manage": "إدارة السمات",
+  "defect.custom-field.manage": "سمات العيوب",
   "defect.custom-field.field-source": "المصدر",
   "defect.custom-field.source-system": "النظام",
   "defect.custom-field.source-custom": "مخصص",
@@ -1569,7 +1570,7 @@
   "keyboard.act.report-batch-delete": "حذف جماعي",
   "keyboard.act.document-query": "التركيز على البحث",
   "keyboard.act.document-create-folder": "مجلد جديد",
-  "keyboard.act.document-create-file": "ملف جديد",
+  "keyboard.act.document-create-file": "وثيقة جديدة",
   "keyboard.act.document-go-up": "المجلد الأب",
   "keyboard.act.project-option-card-1": "بطاقة الإعدادات 1",
   "keyboard.act.project-option-card-2": "بطاقة الإعدادات 2",
@@ -2066,5 +2067,7 @@
   "error.401.title": "لا توجد صلاحية وصول",
   "error.401.description": "حسابك لا يملك صلاحية فتح هذه الصفحة. يمكنك الرجوع أو العودة للرئيسية.",
   "error.401.back": "رجوع",
-  "error.401.home": "العودة للرئيسية"
+  "error.401.home": "العودة للرئيسية",
+  "doc.upload-file": "رفع وثيقة",
+  "doc.default-md-name": "وثيقة جديدة"
 }

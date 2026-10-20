@@ -276,6 +276,7 @@
   "team.base-info-describe": "팀 기본 정보 설정",
   "team.team-and-member": "조직 및 멤버",
   "team.team-and-member-describe": "팀 조직 구조, 멤버 관리 및 일괄 작업",
+  "team.member": "팀 멤버",
   "team.invite-members": "멤버 초대",
   "team.search-placeholder": "멤버 닉네임으로 검색",
   "team.name-cannot-empty": "팀 이름은 비워둘 수 없습니다",
@@ -394,7 +395,7 @@
   "defect.custom-field.title": "결함 속성 관리",
   "defect.custom-field.settings": "결함 설정",
   "defect.custom-field.settings-describe": "확장 필드, 기본값 및 목록 표시 관리",
-  "defect.custom-field.manage": "속성 관리",
+  "defect.custom-field.manage": "결함 속성",
   "defect.custom-field.field-source": "출처",
   "defect.custom-field.source-system": "시스템",
   "defect.custom-field.source-custom": "사용자 정의",
@@ -1569,7 +1570,7 @@
   "keyboard.act.report-batch-delete": "일괄 삭제",
   "keyboard.act.document-query": "검색 포커스",
   "keyboard.act.document-create-folder": "새 폴더",
-  "keyboard.act.document-create-file": "새 파일",
+  "keyboard.act.document-create-file": "새 문서",
   "keyboard.act.document-go-up": "상위 폴더",
   "keyboard.act.project-option-card-1": "설정 카드 1",
   "keyboard.act.project-option-card-2": "설정 카드 2",
@@ -2066,5 +2067,7 @@
   "error.401.title": "접근 권한이 없습니다",
   "error.401.description": "현재 계정으로 이 페이지를 열 수 없습니다. 이전 페이지로 돌아가거나 홈으로 이동하세요.",
   "error.401.back": "뒤로",
-  "error.401.home": "홈으로"
+  "error.401.home": "홈으로",
+  "doc.upload-file": "문서 업로드",
+  "doc.default-md-name": "새 문서"
 }

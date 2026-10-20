@@ -16,8 +16,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @ApplicationScoped
 public class SysUserProjectService {
@@ -72,6 +75,11 @@ public class SysUserProjectService {
             tab.setTabName(MessageUtils.message("my"));
             SysDefect sysDefect = new SysDefect();
             sysDefect.setHandleBy(Arrays.asList(up.getUserId()));
+            // 「我的」默认排除已关闭
+            Map<String, Object> params = new HashMap<>();
+            params.put("defectStates", new ArrayList<>(SysProjectDefectTabsService.MY_TAB_DEFECT_STATES));
+            params.put("delFlag", "0");
+            sysDefect.setParams(params);
             tab.setConfig(sysDefect);
             if (sysProjectDefectTabsService.insertSysProjectDefectTabs(tab) == null) {
                 throw new ApiException(MessageUtils.message("project.add_member_fail"));

@@ -10,7 +10,7 @@
           </div>
         </div>
       </template>
-      <router-link v-if="canManageMember" :to="href('project-member')"><el-link>{{$t('member.manage')}}</el-link></router-link>
+      <router-link v-if="canManageMember" :to="href('project-member')"><el-link>{{$t('project.member')}}</el-link></router-link>
     </el-card>
   </el-col>
 </template>

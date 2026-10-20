@@ -1,7 +1,7 @@
 /** 测试用例列表动态列（key 与旧版显示字段缓存一致） */
 export const CaseTableColumnDefaults = [
   { key: 'id', prop: 'caseNum', fixed: true, visible: true, align: 'center', width: 100 },
-  { key: 'case.name', prop: 'caseName', fixed: true, visible: true, align: 'left', minWidth: 200, required: true },
+  { key: 'case.name', prop: 'caseName', fixed: true, visible: true, align: 'left', minWidth: 200, required: true, className: 'case-name-col' },
   { key: 'module', prop: 'moduleName', fixed: false, visible: true, align: 'left', minWidth: 140, required: true },
   { key: 'level', prop: 'caseLevel', fixed: false, visible: true, align: 'left', width: 100 },
   { key: 'case.type', prop: 'caseTypeName', fixed: false, visible: true, align: 'left', width: 120 },

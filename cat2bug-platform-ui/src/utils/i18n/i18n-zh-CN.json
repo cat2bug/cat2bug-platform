@@ -277,6 +277,7 @@
   "team.base-info-describe": "团队基本信息设置",
   "team.team-and-member": "组织和成员",
   "team.team-and-member-describe": "团队组织架构、成员管理和批量操作",
+  "team.member": "团队成员",
   "team.invite-members": "邀请成员",
   "member.invite-direct": "搜索添加",
   "member.invite-link": "邀请链接",
@@ -450,7 +451,7 @@
   "defect.custom-field.title": "缺陷属性管理",
   "defect.custom-field.settings": "缺陷设置",
   "defect.custom-field.settings-describe": "管理项目缺陷扩展字段、默认值及列表显示",
-  "defect.custom-field.manage": "属性管理",
+  "defect.custom-field.manage": "缺陷属性",
   "defect.custom-field.field-source": "来源",
   "defect.custom-field.source-system": "系统",
   "defect.custom-field.source-custom": "自定义",
@@ -1642,7 +1643,7 @@
   "keyboard.act.report-batch-delete": "批量删除",
   "keyboard.act.document-query": "聚焦查询",
   "keyboard.act.document-create-folder": "新建文件夹",
-  "keyboard.act.document-create-file": "新建文件",
+  "keyboard.act.document-create-file": "新建文档",
   "keyboard.act.document-go-up": "上级目录",
   "keyboard.act.project-option-card-1": "设置卡片 1",
   "keyboard.act.project-option-card-2": "设置卡片 2",
@@ -2137,5 +2138,7 @@
   "error.401.title": "没有访问权限",
   "error.401.description": "当前账号无权打开此页面。可返回上一页，或回到首页。",
   "error.401.back": "返回",
-  "error.401.home": "返回首页"
+  "error.401.home": "返回首页",
+  "doc.upload-file": "上传文档",
+  "doc.default-md-name": "新建文档"
 }

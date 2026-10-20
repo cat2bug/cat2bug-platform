@@ -51,15 +51,29 @@
             @click="handleAddDir"
             v-hasPermi="['system:document:add']"
           >{{ $t('doc.create-folder') }}</el-button>
-          <el-button
-            class="document-hint-create-file"
-            type="primary"
-            plain
-            :icon="$legacyIcon('el-icon-plus')"
-            size="small"
-            @click="handleAddFile"
-            v-hasPermi="['system:document:add']"
-          >{{ $t('doc.create-file') }}</el-button>
+          <span v-hasPermi="['system:document:add']" class="document-create-dropdown-wrap">
+            <el-dropdown
+              class="document-hint-create-file document-create-dropdown cat2bug-split-dropdown-kbd"
+              split-button
+              trigger="click"
+              size="small"
+              type="primary"
+              :disabled="creatingMarkdown"
+              @click="handleCreateMarkdown"
+            >
+              <span><legacy-icon icon="el-icon-plus" />{{ $t('doc.create-file') }}</span>
+              <template #dropdown>
+                <el-dropdown-menu class="document-create-dropdown-menu">
+                  <el-dropdown-item :disabled="creatingMarkdown" @click="handleCreateMarkdown">
+                    <legacy-icon icon="el-icon-plus" />{{ $t('doc.create-file') }}
+                  </el-dropdown-item>
+                  <el-dropdown-item @click="handleAddFile">
+                    <legacy-icon icon="el-icon-upload2" />{{ $t('doc.upload-file') }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </span>
       </div>
     </div>
 
@@ -227,6 +241,7 @@ import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 import { serializeToolDialogFormCloseState } from '@/utils/defect-tool-dialog-close-state'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { getCurrentProjectId, getCurrentUserId } from '@/utils/store-context'
+import { consumeDocumentReturnFolder } from '@/utils/document-folder-state'
 
 const DOCUMENT_KBD_SCOPE = 'document'
 
@@ -264,6 +279,7 @@ export default {
       total: 0,
       // 文档表格数据
       documentList: [],
+      creatingMarkdown: false,
       documentTableColumnDefaults: DocumentTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
       docColumnPickerVisible: false,
@@ -328,7 +344,7 @@ export default {
   created() {
     this.queryParams.orderByColumn = this.$cache.local.get('document_table_sort_column_key') || null
     this.queryParams.isAsc = this.$cache.local.get('document_table_sort_type_key') || null
-    this.getList();
+    this.restoreFolderThenList()
   },
   mounted() {
     this.$nextTick(() => {
@@ -410,7 +426,7 @@ export default {
     },
     shortcutCreateFile() {
       if (!checkPermi(['system:document:add'])) return
-      this.handleAddFile()
+      this.handleCreateMarkdown()
     },
     shortcutGoUp() {
       if (!this.currentFolder || !this.currentFolder.docId) return
@@ -522,6 +538,49 @@ export default {
     },
     onDocColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
+    },
+    /**
+     * 仅从 MD 编辑「一次性返回标记」或本次路由 query.docPid 恢复文件夹；
+     * 侧栏普通进入文档管理不带这些信息 → 根目录。
+     */
+    restoreFolderThenList() {
+      const projectId = this.getProjectId()
+      const once = consumeDocumentReturnFolder(projectId)
+      if (once && once.docId > 0) {
+        this.applyFolder(once)
+        this.getList()
+        return
+      }
+      const q = this.$route.query && this.$route.query.docPid
+      const fromQuery = q != null && q !== '' ? Number(q) : NaN
+      if (Number.isFinite(fromQuery) && fromQuery > 0) {
+        getDocument(fromQuery).then(res => {
+          const folder = res && res.data
+          if (folder && folder.docId) {
+            this.applyFolder(folder)
+          }
+          this.getList()
+        }).catch(() => {
+          this.getList()
+        })
+        return
+      }
+      this.applyFolder(null)
+      this.getList()
+    },
+    applyFolder(folder) {
+      if (!folder || !folder.docId || folder.docId <= 0) {
+        this.currentFolder = null
+        this.queryParams.docPid = 0
+        return
+      }
+      this.currentFolder = {
+        docId: folder.docId,
+        docPid: folder.docPid != null ? folder.docPid : 0,
+        docName: folder.docName || '',
+        docType: folder.docType != null ? folder.docType : 0
+      }
+      this.queryParams.docPid = folder.docId
     },
     /** 查询文档列表 */
     getList() {
@@ -645,7 +704,12 @@ export default {
     handleView(doc) {
       const ext = String((doc && doc.fileExtension) || '').toLowerCase()
       if (ext === 'md' || ext === 'markdown') {
-        this.$router.push({ name: 'HandleMarkdownDocument', params: { docId: String(doc.docId) } })
+        const folderId = this.currentFolder && this.currentFolder.docId ? this.currentFolder.docId : 0
+        this.$router.push({
+          name: 'HandleMarkdownDocument',
+          params: { docId: String(doc.docId) },
+          query: folderId > 0 ? { docPid: String(folderId) } : {}
+        })
         return
       }
       this.handleDownload(doc);
@@ -662,16 +726,67 @@ export default {
         this.$refs.docNameInput.focus();
       });
     },
-    /** 新增文件按钮操作 */
+    /** 上传文档（原新建上传对话框） */
     handleAddFile() {
       this.reset();
       this.form.docType=1;
       this.open = true;
-      this.title = this.$i18n.t('doc.create-file');
+      this.title = this.$i18n.t('doc.upload-file');
       this.fileFieldName = this.$i18n.t('doc.file-name');
       this.$nextTick(() => {
         this.$refs.docNameInput.focus();
       });
+    },
+    /** 在线新建空 Markdown 并进入编辑页 */
+    handleCreateMarkdown() {
+      if (!checkPermi(['system:document:add']) || this.creatingMarkdown) return
+      const projectId = this.getProjectId()
+      const docPid = this.currentFolder && this.currentFolder.docId ? this.currentFolder.docId : 0
+      this.creatingMarkdown = true
+      this.resolveDefaultMarkdownName(projectId, docPid).then(docName => {
+        return             addDocument({
+          projectId,
+          docPid,
+          docName,
+          docType: 1,
+          fileExtension: 'md',
+          fileUrl: null
+        }).then(response => {
+          const docId = response && response.data
+          if (!docId) {
+            this.$modal.msgError(this.$t('exception'))
+            return
+          }
+          this.$router.push({
+            name: 'HandleMarkdownDocument',
+            params: { docId: String(docId) },
+            query: docPid > 0 ? { docPid: String(docPid) } : {}
+          })
+        })
+      }).catch(() => {}).finally(() => {
+        this.creatingMarkdown = false
+      })
+    },
+    /** 默认名：新建文档 / 新建文档2 / 新建文档3… */
+    resolveDefaultMarkdownName(projectId, docPid) {
+      const base = this.$t('doc.default-md-name')
+      return listDocument({
+        projectId,
+        docPid,
+        pageNum: 1,
+        pageSize: 9999
+      }).then(response => {
+        const rows = (response && response.rows) || []
+        const names = new Set(rows.map(r => r && r.docName).filter(Boolean))
+        if (!names.has(base)) {
+          return base
+        }
+        let n = 2
+        while (names.has(base + n)) {
+          n += 1
+        }
+        return base + n
+      })
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -737,12 +852,11 @@ export default {
     /** 跳转文件夹按钮操作 */
     goFolder(dir) {
       this.reset();
-      this.queryParams.docPid = dir.docId || 0;
       this.queryParams.docType = null;
-      if(dir.docId) {
-        this.currentFolder = dir;
+      if (dir && dir.docId) {
+        this.applyFolder(dir)
       } else {
-        this.currentFolder = null;
+        this.applyFolder(null)
       }
       this.getList();
     },
@@ -1031,5 +1145,15 @@ export default {
 .document-hint-create-file {
   position: relative;
   overflow: visible !important;
+}
+.document-create-dropdown-wrap {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+.document-create-dropdown-menu :deep(.el-dropdown-menu__item) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 </style>

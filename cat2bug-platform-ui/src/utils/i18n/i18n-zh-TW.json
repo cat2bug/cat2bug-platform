@@ -276,6 +276,7 @@
   "team.base-info-describe": "團隊基本資訊設定",
   "team.team-and-member": "組織與成員",
   "team.team-and-member-describe": "團隊組織架構、成員管理及批次操作",
+  "team.member": "團隊成員",
   "team.invite-members": "邀請成員",
   "team.search-placeholder": "請依成員暱稱搜尋",
   "team.name-cannot-empty": "團隊名稱不能為空",
@@ -394,7 +395,7 @@
   "defect.custom-field.title": "缺陷屬性管理",
   "defect.custom-field.settings": "缺陷設定",
   "defect.custom-field.settings-describe": "管理專案缺陷擴充欄位、預設值及列表顯示",
-  "defect.custom-field.manage": "屬性管理",
+  "defect.custom-field.manage": "缺陷屬性",
   "defect.custom-field.field-source": "來源",
   "defect.custom-field.source-system": "系統",
   "defect.custom-field.source-custom": "自訂",
@@ -1571,7 +1572,7 @@
   "keyboard.act.report-batch-delete": "批次刪除",
   "keyboard.act.document-query": "聚焦查詢",
   "keyboard.act.document-create-folder": "新建資料夾",
-  "keyboard.act.document-create-file": "新建檔案",
+  "keyboard.act.document-create-file": "新建文檔",
   "keyboard.act.document-go-up": "上級目錄",
   "keyboard.act.project-option-card-1": "設定卡片 1",
   "keyboard.act.project-option-card-2": "設定卡片 2",
@@ -2068,5 +2069,7 @@
   "error.401.title": "沒有存取權限",
   "error.401.description": "目前帳號無權開啟此頁面。可返回上一頁，或回到首頁。",
   "error.401.back": "返回",
-  "error.401.home": "返回首頁"
+  "error.401.home": "返回首頁",
+  "doc.upload-file": "上傳文檔",
+  "doc.default-md-name": "新建文檔"
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="app-container team-member-page" ref="teamMemberMain">
     <el-row class="project-add-page-header project-add-page-header--with-filter team-member-hint-back">
-      <el-page-header @back="goBack" :content="$t('member.manage')">
+      <el-page-header @back="goBack" :content="$t('team.member')">
       </el-page-header>
     </el-row>
     <el-row :gutter="20">

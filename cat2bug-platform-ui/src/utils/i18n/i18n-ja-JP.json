@@ -276,6 +276,7 @@
   "team.base-info-describe": "チームの基本情報設定",
   "team.team-and-member": "組織とメンバー",
   "team.team-and-member-describe": "チームの組織構成、メンバー管理および一括操作",
+  "team.member": "チームメンバー",
   "team.invite-members": "メンバーを招待",
   "team.search-placeholder": "メンバーのニックネームで検索",
   "team.name-cannot-empty": "チーム名は空にできません",
@@ -394,7 +395,7 @@
   "defect.custom-field.title": "缺陷属性管理",
   "defect.custom-field.settings": "缺陷設定",
   "defect.custom-field.settings-describe": "拡張フィールド・デフォルト値・一覧表示の管理",
-  "defect.custom-field.manage": "属性管理",
+  "defect.custom-field.manage": "欠陥属性",
   "defect.custom-field.field-source": "種別",
   "defect.custom-field.source-system": "システム",
   "defect.custom-field.source-custom": "カスタム",
@@ -1569,7 +1570,7 @@
   "keyboard.act.report-batch-delete": "一括削除",
   "keyboard.act.document-query": "検索にフォーカス",
   "keyboard.act.document-create-folder": "新規フォルダ",
-  "keyboard.act.document-create-file": "新規ファイル",
+  "keyboard.act.document-create-file": "新規ドキュメント",
   "keyboard.act.document-go-up": "親フォルダへ",
   "keyboard.act.project-option-card-1": "設定カード 1",
   "keyboard.act.project-option-card-2": "設定カード 2",
@@ -2066,5 +2067,7 @@
   "error.401.title": "アクセス権限がありません",
   "error.401.description": "このページを開く権限がありません。前のページに戻るか、ホームへお進みください。",
   "error.401.back": "戻る",
-  "error.401.home": "ホームへ戻る"
+  "error.401.home": "ホームへ戻る",
+  "doc.upload-file": "ドキュメントをアップロード",
+  "doc.default-md-name": "新規ドキュメント"
 }

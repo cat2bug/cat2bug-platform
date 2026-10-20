@@ -1,0 +1,38 @@
+# document-online-create Specification
+
+## Purpose
+TBD - created by archiving change document-md-create-and-template-shell. Update Purpose after archive.
+## Requirements
+### Requirement: 文档列表提供在线新建与上传分流
+
+拥有 `system:document:add` 权限的成员在文档列表工具条 SHALL 看到 split 下拉：「新建文档」与「上传文档」。主按钮与菜单第一项「新建文档」MUST 在当前文件夹下创建空 Markdown 文档并进入该文档的在线编辑页。菜单第二项「上传文档」MUST 打开现有上传对话框（原「新建文档」上传流程），且 MUST NOT 直接创建空 Markdown。无权限时 MUST NOT 展示该下拉。
+
+#### Scenario: 主按钮在线新建并进入编辑
+
+- **WHEN** 用户点击 split 主按钮「新建文档」且创建成功
+- **THEN** 当前文件夹出现一条新的 Markdown 文档，浏览器进入该文档的 Markdown 编辑页
+
+#### Scenario: 菜单上传仍走上传对话框
+
+- **WHEN** 用户从下拉选择「上传文档」
+- **THEN** 打开上传对话框，且尚未因该操作单独创建空 Markdown 文档
+
+### Requirement: 在线新建使用默认名与空内容
+
+在线新建 MUST 使用空正文（或等价的空 Markdown 内容）。默认显示名 MUST 为「新建文档」；若当前文件夹下已存在同名文档，MUST 依次使用「新建文档2」「新建文档3」…直至不冲突。创建请求成功时，后端响应 MUST 返回新文档的 `docId`，前端据此跳转编辑页。创建失败（含重名）时 MUST 提示错误且 MUST NOT 进入编辑页。
+
+#### Scenario: 无冲突时使用基础名
+
+- **WHEN** 当前文件夹下不存在名为「新建文档」的文档，用户执行在线新建
+- **THEN** 新建文档名为「新建文档」，响应含 `docId`，并打开对应编辑页
+
+#### Scenario: 重名时递增序号
+
+- **WHEN** 当前文件夹下已有「新建文档」，用户再次在线新建
+- **THEN** 新建文档名为「新建文档2」（若仍冲突则继续递增），并进入其编辑页
+
+#### Scenario: 创建失败不跳转
+
+- **WHEN** 在线新建 API 返回失败
+- **THEN** 用户看到错误提示，且仍停留在文档列表
+

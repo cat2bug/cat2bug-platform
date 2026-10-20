@@ -8,7 +8,7 @@
     <div class="project-nameplate-content">
       <p>{{ project.projectName }}</p>
       <span v-if="project.projectIntroduce">{{ project.projectIntroduce }}</span>
-      <span v-else style="color: #DCDFE6;">{{ project.projectIntroduce?project.projectIntroduce:$t('project.introduction-not-filled') }}</span>
+      <span v-else class="project-nameplate-empty">{{ $t('project.introduction-not-filled') }}</span>
     </div>
   </div>
 </template>
@@ -62,14 +62,22 @@ export default {
         margin: 0px;
         font-size: 16px;
         width: 100%;
+        color: var(--text-color-primary, #303133);
       }
       span {
         font-size: 12px;
-        color: #C0C4CC;
+        /* 浅色下 #C0C4CC / #DCDFE6 过淡；走次要文字 token */
+        color: var(--text-color-secondary, #909399);
         line-height: 12px;
         height: 12px;
         margin-top: 3px;
         width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+      .project-nameplate-empty {
+        color: var(--text-color-placeholder, #a8abb2);
       }
     }
   }

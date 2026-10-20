@@ -88,6 +88,10 @@
   /* 全站表格操作列：上限 450；未测出内容前 applied 占位用下限，避免首帧顶满上限 */
   --cat2bug-operate-col-max-width: 450px;
   --cat2bug-operate-col-applied-width: 88px;
+  /* 列表行内操作图标（缺陷操作列 / 收藏星 / 源码列表纯图标钮）统一 14px */
+  --cat2bug-operate-icon-size: 14px;
+  --cat2bug-operate-tools-gap: 10px;
+  --cat2bug-operate-tools-row-gap: 0;
 
   /* 危险/删除语义色：删除按钮、角标、NEW 标签等实心红标记统一引用 */
   --cat2bug-delete-color: #e64545;
@@ -1913,6 +1917,14 @@ img.cat2bug-image-error__img {
   width: auto;
   max-width: 100%;
 
+  .el-button.is-link .el-icon,
+  .el-button--text .el-icon,
+  .el-button.is-link [class*='el-icon'],
+  .el-button--text [class*='el-icon'],
+  .start-switch {
+    font-size: var(--cat2bug-operate-icon-size, 14px);
+  }
+
   > * {
     margin: 0 !important;
     flex-shrink: 0;
@@ -1960,9 +1972,12 @@ img.cat2bug-image-error__img {
     }
   }
 
-  /* 列表操作列「添加」：蓝（显式语义，勿依赖无 class 默认色） */
+  /* 列表操作列「添加」：蓝（显式语义；覆盖 EP link 默认色变量，与名称链 primary 对齐） */
   .el-button--text.blue,
   .el-button.is-link.blue {
+    --el-button-text-color: var(--cat2bug-operate-text-primary, var(--cat2bug-primary, #1890ff));
+    --el-button-hover-text-color: var(--cat2bug-operate-text-primary-hover, #66b1ff);
+    --el-button-active-text-color: var(--cat2bug-operate-text-primary-hover, #66b1ff);
     color: var(--cat2bug-operate-text-primary, var(--cat2bug-primary, #1890ff));
 
     &:hover,
@@ -2205,9 +2220,13 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   text-overflow: clip;
 }
 
-/* 缺陷名称列：标题与统计信息左对齐，避免宽列内视觉居中 */
+/* 缺陷 / 计划 / 用例 / 文档名称列：标题左对齐，避免宽列内视觉居中 */
 .el-table td.defect-name-col .cell:has(.table-defect-title),
 .cat2-bug-table-wrap td.defect-name-col .cell:has(.table-defect-title),
+.el-table td.plan-name-col .cell:has(.table-plan-title),
+.cat2-bug-table-wrap td.plan-name-col .cell:has(.table-plan-title),
+.el-table td.case-name-col .cell:has(.table-case-title),
+.cat2-bug-table-wrap td.case-name-col .cell:has(.table-case-title),
 .el-table td.doc-name-col .cell,
 .cat2-bug-table-wrap td.doc-name-col .cell,
 .el-table td.report-title-col .cell,
@@ -2247,6 +2266,40 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
       text-decoration: underline;
       text-underline-offset: 3px;
     }
+  }
+}
+
+/* 文档 / 计划 / 用例等列表名称列：链接常撑满剩余宽度，同样只给文字加下划线 */
+.document-title .el-link,
+.table-plan-title .el-link,
+.table-case-title .el-link {
+  &::after,
+  &:hover::after {
+    display: none !important;
+  }
+
+  &:hover .el-link__inner {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.table-plan-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+  text-align: left;
+
+  .el-link {
+    align-self: flex-start;
+    max-width: 100%;
+    text-align: left !important;
+    white-space: pre-line;
+    word-break: break-word;
+    line-height: 1.45;
   }
 }
 

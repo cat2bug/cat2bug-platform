@@ -11,6 +11,7 @@
         <template v-else>
           <div class="statistic-echarts-chart-wrap">
             <div ref="chart" class="statistic-echarts-canvas" />
+            <div class="statistic-echarts-center" aria-hidden="true">{{ workload.total }}</div>
           </div>
           <ul class="statistic-echarts-legend">
             <li v-for="item in legendItems" :key="item.key">
@@ -71,14 +72,6 @@ export default {
     },
     isEmpty() {
       return (this.workload.total || 0) <= 0
-    },
-    chartTextColor() {
-      const style = getComputedStyle(document.documentElement)
-      return (style.getPropertyValue('--text-color-secondary') || '').trim() || '#a8abb2'
-    },
-    chartCenterColor() {
-      const style = getComputedStyle(document.documentElement)
-      return (style.getPropertyValue('--text-color-primary') || '').trim() || '#303133'
     },
     legendItems() {
       return [
@@ -171,27 +164,7 @@ export default {
           label: { show: false },
           labelLine: { show: false },
           data: seriesData
-        }],
-        graphic: [
-          {
-            type: 'group',
-            left: 'center',
-            top: 'center',
-            children: [{
-              type: 'text',
-              left: 'center',
-              top: 'middle',
-              style: {
-                text: String(this.workload.total),
-                fill: this.chartCenterColor,
-                fontSize: 24,
-                fontWeight: 600,
-                textAlign: 'center',
-                textVerticalAlign: 'middle'
-              }
-            }]
-          }
-        ]
+        }]
       }, true)
       this.$nextTick(() => safeResizeChart(this.chart))
     },
@@ -221,6 +194,7 @@ export default {
 }
 
 .statistic-echarts-chart-wrap {
+  position: relative;
   flex: 0 0 86px;
   width: 86px;
   height: 86px;
@@ -229,6 +203,20 @@ export default {
 .statistic-echarts-canvas {
   width: 100%;
   height: 100%;
+}
+
+.statistic-echarts-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-color-primary, #303133);
+  pointer-events: none;
+  user-select: none;
 }
 
 .statistic-echarts-legend {

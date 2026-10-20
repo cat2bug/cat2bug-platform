@@ -805,7 +805,7 @@ export default {
   &__stats {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: var(--cat2bug-operate-tools-gap, 10px);
     flex-shrink: 0;
     padding-top: 2px;
   }
@@ -814,6 +814,7 @@ export default {
 .git-repo-stat-star {
   flex-shrink: 0;
   line-height: 1;
+  font-size: var(--cat2bug-operate-icon-size, 14px);
 }
 
 .git-visibility-icon {
@@ -845,10 +846,11 @@ export default {
   gap: 4px;
   color: var(--text-color-secondary);
   cursor: pointer;
-  font-size: 16px;
+  /* 与缺陷列表操作列图标同尺（--cat2bug-operate-icon-size） */
+  font-size: var(--cat2bug-operate-icon-size, 14px);
   line-height: 1;
-  width: 20px;
-  height: 20px;
+  width: 1em;
+  height: 1em;
   justify-content: center;
   flex-shrink: 0;
 
@@ -856,6 +858,7 @@ export default {
     display: inline-flex;
     width: 1em;
     height: 1em;
+    font-size: inherit;
   }
 
   &:hover {

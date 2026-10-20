@@ -376,8 +376,9 @@ html.dark {
   --el-color-danger-light-3: rgb(255, 120, 126);
   --cat2bug-operate-text-success: #85ce61;
   --cat2bug-operate-text-success-hover: #a4da89;
-  --cat2bug-operate-text-primary: var(--cat2bug-accent, #69b1ff);
-  --cat2bug-operate-text-primary-hover: #91caff;
+  /* 与表格名称链 / el-link primary 同色，避免操作列「添加」蓝与其它表不一致 */
+  --cat2bug-operate-text-primary: var(--cat2bug-primary, #1890ff);
+  --cat2bug-operate-text-primary-hover: #66b1ff;
   --cat2bug-operate-text-warning: #eebe77;
   --cat2bug-operate-text-warning-hover: #f3d19e;
 

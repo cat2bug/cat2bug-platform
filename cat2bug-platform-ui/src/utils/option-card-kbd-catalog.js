@@ -16,7 +16,7 @@ export const PROJECT_OPTION_CARD_CATALOG = [
   { key: 'route-ding', titleKey: 'ding', defaultLetter: '8' },
   { key: 'route-feishu', titleKey: 'feishu', defaultLetter: '9' },
   { key: 'route-enterprise-wechat', titleKey: 'enterprise-wechat', defaultLetter: 'E' },
-  { key: 'route-project-member', titleKey: 'member.manage', defaultLetter: 'F' },
+  { key: 'route-project-member', titleKey: 'project.member', defaultLetter: 'F' },
   { key: 'route-case-types', titleKey: 'case.type.manage', defaultLetter: 'C' },
   { key: 'route-case-settings', titleKey: 'case.review.template', defaultLetter: 'S' }
 ]
@@ -25,7 +25,7 @@ export const PROJECT_OPTION_CARD_CATALOG = [
 export const TEAM_OPTION_CARD_CATALOG = [
   { key: 'route-team-base-info', titleKey: 'team.base-info', defaultLetter: '1' },
   { key: 'delete-team', titleKey: 'team.delete', defaultLetter: '2' },
-  { key: 'route-team-member', titleKey: 'member.manage', defaultLetter: '3' }
+  { key: 'route-team-member', titleKey: 'team.member', defaultLetter: '3' }
 ]
 
 export const PROJECT_OPTION_SUB_ACTION_DEFAULTS = [

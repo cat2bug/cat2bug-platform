@@ -41,6 +41,8 @@ import { fetchDocumentMarkdown, getDocument, updateDocument } from '@/api/system
 import { deleteFileBestEffort, upload } from '@/api/common/upload'
 import { checkPermi } from '@/utils/permission'
 import { appMessageError } from '@/utils/app-message'
+import { getCurrentProjectId } from '@/utils/store-context'
+import { setDocumentReturnFolder } from '@/utils/document-folder-state'
 
 export default {
   name: 'HandleMarkdownDocument',
@@ -51,7 +53,8 @@ export default {
       saving: false,
       doc: null,
       content: '',
-      savedContent: ''
+      savedContent: '',
+      leaveConfirmed: false
     }
   },
   computed: {
@@ -80,8 +83,71 @@ export default {
       }
     }
   },
+  mounted() {
+    window.addEventListener('beforeunload', this.onBeforeUnload)
+  },
+  beforeUnmount() {
+    window.removeEventListener('beforeunload', this.onBeforeUnload)
+  },
+  async beforeRouteLeave() {
+    // Vue Router 4：返回 true/false，勿 next(true)（会导致导航卡住）
+    if (this.leaveConfirmed) {
+      await this.rememberListFolder()
+      return true
+    }
+    const ok = await this.confirmLeave()
+    if (ok) {
+      this.leaveConfirmed = true
+      await this.rememberListFolder()
+    }
+    return ok
+  },
   methods: {
-    goBack() {
+    onBeforeUnload(e) {
+      if (!this.dirty) return
+      e.preventDefault()
+      e.returnValue = ''
+    },
+    confirmLeave() {
+      if (!this.dirty) {
+        return Promise.resolve(true)
+      }
+      return this.$modal.confirm(
+        this.$i18n.t('defect.unsaved-close-confirm').toString(),
+        this.$i18n.t('prompted').toString(),
+        {
+          confirmButtonText: this.$i18n.t('ok').toString(),
+          cancelButtonText: this.$i18n.t('cancel').toString(),
+          type: 'warning'
+        }
+      ).then(() => true).catch(() => false)
+    },
+    /** 一次性记下所属文件夹；列表页消费后清除，侧栏再进仍是根目录 */
+    async rememberListFolder() {
+      const projectId = (this.doc && this.doc.projectId) || getCurrentProjectId()
+      const fromQuery = this.$route.query && this.$route.query.docPid
+      const folderId = Number(fromQuery) || (this.doc && this.doc.docPid) || 0
+      if (!folderId || folderId <= 0) {
+        setDocumentReturnFolder(projectId, null)
+        return
+      }
+      try {
+        const res = await getDocument(folderId)
+        const folder = res && res.data
+        if (folder && folder.docId) {
+          setDocumentReturnFolder(projectId, folder)
+          return
+        }
+      } catch (_) { /* fall through */ }
+      setDocumentReturnFolder(projectId, { docId: folderId, docPid: 0, docName: '' })
+    },
+    async goBack() {
+      if (!this.leaveConfirmed) {
+        const ok = await this.confirmLeave()
+        if (!ok) return
+        this.leaveConfirmed = true
+      }
+      await this.rememberListFolder()
       this.$router.back()
     },
     editTitle() {
@@ -112,7 +178,7 @@ export default {
       this.savedContent = ''
       getDocument(docId).then(res => {
         const doc = res.data
-        if (!doc || !doc.fileUrl) {
+        if (!doc) {
           appMessageError(this.$t('no-data'))
           return
         }
@@ -122,6 +188,11 @@ export default {
           return
         }
         this.doc = doc
+        if (!doc.fileUrl) {
+          this.content = ''
+          this.savedContent = ''
+          return
+        }
         return fetchDocumentMarkdown(doc.fileUrl).then(text => {
           this.content = text || ''
           this.savedContent = this.content

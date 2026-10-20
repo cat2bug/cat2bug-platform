@@ -29,8 +29,12 @@
                 v-hasPermi="['system:project:option']"></svg-icon>
 <!--            <legacy-icon icon="el-icon-s-platform"></legacy-icon>-->
 <!--            <legacy-icon icon="el-icon-s-operation"></legacy-icon>-->
-            <legacy-icon icon="el-icon-delete" @click="handleDelete($event, project)"
-               v-hasPermi="['system:project:remove']"></legacy-icon>
+            <legacy-icon
+              icon="el-icon-delete"
+              class="project-collect-delete"
+              @click="handleDelete($event, project)"
+              v-hasPermi="['system:project:remove']"
+            />
           </div>
         </el-card>
       </el-col>
@@ -71,45 +75,72 @@
         >{{$t("project.create-project")}}</el-button>
       </div>
     </div>
-    <el-table ref="projectTable" v-loading="loading" :data="projectList">
-      <el-table-column :label="$t('project.name')" align="left" prop="projectName">
+    <el-table
+      ref="projectTable"
+      class="project-manage-table"
+      v-loading="loading"
+      :data="projectList"
+      style="width: 100%"
+    >
+      <el-table-column
+        :label="$t('project.name')"
+        align="left"
+        prop="projectName"
+        class-name="project-name-col"
+        min-width="280"
+      >
         <template #default="scope">
           <span
             class="project-row-kbd-hint-anchor project-list-title"
+            :class="{ 'is-project-link': canAccessProject(scope.row) }"
             @click="clickProject(scope.row)"
           >
             <project-nameplate :project="scope.row" />
           </span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('update-time')" align="left" prop="updateTime" width="180">
+      <el-table-column :label="$t('update-time')" align="left" prop="updateTime" width="140" min-width="120">
         <template #default="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('member')" align="center" prop="members" width="200">
+      <el-table-column :label="$t('member')" align="center" prop="members" width="160" min-width="120">
         <template #default="scope">
           <row-list-member :members="scope.row.listShowMembers" />
         </template>
       </el-table-column>
-      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="150">
+      <!-- 勿用 cat2bug-operate-column：那是 Cat2BugTable 测宽专用，裸 el-table 会锁成 88px 挡住操作 -->
+      <el-table-column
+        :label="$t('operate')"
+        align="left"
+        class-name="no-drag project-manage-operate-col"
+        width="200"
+        fixed="right"
+      >
         <template #default="scope">
-          <star-switch v-if="visibleDelete(scope.row)" v-model="scope.row.collect" @change="clickCollectHandle($event, scope.row, false)"></star-switch>
-<!--          <el-button-->
-<!--            size="small"-->
-<!--            link-->
-<!--            :icon="$legacyIcon('el-icon-edit')"-->
-<!--            @click="handleUpdate(scope.row)"-->
-<!--            v-hasPermi="['system:project:edit']"-->
-<!--          >修改</el-button>-->
-          <el-button
-            size="small"
-            link
-            :icon="$legacyIcon('el-icon-delete')"
-            class="red"
-            @click="handleDelete($event, scope.row)"
-            v-if="visibleDelete(scope.row)"
-          >{{$t('delete')}}</el-button>
+          <div class="cat2bug-operate-tools">
+            <star-switch
+              v-if="visibleDelete(scope.row)"
+              v-model="scope.row.collect"
+              @change="clickCollectHandle($event, scope.row, false)"
+            />
+            <el-button
+              v-if="visibleEdit(scope.row)"
+              size="small"
+              link
+              class="green"
+              :icon="$legacyIcon('el-icon-edit')"
+              @click="handleEditBaseInfo($event, scope.row)"
+            >{{ $t('modify') }}</el-button>
+            <el-button
+              v-if="visibleDelete(scope.row)"
+              size="small"
+              link
+              class="red"
+              :icon="$legacyIcon('el-icon-delete')"
+              @click="handleDelete($event, scope.row)"
+            >{{ $t('delete') }}</el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -177,6 +208,7 @@ import {
   resolveEffectiveTeamId
 } from '@/utils/store-context'
 import { buildProjectModulePath } from '@/utils/project-module-path'
+import { projectOptionHref } from '@/utils/project-option-card'
 
 const PROJECT_MANAGE_KBD_SCOPE = 'project-manage'
 
@@ -256,13 +288,25 @@ export default {
     /** 是否显示删除按钮 */
     visibleDelete() {
       return function (project) {
-        return checkPermi(['system:project:remove']) && (parseInt(project.createBy) === this.currentUserId || project.members.filter(m=>m.userId == this.currentUserId).length>0)
+        return checkPermi(['system:project:remove']) && this.isProjectMemberOrCreator(project)
+      }
+    },
+    /** 是否显示编辑（跳转项目基本信息） */
+    visibleEdit() {
+      return function (project) {
+        return checkPermi(['system:project:edit']) && this.isProjectMemberOrCreator(project)
+      }
+    },
+    /** 是否可切换进入该项目（名称链接） */
+    canAccessProject() {
+      return function (project) {
+        return this.isViewDefect(project)
       }
     },
     /** 是否可以访问缺陷页面 */
     isViewDefect() {
       return function (project) {
-        return checkPermi(['system:defect:list']) && (parseInt(project.createBy) === this.currentUserId || project.members.filter(m=>m.userId == this.currentUserId).length>0)
+        return checkPermi(['system:defect:list']) && this.isProjectMemberOrCreator(project)
       }
     }
   },
@@ -522,7 +566,13 @@ export default {
     handleAdd() {
       this.$router.push({name:'ProjectAdd'})
     },
-    /** 修改按钮操作 */
+    isProjectMemberOrCreator(project) {
+      if (!project) return false
+      if (parseInt(project.createBy) === this.currentUserId) return true
+      const members = project.members || []
+      return members.some(m => m.userId == this.currentUserId)
+    },
+    /** 修改按钮操作（旧对话框，保留备用） */
     handleUpdate(row) {
       this.reset();
       const projectId = row.projectId || this.ids
@@ -531,6 +581,14 @@ export default {
         this.open = true;
         this.title = "修改项目";
       });
+    },
+    /** 编辑：切换当前项目并进入项目基本信息 */
+    handleEditBaseInfo(e, project) {
+      if (e && e.stopPropagation) e.stopPropagation()
+      if (!project || !project.projectId) return
+      useUserStore().SwitchCurrentProject(project.projectId).then(() => {
+        this.$router.push(projectOptionHref('project-base-info'))
+      })
     },
     /** 提交按钮 */
     submitForm() {
@@ -641,6 +699,14 @@ export default {
     padding: 0 36px !important;
     text-align: center;
   }
+
+  .project-manage-table {
+    width: 100%;
+  }
+
+  :deep(.project-manage-operate-col .cell) {
+    overflow: visible;
+  }
 }
 
 h4 {
@@ -674,14 +740,21 @@ h4 {
     .project-collects-card-tools {
       display: inline-flex;
       flex-direction: row;
-      gap: 5px;
+      gap: var(--cat2bug-operate-tools-gap, 10px);
       >* {
         padding: 1px;
         color: #909399;
+        font-size: var(--cat2bug-operate-icon-size, 14px);
       }
       >*:hover {
         cursor: pointer;
         color: #606266;
+      }
+      .project-collect-delete {
+        color: var(--cat2bug-operate-text-danger, #f56c6c);
+      }
+      .project-collect-delete:hover {
+        color: var(--cat2bug-operate-text-danger-hover, #f78989);
       }
     }
     .el-col {
@@ -690,6 +763,22 @@ h4 {
   }
   .project-list-title:hover, .project-block:hover {
     cursor: pointer;
+  }
+  /* 有权限：名称链接色，对齐缺陷列表标题 */
+  .project-list-title.is-project-link {
+    cursor: pointer;
+
+    :deep(.project-nameplate-content p) {
+      color: var(--cat2bug-operate-text-primary, var(--cat2bug-primary, #1890ff));
+    }
+
+    &:hover :deep(.project-nameplate-content p) {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+  .project-list-title:not(.is-project-link) {
+    cursor: default;
   }
   .project-manage-tools {
     display: flex;

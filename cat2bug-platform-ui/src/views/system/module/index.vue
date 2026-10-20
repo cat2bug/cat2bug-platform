@@ -54,7 +54,7 @@
       :default-expand-all="isExpandAll"
       highlight-current-row
       :enable-header-sort="false"
-      :operate-column-max-width="220"
+      :operate-column-max-width="moduleOperateColumnMaxWidth"
     >
       <template #columns="{ scope, column }">
         <template v-if="column.prop === 'moduleName'">
@@ -72,13 +72,7 @@
           <template #default="scope">
             <div class="cat2bug-operate-tools">
               <el-button
-                link
-                class="green"
-                :icon="$legacyIcon('el-icon-edit')"
-                @click="handleUpdate(scope.row)"
-                v-hasPermi="['system:module:edit']"
-              >{{ $t('modify') }}</el-button>
-              <el-button
+                size="small"
                 link
                 class="blue"
                 :icon="$legacyIcon('el-icon-plus')"
@@ -86,6 +80,15 @@
                 v-hasPermi="['system:module:add']"
               >{{ $t('add') }}</el-button>
               <el-button
+                size="small"
+                link
+                class="green"
+                :icon="$legacyIcon('el-icon-edit')"
+                @click="handleUpdate(scope.row)"
+                v-hasPermi="['system:module:edit']"
+              >{{ $t('modify') }}</el-button>
+              <el-button
+                size="small"
                 link
                 :icon="$legacyIcon('el-icon-delete')"
                 class="red"
@@ -187,6 +190,18 @@ export default {
           return [];
         }
       }
+    },
+    /** 按可见操作权限估算操作列上限，避免三钮挤到 220 换行；实际宽度仍由 Cat2BugTable 按内容测 */
+    moduleOperateColumnMaxWidth() {
+      let n = 0
+      if (checkPermi(['system:module:edit'])) n += 1
+      if (checkPermi(['system:module:add'])) n += 1
+      if (checkPermi(['system:module:remove'])) n += 1
+      if (n <= 0) return 88
+      const perBtn = 72
+      const gap = 10
+      const pad = 44
+      return Math.min(450, n * perBtn + Math.max(0, n - 1) * gap + pad)
     },
   },
   created() {

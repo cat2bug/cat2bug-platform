@@ -276,6 +276,7 @@
   "team.base-info-describe": "Настройка основной информации о команде",
   "team.team-and-member": "Организация и участники",
   "team.team-and-member-describe": "Структура организации команды, управление участниками и массовые действия",
+  "team.member": "Участники команды",
   "team.invite-members": "Пригласить участников",
   "team.search-placeholder": "Поиск по никнейму участника",
   "team.name-cannot-empty": "Название команды не может быть пустым",
@@ -394,7 +395,7 @@
   "defect.custom-field.title": "Управление атрибутами дефектов",
   "defect.custom-field.settings": "Настройки дефектов",
   "defect.custom-field.settings-describe": "Расширенные поля, значения по умолчанию и отображение в списке",
-  "defect.custom-field.manage": "Управление атрибутами",
+  "defect.custom-field.manage": "Атрибуты дефектов",
   "defect.custom-field.field-source": "Источник",
   "defect.custom-field.source-system": "Система",
   "defect.custom-field.source-custom": "Пользовательское",
@@ -1569,7 +1570,7 @@
   "keyboard.act.report-batch-delete": "Массовое удаление",
   "keyboard.act.document-query": "Фокус запроса",
   "keyboard.act.document-create-folder": "Новая папка",
-  "keyboard.act.document-create-file": "Новый файл",
+  "keyboard.act.document-create-file": "Новый документ",
   "keyboard.act.document-go-up": "Родительская папка",
   "keyboard.act.project-option-card-1": "Карточка настроек 1",
   "keyboard.act.project-option-card-2": "Карточка настроек 2",
@@ -2066,5 +2067,7 @@
   "error.401.title": "Нет доступа",
   "error.401.description": "У вашей учётной записи нет прав на эту страницу. Вернитесь назад или на главную.",
   "error.401.back": "Назад",
-  "error.401.home": "На главную"
+  "error.401.home": "На главную",
+  "doc.upload-file": "Загрузить документ",
+  "doc.default-md-name": "Новый документ"
 }

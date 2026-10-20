@@ -55,7 +55,7 @@ export default {
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  font-size: 14px;
+  font-size: var(--cat2bug-operate-icon-size, 14px);
   line-height: 1;
   cursor: pointer;
 }

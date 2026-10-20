@@ -277,6 +277,7 @@
   "team.base-info-describe": "Team Basic Information Settings",
   "team.team-and-member": "Organization and Members",
   "team.team-and-member-describe": "Team organizational structure, member management, and batch processing",
+  "team.member": "Team Members",
   "team.invite-members": "Invite Members",
   "member.invite-direct": "Search & Add",
   "member.invite-link": "Invite Link",
@@ -450,7 +451,7 @@
   "defect.custom-field.title": "Defect Attribute Management",
   "defect.custom-field.settings": "Defect Settings",
   "defect.custom-field.settings-describe": "Manage extended defect fields, defaults, and list display",
-  "defect.custom-field.manage": "Attribute Management",
+  "defect.custom-field.manage": "Defect Attributes",
   "defect.custom-field.field-source": "Source",
   "defect.custom-field.source-system": "System",
   "defect.custom-field.source-custom": "Custom",
@@ -1642,7 +1643,7 @@
   "keyboard.act.report-batch-delete": "Batch delete",
   "keyboard.act.document-query": "Focus query",
   "keyboard.act.document-create-folder": "New folder",
-  "keyboard.act.document-create-file": "New file",
+  "keyboard.act.document-create-file": "New Document",
   "keyboard.act.document-go-up": "Go to parent folder",
   "keyboard.act.project-option-card-1": "Settings card 1",
   "keyboard.act.project-option-card-2": "Settings card 2",
@@ -2137,5 +2138,7 @@
   "error.401.title": "Access denied",
   "error.401.description": "You do not have permission to open this page. Go back, or return to the home page.",
   "error.401.back": "Back",
-  "error.401.home": "Back to home"
+  "error.401.home": "Back to home",
+  "doc.upload-file": "Upload Document",
+  "doc.default-md-name": "New Document"
 }

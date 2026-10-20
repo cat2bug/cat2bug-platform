@@ -16,7 +16,7 @@
         class="defect-tools-tab defect-list-hint-tabs"
         :class="{ 'defect-tab-keyboard-nav': defectTabNavActive }"
       >
-        <el-tabs ref="defectTabs" v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
+        <el-tabs ref="defectTabs" v-model="activeDefectTabName" @tab-change="selectDefectTabHandle">
           <el-tab-pane v-for="tab in config.tabs" :key="tab.tabId+''" :name="tab.tabId+''">
             <template #label>
               <span class="defect-tab-label">
@@ -298,6 +298,69 @@ function resolveDefectTabFromCache(raw) {
   return String(raw)
 }
 
+/**
+ * 解析 tab-change / 编程切换传入的页签名。
+ * Element Plus @tab-change 直接给 name 字符串；也兼容 { name } / paneName / props.name。
+ */
+function resolveDefectTabClickName(tabOrName) {
+  if (tabOrName == null || tabOrName === '') {
+    return null
+  }
+  if (typeof tabOrName === 'string' || typeof tabOrName === 'number') {
+    return String(tabOrName)
+  }
+  if (typeof tabOrName !== 'object') {
+    return null
+  }
+  const raw =
+    tabOrName.paneName != null && tabOrName.paneName !== ''
+      ? tabOrName.paneName
+      : (tabOrName.props && tabOrName.props.name != null && tabOrName.props.name !== ''
+        ? tabOrName.props.name
+        : (tabOrName.name != null && tabOrName.name !== '' ? tabOrName.name : null))
+  if (raw == null || raw === '') {
+    return null
+  }
+  // 若仍是 Ref/ComputedRef，取 .value
+  if (typeof raw === 'object' && 'value' in raw) {
+    return raw.value != null && raw.value !== '' ? String(raw.value) : null
+  }
+  return String(raw)
+}
+
+function defectTabCacheKey(projectId) {
+  const pid = projectId != null && projectId !== '' && !Number.isNaN(Number(projectId))
+    ? String(projectId)
+    : '0'
+  return `${DEFECT_TAB_CACHE_KEY}:${pid}`
+}
+
+/** 读页签缓存：优先项目键，兼容旧全局键 defect-tab */
+function readDefectTabCache(cache, projectId) {
+  if (!cache) {
+    return null
+  }
+  const scoped = cache.get(defectTabCacheKey(projectId))
+  if (scoped != null && scoped !== '') {
+    return scoped
+  }
+  return cache.get(DEFECT_TAB_CACHE_KEY)
+}
+
+/** 将当前页签写入本地（不缓存「已删除」与添加占位）；按项目隔离 */
+function persistDefectTabCache(cache, activeName, projectId) {
+  if (!cache || activeName == null || activeName === '') {
+    return
+  }
+  const name = String(activeName)
+  if (name === DEFECT_ADD_TAB_PANE_NAME || name === DELETED_TAB_NAME) {
+    return
+  }
+  cache.set(defectTabCacheKey(projectId), name)
+  // 同步旧键，避免其它入口仍读全局键时不一致
+  cache.set(DEFECT_TAB_CACHE_KEY, name)
+}
+
 /** 记录分析模版是否显示的缓存变量名 */
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible'
 export default {
@@ -459,6 +522,10 @@ export default {
     }
   },
   watch: {
+    /** v-model 一变就落盘，避免仅依赖 tab 事件参数导致刷新丢页签 */
+    activeDefectTabName(val) {
+      persistDefectTabCache(this.$cache.local, val, this.projectId)
+    },
     statisticPanelVisible(val) {
       if (val) {
         this.$nextTick(() => {
@@ -541,6 +608,7 @@ export default {
     this.$_unbindDefectQueryNavFocusIn()
     this.$_unbindDefectToolbarNavFocusIn()
     this.clearTabDataLoadTimer()
+    this.clearSuppressDefectQueryFetch()
     if (this.$shortcut) this.$shortcut.unregisterPage('defect')
   },
   // 移除滚动条监听
@@ -553,15 +621,16 @@ export default {
     this.$_unbindDefectQueryNavFocusIn()
     this.$_unbindDefectToolbarNavFocusIn()
     this.clearTabDataLoadTimer()
+    this.clearSuppressDefectQueryFetch()
     if (this.$shortcut) this.$shortcut.unregisterPage('defect')
   },
   methods: {
     checkPermi,
     /** 首屏同步页签缓存，避免先渲染「全部」再切到「已删除」导致新建按钮一闪消失 */
     applyDefectTabCacheEarly() {
-      const raw = this.$cache.local.get(DEFECT_TAB_CACHE_KEY)
+      const raw = readDefectTabCache(this.$cache.local, this.projectId)
       if (raw === DELETED_TAB_NAME) {
-        this.$cache.local.set(DEFECT_TAB_CACHE_KEY, ALL_TAB_NAME)
+        persistDefectTabCache(this.$cache.local, ALL_TAB_NAME, this.projectId)
       }
       const tab = resolveDefectTabFromCache(raw === DELETED_TAB_NAME ? ALL_TAB_NAME : raw)
       if (!tab) {
@@ -2353,7 +2422,7 @@ export default {
         this.activeDefectTypeName = 'defect.all-type'
         if (hasParticipationExtension(extension) && this.activeDefectTabName !== this.allTab) {
           this.activeDefectTabName = this.allTab
-          this.$cache.local.set(DEFECT_TAB_CACHE_KEY, this.allTab)
+          persistDefectTabCache(this.$cache.local, this.allTab, this.projectId)
         }
         clearExtensionParams(this.queryParams, this)
         if (common) {
@@ -2434,37 +2503,39 @@ export default {
     getDefectConfig() {
       configDefect().then(res => {
         this.config = res.data
-        // 如果页面传的参数有tab，代表有临时查询
-        const tab = getDefectTempTab() // 获取临时缓存tab
-        if (tab) {
-          removeDefectTempTab()
-          this.config.tabs = this.config.tabs || []
-          this.config.tabs.unshift(tab)
-          this.activeDefectTabName = tab.tabId + ''
-        } else if (this.config.tabs) {
-          let cachedTab = this.$cache.local.get(DEFECT_TAB_CACHE_KEY)
-          if (cachedTab === this.deletedTab) {
-            cachedTab = this.allTab
-            this.$cache.local.set(DEFECT_TAB_CACHE_KEY, this.allTab)
+        // 等自定义页签 pane 挂上后再恢复，避免 name 对不上时被 el-tabs 落到默认项
+        this.$nextTick(() => {
+          const tab = getDefectTempTab() // 获取临时缓存tab
+          if (tab) {
+            removeDefectTempTab()
+            this.config.tabs = this.config.tabs || []
+            this.config.tabs.unshift(tab)
+            this.activeDefectTabName = tab.tabId + ''
+          } else if (this.config.tabs) {
+            let cachedTab = readDefectTabCache(this.$cache.local, this.projectId)
+            if (cachedTab === this.deletedTab) {
+              cachedTab = this.allTab
+              persistDefectTabCache(this.$cache.local, this.allTab, this.projectId)
+            }
+            const resolved = resolveDefectTabFromCache(cachedTab)
+            if (resolved) {
+              this.activeDefectTabName = resolved
+            }
+            // 查看所有页标签里是否包含激活页标签，如果没有，设置页标签为"全部"
+            if (!this.activeDefectTabName ||
+              this.activeDefectTabName === this.defectAddTabPaneName ||
+              (this.activeDefectTabName !== this.allTab &&
+                this.activeDefectTabName !== this.deletedTab &&
+                this.config.tabs.filter(t => String(t.tabId) === String(this.activeDefectTabName)).length === 0)) {
+              this.activeDefectTabName = this.allTab
+            }
           }
-          const resolved = resolveDefectTabFromCache(cachedTab)
-          if (resolved) {
-            this.activeDefectTabName = resolved
+          // 执行激活页标签方法
+          this.selectDefectTabHandle()
+          if (this.$route.query.openDefectTabDialog === '1') {
+            this.$nextTick(() => this.addDefectTabHandle())
           }
-          // 查看所有页标签里是否保护激活页标签，如果没有，设置页标签为"全部"
-          if (!this.activeDefectTabName ||
-            this.activeDefectTabName === this.defectAddTabPaneName ||
-            (this.activeDefectTabName !== this.allTab &&
-              this.activeDefectTabName !== this.deletedTab &&
-              this.config.tabs.filter(t => t.tabId + '' == this.activeDefectTabName).length == 0)) {
-            this.activeDefectTabName = this.allTab
-          }
-        }
-        // 执行激活页标签方法
-        this.selectDefectTabHandle()
-        if (this.$route.query.openDefectTabDialog === '1') {
-          this.$nextTick(() => this.addDefectTabHandle())
-        }
+        })
       })
     },
     /** 查找缺陷状态改变的处理 */
@@ -2485,11 +2556,47 @@ export default {
     getProjectId() {
       return this.$route.query.projectId ? parseInt(this.$route.query.projectId) : parseInt((this.userStore.config || {}).currentProjectId)
     },
-    /** 搜索按钮操作 */
-    handleQuery() {
+    /**
+     * 搜索按钮操作。
+     * @param {{ force?: boolean }} [opts] force=true 时忽略程序化 hydrate 抑制（供 scheduleTabDataLoad）
+     */
+    handleQuery(opts) {
+      if (this._suppressDefectQueryFetch && !(opts && opts.force)) {
+        return
+      }
       this.queryParams.pageNum = 1
       this.queryParams.pageSize = 10
       this.handleRefreshQuery()
+    },
+    /** 程序化改写 queryParams 期间抑制表单 @change/@input 旁路 list */
+    beginSuppressDefectQueryFetch() {
+      this._suppressDefectQueryFetch = true
+      if (this._suppressDefectQueryFetchTimer) {
+        clearTimeout(this._suppressDefectQueryFetchTimer)
+        this._suppressDefectQueryFetchTimer = null
+      }
+    },
+    /** 清抑制；默认短延时以覆盖 SelectProjectMember 等异步 hydrate 回声 */
+    endSuppressDefectQueryFetch(delayMs = 400) {
+      if (this._suppressDefectQueryFetchTimer) {
+        clearTimeout(this._suppressDefectQueryFetchTimer)
+      }
+      this._suppressDefectQueryFetchTimer = setTimeout(() => {
+        this._suppressDefectQueryFetch = false
+        this._suppressDefectQueryFetchTimer = null
+      }, delayMs)
+    },
+    clearSuppressDefectQueryFetch() {
+      if (this._suppressDefectQueryFetchTimer) {
+        clearTimeout(this._suppressDefectQueryFetchTimer)
+        this._suppressDefectQueryFetchTimer = null
+      }
+      this._suppressDefectQueryFetch = false
+    },
+    /** 应用 tab 查询后合并为一次列表加载 */
+    scheduleTabDataLoadAfterProgrammaticQuery() {
+      this.endSuppressDefectQueryFetch(400)
+      this.scheduleTabDataLoad()
     },
     /** 搜索操作 */
     handleRefreshQuery() {
@@ -2572,76 +2679,89 @@ export default {
      * 页签处理方法
      * ============================================ /
 
-    /** 切换页标签；tab-click 触发时 v-model 尚未更新，须用事件参数 tab.name */
-    selectDefectTabHandle(tab) {
+    /** 切换页标签；优先用 @tab-change 传入的 name（此时 v-model 已更新） */
+    selectDefectTabHandle(tabOrName) {
       this.defectShortcutTabAtAdd = false
       this.clearDefectShortcutAddHighlight()
-      const activeName = tab && tab.name != null ? String(tab.name) : String(this.activeDefectTabName)
+      const fromEvent = resolveDefectTabClickName(tabOrName)
+      const activeName = fromEvent != null ? fromEvent : String(this.activeDefectTabName)
       if (activeName === this.defectAddTabPaneName) {
-        const restoreTab = resolveDefectTabFromCache(this.$cache.local.get(DEFECT_TAB_CACHE_KEY)) || this.allTab
+        const restoreTab = resolveDefectTabFromCache(readDefectTabCache(this.$cache.local, this.projectId)) || this.allTab
         this.activeDefectTabName = restoreTab
         return
       }
-      clearExtensionParams(this.queryParams, this)
-      if (activeName === this.allTab) {
-        this.reset()
-        if (!this.queryParams.params) {
-          this.queryParams.params = {}
-        }
-        this.queryParams.params.delFlag = '0'
-        this.scheduleTabDataLoad()
-        this.$cache.local.set(DEFECT_TAB_CACHE_KEY, activeName)
-        return
+      if (fromEvent != null && String(this.activeDefectTabName) !== activeName) {
+        this.activeDefectTabName = activeName
       }
-      if (activeName === this.deletedTab) {
-        this.reset()
-        if (!this.queryParams.params) {
-          this.queryParams.params = {}
-        }
-        this.queryParams.params.delFlag = '2'
-        this.scheduleTabDataLoad()
-        // 不缓存「已删除」页签，避免刷新后仍停留在此且工具栏无新建按钮
-        return
-      }
-      if (this.config && this.config.tabs) {
-        const tabItem = this.config.tabs.find(t => String(t.tabId) === activeName)
-        if (tabItem && tabItem.config) {
-          tabItem.config.isAsc = 'desc'
-          tabItem.config.orderByColumn = 'updateTime'
-          if (!tabItem.config.params) {
-            tabItem.config.params = {
-              defectStates: [],
-              delFlag: '0'
-            }
-          }
-          if (tabItem.config.params.delFlag == null || tabItem.config.params.delFlag === '') {
-            tabItem.config.params.delFlag = '0'
-          }
-          const tc = tabItem.config
-          const tp = tc.params
-          if (tp.nameVersionKeyword != null && String(tp.nameVersionKeyword).trim() !== '') {
-            if (tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === '') {
-              tc.nameVersionKeyword = String(tp.nameVersionKeyword).trim()
-            }
-            delete tp.nameVersionKeyword
-          }
-          const kwEmpty = tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === ''
-          const hasDn = tc.defectName != null && String(tc.defectName).trim() !== ''
-          const hasMv = tc.moduleVersion != null && String(tc.moduleVersion).trim() !== ''
-          if (kwEmpty && ((hasDn && !hasMv) || (!hasDn && hasMv))) {
-            tc.nameVersionKeyword = hasDn ? String(tc.defectName).trim() : String(tc.moduleVersion).trim()
-            tc.defectName = null
-            tc.moduleVersion = null
-          }
-          this.queryParams = tabItem.config
-          clearExtensionParams(this.queryParams, this)
-          this.applyTabCustomFieldFilters(tabItem.config)
-        } else {
+      this.beginSuppressDefectQueryFetch()
+      try {
+        clearExtensionParams(this.queryParams, this)
+        if (activeName === this.allTab) {
           this.reset()
+          if (!this.queryParams.params) {
+            this.queryParams.params = {}
+          }
+          this.queryParams.params.delFlag = '0'
+          persistDefectTabCache(this.$cache.local, activeName, this.projectId)
+          this.scheduleTabDataLoadAfterProgrammaticQuery()
+          return
         }
-        this.scheduleTabDataLoad()
+        if (activeName === this.deletedTab) {
+          this.reset()
+          if (!this.queryParams.params) {
+            this.queryParams.params = {}
+          }
+          this.queryParams.params.delFlag = '2'
+          this.scheduleTabDataLoadAfterProgrammaticQuery()
+          // 不缓存「已删除」页签，避免刷新后仍停留在此且工具栏无新建按钮
+          return
+        }
+        if (this.config && this.config.tabs) {
+          const tabItem = this.config.tabs.find(t => String(t.tabId) === activeName)
+          if (tabItem && tabItem.config) {
+            tabItem.config.isAsc = 'desc'
+            tabItem.config.orderByColumn = 'updateTime'
+            if (!tabItem.config.params) {
+              tabItem.config.params = {
+                defectStates: [],
+                delFlag: '0'
+              }
+            }
+            if (tabItem.config.params.delFlag == null || tabItem.config.params.delFlag === '') {
+              tabItem.config.params.delFlag = '0'
+            }
+            const tc = tabItem.config
+            const tp = tc.params
+            if (tp.nameVersionKeyword != null && String(tp.nameVersionKeyword).trim() !== '') {
+              if (tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === '') {
+                tc.nameVersionKeyword = String(tp.nameVersionKeyword).trim()
+              }
+              delete tp.nameVersionKeyword
+            }
+            const kwEmpty = tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === ''
+            const hasDn = tc.defectName != null && String(tc.defectName).trim() !== ''
+            const hasMv = tc.moduleVersion != null && String(tc.moduleVersion).trim() !== ''
+            if (kwEmpty && ((hasDn && !hasMv) || (!hasDn && hasMv))) {
+              tc.nameVersionKeyword = hasDn ? String(tc.defectName).trim() : String(tc.moduleVersion).trim()
+              tc.defectName = null
+              tc.moduleVersion = null
+            }
+            this.queryParams = tabItem.config
+            clearExtensionParams(this.queryParams, this)
+            this.applyTabCustomFieldFilters(tabItem.config)
+          } else {
+            this.reset()
+          }
+          persistDefectTabCache(this.$cache.local, activeName, this.projectId)
+          this.scheduleTabDataLoadAfterProgrammaticQuery()
+          return
+        }
+        // tabs 尚未就绪：仍结束抑制，避免标志悬挂
+        this.endSuppressDefectQueryFetch(0)
+      } catch (e) {
+        this.clearSuppressDefectQueryFetch()
+        throw e
       }
-      this.$cache.local.set(DEFECT_TAB_CACHE_KEY, activeName)
     },
     /** Tab 快速切换时合并查询，只加载最终停留页签的数据 */
     scheduleTabDataLoad() {
@@ -2650,7 +2770,7 @@ export default {
       }
       this._tabDataLoadTimer = setTimeout(() => {
         this._tabDataLoadTimer = null
-        this.handleQuery()
+        this.handleQuery({ force: true })
       }, 120)
     },
     clearTabDataLoadTimer() {
@@ -2664,7 +2784,7 @@ export default {
       const restoreTab =
         this.activeDefectTabName !== this.defectAddTabPaneName
           ? this.activeDefectTabName
-          : (resolveDefectTabFromCache(this.$cache.local.get(DEFECT_TAB_CACHE_KEY)) || this.allTab)
+          : (resolveDefectTabFromCache(readDefectTabCache(this.$cache.local, this.projectId)) || this.allTab)
       this.$refs.defectTabDialog.open()
       this.$nextTick(() => {
         if (this.activeDefectTabName === this.defectAddTabPaneName) {

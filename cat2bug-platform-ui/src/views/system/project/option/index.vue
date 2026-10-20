@@ -155,6 +155,23 @@ export default {
     > * {
       margin-left: 20px;
       margin-bottom: 15px;
+      width: fit-content;
+      max-width: calc(100% - 20px);
+    }
+    /* el-link ::after 会按元素宽度画线；入口文字较短时避免下划线撑满卡片 */
+    .el-link {
+      width: fit-content;
+      max-width: 100%;
+
+      &::after,
+      &:hover::after {
+        display: none !important;
+      }
+
+      &:hover .el-link__inner {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
     }
   }
   :deep(.el-card__header){

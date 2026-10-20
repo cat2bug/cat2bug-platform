@@ -207,7 +207,13 @@
                 :data-case-id="scope.row.caseId"
               >{{ caseNumber(scope.row) }}</span>
               <div v-else-if="column.prop==='caseName'" class="table-case-title">
-                <cat2-bug-text :content="scope.row.caseName" :tooltip="scope.row.caseName" />
+                <el-link
+                  v-if="canEditCase"
+                  type="primary"
+                  :title="scope.row.caseName"
+                  @click="handleUpdate(scope.row)"
+                >{{ scope.row.caseName }}</el-link>
+                <cat2-bug-text v-else :content="scope.row.caseName" :tooltip="scope.row.caseName" />
               </div>
               <cat2-bug-level v-else-if="column.prop==='caseLevel'" :level="scope.row.caseLevel" />
               <span v-else-if="column.prop==='caseTypeName'">{{ scope.row.caseTypeName }}</span>
@@ -501,6 +507,9 @@ export default {
         return ordered.map(c => ({ ...c }))
       }
       return CaseTableColumnDefaults.filter(c => c.showInColumnPicker !== false)
+    },
+    canEditCase() {
+      return checkPermi(['system:case:edit'])
     },
     /** 用于显示的用例编号 */
     caseNumber: function() {
@@ -1659,8 +1668,22 @@ export default {
   @include multipane-resizer-vertical-appearance;
 }
 .table-case-title {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+  text-align: left;
+
+  .el-link {
+    align-self: flex-start;
+    max-width: 100%;
+    text-align: left !important;
+    white-space: pre-line;
+    word-break: break-word;
+    line-height: 1.45;
+  }
 }
 .case-add-dropdown {
   .title {

@@ -101,7 +101,11 @@ public class DocumentResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @RequiresPermissions("system:document:add")
     public AjaxResult add(SysDocument sysDocument) {
-        return toAjax(sysDocumentService.insertSysDocument(sysDocument));
+        int rows = sysDocumentService.insertSysDocument(sysDocument);
+        if (rows <= 0) {
+            return AjaxResult.error("操作失败");
+        }
+        return AjaxResult.success(sysDocument.getDocId());
     }
 
     @PUT
