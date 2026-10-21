@@ -2,7 +2,7 @@
   <!-- 与登录页 CatIllustration 同源（login-cat-scene-light/dark.jpg） -->
   <img src="readme/images/login-cat-scene-dark.png" width="550" alt="猫陪我改 BUG — Cat2Bug Platform" style="max-width: 100%; height: auto; margin-top: 50px;" />
 </div>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v1.1.0</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v1.1.1</h1>
 <h4 align="center">轻量化智能BUG管理平台</h4>
 
 ## 平台简介
@@ -25,10 +25,11 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 ## 最新版本更新说明
 
-当前最新版本是1.1.0
+当前最新版本是1.1.1
 
-**运行时要求（1.1.0 后端）**：构建与运行需 **JDK 17+**。后端基于 **Quarkus**（默认 Maven 构建，无需 profile），原 Spring Boot 后端已移除，最后版本保留在 tag `spring-final-1.1.0`。Maven 版本号为 1.1.0。详见 [CHANGELOG.md](CHANGELOG.md)。
+**运行时要求（1.1.1 后端）**：构建与运行需 **JDK 17+**。后端基于 **Quarkus**（默认 Maven 构建，无需 profile），原 Spring Boot 后端已移除，最后版本保留在 tag `spring-final-1.1.0`。Maven 版本号为 1.1.1。详见 [CHANGELOG.md](CHANGELOG.md)。
 
+* 缺陷列表支持批量指派 / 修复 / 驳回 / 通过 / 关闭 / 重开 / 删除
 * 项目可配置用例类型；勾选用例可发起可选评审并生成 Markdown 纪要；测试计划中评审只作为筛选项
 * 添加系统快捷键体系
 * 缺陷 Excel 暗色主题与 Safari 行号列滚动体验优化

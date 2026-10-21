@@ -528,12 +528,17 @@ export default {
 .git-repo-main {
   flex: 1 1 auto;
   min-width: 0;
+  /* 父级 align-items:flex-start；拉伸自身以铺满可视高度，便于空状态垂直居中 */
+  align-self: stretch;
   display: flex;
   flex-direction: column;
 }
 
 .git-repo-list-body {
   min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .git-repo-aside {
@@ -752,7 +757,12 @@ export default {
 }
 
 .git-repo-empty {
-  padding: 64px 16px 80px;
+  /* 撑满工具栏下方剩余区域；内部图文由 el-empty 自带 column + justify center */
+  flex: 1 1 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 24px 16px;
+  min-height: 0;
 }
 
 .git-repo-pagination-band {

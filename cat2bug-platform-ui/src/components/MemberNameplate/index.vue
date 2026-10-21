@@ -1,7 +1,7 @@
 <template>
   <div class="member-nameplate">
     <slot name="icon" v-if="iconVisible">
-      <cat2-bug-avatar :member="member" size="small" />
+      <cat2-bug-avatar :member="member" :size="size" />
     </slot>
     <div class="member-nameplate-content">
       <slot name="title">
@@ -25,6 +25,11 @@ export default {
     member: {
       type: Object,
       default: () => ({})
+    },
+    /** 与 Cat2BugAvatar / RowListMember 一致，列表默认 medium（EP default≈40px） */
+    size: {
+      type: [String, Number],
+      default: 'medium'
     },
     iconVisible: {
       type: Boolean,

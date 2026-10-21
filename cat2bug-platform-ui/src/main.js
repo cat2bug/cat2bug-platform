@@ -40,6 +40,8 @@ import ImageUpload from '@/components/ImageUpload'
 import ImagePreview from '@/components/ImagePreview'
 import Cat2BugImage from '@/components/Cat2BugImage'
 import Cat2BugEmpty from '@/components/Cat2BugEmpty'
+import Cat2BugLoading from '@/components/Cat2BugLoading'
+import { installCat2BugLoadingEnhance } from '@/utils/cat2bug-loading-enhance'
 import { Cat2BugImageErrorSlot } from '@/utils/upload-asset'
 import DictTag from '@/components/DictTag'
 import SiteCopyright from '@/components/SiteCopyright'
@@ -144,6 +146,7 @@ async function mountApp() {
   app.component('Cat2BugImage', Cat2BugImage)
   app.component('Cat2BugImageErrorSlot', Cat2BugImageErrorSlot)
   app.component('Cat2BugEmpty', Cat2BugEmpty)
+  app.component('Cat2BugLoading', Cat2BugLoading)
   app.component('CommandPalette', CommandPalette)
 
   app.config.globalProperties.getDicts = getDicts
@@ -170,6 +173,7 @@ async function mountApp() {
   app.provide('elSize', Cookies.get('size') || 'medium')
 
   app.mount('#app')
+  installCat2BugLoadingEnhance()
   finishPageLoadBar()
 }
 

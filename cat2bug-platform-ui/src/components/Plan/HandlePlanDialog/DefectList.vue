@@ -75,7 +75,7 @@
             <el-checkbox
               v-for="c in defectColumnPickerOptions"
               :key="c.key"
-              :label="c.key"
+              :value="c.key"
             >{{ c.label || (c.customFieldMeta && c.customFieldMeta.fieldLabel) || (c.key ? $t(c.key) : c.prop) }}</el-checkbox>
           </el-checkbox-group>
           <template #reference>
@@ -201,7 +201,7 @@
       <template #append>
         <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
           <template #default="scope">
-            <div class="defect-operate-cell cat2bug-operate-tools">
+            <div v-if="scope && scope.row" class="defect-operate-cell cat2bug-operate-tools">
               <defect-tools
                 class="defect-row-tools"
                 :exclusions="defectToolsExclusions"

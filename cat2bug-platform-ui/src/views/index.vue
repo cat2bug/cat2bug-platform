@@ -173,6 +173,12 @@
             </div>
           </template>
           <el-collapse accordion>
+            <el-collapse-item title="v1.1.1 - 2026-10-21">
+              <ol>
+                <li>缺陷列表支持批量指派 / 修复 / 驳回 / 通过 / 关闭 / 重开 / 删除</li>
+                <li>平台版本升级至 1.1.1</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v1.1.0 - 2026-07-12">
               <ol>
                 <li>项目可配置用例类型；勾选用例可发起可选评审并生成 Markdown 纪要；测试计划中评审只作为筛选项</li>

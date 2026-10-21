@@ -297,6 +297,12 @@ export default {
         this.$nextTick(() => this.scrollActiveIntoView())
       })
     },
+    /** 键盘焦点优先落在当前项目，找不到则落在第一项 */
+    indexOfCurrentOrFirst() {
+      if (!this.options || !this.options.length) return -1
+      const idx = this.options.findIndex((item) => this.isCurrentProject(item))
+      return idx >= 0 ? idx : 0
+    },
     movePage(dir) {
       if (dir < 0 && this.hasPrevPage()) {
         this.goPage(this.queryParams.pageNum - 1, 'last')
@@ -357,8 +363,9 @@ export default {
       this.keyword = ''
       this.queryParams.projectName = undefined
       this.queryParams.pageNum = 1
-      this.activeIndex = 0
+      this.activeIndex = -1
       this.getProjectList().then(() => {
+        this.activeIndex = this.indexOfCurrentOrFirst()
         this.$nextTick(() => this.scrollActiveIntoView())
       })
       this.attachProjectSelectKeyboardListener()
@@ -376,7 +383,7 @@ export default {
         this.queryParams.projectName = kw || undefined
         this.queryParams.pageNum = 1
         this.getProjectList().then(() => {
-          this.activeIndex = this.options.length ? 0 : -1
+          this.activeIndex = this.indexOfCurrentOrFirst()
         })
       }, 200)
     },
@@ -663,9 +670,22 @@ export default {
   cursor: pointer;
 
   &:hover,
-  &.is-active,
   &.is-keyboard-active {
     background: var(--table-row-hover-bg, rgba(0, 0, 0, 0.04));
+  }
+
+  /* 当前项目：主色字重 + 浅底，与键盘高亮区分 */
+  &.is-active {
+    background: var(--table-row-hover-bg, rgba(0, 0, 0, 0.04));
+
+    .project-select-item-name {
+      font-weight: 600;
+      color: var(--cat2bug-primary, var(--el-color-primary, #1890ff));
+    }
+  }
+
+  &.is-active.is-keyboard-active {
+    background: var(--el-color-primary-light-9, rgba(24, 144, 255, 0.08));
   }
 }
 
@@ -687,7 +707,7 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 400;
   color: var(--text-color-primary);
 }
 

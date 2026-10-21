@@ -188,13 +188,9 @@ export default defineConfig(({ mode }) => {
       AutoImport({
         resolvers: [ElementPlusResolver({ importStyle: 'sass' })]
       }),
+      // 两个 CaseList 均显式 import。勿用 exclude 排除源文件，否则文件内 el-* 也不会自动导入。
       Components({
-        resolvers: [ElementPlusResolver({ importStyle: 'sass' })],
-        // CaseList.vue exists in CloudCase2 and Plan dialogs; both are imported explicitly.
-        exclude: [
-          /[\\/]Cloud[\\/]CloudCase2[\\/]chat[\\/]CaseList\.vue$/,
-          /[\\/]Plan[\\/]HandlePlanDialog[\\/]CaseList\.vue$/
-        ]
+        resolvers: [ElementPlusResolver({ importStyle: 'sass' })]
       }),
       ...(!isDev ? [
         viteCompression({

@@ -100,8 +100,8 @@
             />
           </template>
           <template #query>
-            <el-radio-group class="list-switch" v-model="activeListType" size="small" @input="handleListTypeChanged">
-              <el-radio-button v-for="lt in listTypes" :label="$t(lt).toString()" :key="lt"></el-radio-button>
+            <el-radio-group class="list-switch" v-model="activeListType" size="small" @change="handleListTypeChanged">
+              <el-radio-button v-for="lt in listTypes" :value="String($t(lt))" :key="lt">{{ $t(lt) }}</el-radio-button>
             </el-radio-group>
           </template>
         </component>

@@ -109,6 +109,7 @@
         @defect-click="handleDefectClick"
         @refresh="handleRefreshQuery"
         @column-picker-visible-change="onDefectColumnPickerVisibleChange"
+        @selection-change="onDefectTableSelectionChange"
       >
         <template #left-tools>
           <!-- 搜索-->
@@ -203,6 +204,58 @@
           </div>
         </template>
         <template #right-tools>
+          <el-button
+            v-if="defectBatchToolbarVisible && !defectBatchMenuEnabled"
+            class="defect-batch-dropdown"
+            size="small"
+            plain
+            disabled
+          >
+            <legacy-icon icon="el-icon-s-operation" />{{ $t('defect.batch-action') }}
+            <legacy-icon icon="el-icon-arrow-down" class="defect-batch-dropdown__caret" />
+          </el-button>
+          <el-dropdown
+            v-else-if="defectBatchToolbarVisible"
+            class="defect-batch-dropdown"
+            trigger="click"
+            size="small"
+            @command="onDefectBatchCommand"
+          >
+            <el-button size="small" plain>
+              <legacy-icon icon="el-icon-s-operation" />{{ $t('defect.batch-action') }}
+              <legacy-icon icon="el-icon-arrow-down" class="defect-batch-dropdown__caret" />
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu class="defect-batch-dropdown-menu">
+                <el-dropdown-item v-if="defectBatchFlags.assign" command="assign" class="orange">
+                  <legacy-icon icon="el-icon-refresh" />{{ $t('assign') }}
+                </el-dropdown-item>
+                <el-dropdown-item v-if="defectBatchFlags.repair" command="repair" class="orange">
+                  <legacy-icon icon="el-icon-document-checked" />{{ $t('repair') }}
+                </el-dropdown-item>
+                <el-dropdown-item v-if="defectBatchFlags.reject" command="reject" class="orange">
+                  <legacy-icon icon="el-icon-document-delete" />{{ $t('reject') }}
+                </el-dropdown-item>
+                <el-dropdown-item v-if="defectBatchFlags.pass" command="pass" class="orange">
+                  <legacy-icon icon="el-icon-finished" />{{ $t('pass') }}
+                </el-dropdown-item>
+                <el-dropdown-item v-if="defectBatchFlags.close" command="close" class="orange">
+                  <legacy-icon icon="el-icon-takeaway-box" />{{ $t('close') }}
+                </el-dropdown-item>
+                <el-dropdown-item v-if="defectBatchFlags.open" command="open" class="orange">
+                  <legacy-icon icon="el-icon-document-copy" />{{ $t('open') }}
+                </el-dropdown-item>
+                <el-dropdown-item
+                  v-if="defectBatchFlags.delete"
+                  command="delete"
+                  :divided="defectBatchHasFlowAction"
+                  class="red"
+                >
+                  <legacy-icon icon="el-icon-delete" />{{ $t('delete') }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
           <span v-if="defectAddToolbarVisible" class="defect-add-toolbar-kbd-wrap">
             <el-dropdown
             ref="defectAddDropdown"
@@ -231,6 +284,12 @@
       <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="search(queryParams)" />
       <!-- 浏览缺陷对话框 -->
       <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="handleRefreshQuery" @delete="handleRefreshQuery" />
+      <!-- 批量流转弹窗 -->
+      <defect-batch-action-dialog
+        ref="defectBatchActionDialog"
+        :project-id="getProjectId()"
+        @done="onDefectBatchDone"
+      />
       <!-- 添加页签对话框 -->
       <defect-tab-dialog ref="defectTabDialog" :project-id="getProjectId()" :member-id="userId" @add="tabAddHandle" />
       <!-- 导入缺陷 -->
@@ -242,10 +301,13 @@
 <script>
 import { checkPermi } from '@/utils/permission'
 import { delTabs } from '@/api/system/DefectTabs'
-import { configDefect } from '@/api/system/defect'
+import { configDefect, delDefect } from '@/api/system/defect'
 import AddDefect from '@/components/Defect/AddDefect'
 import HandleDefect from '@/components/Defect/HandleDefect'
+import DefectBatchActionDialog from '@/components/Defect/DefectBatchActionDialog'
 import SelectProjectMember from '@/components/Project/SelectProjectMember'
+import { getBatchActionFlags } from '@/utils/defect-action-visibility'
+import { strFormat } from '@/utils/index'
 import ProjectLabel from '@/components/Project/ProjectLabel'
 import Cat2BugStatistic from '@/components/Cat2BugStatistic'
 import DefectTabDialog from '@/views/system/defect/DefectTabDialog'
@@ -377,7 +439,18 @@ const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible'
 export default {
   name: 'Defect',
   mixins: [pageActionHints, splitDropdownKbd],
-  components: { AddDefect, HandleDefect, SelectProjectMember, ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectExcel, DefectImport },
+  components: {
+    AddDefect,
+    HandleDefect,
+    DefectBatchActionDialog,
+    SelectProjectMember,
+    ProjectLabel,
+    Cat2BugStatistic,
+    DefectTabDialog,
+    DefectTable,
+    DefectExcel,
+    DefectImport,
+  },
   setup() {
     return {
       userStore: useUserStore()
@@ -441,6 +514,10 @@ export default {
       defectColumnPickerMenuIndex: 0,
       /** 键盘 ↓ 打开类型下拉（query nav） */
       defectTypeDropdownKeyboardOpen: false,
+      /** 表格当前页勾选的缺陷 */
+      selectedDefects: [],
+      /** 批量删除提交中 */
+      defectBatchDeleting: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -506,6 +583,27 @@ export default {
     defectAddToolbarVisible() {
       return !this.isDeletedDefectTab && this.checkPermi(['system:defect:add'])
     },
+    /** 批量操作：仅表格模式显示（Excel 隐藏） */
+    defectBatchToolbarVisible() {
+      return this.defectContentComponent === 'DefectTable'
+    },
+    /** 批量菜单各动作可用性（严格 every） */
+    defectBatchFlags() {
+      return getBatchActionFlags(this.selectedDefects, this.currentUserId)
+    },
+    /** 删除项上方是否需要分割线（有任一流转动作时） */
+    defectBatchHasFlowAction() {
+      const f = this.defectBatchFlags
+      return !!(f.assign || f.repair || f.reject || f.pass || f.close || f.open)
+    },
+    /** 有勾选且至少一项可执行时才可打开菜单 */
+    defectBatchMenuEnabled() {
+      const f = this.defectBatchFlags
+      return !!(
+        f.hasSelection &&
+        (f.assign || f.repair || f.reject || f.pass || f.close || f.open || f.delete)
+      )
+    },
     defectTabAddBtnClass() {
       return 'defect-tab-label defect-tab-add-btn'
     },
@@ -570,6 +668,7 @@ export default {
     },
     /** 表格 / Excel 切换：与 Vue2 @input 一致，v-model 变更即拉取当前视图数据 */
     defectContentComponent() {
+      this.selectedDefects = []
       this.handleDefectContentChange()
     }
   },
@@ -2646,6 +2745,73 @@ export default {
     handleAdd() {
       this.$refs.addDefectForm.open()
     },
+    onDefectTableSelectionChange(selection) {
+      this.selectedDefects = selection || []
+    },
+    clearDefectTableSelection() {
+      this.selectedDefects = []
+      const content = this.$refs.defectContentComponent
+      if (content && typeof content.clearSelection === 'function') {
+        content.clearSelection()
+      }
+    },
+    onDefectBatchCommand(command) {
+      if (!command || !this.defectBatchFlags[command]) return
+      const defects = this.selectedDefects || []
+      if (!defects.length) return
+      if (command === 'delete') {
+        this.handleDefectBatchDelete(defects)
+        return
+      }
+      const dialog = this.$refs.defectBatchActionDialog
+      if (dialog && typeof dialog.open === 'function') {
+        dialog.open(command, defects)
+      }
+    },
+    handleDefectBatchDelete(defects) {
+      if (this.defectBatchDeleting) return
+      const list = defects || []
+      this.$modal
+        .confirm(
+          strFormat(this.$t('defect.is-batch-delete'), list.length),
+          this.$t('prompted').toString(),
+          {
+            confirmButtonText: this.$t('delete').toString(),
+            cancelButtonText: this.$t('cancel').toString(),
+            confirmButtonClass: 'delete-button',
+            type: 'warning',
+          }
+        )
+        .then(async () => {
+          this.defectBatchDeleting = true
+          let ok = 0
+          const failures = []
+          for (const d of list) {
+            try {
+              await delDefect(d.defectId)
+              ok += 1
+            } catch (e) {
+              const msg = (e && e.message) || (e && e.msg) || String(e || this.$t('fail'))
+              failures.push(`#${d.projectNum}: ${msg}`)
+            }
+          }
+          this.defectBatchDeleting = false
+          this.onDefectBatchDone({ ok, fail: failures.length, failures, action: 'delete' })
+          if (failures.length === 0) {
+            this.$modal.msgSuccess(strFormat(this.$t('defect.batch-result-all-ok'), ok))
+          } else {
+            this.$modal.msgWarning(
+              strFormat(this.$t('defect.batch-result-partial'), ok, failures.length) +
+                (failures.length ? `\n${failures.slice(0, 5).join('\n')}` : '')
+            )
+          }
+        })
+        .catch(() => {})
+    },
+    onDefectBatchDone() {
+      this.clearDefectTableSelection()
+      this.handleRefreshQuery()
+    },
     /** 添加统计操作 */
     addStatisticHandle() {
       this.$router.push({ name: 'DefectStatisticTemplate' })
@@ -3457,6 +3623,14 @@ export default {
     z-index: 5;
   }
 }
+.defect-batch-dropdown {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 8px;
+  .defect-batch-dropdown__caret {
+    margin-left: 4px;
+  }
+}
 .defect-add-toolbar-kbd-wrap {
   position: relative;
   display: inline-flex;
@@ -3587,6 +3761,45 @@ html.dark .defect-add-dropdown-menu .el-dropdown-menu__item:focus {
   box-shadow: none !important;
   background-color: #3a3a42;
   color: inherit;
+}
+/* 批量操作菜单：图标与颜色对齐行内 DefectTools */
+.defect-batch-dropdown-menu {
+  min-width: 120px;
+}
+.defect-batch-dropdown-menu .el-dropdown-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.defect-batch-dropdown-menu .el-dropdown-menu__item .legacy-icon,
+.defect-batch-dropdown-menu .el-dropdown-menu__item .el-icon {
+  font-size: var(--cat2bug-operate-icon-size, 14px);
+  width: var(--cat2bug-operate-icon-size, 14px);
+  height: var(--cat2bug-operate-icon-size, 14px);
+}
+.defect-batch-dropdown-menu .el-dropdown-menu__item.orange:not(.is-disabled) {
+  color: var(--cat2bug-operate-text-muted, #606266);
+}
+.defect-batch-dropdown-menu .el-dropdown-menu__item.orange:not(.is-disabled):hover,
+.defect-batch-dropdown-menu .el-dropdown-menu__item.orange:not(.is-disabled):focus {
+  color: var(--cat2bug-operate-text-muted-hover, #1890ff);
+  background-color: var(--el-dropdown-menuItem-hover-fill, #ecf5ff);
+}
+.defect-batch-dropdown-menu .el-dropdown-menu__item.red:not(.is-disabled) {
+  color: var(--cat2bug-operate-text-danger, #f56c6c);
+}
+.defect-batch-dropdown-menu .el-dropdown-menu__item.red:not(.is-disabled):hover,
+.defect-batch-dropdown-menu .el-dropdown-menu__item.red:not(.is-disabled):focus {
+  color: var(--cat2bug-operate-text-danger-hover, #f78989);
+  background-color: var(--el-color-danger-light-9, #fef0f0);
+}
+html.dark .defect-batch-dropdown-menu .el-dropdown-menu__item.orange:not(.is-disabled):hover,
+html.dark .defect-batch-dropdown-menu .el-dropdown-menu__item.orange:not(.is-disabled):focus {
+  background-color: #3a3a42;
+}
+html.dark .defect-batch-dropdown-menu .el-dropdown-menu__item.red:not(.is-disabled):hover,
+html.dark .defect-batch-dropdown-menu .el-dropdown-menu__item.red:not(.is-disabled):focus {
+  background-color: #3a3a42;
 }
 .defect-page .defect-view-toolbar {
   box-sizing: border-box;

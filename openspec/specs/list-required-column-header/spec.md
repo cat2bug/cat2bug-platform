@@ -1,0 +1,48 @@
+# list-required-column-header Specification
+
+## Purpose
+
+业务主列表对表单必填字段对应列启用红色表头（`Cat2BugTable` 的 `required: true`），与缺陷/用例观感一致。
+
+## Requirements
+
+### Requirement: 业务列表对表单必填字段对应列启用红色表头
+
+使用 `Cat2BugTable` 的业务主列表，对当前表单校验中标记为必填、且在列表中有对应列的字段，MUST 在列默认配置中设置 `required: true`。表头 MUST 以红色展示列标题（及现有 pin 同色规则），MUST NOT 使用星号前缀。视觉 MUST 与缺陷列表必填列一致（复用 `Cat2BugTable` 既有 `header-title--required` / `table-header--required` 样式）。
+
+本次 MUST 覆盖：
+
+| 列表 | 列 key | 对应表单必填 |
+|------|--------|--------------|
+| 测试计划 | `plan.name` | 计划名称 |
+| 交付物 | `module.name` | 交付物名称 |
+| 文档管理 | `doc.name` | 文档名称 |
+
+#### Scenario: 打开测试计划列表见名称列红色表头
+
+- **WHEN** 用户进入项目下的测试计划列表页
+- **THEN** 「测试计划名称」列表头为红色，其它非必填列保持默认表头色
+
+#### Scenario: 打开交付物列表见名称列红色表头
+
+- **WHEN** 用户进入项目下的交付物列表页
+- **THEN** 「交付物名称」列表头为红色
+
+#### Scenario: 打开文档管理列表见名称列红色表头
+
+- **WHEN** 用户进入项目下的文档管理列表页
+- **THEN** 「文档名称」列表头为红色
+
+#### Scenario: 调整列宽后刷新仍保持红色
+
+- **WHEN** 用户对上述必填列调宽并刷新页面
+- **THEN** 该列宽度为用户设置值，标题仍为红色且无星号前缀
+
+### Requirement: 本次范围排除项
+
+下列页面或区域 MUST NOT 因本能力新增或修改 `required` 列标记：用例主列表（已对齐）、执行计划抽屉内子项表、新建/编辑计划弹窗内的用例表。文档表单中的文件字段若无对应列表列，MUST NOT 为标红而新增列表列。
+
+#### Scenario: 用例列表行为不变
+
+- **WHEN** 用户打开用例列表
+- **THEN** 既有必填列红色表头行为与变更前一致，且不因本能力改其列配置文件

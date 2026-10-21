@@ -137,7 +137,7 @@ import {
 const MODULE_KBD_SCOPE = 'module'
 
 const MODULE_TABLE_COLUMNS = [
-  { key: 'module.name', prop: 'moduleName', fixed: true, visible: true, align: 'left', minWidth: 200, pinFixedToggle: false, sortable: false },
+  { key: 'module.name', prop: 'moduleName', fixed: true, visible: true, required: true, align: 'left', minWidth: 200, pinFixedToggle: false, sortable: false },
   { key: 'annex', prop: 'annexUrls', fixed: false, visible: true, align: 'left', minWidth: 160, pinFixedToggle: false, sortable: false },
   { key: 'remark', prop: 'remark', fixed: false, visible: true, align: 'center', minWidth: 120, pinFixedToggle: false, sortable: false }
 ]

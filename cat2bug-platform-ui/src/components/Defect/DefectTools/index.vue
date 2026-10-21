@@ -42,21 +42,14 @@ import EditDefectDialog from "@/components/Defect/EditDefectDialog";
 import StarSwitch from "@/components/StarSwitch";
 import ShareCard from "@/components/ShareCard";
 import {delDefect, restoreDefect, updateUserDefect} from "@/api/system/defect";
-import {checkPermi} from "@/utils/permission";
 import i18n from "@/utils/i18n/i18n";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
+import {
+  isDefectDeleted,
+  isDefectActionVisible,
+} from "@/utils/defect-action-visibility";
 
-/** 处理中状态 */
-const PROCESSING_STATE = 'PROCESSING';
-/** 待验证 */
-const AUDIT_STATE = 'AUDIT';
-/** 已解决 */
-const RESOLVED_STATE = 'RESOLVED';
-/** 已驳回 */
-const REJECTED_STATE = 'REJECTED';
-/** 关闭状态 */
-const CLOSE_STATE = 'CLOSED';
 export default {
   emits: ['update:defect', 'update'],
   name: "DefectTools",
@@ -111,51 +104,37 @@ export default {
       return this.id;
     },
     isDeleted() {
-      const f = this.defect && this.defect.delFlag;
-      return f === '2' || f === 2;
+      return isDefectDeleted(this.defect);
     },
-    // 指派
-    assignVisible: function () {
-      return !this.isDeleted && !this.exclusions.includes('assign') && (this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE && checkPermi(['system:defect:assign']) &&
-        (
-          (this.defect.createById && this.defect.createById == this.currentUserId) ||
-          (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1)
-        ));
+    assignVisible() {
+      return isDefectActionVisible('assign', this.defect, this.currentUserId, this.exclusions);
     },
-    // 修复
-    repairVisible: function () {
-      return !this.isDeleted && !this.exclusions.includes('repair') && ((this.defect.defectStateName==PROCESSING_STATE || this.defect.defectStateName==REJECTED_STATE) && checkPermi(['system:defect:repair']) &&
-        (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1));
+    repairVisible() {
+      return isDefectActionVisible('repair', this.defect, this.currentUserId, this.exclusions);
     },
-    // 驳回
-    rejectVisible: function () {
-      return !this.isDeleted && !this.exclusions.includes('reject') && (this.defect.defectStateName==AUDIT_STATE && checkPermi(['system:defect:reject']) &&
-        (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1));
+    rejectVisible() {
+      return isDefectActionVisible('reject', this.defect, this.currentUserId, this.exclusions);
     },
-    // 通过
-    passVisible: function () {
-      return !this.isDeleted && !this.exclusions.includes('pass') && (this.defect.defectStateName==AUDIT_STATE && checkPermi(['system:defect:pass']) &&
-        (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1));
+    passVisible() {
+      return isDefectActionVisible('pass', this.defect, this.currentUserId, this.exclusions);
     },
-    // 关闭
-    closeVisible: function () {
-      return !this.isDeleted && !this.exclusions.includes('close') && (this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE && checkPermi(['system:defect:close']));
+    closeVisible() {
+      return isDefectActionVisible('close', this.defect, this.currentUserId, this.exclusions);
     },
-    // 开启
-    openVisible: function () {
-      return !this.isDeleted && !this.exclusions.includes('open') && (this.defect.defectStateName==CLOSE_STATE && checkPermi(['system:defect:open']));
+    openVisible() {
+      return isDefectActionVisible('open', this.defect, this.currentUserId, this.exclusions);
     },
-    deleteVisible: function () {
-      return !this.isDeleted && !this.exclusions.includes('delete') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:remove']));
+    deleteVisible() {
+      return isDefectActionVisible('delete', this.defect, this.currentUserId, this.exclusions);
     },
-    editVisible: function () {
-      return !this.isDeleted && !this.exclusions.includes('edit') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:edit']));
+    editVisible() {
+      return isDefectActionVisible('edit', this.defect, this.currentUserId, this.exclusions);
     },
-    viewVisible: function () {
-      return !this.exclusions.includes('view') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:query']));
+    viewVisible() {
+      return isDefectActionVisible('view', this.defect, this.currentUserId, this.exclusions);
     },
-    restoreVisible: function () {
-      return this.isDeleted && !this.exclusions.includes('restore') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:remove']));
+    restoreVisible() {
+      return isDefectActionVisible('restore', this.defect, this.currentUserId, this.exclusions);
     },
   },
   methods:{

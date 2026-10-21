@@ -53,7 +53,7 @@
 
     <el-row ref="memberMenu" v-if="options && options.length>0" class="select-project-member-menu">
       <el-col :span="24" v-for="(item,itemIndex) in options" :key="itemIndex" @click="clickMenuHandle(item,$event)" :active="optionsChecks.get(item.userId)?'true':'false'" :class="{'is-keyboard-active': itemIndex===activeIndex}">
-        <member-nameplate :member="item"></member-nameplate>
+        <member-nameplate :member="item" size="small"></member-nameplate>
         <el-tag v-if="isHead" size="small" @click="setMasterHandle($event,item)" :type="tagType(item)">
           {{optionsChecks.get(item.userId)===1?$i18n.t('head'):$i18n.t('assistant')}}
         </el-tag>

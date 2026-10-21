@@ -171,7 +171,7 @@
       <template #append>
         <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
           <template #default="scope">
-            <div class="plan-operate cat2bug-operate-tools">
+            <div v-if="scope && scope.row" class="plan-operate cat2bug-operate-tools">
               <plan-item-tools v-model:planItem="scope.row" :plan="parentPlan" :project-id="projectId" @change="getPlanItemList" />
             </div>
           </template>
@@ -186,7 +186,14 @@
       v-model:limit="query.pageSize"
       @pagination="getPlanItemList"
     />
-    <handle-case-of-plan ref="handleCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @change="getPlanItemList" />
+    <!-- 惰性挂载：避免一打开计划抽屉就嵌套挂载用例抽屉及其内部缺陷抽屉，引爆 ElOverlay 递归更新 -->
+    <handle-case-of-plan
+      v-if="caseOfPlanMounted"
+      ref="handleCaseDialog"
+      :module-id="planItem.moduleId"
+      :append-to-body="true"
+      @change="getPlanItemList"
+    />
       </div>
     </multipane>
   </div>
@@ -271,6 +278,8 @@ export default {
       deliverableToolbarSyncHeight: null,
       /** 计划抽屉表格区域高度（px），用于 el-table max-height 固定表头 */
       planDrawerTableMaxHeight: null,
+      /** 是否已挂载用例详情抽屉（按需创建，避免嵌套抽屉首屏风暴） */
+      caseOfPlanMounted: false,
     }
   },
   mounted() {
@@ -616,7 +625,13 @@ export default {
     },
     /** 打开编辑用例窗口 */
     handleOpenEditCase(planItem) {
-      this.$refs.handleCaseDialog.open(this.parentPlan, planItem, planItem.caseId, this.query);
+      this.caseOfPlanMounted = true;
+      this.$nextTick(() => {
+        const dlg = this.$refs.handleCaseDialog;
+        if (dlg && typeof dlg.open === 'function') {
+          dlg.open(this.parentPlan, planItem, planItem.caseId, this.query);
+        }
+      });
     },
     /** 处理鼠标在表格点下事件 */
     handleTableMouseDown(e) {

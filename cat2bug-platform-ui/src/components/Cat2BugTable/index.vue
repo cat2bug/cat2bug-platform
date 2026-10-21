@@ -67,16 +67,18 @@
           <span v-else :class="['header-title-only', { 'header-title--required': col.required }]">{{ columnHeaderLabel(col) }}</span>
         </template>
         <template #default="scope">
-          <slot name="columns" :scope="scope" :column="col"></slot>
+          <!-- EP 在列增删/固定列同步时偶发无 scope，避免业务槽直接读 scope.row 抛错 -->
+          <slot v-if="scope && scope.row !== undefined" name="columns" :scope="scope" :column="col"></slot>
         </template>
       </el-table-column>
-      <!-- 操作列前幽灵弹性列：吃掉主区剩余宽度，使 fixed-right 操作列贴容器右缘 -->
+      <!-- 操作列前幽灵弹性列：吃掉主区剩余宽度，使 fixed-right 操作列贴容器右缘。
+           一旦启用就常挂载（宽可为 0），避免 width 在 0↔N 间抖动时 v-if 增删列触发固定列重挂载/ElOverlay 递归更新 -->
       <el-table-column
-        v-if="operateSpacerEnabled && spacerColumnWidth > 0"
+        v-if="operateSpacerEnabled"
         key="cat2bug-operate-spacer"
         class-name="no-drag cat2bug-operate-spacer-column"
         label-class-name="cat2bug-operate-spacer-column"
-        :width="spacerColumnWidth"
+        :width="Math.max(0, spacerColumnWidth)"
         :resizable="false"
         align="left"
       >
@@ -274,10 +276,8 @@ export default {
       return v;
     },
     showTableFieldList: function () {
-      return this.tableFieldList.map((col, index) => {
-        col.index = index;
-        return col;
-      }).filter(col => col.visible);
+      // 勿在 computed 里写回 col.index（会触发自身依赖）
+      return this.tableFieldList.filter(col => col.visible);
     },
     columnWidth: function () {
       return function (column) {
@@ -304,6 +304,8 @@ export default {
         this.$nextTick(() => {
           requestAnimationFrame(() => {
             if (!this.tableLayoutReady || this.loading) return;
+            // 操作按钮晚于首轮测宽挂上时，纠正裁字（只加宽，不整表 layout）
+            this.reconcileOperateColumnWidthIfClipped();
             if (!this.reapplyLastSyncedRowHeights()) {
               this.syncFixedDataRowHeights({ force: true, preserveMin: true });
             }
@@ -339,9 +341,14 @@ export default {
         }, 800);
         return;
       }
-      // 已揭开：刷新结束不再 scheduleDoLayout，避免行高可见跳动
+      // 已揭开：不整表 layout；仍检查操作列是否裁字并加宽
       if (this.tableLayoutReady) {
-        this.$nextTick(() => this.updateCustomHorizontalScrollbar());
+        this.$nextTick(() => {
+          requestAnimationFrame(() => {
+            this.reconcileOperateColumnWidthIfClipped();
+            this.updateCustomHorizontalScrollbar();
+          });
+        });
         return;
       }
       if (this._layoutReadyFallbackTimer) {
@@ -871,14 +878,37 @@ export default {
         }
         if ((this.data || []).length > 0) return;
       }
+      // 有数据但操作列仍测不到内容：再测一轮并延后揭开，避免锁在 min+pad（如 128）裁掉「删除」
+      if (
+        this.operateColumnAutoWidth
+        && (this.data || []).length > 0
+        && this.probeOperateContentInnerWidth() <= 0
+      ) {
+        if (this._rowSyncRetryCount == null) this._rowSyncRetryCount = 0;
+        if (this._rowSyncRetryCount < 60) {
+          this._rowSyncRetryCount += 1;
+          this.syncOperateColumnWidths();
+          requestAnimationFrame(() => this.markTableLayoutReady());
+          return;
+        }
+      }
       // 行高/操作列宽连续 3 帧不变再揭开（透明态把收窄吃掉）
       if (!this.isRevealRowHeightStable()) {
         if (this._rowSyncRetryCount == null) this._rowSyncRetryCount = 0;
         if (this._rowSyncRetryCount < 60) {
           this._rowSyncRetryCount += 1;
+          // 稳定等待期间若已能测到内容但列宽仍是占位，趁透明态再 sync 一次
+          if (this.operateColumnAutoWidth && this.probeOperateContentInnerWidth() > 0) {
+            this.syncOperateColumnWidths();
+          }
           requestAnimationFrame(() => this.markTableLayoutReady());
           return;
         }
+      }
+      // 揭开前最后一次：纠正裁切（未超上限只加宽）
+      if (this.operateColumnAutoWidth) {
+        this.syncOperateColumnWidths();
+        this.enforceOperateColumnWrapIfOverflow();
       }
       this.syncFixedDataRowHeights({ force: true });
       this._rowSyncRetryCount = 0;
@@ -2013,30 +2043,108 @@ export default {
       });
       return Math.ceil(total);
     },
-    /** 布局后检测操作列是否发生裁切或单行超宽，必要时强制换行 */
+    /**
+     * 收集用于操作列测宽的单元格。
+     * 优先右固定列；若固定列存在但内容固有宽均为 0（EP 尚未同步 slot），回退主表体，避免锁在 min+pad 占位宽。
+     */
+    collectOperateMeasureCells() {
+      const t = this.$refs.elTable;
+      if (!t || !t.$el) return [];
+      const fixedCells = Array.from(
+        t.$el.querySelectorAll(`.el-table__fixed-right td.${OPERATE_COLUMN_CLASS} .cell`)
+      );
+      const bodyCells = Array.from(
+        t.$el.querySelectorAll(
+          `.el-table__body-wrapper td.${OPERATE_COLUMN_CLASS}:not(.is-hidden) .cell, td.${OPERATE_COLUMN_CLASS}:not(.is-hidden) .cell`
+        )
+      );
+      if (!fixedCells.length) return bodyCells;
+      const fixedInner = fixedCells.reduce(
+        (max, cell) => Math.max(max, this.measureOperateRowInnerWidth(cell)),
+        0
+      );
+      if (fixedInner > 0) return fixedCells;
+      return bodyCells.length ? bodyCells : fixedCells;
+    },
+    /** 当前页操作列内容固有宽（不含 padding）；测不到时为 0 */
+    probeOperateContentInnerWidth() {
+      const cells = this.collectOperateMeasureCells();
+      let maxInner = 0;
+      cells.forEach((cell) => {
+        maxInner = Math.max(maxInner, this.measureOperateRowInnerWidth(cell));
+      });
+      return maxInner;
+    },
+    /**
+     * 揭开后轻量纠偏：若操作按钮文字被 cell overflow 裁切且未超上限，只加宽操作列（不整表 layout）。
+     */
+    reconcileOperateColumnWidthIfClipped() {
+      if (!this.operateColumnAutoWidth || !this.$refs.elTable || !this.$el) return false;
+      const cells = this.collectOperateMeasureCells();
+      if (!cells.length) return false;
+      let clipped = false;
+      cells.forEach((cell) => {
+        const inner = cell.querySelector(`.${OPERATE_TOOLS_CLASS}`) || cell;
+        if (inner.scrollWidth > cell.clientWidth + 1) {
+          clipped = true;
+        }
+      });
+      if (!clipped) return false;
+      const before = this._lastOperateWidth;
+      this.syncOperateColumnWidths();
+      return this._lastOperateWidth !== before;
+    },
+    /** 布局后检测操作列是否发生裁切或单行超宽；未超上限则加宽，超上限才封顶换行 */
     enforceOperateColumnWrapIfOverflow() {
       const t = this.$refs.elTable;
       if (!t || !t.$el || !this.$el) return false;
 
       const cap = this.operateColumnMaxWidth;
-      const fixedCells = t.$el.querySelectorAll(`.el-table__fixed-right td.${OPERATE_COLUMN_CLASS} .cell`);
-      const cells = fixedCells.length
-        ? fixedCells
-        : t.$el.querySelectorAll(`td.${OPERATE_COLUMN_CLASS}:not(.is-hidden) .cell`);
+      const cells = this.collectOperateMeasureCells();
       let overflow = false;
       let needsCap = false;
+      let maxNatural = 0;
       cells.forEach((cell) => {
         const inner = cell.querySelector(`.${OPERATE_TOOLS_CLASS}`) || cell;
         if (inner.scrollWidth > cell.clientWidth + 1) {
           overflow = true;
         }
         const natural = this.measureOperateRowInnerWidth(cell);
+        maxNatural = Math.max(maxNatural, natural);
         if (Math.ceil(natural + this.operateColumnPaddingX * 2) > cap) {
           needsCap = true;
         }
       });
 
-      if ((!overflow && !needsCap) || this.$el.getAttribute('data-operate-at-cap') === 'true') {
+      if (!overflow && !needsCap) {
+        return false;
+      }
+
+      // 未超上限：加宽到内容所需，禁止误跳到 maxWidth 换行（会把短操作列撑到 450）
+      if (!needsCap) {
+        if (this.$el.getAttribute('data-operate-at-cap') === 'true') {
+          this.$el.setAttribute('data-operate-at-cap', 'false');
+        }
+        const need = Math.max(
+          this.operateColumnMinWidth,
+          Math.ceil(maxNatural + this.operateColumnPaddingX * 2)
+        );
+        if (this._lastOperateWidth != null && need <= this._lastOperateWidth + 1) {
+          return false;
+        }
+        const operateCols = this.getOperateColumns();
+        operateCols.forEach((col) => {
+          col.width = need;
+          col.minWidth = this.operateColumnMinWidth;
+          col.realWidth = need;
+        });
+        this._lastOperateWidth = need;
+        this.applyOperateColumnDomWidth(need);
+        this.requestFixedRowHeightSync();
+        return true;
+      }
+
+      if (this.$el.getAttribute('data-operate-at-cap') === 'true') {
         return false;
       }
 
@@ -2111,10 +2219,7 @@ export default {
       const operateCols = this.getOperateColumns();
       if (!operateCols.length) return;
 
-      const fixedCells = t.$el.querySelectorAll(`.el-table__fixed-right td.${OPERATE_COLUMN_CLASS} .cell`);
-      const cells = fixedCells.length
-        ? fixedCells
-        : t.$el.querySelectorAll(`td.${OPERATE_COLUMN_CLASS}:not(.is-hidden) .cell`);
+      const cells = this.collectOperateMeasureCells();
       // 只测内容固有宽；禁止用已被列宽撑开的 tools.scrollWidth / getBoundingClientRect 回灌
       let maxSingleRowInner = 0;
       cells.forEach((cell) => {

@@ -1,6 +1,6 @@
 // cover some element-ui styles
 
-/* 全局 Loading：统一 Element UI 默认 SVG 圆环（v-loading / Loading.service 勿改用 el-icon-loading） */
+/* 全局 Loading：未增强前的 EP 默认转圈；增强后由 Cat2BugLoading 接管（见 cat2bug-loading-enhance） */
 .el-loading-spinner {
   .circular {
     width: 42px;
@@ -19,6 +19,28 @@
     color: var(--cat2bug-primary, #1890ff);
     margin: 3px 0;
     font-size: 14px;
+  }
+}
+
+/* 增强后 spinner 变窄，须左右+上下绝对居中（勿只 translateY，否则会贴左） */
+.el-loading-mask[data-cat2bug-loading='1'] {
+  .el-loading-spinner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    margin: 0;
+    width: max-content;
+    max-width: 100%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .cat2bug-el-loading-host {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
   }
 }
 

@@ -75,13 +75,15 @@
           ref="cat2BugTable"
           cache-key="defect-table"
           preserve-column-order
+          row-key="defectId"
           :columns="resolvedDefectTableColumns"
           :data="defectList"
           :operate-column-max-width="250"
           :table-max-height="defectTableBodyMaxHeight"
           v-resize="setDragComponentSize"
           @sort-change="sortChangeHandle"
-          @columns-change="onTableColumnsChange">
+          @columns-change="onTableColumnsChange"
+          @selection-change="handleSelectionChange">
           <template #prepend>
             <el-table-column
               v-if="!showModuleTree"
@@ -108,6 +110,13 @@
                 <span class="tree-sidebar-expand-body-placeholder" />
               </template>
             </el-table-column>
+            <el-table-column
+              type="selection"
+              width="48"
+              align="center"
+              fixed
+              class-name="defect-selection-column"
+            />
           </template>
           <template #columns="{ scope, column }">
             <span
@@ -240,6 +249,7 @@ const DEFECT_TREE_MODULE_VISIBLE_CACHE_KEY = "defect_tree_module_visible";
 
 export default {
   name: "DefectTable",
+  emits: ['defect-click', 'refresh', 'column-picker-visible-change', 'selection-change'],
   dicts: ['defect_level'],
   mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync],
   components: {
@@ -281,13 +291,9 @@ export default {
       mouseFlag: false,
       mouseOffset: 0,
       mouseClickTime: 0,
-      isCheckAll: false,
-      isIndeterminate: false,
-      checkedDefectList: [],
       loading: false,
-      ids: [],
-      single: true,
-      multiple: true,
+      /** 当前页勾选的缺陷行 */
+      selectedDefects: [],
       total: 0,
       defectList: [],
       /** 递增序号：忽略过期的 listDefect 响应，避免 Tab 快速切换时列表错乱 */
@@ -695,6 +701,7 @@ export default {
         if (gen !== this.defectListRequestGen) return
         this.defectList = response.rows
         this.total = response.total
+        this.clearSelection()
         this.$nextTick(() => {
           this.syncDefectTreeToolbarWithTableHeader()
           this.setDragComponentSize()
@@ -709,6 +716,19 @@ export default {
     },
     refreshSearch() {
       this.$emit('refresh');
+    },
+    handleSelectionChange(selection) {
+      this.selectedDefects = selection || []
+      this.$emit('selection-change', this.selectedDefects)
+    },
+    clearSelection() {
+      this.selectedDefects = []
+      const table = this.$refs.cat2BugTable
+      const elTable = table && table.$refs && table.$refs.elTable
+      if (elTable && typeof elTable.clearSelection === 'function') {
+        elTable.clearSelection()
+      }
+      this.$emit('selection-change', [])
     },
     clickImageHandle(event){
       event.stopPropagation();

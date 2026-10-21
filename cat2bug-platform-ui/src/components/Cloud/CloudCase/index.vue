@@ -1398,13 +1398,5 @@ export default {
 :deep(.el-drawer__close-btn){
   display: none;
 }
-:deep(.el-loading-spinner){
-  circle {
-    stroke: #13ce66;
-  }
-  .el-loading-text {
-    color: #13ce66;
-    font-size: 18px;
-  }
-}
+/* 加载态已由全局 Cat2BugLoading 增强接管，不再覆盖 EP 圆环色 */
 </style>
