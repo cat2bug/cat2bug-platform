@@ -13,6 +13,7 @@
         <result property="sex" column="sex"/>
         <result property="avatar" column="avatar"/>
         <result property="status" column="status"/>
+        <result property="teamMember" column="team_member"/>
         <collection property="roles" ofType="com.cat2bug.common.domain.SysRole">
             <id property="roleId" column="role_id"/>
             <result property="roleName" column="role_name"/>
@@ -51,40 +52,45 @@
         limit #{limit} offset #{offset}
     </select>
 
+    <!-- 全局已注册用户 − 已在项目（未锁定）成员；空 search 不返回全库 -->
     <sql id="notProjectMemberWhere">
         <where>
-            l2.user_id IS NULL AND u.del_flag = '0'
-            <if test="search != null and search != ''">
-                AND u.nick_name like concat('%', #{search}, '%')
-            </if>
+            u.del_flag = '0'
+            AND up.user_id IS NULL
+            <choose>
+                <when test="search != null and search != ''">
+                    AND (
+                        u.nick_name like concat('%', #{search}, '%')
+                        OR u.phonenumber like concat('%', #{search}, '%')
+                        OR u.email like concat('%', #{search}, '%')
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
         </where>
     </sql>
 
     <select id="countNotSysUserListByProjectId" resultType="long">
         select count(distinct u.user_id)
-        from (
-            select ut.user_id, p.project_id
-            from sys_project p, sys_user_team ut
-            where p.team_id = ut.team_id and ut.team_lock != 1 and p.project_id = #{projectId}
-            group by ut.user_id, p.project_id
-        ) l1
-        left join sys_user_project l2 on l1.user_id = l2.user_id and l2.project_lock != 1 and l2.project_id = #{projectId}
-        left join sys_user u on u.user_id = l1.user_id
+        from sys_user u
+        left join sys_user_project up on u.user_id = up.user_id
+            and up.project_lock != 1 and up.project_id = #{projectId}
         <include refid="notProjectMemberWhere"/>
     </select>
 
     <select id="selectNotSysUserListByProjectId" resultMap="SysUserMemberResult">
-        select distinct u.user_id, u.dept_id, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.sex, u.status
-        from (
-            select ut.user_id, p.project_id
-            from sys_project p, sys_user_team ut
-            where p.team_id = ut.team_id and ut.team_lock != 1 and p.project_id = #{projectId}
-            group by ut.user_id, p.project_id
-        ) l1
-        left join sys_user_project l2 on l1.user_id = l2.user_id and l2.project_lock != 1 and l2.project_id = #{projectId}
-        left join sys_user u on u.user_id = l1.user_id
+        select distinct u.user_id, u.dept_id, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.sex, u.status,
+               case when ut.user_id is not null then 1 else 0 end as team_member
+        from sys_user u
+        left join sys_user_project up on u.user_id = up.user_id
+            and up.project_lock != 1 and up.project_id = #{projectId}
+        left join sys_project p on p.project_id = #{projectId}
+        left join sys_user_team ut on ut.user_id = u.user_id
+            and ut.team_id = p.team_id and ut.team_lock != 1
         <include refid="notProjectMemberWhere"/>
-        order by u.user_id
+        order by team_member desc, u.user_id
         limit #{limit} offset #{offset}
     </select>
 

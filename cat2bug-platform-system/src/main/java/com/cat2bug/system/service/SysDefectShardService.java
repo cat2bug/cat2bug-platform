@@ -4,11 +4,13 @@ import com.cat2bug.common.domain.LoginUser;
 import com.cat2bug.common.domain.SysDefect;
 import com.cat2bug.common.domain.SysDefectLog;
 import com.cat2bug.common.domain.SysDefectShard;
+import com.cat2bug.common.domain.SysProject;
 import com.cat2bug.common.domain.SysUser;
 import com.cat2bug.common.util.Md5Utils;
 import com.cat2bug.common.util.StringUtils;
 import com.cat2bug.framework.security.AuthContext;
 import com.cat2bug.system.mapper.SysDefectShardMapper;
+import com.cat2bug.system.mapper.SysProjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -45,6 +47,12 @@ public class SysDefectShardService {
 
     @Inject
     SysDictDataService sysDictDataService;
+
+    @Inject
+    SysProjectDefectFieldService sysProjectDefectFieldService;
+
+    @Inject
+    SysProjectMapper sysProjectMapper;
 
     public SysDefectShard selectSysDefectShardByDefectShardId(String defectShardId) {
         return sysDefectShardMapper.selectSysDefectShardByDefectShardId(defectShardId);
@@ -125,6 +133,15 @@ public class SysDefectShardService {
         ret.put("logs", logList);
         ret.put("defect", sysDefect);
         ret.put("defectLevel", sysDictDataService.selectDictDataByType("defect_level"));
+        // 匿名分享页无法调需登录的 column-layout，随响应下发，与缺陷详情字段一致
+        if (sysDefect.getProjectId() != null) {
+            ret.put("columnLayout",
+                    sysProjectDefectFieldService.selectColumnLayoutByProjectId(sysDefect.getProjectId()));
+            SysProject project = sysProjectMapper.selectSysProjectByProjectId(sysDefect.getProjectId(), null);
+            if (project != null && StringUtils.isNotEmpty(project.getProjectName())) {
+                ret.put("projectName", project.getProjectName());
+            }
+        }
         if (memberId != null) {
             Map<String, Object> redirect = new HashMap<>();
             redirect.put("projectId", sysDefect.getProjectId());

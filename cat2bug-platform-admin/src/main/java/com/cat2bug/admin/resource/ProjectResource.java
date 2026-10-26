@@ -10,6 +10,7 @@ import com.cat2bug.common.domain.SysRole;
 import com.cat2bug.common.domain.SysUserConfig;
 import com.cat2bug.common.domain.SysUserProject;
 import com.cat2bug.admin.support.InviteLinkUrlSupport;
+import com.cat2bug.common.domain.vo.BatchUserRoleVo;
 import com.cat2bug.common.domain.vo.CreateMemberInviteVo;
 import com.cat2bug.common.domain.vo.PullProject;
 import com.cat2bug.system.service.SysMemberInviteService;
@@ -38,7 +39,6 @@ import jakarta.ws.rs.core.UriInfo;
 import org.jboss.resteasy.reactive.RestForm;
 
 import java.util.List;
-import java.util.Map;
 
 @Path("/system/project")
 @Produces(MediaType.APPLICATION_JSON)
@@ -221,19 +221,12 @@ public class ProjectResource {
     @POST
     @Path("/{projectId}/member")
     @RequiresPermissions("system:project:member:add")
-    public AjaxResult addMember(@PathParam("projectId") Long projectId, Map<String, Object> body) {
-        Object memberId = body.get("memberIds");
-        if (memberId instanceof Number number) {
-            return toAjax(sysUserProjectService.addMember(projectId, number.longValue()));
+    public AjaxResult addMember(@PathParam("projectId") Long projectId, BatchUserRoleVo body) {
+        if (body == null) {
+            throw new ApiException("成员不能为空");
         }
-        if (memberId instanceof Long[] ids && ids.length > 0) {
-            int rows = 0;
-            for (Long id : ids) {
-                rows += sysUserProjectService.addMember(projectId, id);
-            }
-            return toAjax(rows);
-        }
-        throw new ApiException("成员不能为空");
+        body.setProjectId(projectId);
+        return toAjax(sysUserProjectService.batchInsertSysUserProject(body));
     }
 
     @POST

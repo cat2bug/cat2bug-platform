@@ -54,7 +54,12 @@ export default {
     defect: { type: Object, default: null },
     /** 关联用例（展示测试用例名称） */
     defectCase: { type: Object, default: null },
-    customFields: { type: Object, default: () => ({}) }
+    customFields: { type: Object, default: () => ({}) },
+    /**
+     * 预加载列布局（分享页等匿名场景无法调 column-layout 时由接口下发）
+     * 传入后不再请求 listColumnLayout
+     */
+    preloadedLayout: { type: Object, default: null }
   },
   data() {
     return {
@@ -100,6 +105,16 @@ export default {
         this.reloadModulePathMap(id)
       }
     },
+    preloadedLayout: {
+      deep: true,
+      handler(layout) {
+        if (layout) {
+          this.applyLayout(layout)
+        } else if (this.projectId) {
+          this.reloadLayout(this.projectId)
+        }
+      }
+    },
     accordionRows: {
       immediate: true,
       handler(rows) {
@@ -108,6 +123,23 @@ export default {
     }
   },
   methods: {
+    applyLayout(layout) {
+      this.layout = layout || {
+        enabledBuiltinFieldKeys: [],
+        customFields: [],
+        orderedEnabledFieldKeys: []
+      }
+      const defaults = buildDefectTableColumnDefaults(
+        TableOptions.map((c) => ({ ...c })),
+        this.layout
+      )
+      // 分享预加载布局：不套用访客本机「显示字段」偏好，与项目字段管理一致
+      if (this.preloadedLayout) {
+        this.mergedColumns = defaults.map((c) => ({ ...c, visible: true }))
+      } else {
+        this.mergedColumns = resolveDefectMergedColumns(this.$cache.local, defaults)
+      }
+    },
     applyDeliverablePathDisplay(row, fullPath, maxLength = 32) {
       const formatted = formatDeliverablePath(fullPath, maxLength)
       row.fullPath = formatted.full
@@ -145,6 +177,10 @@ export default {
       })
     },
     reloadLayout(projectId) {
+      if (this.preloadedLayout) {
+        this.applyLayout(this.preloadedLayout)
+        return
+      }
       const pid = Number(projectId)
       if (!pid) {
         this.layout = null
@@ -152,12 +188,7 @@ export default {
         return
       }
       loadDefectColumnLayout(pid).then((layout) => {
-        this.layout = layout
-        const defaults = buildDefectTableColumnDefaults(
-          TableOptions.map((c) => ({ ...c })),
-          layout
-        )
-        this.mergedColumns = resolveDefectMergedColumns(this.$cache.local, defaults)
+        this.applyLayout(layout)
       }).catch(() => {
         this.layout = null
         this.mergedColumns = []

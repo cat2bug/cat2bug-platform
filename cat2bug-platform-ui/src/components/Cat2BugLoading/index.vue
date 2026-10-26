@@ -86,8 +86,14 @@ export default {
     },
     rootStyle() {
       const sheet = this.resolvedVariant === 'dark' ? sheetDark : sheetLight
+      const h = this.catH
+      // 小尺寸时收紧间距与字号，适配统计卡片等窄容器
+      const gap = Math.max(4, Math.round(h * 0.22))
+      const labelSize = Math.max(11, Math.min(14, Math.round(h * 0.42)))
       return {
-        '--cat-h': `${this.catH}px`,
+        '--cat-h': `${h}px`,
+        '--cat-gap': `${gap}px`,
+        '--cat-label-size': `${labelSize}px`,
         '--fw': String(FRAME_W),
         '--fh': String(FRAME_H),
         '--n': String(FRAME_N),
@@ -128,7 +134,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: var(--cat-gap, 12px);
   box-sizing: border-box;
 }
 
@@ -241,7 +247,7 @@ export default {
 
 .cat2bug-loading__label {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--cat-label-size, 14px);
   line-height: 1.4;
   text-align: center;
   width: calc(var(--cat-h) * var(--fw) / var(--fh));

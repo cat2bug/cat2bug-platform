@@ -7,6 +7,7 @@ const ATTR = 'data-cat2bug-loading'
 /** 已调度、尚未真正 mount，避免 MutationObserver 重复排队 */
 const ATTR_PENDING = 'pending'
 const ATTR_DONE = '1'
+const SPINNER_HIDE_CLASS = 'is-cat2bug-replaced'
 /** @type {WeakMap<Element, () => void>} */
 const disposers = new WeakMap()
 /** @type {WeakMap<Element, number>} */
@@ -36,6 +37,19 @@ function readLoadingText(spinner) {
   return t || undefined
 }
 
+/** 统计卡片等矮区域用更小的奔跑猫，避免撑满整格 */
+function resolveLoadingSize(mask) {
+  if (mask && typeof mask.closest === 'function') {
+    if (mask.closest('.statistic-item, .statistic-box, .defect-tools-statistic')) {
+      return 24
+    }
+  }
+  const h = mask && mask.getBoundingClientRect ? mask.getBoundingClientRect().height : 0
+  if (h > 0 && h < 200) return 28
+  if (h > 0 && h < 360) return 36
+  return 44
+}
+
 function clearPendingTimer(mask) {
   const id = pendingTimers.get(mask)
   if (id != null) {
@@ -61,8 +75,9 @@ function teardown(mask) {
 }
 
 /**
- * 实际替换 spinner 内容。必须在 Vue 当前 flush 之外调用，
- * 否则嵌套 createApp().mount 会触发 ElOverlay「Maximum recursive updates」。
+ * 在 body 上挂浮动层展示 Cat2BugLoading，只隐藏 EP 原转圈，不改 spinner 子树。
+ * 旧实现 spinner.innerHTML='' + 嵌套 createApp 会拆掉 Loading 组件的 vnode，
+ * 分享弹层等场景开关 loading 时触发 emitsOptions/vnode null，页面卡死。
  */
 function mountCatLoading(mask) {
   if (!mask || mask.nodeType !== 1) return
@@ -80,20 +95,23 @@ function mountCatLoading(mask) {
   }
 
   mask.setAttribute(ATTR, ATTR_DONE)
+  spinner.classList.add(SPINNER_HIDE_CLASS)
+
   const text = readLoadingText(spinner)
   const variant = isDarkMask(mask) ? 'dark' : 'light'
+  const size = resolveLoadingSize(mask)
 
-  spinner.innerHTML = ''
   const host = document.createElement('div')
-  host.className = 'cat2bug-el-loading-host'
-  spinner.appendChild(host)
+  host.className = 'cat2bug-el-loading-float'
+  host.setAttribute('aria-hidden', 'true')
+  document.body.appendChild(host)
 
   const app = createApp({
     name: 'Cat2BugElLoadingHost',
     render() {
       return h(Cat2BugLoading, {
         text,
-        size: 44,
+        size,
         variant
       })
     }
@@ -102,8 +120,54 @@ function mountCatLoading(mask) {
   app.use(i18n)
   app.mount(host)
 
+  const syncPos = () => {
+    if (!mask.isConnected || !host.isConnected) return
+    const r = mask.getBoundingClientRect()
+    const zRaw = getComputedStyle(mask).zIndex
+    const zNum = Number.parseInt(zRaw, 10)
+    Object.assign(host.style, {
+      position: 'fixed',
+      left: `${r.left}px`,
+      top: `${r.top}px`,
+      width: `${Math.max(r.width, 0)}px`,
+      height: `${Math.max(r.height, 0)}px`,
+      zIndex: Number.isFinite(zNum) ? String(zNum + 1) : '2010',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      pointerEvents: 'none',
+      boxSizing: 'border-box'
+    })
+  }
+  syncPos()
+
+  let ro = null
+  if (typeof ResizeObserver !== 'undefined') {
+    ro = new ResizeObserver(syncPos)
+    ro.observe(mask)
+  }
+  window.addEventListener('scroll', syncPos, true)
+  window.addEventListener('resize', syncPos)
+
   disposers.set(mask, () => {
-    app.unmount()
+    window.removeEventListener('scroll', syncPos, true)
+    window.removeEventListener('resize', syncPos)
+    if (ro) {
+      try {
+        ro.disconnect()
+      } catch (_e) {
+        /* ignore */
+      }
+    }
+    try {
+      app.unmount()
+    } catch (_e) {
+      /* ignore */
+    }
+    if (host.parentNode) {
+      host.parentNode.removeChild(host)
+    }
+    spinner.classList.remove(SPINNER_HIDE_CLASS)
   })
 }
 

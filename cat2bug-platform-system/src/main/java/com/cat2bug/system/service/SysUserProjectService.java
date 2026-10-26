@@ -43,10 +43,14 @@ public class SysUserProjectService {
     }
 
     public TableDataInfo selectNotMemberPage(Long projectId, String search, Integer pageNum, Integer pageSize) {
+        if (search == null || search.isBlank()) {
+            return new TableDataInfo(List.of(), 0);
+        }
         PageDomain page = PageDomain.of(pageNum, pageSize);
-        long total = sysUserProjectMapper.countNotSysUserListByProjectId(projectId, search);
+        String keyword = search.trim();
+        long total = sysUserProjectMapper.countNotSysUserListByProjectId(projectId, keyword);
         List<SysUser> rows = sysUserProjectMapper.selectNotSysUserListByProjectId(
-                projectId, search, page.getOffset(), page.getPageSize());
+                projectId, keyword, page.getOffset(), page.getPageSize());
         return new TableDataInfo(rows, total);
     }
 
@@ -95,15 +99,6 @@ public class SysUserProjectService {
             }
         }
         return ret;
-    }
-
-    @Transactional
-    public int addMember(Long projectId, Long userId) {
-        SysUserProject up = new SysUserProject();
-        up.setProjectId(projectId);
-        up.setUserId(userId);
-        up.setProjectLock(0);
-        return sysUserProjectMapper.insertSysUserProject(up);
     }
 
     public int updateCollect(SysUserProject sysUserProject) {

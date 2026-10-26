@@ -1,11 +1,12 @@
 import request from '@/utils/request'
 
 // 查询分享缺陷关联详细
-export function getShardDefect(defectId,defectShardId, data) {
+export function getShardDefect(defectId, defectShardId, data, config = {}) {
   return request({
-    url: '/system/defect/' + defectId + '/shard/'+defectShardId,
+    url: '/system/defect/' + defectId + '/shard/' + defectShardId,
     method: 'get',
-    params: data
+    params: data,
+    ...config
   })
 }
 

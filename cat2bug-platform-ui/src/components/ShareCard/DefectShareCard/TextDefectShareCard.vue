@@ -31,8 +31,8 @@ export default {
       default: ()=>{}
     },
     agingHour: {
-      type: String,Number,
-      default: 1
+      type: [String, Number],
+      default: '1'
     },
     password: {
       type: String,
@@ -119,7 +119,10 @@ export default {
 
 <style lang="scss" scoped>
 .share {
-  width: 300px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   display: inline-flex;
   flex-direction: column;
   justify-content: flex-start;

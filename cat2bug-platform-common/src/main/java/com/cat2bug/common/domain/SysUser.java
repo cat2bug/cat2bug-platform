@@ -28,6 +28,8 @@ public class SysUser {
     private Long[] postIds;
     /** 角色分配查询用 */
     private Long roleId;
+    /** 是否为当前项目所属团队成员（仅部分查询填充，如项目 not-member） */
+    private Boolean teamMember;
 
     public boolean isAdmin() {
         return isAdmin(userId);
@@ -179,5 +181,13 @@ public class SysUser {
 
     public void setPostIds(Long[] postIds) {
         this.postIds = postIds;
+    }
+
+    public Boolean getTeamMember() {
+        return teamMember;
+    }
+
+    public void setTeamMember(Boolean teamMember) {
+        this.teamMember = teamMember;
     }
 }
