@@ -1,7 +1,19 @@
 <template>
-  <div class="defect-state-chart plan-burndown-chart" :style="{ height, width }">
-    <h1 v-if="!query.planId">{{ $t('dashboard.plan-burndown-chart.title') }}</h1>
-    <el-select v-else v-model="query.planId" placeholder="" size="small" class="planSelect" @change="handlePlanChange">
+  <div
+    class="defect-state-chart plan-burndown-chart"
+    :class="{ 'is-embedded': embedded }"
+    :style="{ height: chartHeight, width }"
+  >
+    <h1 v-if="!embedded && !query.planId">{{ $t('dashboard.plan-burndown-chart.title') }}</h1>
+    <!-- 看板页：标题内嵌下拉（原样式） -->
+    <el-select
+      v-if="!embedded && (query.planId || planList.length)"
+      v-model="query.planId"
+      placeholder=""
+      size="small"
+      class="planSelect"
+      @change="handlePlanChange"
+    >
       <template #prefix>
         <div class="prefix">
           <h1>{{ $t('dashboard.plan-burndown-chart.title') }}</h1>
@@ -15,6 +27,24 @@
         :value="item.planId">
       </el-option>
     </el-select>
+    <!-- 工作台：下拉 Teleport 到卡片标题最右侧，替换「测试计划」标签 -->
+    <Teleport v-if="embedded && headerHost && planList.length" :to="headerHost">
+      <el-select
+        v-model="query.planId"
+        size="small"
+        class="plan-select-header"
+        :placeholder="$t('workbench.widget.plan-burndown')"
+        @change="handlePlanChange"
+        @pointerdown.stop
+      >
+        <el-option
+          v-for="item in planList"
+          :key="item.planId"
+          :label="item.planName"
+          :value="item.planId"
+        />
+      </el-select>
+    </Teleport>
     <div
       v-loading="loading"
       ref="planBurndownChart"
@@ -63,6 +93,11 @@ export default {
     autoResize: {
       type: Boolean,
       default: true
+    },
+    /** 工作台内嵌：压缩高度、只保留计划选择器 */
+    embedded: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -74,7 +109,9 @@ export default {
         planId: null
       },
       lastXData: [],
-      lastSeries: []
+      lastSeries: [],
+      /** 工作台卡片标题右侧 DOM，供 Teleport */
+      headerHost: null
     }
   },
   computed: {
@@ -84,6 +121,9 @@ export default {
     },
     isDarkTheme() {
       return this.themeMode === 'dark';
+    },
+    chartHeight() {
+      return this.embedded ? (this.height || '220px') : this.height
     },
     selectPlanName: function () {
       return function (planId) {
@@ -99,9 +139,19 @@ export default {
     }
   },
   mounted() {
+    this.bindHeaderHost();
     this.getPlanList();
   },
+  beforeUnmount() {
+    this.headerHost = null;
+    disconnectEchartsResize(this.chart);
+    if (this.chart) {
+      this.chart.dispose();
+      this.chart = null;
+    }
+  },
   beforeDestroy() {
+    this.headerHost = null;
     disconnectEchartsResize(this.chart);
     if (this.chart) {
       this.chart.dispose();
@@ -109,6 +159,16 @@ export default {
     }
   },
   methods: {
+    bindHeaderHost() {
+      if (!this.embedded) {
+        this.headerHost = null;
+        return;
+      }
+      this.$nextTick(() => {
+        const widget = this.$el && this.$el.closest ? this.$el.closest('.wb-widget') : null;
+        this.headerHost = widget ? widget.querySelector('.wb-widget__hd-right') : null;
+      });
+    },
     getPlanList() {
       this.loading = true;
       const self = this;
@@ -215,6 +275,10 @@ export default {
   flex-direction: column;
   overflow: hidden;
   box-sizing: border-box;
+
+  &.is-embedded {
+    padding: 0;
+  }
 
   > h1 {
     margin: 5px 0 0;

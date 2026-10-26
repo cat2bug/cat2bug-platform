@@ -304,6 +304,7 @@ public class SysDefectService {
         log.setDefectId(defect.getDefectId());
         log.setReceiveBy(defect.getHandleBy());
         log.setDefectLogType(DefectLogState.CREATE);
+        log.setDefectLogDescribe(defect.getDefectDescribe());
         insertLog(log);
         defectMemberEnricher.enrich(defect);
         return defect;

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>工作台编辑态 · 显隐与排序</title>
+  <link rel="stylesheet" href="preview-shared.css" />
+  <script src="preview-theme.js"></script>
+</head>
+<body>
+  <div class="frame">
+    <div class="meta">
+      <h1>2 · 编辑态（显隐 + 排序）</h1>
+      <p>右侧抽屉贴近 Element Plus Drawer；组件勾选与现网表单控件同高。</p>
+            <div class="meta-row">
+        <div class="nav-previews">
+          <a href="index.html">索引</a>
+          <a href="workbench-work-tester.html">默认态</a>
+          <a class="on" href="workbench-edit.html">编辑态</a>
+          <a href="workbench-board.html">看板</a>
+          <a href="workbench-presets.html">预设</a>
+          <a href="workbench-grid-phase2.html">二期栅格</a>
+        </div>
+        <div class="theme-switch">
+          <button type="button" data-theme-btn="light">浅色</button>
+          <button type="button" data-theme-btn="dark">暗色</button>
+        </div>
+      </div>
+</div>
+
+    <div class="shell" style="margin-right: 312px;">
+            <aside class="aside">
+        <div class="team-select">
+          <span class="avatar">C</span>
+          <span class="name">Cat2Bug</span>
+          <span class="caret">▾</span>
+        </div>
+        <div class="aside-scroll">
+          <div class="menu-item"><span class="ico"></span>项目管理</div>
+          <div class="aside-divider"></div>
+          <div class="menu-item active"><span class="ico"></span>工作台</div>
+          <div class="menu-item"><span class="ico"></span>源码管理</div>
+          <div class="menu-item"><span class="ico"></span>测试用例</div>
+          <div class="menu-item"><span class="ico"></span>测试计划</div>
+          <div class="menu-item"><span class="ico"></span>缺陷管理</div>
+          <div class="menu-item"><span class="ico"></span>交付物</div>
+          <div class="menu-item"><span class="ico"></span>文档管理</div>
+          <div class="aside-divider"></div>
+          <div class="menu-item"><span class="ico"></span>项目设置</div>
+          <div class="menu-item"><span class="ico"></span>团队设置</div>
+        </div>
+      </aside>
+      <div class="main-col">
+        <div class="navbar">
+          <div class="crumb">团队 / <strong>Demo 项目</strong></div>
+          <div class="right"><span class="avatar">张</span></div>
+        </div>
+        <div class="app-container">
+          <div class="project-label">
+            <div>
+              <div class="name">编辑工作台</div>
+              <div class="hint">拖动手柄排序 · 取消勾选即隐藏 · 仅影响当前页签</div>
+            </div>
+            <div class="actions">
+              <span class="btn">取消</span>
+              <span class="btn primary">保存</span>
+            </div>
+          </div>
+          <div class="el-tabs-like">
+            <div class="tab active">工作台</div>
+            <div class="tab">看板</div>
+          </div>
+          <div class="grid-2">
+            <div class="widget editing">
+              <div class="widget-hd">
+                <div><span class="drag">⠿</span><span class="name">我的缺陷</span></div>
+                <span class="chip audit">已启用</span>
+              </div>
+              <div class="widget-bd"><div class="row-item"><div class="main stats-inline">预览占位 · 编辑时仍显示内容缩略</div></div></div>
+            </div>
+            <div class="widget editing">
+              <div class="widget-hd">
+                <div><span class="drag">⠿</span><span class="name">今日计划项</span></div>
+                <span class="chip audit">已启用</span>
+              </div>
+              <div class="widget-bd"><div class="row-item"><div class="main stats-inline">预览占位</div></div></div>
+            </div>
+            <div class="widget editing" style="opacity:.5;">
+              <div class="widget-hd">
+                <div><span class="drag">⠿</span><span class="name">通知摘要</span></div>
+                <span class="chip muted">已隐藏</span>
+              </div>
+              <div class="widget-bd"><div class="row-item"><div class="main stats-inline">保存后不再出现</div></div></div>
+            </div>
+            <div class="widget editing">
+              <div class="widget-hd">
+                <div><span class="drag">⠿</span><span class="name">待评审用例</span></div>
+                <span class="chip audit">已启用</span>
+              </div>
+              <div class="widget-bd"><div class="row-item"><div class="main stats-inline">预览占位</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer">
+      <div class="hd">组件库 · 工作台</div>
+      <div class="bd">
+        <label class="check"><input type="checkbox" checked /> 我的缺陷</label>
+        <label class="check"><input type="checkbox" checked /> 今日计划项</label>
+        <label class="check"><input type="checkbox" checked /> 待评审用例</label>
+        <label class="check"><input type="checkbox" /> 通知摘要</label>
+        <label class="check"><input type="checkbox" /> 待我修复</label>
+        <label class="check"><input type="checkbox" checked /> 快捷新建（工具条）</label>
+        <label class="check"><input type="checkbox" disabled /> 待我审 PR <span class="chip muted">无权限</span></label>
+        <p class="legend" style="margin:8px 4px 0;">无权限组件灰显且不可勾选。</p>
+      </div>
+    </div>
+    <p class="legend">确认点：编辑是否用右侧抽屉？排序是否只要上下拖？</p>
+  </div>
+</body>
+</html>

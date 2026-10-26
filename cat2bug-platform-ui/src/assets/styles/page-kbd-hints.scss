@@ -343,9 +343,7 @@ html:not(.dark) .el-popover.project-icon-popper .project-icon-item.project-icon-
   pointer-events: none;
 }
 
-/** 暗色主题：plain 按钮 :focus 勿改 border 为 hover 色，仅 box-shadow 单环；禁用态不刷可点色 */
-html.dark .el-button.is-plain.el-button--default:not(.is-disabled):focus,
-html.dark .el-button.is-plain:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info):not(.is-disabled):focus,
+/** 暗色主题：仅键盘导航 class 画受控单环；普通 :focus 不残留蓝框 */
 html.dark .el-button.is-plain.el-button--default:not(.is-disabled).list-query-toolbar-nav-focused,
 html.dark .el-button.is-plain:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info):not(.is-disabled).list-query-toolbar-nav-focused {
   background-color: var(--bg-color-block, #1e1e1e) !important;
@@ -354,7 +352,6 @@ html.dark .el-button.is-plain:not(.el-button--primary):not(.el-button--success):
   box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
 }
 
-html.dark .el-button--primary.is-plain:not(.cat2bug-btn-outline):not(.is-disabled):focus,
 html.dark .el-button--primary.is-plain:not(.cat2bug-btn-outline):not(.is-disabled).list-query-toolbar-nav-focused {
   background-color: var(--el-color-primary-light-3, #4ea8ff) !important;
   border-color: var(--el-color-primary, #1890ff) !important;
@@ -362,7 +359,6 @@ html.dark .el-button--primary.is-plain:not(.cat2bug-btn-outline):not(.is-disable
   box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
 }
 
-html.dark .el-button--primary.is-plain.cat2bug-btn-outline:not(.is-disabled):focus,
 html.dark .el-button--primary.is-plain.cat2bug-btn-outline:not(.is-disabled).list-query-toolbar-nav-focused {
   background-color: rgba(24, 144, 255, 0.12) !important;
   border-color: var(--cat2bug-primary, #1890ff) !important;
@@ -371,7 +367,7 @@ html.dark .el-button--primary.is-plain.cat2bug-btn-outline:not(.is-disabled).lis
 }
 
 html.dark .report-template-select-kbd.is-popover-open .report-hint-create.el-button--primary.is-plain,
-html.dark .report-template-select-kbd .report-hint-create.el-button--primary.is-plain:focus,
+html.dark .report-template-select-kbd .report-hint-create.el-button--primary.is-plain.list-query-toolbar-nav-focused,
 html.dark .report-template-select-kbd .report-hint-create.el-button--primary.is-plain:hover {
   background-color: var(--el-color-primary-light-3, #4ea8ff) !important;
   border-color: var(--el-color-primary, #1890ff) !important;
@@ -379,7 +375,6 @@ html.dark .report-template-select-kbd .report-hint-create.el-button--primary.is-
   box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
 }
 
-html.dark .el-button--danger.is-plain:not(.is-disabled):focus,
 html.dark .el-button--danger.is-plain:not(.is-disabled).list-query-toolbar-nav-focused {
   border-color: rgba(245, 108, 108, 0.45) !important;
   background-color: rgba(245, 108, 108, 0.12) !important;
@@ -387,8 +382,7 @@ html.dark .el-button--danger.is-plain:not(.is-disabled).list-query-toolbar-nav-f
   box-shadow: 0 0 0 1px var(--cat2bug-danger-focus-color, #f56c6c) !important;
 }
 
-html.dark .el-button.is-disabled.list-query-toolbar-nav-focused,
-html.dark .el-button.is-disabled:focus {
+html.dark .el-button.is-disabled.list-query-toolbar-nav-focused {
   color: var(--el-text-color-disabled, var(--text-color-placeholder)) !important;
   background-color: var(--bg-color-base) !important;
   border-color: var(--border-color-lighter) !important;
@@ -396,12 +390,10 @@ html.dark .el-button.is-disabled:focus {
   cursor: not-allowed !important;
 }
 
-html.dark .el-button--danger:not(.is-plain):not(.el-button--text):not(.is-circle):focus,
 html.dark .el-button--danger:not(.is-plain):not(.el-button--text):not(.is-circle).list-query-toolbar-nav-focused {
   box-shadow: 0 0 0 1px var(--cat2bug-danger-focus-color, #f56c6c) !important;
 }
 
-html.dark .el-button--success.is-plain:focus,
 html.dark .el-button--success.is-plain.list-query-toolbar-nav-focused {
   border-color: rgba(103, 194, 58, 0.45) !important;
   background-color: rgba(103, 194, 58, 0.12) !important;
@@ -409,12 +401,7 @@ html.dark .el-button--success.is-plain.list-query-toolbar-nav-focused {
   box-shadow: 0 0 0 1px var(--cat2bug-success-focus-color, #67c23a) !important;
 }
 
-html.dark .el-button--success:not(.is-plain):not(.el-button--text):not(.is-circle):focus,
 html.dark .el-button--success:not(.is-plain):not(.el-button--text):not(.is-circle).list-query-toolbar-nav-focused {
-  box-shadow: 0 0 0 1px var(--cat2bug-success-focus-color, #67c23a) !important;
-}
-
-html.dark .el-button-group:focus-within:has(> .el-button--success) {
   box-shadow: 0 0 0 1px var(--cat2bug-success-focus-color, #67c23a) !important;
 }
 

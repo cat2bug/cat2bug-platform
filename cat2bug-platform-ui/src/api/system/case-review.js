@@ -13,7 +13,9 @@ export function listCaseReviews(projectId) {
   return request({
     url: '/system/case-review',
     method: 'get',
-    params: { projectId }
+    params: { projectId },
+    // 工作台小组件拉取失败不弹全局「接口不存在」
+    silentError: true
   })
 }
 

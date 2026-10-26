@@ -86,7 +86,11 @@
       </div>
       <div class="app-container defect-edit-body">
         <div class="defect-edit-body-log-first">
-          <list-defect-log ref="defectLogFirst" :pageSize="1" />
+          <list-defect-log
+            ref="defectLogFirst"
+            :pageSize="1"
+            :fallback-describe="defect.defectDescribe || ''"
+          />
         </div>
         <el-collapse v-model="activeNames">
           <el-collapse-item :title="$i18n.t('defect.base-info')" name="base">
@@ -119,7 +123,9 @@
               fit="contain"></cat2-bug-image>
           </el-collapse-item>
           <el-collapse-item :title="$i18n.t('describe')" name="defectDescribe">
-            <markdown-it-vue :content="defect.defectDescribe+''" />
+            <div class="defect-describe-body markdown-rhythm">
+              <markdown-it-vue :content="defect.defectDescribe+''" />
+            </div>
           </el-collapse-item>
           <el-collapse-item v-if="defect.annexUrls" :title="$i18n.t('annex')" name="annexUrls">
             <div class="defect-edit-body-annex">
@@ -130,7 +136,12 @@
             <case-card :case-model="defectCase" :state-visible="true" :step-index="defect.caseStepId" :edit="false" />
           </el-collapse-item>
           <el-collapse-item :title="$i18n.t('log')" name="log">
-            <list-defect-log ref="defectLog" :pageSize="5" show-comment />
+            <list-defect-log
+              ref="defectLog"
+              :pageSize="5"
+              show-comment
+              :fallback-describe="defect.defectDescribe || ''"
+            />
           </el-collapse-item>
         </el-collapse>
       </div>
@@ -451,6 +462,28 @@ label {
 :deep(.lang){
   .dropdown-title {
     color: #FFFFFF;
+  }
+}
+.defect-describe-body {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-sizing: border-box;
+  font-size: 14px;
+  line-height: 1.7;
+  font-weight: 500;
+  color: var(--text-color-primary, #303133);
+
+  :deep(.markdown-it-vue),
+  :deep(.md-body) {
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
+  :deep(ul),
+  :deep(ol) {
+    padding-left: 1.35em;
   }
 }
 </style>

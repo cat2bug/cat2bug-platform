@@ -204,10 +204,12 @@ export const usePermissionStore = defineStore('permission', {
           // Sidebar/topbar: prefix project-function menus with /{teamKey}/{projectKey}/{module}.
           // Router registration drops whitelist modules (served by namespaced constant routes);
           // integrations stay on legacy `/project/...` (see keepLegacyProjectMenuRoute).
+          // 必须「重写成功才剥离」：pathKeys 缺失时若仍 strip，侧栏还是旧 /project/xxx，
+          // 动态路由已被拆掉，点击会落到 legacy 重定向失败（像没反应）。
           if (pathKeys) {
             rewriteProjectMenuPaths(sdata, pathKeys.teamKey, pathKeys.projectKey)
+            stripNamespacedProjectMenuRoutes(rdata)
           }
-          stripNamespacedProjectMenuRoutes(rdata)
           const sidebarRoutes = filterAsyncRouter(sdata)
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
           const asyncRoutes = filterDynamicRoutes(dynamicRoutesRef)

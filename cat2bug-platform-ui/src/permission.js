@@ -22,18 +22,27 @@ import { ensureGitRepoIdAttached, routeNeedsGitRepoId } from '@/utils/git-repo-r
 NProgress.configure({ showSpinner: false })
 installNProgressColdBootGuard(NProgress)
 
-const PAGE_PROGRESS_COLOR = '#1890ff'
-
 function paintNProgressBar() {
   const root = document.documentElement
-  const color = getComputedStyle(root).getPropertyValue('--page-progress-color').trim() || PAGE_PROGRESS_COLOR
+  const start =
+    getComputedStyle(root).getPropertyValue('--page-progress-gradient-start').trim() || '#096dd9'
+  const color =
+    getComputedStyle(root).getPropertyValue('--page-progress-color').trim() || '#1890ff'
+  const glow =
+    getComputedStyle(root).getPropertyValue('--page-progress-glow').trim() ||
+    'rgba(24, 144, 255, 0.45)'
   const bar = document.querySelector('#nprogress .bar')
   if (bar) {
-    bar.style.setProperty('background', color, 'important')
+    // 与 #page-load-bar / nprogress.scss 一致，禁止写成纯色
+    bar.style.setProperty(
+      'background',
+      `linear-gradient(90deg, ${start}, ${color})`,
+      'important'
+    )
   }
   const peg = document.querySelector('#nprogress .peg')
   if (peg) {
-    peg.style.setProperty('box-shadow', `0 0 10px ${color}, 0 0 5px ${color}`, 'important')
+    peg.style.setProperty('box-shadow', `0 0 10px ${glow}, 0 0 5px ${color}`, 'important')
   }
 }
 

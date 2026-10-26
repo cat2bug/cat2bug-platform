@@ -8,6 +8,8 @@ public class SysRole {
 
     private Long roleId;
     private String roleName;
+    /** 角色名称国际化 key */
+    private String roleNameI18nKey;
     private String roleKey;
     private Integer roleSort;
     private String dataScope;
@@ -40,6 +42,28 @@ public class SysRole {
         return roleId != null && roleId == 1L;
     }
 
+    /**
+     * 是否项目管理员。Jackson 序列化为 {@code projectAdmin}，供成员页筛选项使用。
+     * 与种子角色 id=6 / roleKey=project.admin 对齐。
+     */
+    public boolean isProjectAdmin() {
+        return "project.admin".equals(roleKey) || (roleId != null && roleId == 6L);
+    }
+
+    /**
+     * 是否项目创建人。Jackson 序列化为 {@code projectCreateBy}。
+     */
+    public boolean isProjectCreateBy() {
+        return "project.create-by".equals(roleKey) || (roleId != null && roleId == 11L);
+    }
+
+    /**
+     * 是否团队创建人。Jackson 序列化为 {@code teamCreateBy}。
+     */
+    public boolean isTeamCreateBy() {
+        return "team.create-by".equals(roleKey) || (roleId != null && roleId == 12L);
+    }
+
     public Long getRoleId() {
         return roleId;
     }
@@ -54,6 +78,14 @@ public class SysRole {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public String getRoleNameI18nKey() {
+        return roleNameI18nKey;
+    }
+
+    public void setRoleNameI18nKey(String roleNameI18nKey) {
+        this.roleNameI18nKey = roleNameI18nKey;
     }
 
     public String getRoleKey() {

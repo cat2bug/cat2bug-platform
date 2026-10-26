@@ -58,8 +58,9 @@
     html.dark {
       --page-splash-bg: #1e1e20;
       color-scheme: dark;
-      --page-progress-color: #ffc107;
-      --page-progress-glow: rgba(255, 193, 7, 0.55);
+      /* 与 theme-dark 一致：黄 → 蓝，避免首屏纯黄、进应用后才变渐变 */
+      --page-progress-color: #1890ff;
+      --page-progress-glow: rgba(24, 144, 255, 0.55);
       --page-progress-gradient-start: #e6ac00;
     }
 

@@ -32,27 +32,48 @@
             </div>
           </dl>
           <div class="oauth-consent-project">
-            <div class="oauth-consent-project__title">{{ $t('oauth.select-project') }}</div>
             <template v-if="teams.length">
-              <div class="oauth-consent-project__list" role="radiogroup" :aria-label="$t('oauth.select-project')">
-                <div v-for="t in teams" :key="String(t.teamId)" class="oauth-consent-project__group">
-                  <div class="oauth-consent-project__team">{{ t.teamName || $t('oauth.no-team') }}</div>
-                  <button
-                    v-for="p in t.projects || []"
-                    :key="p.projectId"
-                    type="button"
-                    role="radio"
-                    :aria-checked="projectId === p.projectId"
-                    class="oauth-consent-project__item"
-                    :class="{ 'is-active': projectId === p.projectId }"
-                    @click="projectId = p.projectId"
-                  >
-                    <span class="oauth-consent-project__radio" />
-                    <span class="oauth-consent-project__name">{{ p.projectName }}</span>
-                    <span v-if="t.teamKey && p.projectKey" class="oauth-consent-project__key">{{ t.teamKey }}/{{ p.projectKey }}</span>
-                  </button>
-                </div>
+              <div class="oauth-consent-project__title">{{ $t('oauth.select-team') }}</div>
+              <el-select
+                v-model="teamId"
+                class="oauth-consent-team-select"
+                popper-class="oauth-consent-team-popper"
+                :placeholder="$t('oauth.select-team')"
+                @change="onTeamChange"
+              >
+                <el-option
+                  v-for="t in teams"
+                  :key="String(t.teamId)"
+                  :label="t.teamName || $t('oauth.no-team')"
+                  :value="t.teamId"
+                >
+                  <span class="oauth-consent-team-option__name">{{ t.teamName || $t('oauth.no-team') }}</span>
+                  <span v-if="t.teamKey" class="oauth-consent-project__key">{{ t.teamKey }}</span>
+                </el-option>
+              </el-select>
+              <div class="oauth-consent-project__title oauth-consent-project__title--project">{{ $t('oauth.select-project') }}</div>
+              <div
+                v-if="currentTeamProjects.length"
+                class="oauth-consent-project__list"
+                role="radiogroup"
+                :aria-label="$t('oauth.select-project')"
+              >
+                <button
+                  v-for="p in currentTeamProjects"
+                  :key="p.projectId"
+                  type="button"
+                  role="radio"
+                  :aria-checked="projectId === p.projectId"
+                  class="oauth-consent-project__item"
+                  :class="{ 'is-active': projectId === p.projectId }"
+                  @click="projectId = p.projectId"
+                >
+                  <span class="oauth-consent-project__radio" />
+                  <span class="oauth-consent-project__name">{{ p.projectName }}</span>
+                  <span v-if="selectedTeamKey && p.projectKey" class="oauth-consent-project__key">{{ selectedTeamKey }}/{{ p.projectKey }}</span>
+                </button>
               </div>
+              <p v-else class="oauth-consent-warn">{{ $t('oauth.no-project-in-team') }}</p>
               <p class="oauth-consent-muted oauth-consent-project__hint">{{ $t('oauth.project-hint') }}</p>
             </template>
             <p v-else class="oauth-consent-warn">{{ $t('oauth.no-project') }}</p>
@@ -98,6 +119,7 @@ export default {
       loadError: '',
       client: null,
       teams: [],
+      teamId: null,
       projectId: null
     }
   },
@@ -115,6 +137,15 @@ export default {
         if (query[key] !== undefined && query[key] !== null && query[key] !== '') params[key] = String(query[key])
       })
       return params
+    },
+    selectedTeam() {
+      return this.teams.find(t => t.teamId === this.teamId) || null
+    },
+    selectedTeamKey() {
+      return (this.selectedTeam && this.selectedTeam.teamKey) || ''
+    },
+    currentTeamProjects() {
+      return (this.selectedTeam && this.selectedTeam.projects) || []
     }
   },
   created() {
@@ -134,15 +165,39 @@ export default {
     })
   },
   methods: {
-    /** 只有一个项目时直接选中；多个项目时预选网页当前所在项目，否则留给用户自己选 */
+    /** 预选网页当前团队 / 项目；仅一项时直接选中 */
     selectDefault() {
-      const projects = this.teams.flatMap(t => t.projects || [])
+      if (!this.teams.length) return
+      const config = useUserStore().config || {}
+      const currentProjectId = Number(config.currentProjectId)
+      const currentTeamId = config.currentTeamId
+      const teamOfCurrentProject = this.teams.find(t =>
+        (t.projects || []).some(p => p.projectId === currentProjectId)
+      )
+      const preferredTeam = teamOfCurrentProject
+        || this.teams.find(t => t.teamId === currentTeamId)
+        || this.teams[0]
+      this.teamId = preferredTeam.teamId
+      this.selectDefaultProject(preferredTeam, currentProjectId)
+    },
+    selectDefaultProject(team, preferredProjectId) {
+      const projects = (team && team.projects) || []
+      if (!projects.length) {
+        this.projectId = null
+        return
+      }
       if (projects.length === 1) {
         this.projectId = projects[0].projectId
         return
       }
-      const current = Number(useUserStore().config?.currentProjectId)
-      if (projects.some(p => p.projectId === current)) this.projectId = current
+      if (projects.some(p => p.projectId === preferredProjectId)) {
+        this.projectId = preferredProjectId
+        return
+      }
+      this.projectId = null
+    },
+    onTeamChange() {
+      this.selectDefaultProject(this.selectedTeam, Number(useUserStore().config?.currentProjectId))
     },
     switchAccount() {
       if (this.switching) return
@@ -323,20 +378,36 @@ html.dark .oauth-consent-page {
   font-weight: 600;
 }
 
+.oauth-consent-project__title--project {
+  margin-top: 16px;
+}
+
+.oauth-consent-team-select {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.oauth-consent-team-select .el-select__wrapper {
+  min-height: 40px;
+  background: var(--consent-details-bg);
+  box-shadow: 0 0 0 1px var(--consent-item-border) inset;
+}
+
+.oauth-consent-team-option__name {
+  margin-right: 8px;
+}
+
+.oauth-consent-team-popper .el-select-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .oauth-consent-project__list {
   max-height: 240px;
   overflow-y: auto;
   margin-bottom: 8px;
-}
-
-.oauth-consent-project__group + .oauth-consent-project__group {
-  margin-top: 12px;
-}
-
-.oauth-consent-project__team {
-  margin-bottom: 6px;
-  font-size: 12px;
-  color: var(--consent-text-secondary);
 }
 
 .oauth-consent-project__item {

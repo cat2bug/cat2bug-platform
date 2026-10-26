@@ -68,9 +68,8 @@ export default {
       if (!this.doc) {
         return this.$t('doc.md-page-title')
       }
-      const name = this.doc.docName || ''
-      const ext = this.doc.fileExtension ? ('.' + this.doc.fileExtension) : ''
-      return name + (name.toLowerCase().endsWith('.md') ? '' : ext)
+      // 展示名不含扩展名；扩展名只存在 fileExtension / 落盘文件名里
+      return String(this.doc.docName || '').replace(/\.(md|markdown)$/i, '')
     }
   },
   watch: {

@@ -41,6 +41,10 @@
             <if test="sysProject != null and sysProject.collect">
                 and up.collect = 1
             </if>
+            <!-- LEFT JOIN up 已按 userId；memberOnly 时要求必须有成员行（我参与的） -->
+            <if test="sysProject != null and sysProject.memberOnly != null and sysProject.memberOnly">
+                and up.user_id is not null
+            </if>
         </where>
     </sql>
 

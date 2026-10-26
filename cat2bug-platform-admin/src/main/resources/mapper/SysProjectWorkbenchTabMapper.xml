@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysProjectWorkbenchTabMapper">
+
+  <resultMap id="SysProjectWorkbenchTabResult" type="com.cat2bug.common.domain.SysProjectWorkbenchTab">
+    <id property="tabId" column="tab_id"/>
+    <result property="projectId" column="project_id"/>
+    <result property="ownerUserId" column="owner_user_id"/>
+    <result property="visibility" column="visibility"/>
+    <result property="tabName" column="tab_name"/>
+    <result property="preset" column="preset"/>
+    <result property="configJson" column="config_json"/>
+    <result property="tabSort" column="tab_sort"/>
+    <result property="createTime" column="create_time"/>
+    <result property="updateTime" column="update_time"/>
+  </resultMap>
+
+  <select id="selectVisibleTabs" resultMap="SysProjectWorkbenchTabResult">
+    select tab_id, project_id, owner_user_id, visibility, tab_name, preset, config_json,
+           tab_sort, create_time, update_time
+    from sys_project_workbench_tabs
+    where project_id = #{projectId}
+      and (visibility = 'project' or (visibility = 'private' and owner_user_id = #{userId}))
+    order by
+      case when visibility = 'project' then 0 else 1 end,
+      coalesce(tab_sort, 0) desc,
+      create_time desc
+  </select>
+
+  <select id="selectById" resultMap="SysProjectWorkbenchTabResult">
+    select tab_id, project_id, owner_user_id, visibility, tab_name, preset, config_json,
+           tab_sort, create_time, update_time
+    from sys_project_workbench_tabs
+    where tab_id = #{tabId}
+  </select>
+
+  <select id="countSharedByProject" resultType="int">
+    select count(1)
+    from sys_project_workbench_tabs
+    where project_id = #{projectId}
+      and visibility = 'project'
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="tabId">
+    insert into sys_project_workbench_tabs (
+      project_id, owner_user_id, visibility, tab_name, preset, config_json, tab_sort,
+      create_time, update_time
+    ) values (
+      #{projectId}, #{ownerUserId}, #{visibility}, #{tabName}, #{preset}, #{configJson}, #{tabSort},
+      #{createTime}, #{updateTime}
+    )
+  </insert>
+
+  <update id="updateMetaAndConfig">
+    update sys_project_workbench_tabs
+    <set>
+      <if test="tabName != null">tab_name = #{tabName},</if>
+      <if test="preset != null">preset = #{preset},</if>
+      <if test="configJson != null">config_json = #{configJson},</if>
+      <if test="tabSort != null">tab_sort = #{tabSort},</if>
+      update_time = #{updateTime}
+    </set>
+    where tab_id = #{tabId}
+  </update>
+
+  <update id="updateSort">
+    update sys_project_workbench_tabs
+    set tab_sort = case tab_id
+    <foreach collection="list" item="item">
+      when #{item.tabId} then #{item.tabSort}
+    </foreach>
+    end
+    where tab_id in
+    <foreach collection="list" item="item" open="(" separator="," close=")">
+      #{item.tabId}
+    </foreach>
+  </update>
+
+  <delete id="deleteById">
+    delete from sys_project_workbench_tabs where tab_id = #{tabId}
+  </delete>
+</mapper>

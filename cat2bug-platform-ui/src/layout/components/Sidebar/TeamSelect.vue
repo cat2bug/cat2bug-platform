@@ -1,9 +1,9 @@
 <template>
   <div class="team-select-root layout-nav-hint-anchor" :class="{ 'team-select-root--collapse': collapse, 'team-select-root--readonly': !teamMember, 'team-select-root--dark': dark }" data-layout-nav="team">
     <div v-if="!teamMember" class="team-select-readonly">
-      <el-avatar class="team-select-avatar" :size="collapse ? 'small' : 'default'" shape="square" v-if="displayTeam && displayTeam.teamIcon" :src="teamAvatarSrc(displayTeam)" fit="cover" @error="onTeamAvatarError(displayTeam)"></el-avatar>
-      <el-avatar class="team-select-avatar" :size="collapse ? 'small' : 'default'" shape="square" v-else-if="displayTeam">{{ displayTeam.teamName }}</el-avatar>
-      <el-avatar class="team-select-avatar" :size="collapse ? 'small' : 'default'" shape="square" v-else :src="imgUrl('add.svg')" fit="cover"></el-avatar>
+      <el-avatar class="team-select-avatar" :size="avatarSize" shape="square" v-if="displayTeam && displayTeam.teamIcon" :src="teamAvatarSrc(displayTeam)" fit="cover" @error="onTeamAvatarError(displayTeam)"></el-avatar>
+      <el-avatar class="team-select-avatar" :size="avatarSize" shape="square" v-else-if="displayTeam">{{ displayTeam.teamName }}</el-avatar>
+      <el-avatar class="team-select-avatar" :size="avatarSize" shape="square" v-else :src="imgUrl('add.svg')" fit="cover"></el-avatar>
       <p class="prefix-team-name" v-if="!collapse">{{ displayTeam ? displayTeam.teamName : '' }}</p>
     </div>
     <el-select
@@ -16,9 +16,9 @@
       @change="selectTeamChangedHandle"
     >
       <template #prefix>
-        <el-avatar class="team-select-avatar" :size="collapse ? 'small' : 'default'" shape="square" v-if="!currentTeam" :src="imgUrl('add.svg')" fit="cover"></el-avatar>
-        <el-avatar class="team-select-avatar" :size="collapse ? 'small' : 'default'" shape="square" v-else-if="currentTeam.teamIcon" :src="teamAvatarSrc(currentTeam)" fit="cover" @error="onTeamAvatarError(currentTeam)"></el-avatar>
-        <el-avatar class="team-select-avatar" :size="collapse ? 'small' : 'default'" shape="square" v-else>{{ currentTeam.teamName }}</el-avatar>
+        <el-avatar class="team-select-avatar" :size="avatarSize" shape="square" v-if="!currentTeam" :src="imgUrl('add.svg')" fit="cover"></el-avatar>
+        <el-avatar class="team-select-avatar" :size="avatarSize" shape="square" v-else-if="currentTeam.teamIcon" :src="teamAvatarSrc(currentTeam)" fit="cover" @error="onTeamAvatarError(currentTeam)"></el-avatar>
+        <el-avatar class="team-select-avatar" :size="avatarSize" shape="square" v-else>{{ currentTeam.teamName }}</el-avatar>
         <p class="prefix-team-name" v-if="!collapse">{{ currentTeam ? currentTeam.teamName : $t('team.create') }}</p>
       </template>
       <el-option
@@ -29,7 +29,14 @@
         :value="team.teamId">
         <el-avatar class="team-select-avatar" shape="square" v-if="team.teamIcon" :src="teamAvatarSrc(team)" fit="cover" @error="onTeamAvatarError(team)"></el-avatar>
         <el-avatar class="team-select-avatar" shape="square" v-else>{{team.teamName}}</el-avatar>
-        <p>{{ team.teamName }}</p>
+        <div class="team-select-option-text">
+          <p class="team-select-option-name">{{ team.teamName }}</p>
+          <span
+            class="team-select-option-intro"
+            :class="{ 'is-empty': !team.introduce }"
+            :title="team.introduce || $t('team.introduction-not-filled')"
+          >{{ team.introduce || $t('team.introduction-not-filled') }}</span>
+        </div>
       </el-option>
       <el-option class="team-select-footer"
                  :line="teamList.length>0?'true':'false'"
@@ -103,6 +110,10 @@ export default {
   computed:{
     teamMember() {
       return this.userTeamMember !== false
+    },
+    /** 折叠/展开均略留白，比上一档再小一点 */
+    avatarSize() {
+      return this.collapse ? 32 : 36
     },
     teamId: function (){
       return this.userConfig && this.userConfig.currentTeamId
@@ -249,17 +260,21 @@ export default {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    column-gap: 10px;
-    margin: 10px;
-    width: calc(100% - 20px);
-    min-height: 60px;
+    column-gap: 8px;
+    margin: 8px;
+    width: calc(100% - 16px);
+    min-height: 56px;
+    height: 56px;
+    padding: 8px;
+    box-sizing: border-box;
     cursor: default;
 
     .prefix-team-name {
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
-      width: 100px;
+      max-width: 112px;
+      width: auto;
       font-size: 16px;
       text-align: left;
       margin: 0;
@@ -270,6 +285,8 @@ export default {
       justify-content: center;
       align-items: center;
       flex-shrink: 0;
+      width: 36px !important;
+      height: 36px !important;
       border-radius: 8px;
       overflow: hidden;
     }
@@ -288,8 +305,8 @@ export default {
   .team-select-root--collapse {
     display: flex;
     justify-content: center;
-    padding-top: 8px;
-    padding-bottom: 4px;
+    padding-top: 4px;
+    padding-bottom: 2px;
 
     :deep(.team-select) {
       width: 40px;
@@ -300,18 +317,26 @@ export default {
       display: none !important;
     }
 
+    /* 含 is-hovering/is-focused：防止展开态非对称 padding 在 hover 时盖过来，把头像挤向左侧 */
     :deep(.team-select .el-select__wrapper),
+    :deep(.team-select .el-select__wrapper.is-hovering),
+    :deep(.team-select .el-select__wrapper.is-focused),
     :deep(.team-select .el-input--prefix) {
       height: 40px;
       width: 40px !important;
       min-height: 40px;
       margin: 0 !important;
-      padding: 0 !important;
+      padding: 2px !important;
       gap: 0 !important;
       justify-content: center;
       box-shadow: none !important;
       border-radius: 8px;
       background-color: var(--sidebar-tile-bg, #2a2a2c) !important;
+    }
+
+    :deep(.team-select-avatar.el-avatar) {
+      width: 32px !important;
+      height: 32px !important;
     }
 
     :deep(.team-select .el-input__inner),
@@ -332,6 +357,7 @@ export default {
       right: auto !important;
       width: 100% !important;
       margin: 0 !important;
+      padding: 0 !important;
       justify-content: center !important;
     }
   }
@@ -339,11 +365,18 @@ export default {
   .team-select-root--readonly.team-select-root--collapse .team-select-readonly {
     height: 40px;
     width: 40px;
-    margin: 8px auto 4px;
+    margin: 4px auto 2px;
     min-height: 40px;
+    padding: 2px;
+    box-sizing: border-box;
     justify-content: center;
     border-radius: 8px;
     background-color: var(--sidebar-tile-bg, #2a2a2c);
+
+    .el-avatar {
+      width: 32px !important;
+      height: 32px !important;
+    }
   }
 
   :deep(.team-select) {
@@ -352,24 +385,45 @@ export default {
 
     .el-select__wrapper,
     .el-input--prefix {
-      margin: 10px;
-      width: calc(100% - 20px);
-      border-radius: 5px;
-      min-height: 60px;
+      margin: 8px;
+      width: calc(100% - 16px);
+      border-radius: 8px;
+      min-height: 56px;
+      height: 56px;
       box-shadow: none !important;
       background-color: transparent;
+      box-sizing: border-box;
     }
 
-    .el-select__wrapper {
-      padding-left: 12px;
+    /* 仅展开态；折叠态由 .team-select-root--collapse 单独锁 padding，避免 hover 挤偏 */
+    .el-select__wrapper,
+    .el-select__wrapper.is-focused,
+    .el-select__wrapper.is-hovering {
+      box-shadow: none !important;
+    }
+
+    .el-select__suffix,
+    .el-input__suffix {
+      flex-shrink: 0;
+      margin-left: 2px;
+      margin-right: 0;
+    }
+
+    .el-select__caret {
+      margin: 0;
     }
 
     .el-input__inner,
     .el-select__selection {
       background-color: transparent;
       border-width: 0;
-      height: 60px;
+      height: 36px;
+      min-width: 0 !important;
+      flex: 0 0 0 !important;
+      width: 0 !important;
+      overflow: hidden;
       visibility: hidden;
+      padding: 0 !important;
     }
 
     .el-input__prefix,
@@ -377,25 +431,36 @@ export default {
       display: flex;
       justify-content: flex-start;
       align-items: center;
-      column-gap: 10px;
+      column-gap: 8px;
+      flex: 1 1 auto;
+      min-width: 0;
+      max-width: none;
     }
 
     .prefix-team-name {
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
-      width: 100px;
+      max-width: 118px;
+      width: auto;
+      flex: 1 1 auto;
+      min-width: 0;
       color: #303133;
       font-size: 16px;
       text-align: left;
       margin: 0;
+      /* 与右侧箭头约 1 字符间距 */
+      padding-right: 0.6em;
     }
 
+    .team-select-avatar.el-avatar,
     .el-avatar {
       display: flex;
       justify-content: center;
       align-items: center;
       flex-shrink: 0;
+      width: 36px !important;
+      height: 36px !important;
       border-radius: 8px;
       overflow: hidden;
     }
@@ -403,6 +468,16 @@ export default {
     .el-select__wrapper:hover,
     .el-input--prefix:hover {
       background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  /* 展开态左右内边距（不写在通用 .team-select 里，以免盖掉折叠 hover） */
+  &:not(.team-select-root--collapse) :deep(.team-select) {
+    .el-select__wrapper,
+    .el-select__wrapper.is-focused,
+    .el-select__wrapper.is-hovering {
+      padding: 8px 16px 8px 8px !important;
+      gap: 6px;
     }
   }
 
@@ -531,9 +606,38 @@ export default {
   color: var(--team-select-popper-text, #e5eaf3) !important;
   background-color: transparent !important;
 
-  p {
+  .team-select-option-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: 4px;
+  }
+
+  .team-select-option-name {
     color: inherit;
     margin: 0;
+    font-size: 15px;
+    line-height: 1.3;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .team-select-option-intro {
+    display: block;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.3;
+    color: var(--text-color-secondary, #909399);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    &.is-empty {
+      color: var(--text-color-placeholder, #c0c4cc);
+    }
   }
 
   .team-select-avatar.el-avatar,

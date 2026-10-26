@@ -65,15 +65,17 @@
     />
     <image-upload
       v-else-if="field.fieldType === 'image'"
-      :value="imageFileValue"
+      :model-value="imageFileValue"
       :limit="imageLimit(field)"
+      @update:model-value="onImageInput"
       @input="onImageInput"
     />
     <file-upload
       v-else-if="field.fieldType === 'file'"
-      :value="imageFileValue"
+      :model-value="imageFileValue"
       :limit="fileLimit(field)"
       :file-type="[]"
+      @update:model-value="onImageInput"
       @input="onImageInput"
     />
     <div v-else-if="field.fieldType === 'array'" class="defect-custom-field-array">
@@ -212,6 +214,8 @@ export default {
       }
     },
     onImageInput(val) {
+      // 忽略误绑到原生 input 事件时传入的 Event，避免写入 "[object Event]"
+      if (val != null && typeof val === 'object' && typeof val.preventDefault === 'function') return
       this.$emit('input', val || '')
     },
     updateArrayItem(idx, val) {

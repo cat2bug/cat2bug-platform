@@ -37,7 +37,16 @@ export const useUserStore = defineStore('user', {
       return import('@/stores/permission').then(({ usePermissionStore }) => {
         const permissionStore = usePermissionStore()
         permissionStore.SetRoutesRefreshing(true)
-        return updateConfig({ currentProjectId: projectId })
+        // 先解析项目所属团队，避免只写 currentProjectId 导致侧栏 teamId 与项目不一致、菜单 path 重写失败
+        return getProject(projectId).then((res) => {
+          const project = res && res.data
+          const payload = { currentProjectId: projectId }
+          const teamId = project && Number(project.teamId)
+          if (Number.isFinite(teamId) && teamId > 0) {
+            payload.currentTeamId = teamId
+          }
+          return updateConfig(payload)
+        }).catch(() => updateConfig({ currentProjectId: projectId }))
           .then(() => this.GetInfo())
           .then(() => permissionStore.GenerateRoutes())
           .then(() => {

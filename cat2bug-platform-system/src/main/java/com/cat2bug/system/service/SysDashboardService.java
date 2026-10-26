@@ -11,6 +11,7 @@ import com.cat2bug.common.domain.dashboard.SysDocumentStatistics;
 import com.cat2bug.common.domain.dashboard.SysMemberStatistics;
 import com.cat2bug.common.domain.dashboard.SysMemberRankOfDefects;
 import com.cat2bug.common.domain.dashboard.SysModuleStatistics;
+import com.cat2bug.common.domain.dashboard.SysWeekOpsStatistics;
 import com.cat2bug.common.util.StringUtils;
 import com.cat2bug.system.mapper.SysDashboardMapper;
 import com.cat2bug.system.util.SysDefectTrendLineHelper;
@@ -20,6 +21,7 @@ import jakarta.inject.Inject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -113,6 +115,33 @@ public class SysDashboardService {
                 sysDashboardMapper.memberOfDefectsLine(projectId, timeType), timeType);
     }
 
+    /**
+     * 管理工作台「本周运营」：角色缺陷动作 + MCP/API/LLM 调用次数。
+     * 周界与前端一致：周一 00:00 ～ 下周一 00:00（左闭右开）。
+     */
+    public SysWeekOpsStatistics weekOps(Long projectId) {
+        Date[] range = currentIsoWeekRange();
+        Date weekStart = range[0];
+        Date weekEnd = range[1];
+        SysWeekOpsStatistics role = sysDashboardMapper.weekRoleDefectOps(projectId, weekStart, weekEnd);
+        if (role == null) {
+            role = emptyWeekOps();
+        }
+        SysWeekOpsStatistics channel = sysDashboardMapper.weekChannelOps(weekStart, weekEnd);
+        if (channel != null) {
+            role.setMcpCallCount(channel.getMcpCallCount());
+            role.setApiCallCount(channel.getApiCallCount());
+            role.setLlmCallCount(channel.getLlmCallCount());
+        }
+        SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+        role.setWeekStart(day.format(weekStart));
+        Calendar endDay = Calendar.getInstance();
+        endDay.setTime(weekEnd);
+        endDay.add(Calendar.MILLISECOND, -1);
+        role.setWeekEnd(day.format(endDay.getTime()));
+        return role;
+    }
+
     public List<SysColumnsInChart> planBurndown(String planId) {
         SysPlan sysPlan = sysDashboardMapper.selectPlanByPlanId(planId);
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -183,5 +212,26 @@ public class SysDashboardService {
 
     private SysMemberStatistics emptyMemberStats() {
         return new SysMemberStatistics();
+    }
+
+    private SysWeekOpsStatistics emptyWeekOps() {
+        return new SysWeekOpsStatistics();
+    }
+
+    /** 本周一 00:00 与下周一 00:00（左闭右开）。 */
+    private Date[] currentIsoWeekRange() {
+        Calendar cal = Calendar.getInstance();
+        cal.setFirstDayOfWeek(Calendar.MONDAY);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        int day = cal.get(Calendar.DAY_OF_WEEK);
+        int diff = day == Calendar.SUNDAY ? -6 : Calendar.MONDAY - day;
+        cal.add(Calendar.DAY_OF_MONTH, diff);
+        Date weekStart = cal.getTime();
+        cal.add(Calendar.DAY_OF_MONTH, 7);
+        Date weekEnd = cal.getTime();
+        return new Date[]{weekStart, weekEnd};
     }
 }

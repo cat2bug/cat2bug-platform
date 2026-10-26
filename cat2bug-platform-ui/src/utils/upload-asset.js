@@ -105,6 +105,26 @@ export function isNonEmptyUploadPath(value) {
 }
 
 /**
+ * 对上传路径分段 encode，保留 `/`，避免文件名空格/括号导致浏览器请求失败。
+ * @param {string} path
+ * @returns {string}
+ */
+export function encodeUploadPathSegments(path) {
+  if (!path || typeof path !== 'string') return path
+  return path
+    .split('/')
+    .map((seg) => {
+      if (!seg) return seg
+      try {
+        return encodeURIComponent(decodeURIComponent(seg))
+      } catch (_) {
+        return encodeURIComponent(seg)
+      }
+    })
+    .join('/')
+}
+
+/**
  * 解析单条上传资源路径为可访问 URL。
  * @param {string | null | undefined} path
  * @param {string} [baseApi]
@@ -122,15 +142,15 @@ export function resolveUploadUrl(path, baseApi = process.env.VUE_APP_BASE_API ||
     // Backend-served icons (Spring static). Vite SPA does not own /static/img/* —
     // go through the API proxy (e.g. /dev-api/static/img/...).
     if (baseApi && !trimmed.startsWith(baseApi)) {
-      const path = trimmed.includes('/static/img/')
+      const staticPath = trimmed.includes('/static/img/')
         ? trimmed.slice(trimmed.indexOf('/static/img/'))
         : trimmed
-      return baseApi + path
+      return baseApi + encodeUploadPathSegments(staticPath)
     }
-    return trimmed
+    return encodeUploadPathSegments(trimmed)
   }
   if (trimmed.startsWith('/static/') || trimmed.indexOf('/static/') > -1) {
-    return trimmed
+    return encodeUploadPathSegments(trimmed)
   }
   if (trimmed.startsWith('/assets/')) {
     return trimmed
@@ -141,13 +161,27 @@ export function resolveUploadUrl(path, baseApi = process.env.VUE_APP_BASE_API ||
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     return trimmed
   }
-  if (trimmed.startsWith(baseApi)) {
-    return trimmed
+  if (baseApi && trimmed.startsWith(baseApi)) {
+    const rest = trimmed.slice(baseApi.length)
+    return baseApi + encodeUploadPathSegments(rest.startsWith('/') ? rest : `/${rest}`)
   }
   if (trimmed.startsWith('/')) {
-    return baseApi + trimmed
+    return baseApi + encodeUploadPathSegments(trimmed)
   }
-  return baseApi + trimmed
+  return baseApi + encodeUploadPathSegments(trimmed)
+}
+
+/**
+ * 是否像可访问的上传路径（排除 `[object Event]` 等脏数据）。
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+export function isLikelyUploadPath(value) {
+  if (value == null) return false
+  const s = String(value).trim()
+  if (!s || s === 'null' || s === 'undefined') return false
+  if (s.includes('[object ')) return false
+  return s.startsWith('/') || s.startsWith('http') || s.includes('/profile/') || s.includes('/upload')
 }
 
 /**
@@ -163,7 +197,7 @@ export function resolveCommaSeparatedUrls(imgUrls, baseApi = process.env.VUE_APP
   const parts = Array.isArray(imgUrls) ? imgUrls : String(imgUrls).split(',')
   return parts
     .map((item) => (typeof item === 'string' ? item.trim() : item))
-    .filter(Boolean)
+    .filter(isLikelyUploadPath)
     .map((item) => resolveUploadUrl(item, baseApi))
 }
 

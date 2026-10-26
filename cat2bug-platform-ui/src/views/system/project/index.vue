@@ -254,6 +254,8 @@ export default {
         params: {
           userId: null
         },
+        /** 我参与的：后端按成员关系过滤（memberOnly=true） */
+        memberOnly: true,
         pageNum: 1,
         pageSize: 10,
         projectName: null,
@@ -267,7 +269,9 @@ export default {
         projectName: [
           { required: true, message: "项目名称不能为空", trigger: "blur" }
         ],
-      }
+      },
+      /** 列表请求序号：忽略过期的 system/admin 交错响应，避免 total 与 rows 错位 */
+      _listReqId: 0
     };
   },
   computed: {
@@ -454,9 +458,11 @@ export default {
       switch (this.activeProjectTabName) {
         case this.$i18n.t('project.my-participated-in'):
           this.queryParams.params.userId = getCurrentUserId();
+          this.queryParams.memberOnly = true;
           break;
         default:
           this.queryParams.params.userId = null;
+          this.queryParams.memberOnly = false;
       }
       this.getList();
     },
@@ -471,42 +477,62 @@ export default {
       });
       return list;
     },
-    tryAdminProjectList() {
+    /** 原子写入列表与分页总数，避免 total/rows 来自不同请求 */
+    applyProjectListResult(res) {
+      this.projectList = this.normalizeProjectRows(res && res.rows);
+      this.total = Number(res && res.total) || 0;
+    },
+    tryAdminProjectList(reqId, teamId) {
       if (!canUseAdminProjectList()) {
-        this.projectList = [];
-        this.total = 0;
+        if (reqId === this._listReqId) {
+          this.projectList = [];
+          this.total = 0;
+        }
         return Promise.resolve();
       }
-      return listAdminProject({
+      const params = {
         pageNum: this.queryParams.pageNum,
         pageSize: this.queryParams.pageSize,
         projectName: this.queryParams.projectName,
         params: this.queryParams.params,
-      }).then(res => {
-        this.projectList = this.normalizeProjectRows(res.rows);
-        this.total = res.total;
+      };
+      // 有团队上下文时必须带 teamId，禁止用全站 admin 总数污染当前团队分页
+      if (teamId) {
+        params.teamId = teamId;
+      }
+      return listAdminProject(params).then(res => {
+        if (reqId !== this._listReqId) return;
+        this.applyProjectListResult(res);
       });
     },
     /** 查询项目列表 */
     getList() {
+      const reqId = ++this._listReqId;
       this.loading = true;
       resolveEffectiveTeamId().then((teamId) => {
+        if (reqId !== this._listReqId) return;
         if (!teamId) {
-          return this.tryAdminProjectList();
+          // 无团队时仅管理员可看全站；普通用户空列表
+          return this.tryAdminProjectList(reqId, null);
         }
         this.queryParams.teamId = teamId;
         return listProject(this.queryParams).then(res => {
-          if (res && res.rows && res.rows.length) {
-            this.projectList = this.normalizeProjectRows(res.rows);
-            this.total = res.total;
-            return;
-          }
-          return this.tryAdminProjectList();
-        }).catch(() => this.tryAdminProjectList());
-      }).catch(() => this.tryAdminProjectList())
-        .finally(() => {
-          this.loading = false;
+          if (reqId !== this._listReqId) return;
+          // 团队作用域下以 system list 为准（含空列表），不再静默换成全站 admin list
+          this.applyProjectListResult(res);
+        }).catch(() => {
+          if (reqId !== this._listReqId) return;
+          this.projectList = [];
+          this.total = 0;
         });
+      }).catch(() => {
+        if (reqId !== this._listReqId) return;
+        return this.tryAdminProjectList(reqId, null);
+      }).finally(() => {
+        if (reqId === this._listReqId) {
+          this.loading = false;
+        }
+      });
     },
     /** 查询收藏的项目列表 */
     getCollectList() {
@@ -692,10 +718,10 @@ export default {
 </script>
 <style lang="scss" scoped>
 .project-manage-page {
+  /* 与缺陷等页签一致：按文字自然宽度，勿强制 min-width / 过大左右 padding */
   :deep(.el-tabs__item) {
-    min-width: 140px !important;
-    padding: 0 36px !important;
-    text-align: center;
+    min-width: 0 !important;
+    padding: 0 20px !important;
   }
 
   .project-manage-table {

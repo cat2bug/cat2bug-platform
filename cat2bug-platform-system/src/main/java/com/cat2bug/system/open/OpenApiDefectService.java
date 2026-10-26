@@ -138,7 +138,9 @@ public class OpenApiDefectService {
         if (openApiDefectMapper.insertApiDefect(projectId, apiDefect) <= 0) {
             throw new ApiException("新增缺陷失败");
         }
-        insertLog(apiDefect.getDefectId(), apiDefect.getHandleBy(), "", ApiDefectLogStateEnum.CREATE);
+        insertLog(apiDefect.getDefectId(), apiDefect.getHandleBy(),
+                apiDefect.getDefectDescribe() != null ? apiDefect.getDefectDescribe() : "",
+                ApiDefectLogStateEnum.CREATE);
 
         ApiDefect retDefect = openApiDefectMapper.selectSysDefectByDefectNumber(projectId, count);
         return enrichDefect(retDefect, deliverablePathMap(projectId));

@@ -81,6 +81,7 @@ public class ProjectResource {
     public TableDataInfo list(@QueryParam("teamId") Long teamId,
                               @QueryParam("projectName") String projectName,
                               @QueryParam("collect") Boolean collect,
+                              @QueryParam("memberOnly") Boolean memberOnly,
                               @QueryParam("pageNum") Integer pageNum,
                               @QueryParam("pageSize") Integer pageSize) {
         LoginUser loginUser = requireLoginUser();
@@ -89,6 +90,9 @@ public class ProjectResource {
         query.setProjectName(projectName);
         if (collect != null) {
             query.setCollect(collect);
+        }
+        if (memberOnly != null) {
+            query.setMemberOnly(memberOnly);
         }
         return sysProjectService.selectProjectPage(loginUser.getUserId(), query, pageNum, pageSize);
     }
@@ -138,6 +142,11 @@ public class ProjectResource {
                                       @QueryParam("pageSize") Integer pageSize) {
         SysRole query = new SysRole();
         query.setIsProjectRole(true);
+        // 成员页/创建项目未传分页参数，需一次返回全部项目角色（含 projectCreateBy 等计算字段）
+        if (pageNum == null && pageSize == null) {
+            var rows = sysRoleService.selectRoleList(query);
+            return new TableDataInfo(rows, rows.size());
+        }
         return sysRoleService.selectRolePage(query, pageNum, pageSize);
     }
 

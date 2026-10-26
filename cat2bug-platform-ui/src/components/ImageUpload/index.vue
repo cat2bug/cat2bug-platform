@@ -25,16 +25,16 @@
         :on-remove="handleDelete"
         :show-file-list="true"
         :headers="headers"
-        :file-list="fileList"
+        v-model:file-list="fileList"
         :on-preview="handlePictureCardPreview"
         class="cat2bug-upload"
-        :class="{hide: fileList.length >= limit}"
+        :class="{hide: successFileCount >= limit}"
       >
         <template v-slot:trigger>
-          <el-button class="update-button update-button-add" v-if="fileList.length < limit" :style="buttonStyle" @click.capture="prepareNativeFilePicker">
+          <el-button class="update-button update-button-add" v-if="successFileCount < limit" :style="buttonStyle" @click.capture="prepareNativeFilePicker">
             <legacy-icon icon="el-icon-plus"></legacy-icon>
           </el-button>
-          <el-button v-if="isShowClipboardButton && fileList.length < limit" class="update-button" :style="buttonStyle" @click="clipboardImageHandle">
+          <el-button v-if="isShowClipboardButton && successFileCount < limit" class="update-button" :style="buttonStyle" @click="clipboardImageHandle">
             <svg-icon icon-class="clipboard" />
           </el-button>
         </template>
@@ -70,7 +70,6 @@ import { getToken } from "@/utils/auth";
 import {upload} from "@/api/common/upload";
 import {strFormat} from "@/utils";
 import i18n from "@/utils/i18n/i18n";
-import {delDefect} from "@/api/system/defect";
 import {setHeader} from "@/utils/request";
 import {
   applyDefaultImageOnError,
@@ -121,8 +120,6 @@ export default {
     let headers = {};
     setHeader('/common/upload', headers);
     return {
-      number: 0,
-      uploadList: [],
       pendingUploadCount: 0,
       dialogImageUrl: "",
       dialogVisible: false,
@@ -131,6 +128,8 @@ export default {
       uploadImgUrl: process.env.VUE_APP_BASE_API + "/common/upload", // 上传的图片服务器地址
       headers: headers,
       fileList: [],
+      /** 抑制 value→fileList 回写，避免上传过程中冲掉 el-upload 已追加的项 */
+      syncingFromUpload: false,
       /** 键盘漫游：当前高亮的图片/按钮索引（焦点保持在外框） */
       keyboardFocusIndex: 0,
       /** 原生文件选择框打开中：暂停外框方向键拦截 */
@@ -140,7 +139,7 @@ export default {
   watch: {
     boundValue: {
       handler(val) {
-        if (this.pendingUploadCount > 0) {
+        if (this.pendingUploadCount > 0 || this.syncingFromUpload) {
           return;
         }
         this.syncFileListFromValue(val);
@@ -155,6 +154,10 @@ export default {
         return this.modelValue;
       }
       return this.value;
+    },
+    /** 已成功（有服务端路径）的图片数，上传中的 blob 项不计入 limit */
+    successFileCount() {
+      return this.fileList.filter((f) => f && f.url && !String(f.url).startsWith('blob:')).length;
     },
     // 是否显示提示
     showTip() {
@@ -234,7 +237,7 @@ export default {
       shell.querySelectorAll('.el-upload-list__item').forEach((el, index) => {
         items.push({ type: 'image', el, fileIndex: index });
       });
-      if (this.fileList.length < this.limit) {
+      if (this.successFileCount < this.limit) {
         shell.querySelectorAll('.update-button').forEach((btn) => {
           if (btn.querySelector('.el-icon-plus')) {
             items.push({ type: 'add', el: btn });
@@ -310,7 +313,7 @@ export default {
       if (input && typeof input.click === 'function') input.click();
     },
     async pasteClipboardImage() {
-      if (this.fileList.length >= this.limit) {
+      if (this.successFileCount >= this.limit) {
         this.handleExceed();
         return;
       }
@@ -349,13 +352,12 @@ export default {
     },
     async uploadClipboardFiles(files) {
       if (!files || !files.length) return;
-      let remaining = this.limit - this.fileList.length;
+      let remaining = this.limit - this.successFileCount;
       if (remaining <= 0) {
         this.handleExceed();
         return;
       }
       let uploaded = 0;
-      let nextList = [...this.fileList];
       for (const file of files) {
         if (remaining <= 0) {
           this.handleExceed();
@@ -372,7 +374,7 @@ export default {
           const res = await upload(formData);
           const fileName = res && (res.fileName || (res.data && res.data.fileName));
           if (!fileName) continue;
-          nextList.push(this.toUploadFileItem(fileName));
+          this.fileList = [...this.fileList, this.toUploadFileItem(fileName)];
           uploaded++;
           remaining--;
         } catch (err) {
@@ -380,9 +382,7 @@ export default {
         }
       }
       if (uploaded > 0) {
-        const nextValue = this.listToString(nextList);
-        this.emitValue(nextValue);
-        this.syncFileListFromValue(nextValue);
+        this.commitFileListValue();
       }
       if (uploaded === 0) {
         this.$message.warning(this.$i18n.t('upload.clipboard-not-img').toString());
@@ -466,36 +466,59 @@ export default {
       }
       const isMod = e.metaKey || e.ctrlKey;
       if (isMod && !e.altKey && (key === 'v' || key === 'V')) {
-        if (this.fileList.length >= this.limit) return;
+        if (this.successFileCount >= this.limit) return;
         e.preventDefault();
         e.stopPropagation();
         this.pasteClipboardImage();
         return;
       }
     },
-    toUploadFileItem(fileName) {
+    toUploadFileItem(fileName, extra = {}) {
       const path = String(fileName || '');
-      if (path.indexOf(this.baseUrl) === -1) {
-        const url = this.baseUrl + path;
-        return { name: url, url };
-      }
-      return { name: path, url: path };
+      const url = path.indexOf(this.baseUrl) === -1 ? this.baseUrl + path : path;
+      return {
+        name: url,
+        url,
+        status: 'success',
+        ...extra
+      };
+    },
+    /** 相对路径（入库）；忽略上传中的 blob */
+    toStoredPath(url) {
+      if (!url || String(url).startsWith('blob:')) return '';
+      const s = String(url);
+      return s.indexOf(this.baseUrl) === 0 ? s.slice(this.baseUrl.length) : s;
     },
     syncFileListFromValue(val) {
       if (val) {
         const list = Array.isArray(val) ? val : String(val).split(',');
-        this.fileList = list.filter(Boolean).map(item => {
-          if (typeof item === "string") {
-            if (item.indexOf(this.baseUrl) === -1) {
-              return { name: this.baseUrl + item, url: this.baseUrl + item };
-            }
-            return { name: item, url: item };
-          }
-          return item;
+        const prevByPath = new Map();
+        (this.fileList || []).forEach((f) => {
+          const p = this.toStoredPath(f && f.url);
+          if (p && f.uid != null) prevByPath.set(p, f.uid);
         });
+        this.fileList = list.filter(Boolean).map((item) => {
+          if (typeof item !== 'string') return item;
+          const path = item.trim();
+          if (!path) return null;
+          const url = path.indexOf(this.baseUrl) === -1 ? this.baseUrl + path : path;
+          const stored = this.toStoredPath(url);
+          const uid = prevByPath.get(stored);
+          return uid != null
+            ? { name: url, url, status: 'success', uid }
+            : { name: url, url, status: 'success' };
+        }).filter(Boolean);
       } else {
         this.fileList = [];
       }
+    },
+    commitFileListValue() {
+      this.syncingFromUpload = true;
+      const nextValue = this.listToString(this.fileList);
+      this.emitValue(nextValue);
+      this.$nextTick(() => {
+        this.syncingFromUpload = false;
+      });
     },
     finishUploadLoading() {
       if (this.pendingUploadCount > 0) {
@@ -536,31 +559,62 @@ export default {
           return false;
         }
       }
+      if (this.successFileCount >= this.limit) {
+        this.handleExceed();
+        return false;
+      }
       this.pendingUploadCount++;
       this.$modal.loading(this.$i18n.t('upload.img-loading'));
-      this.number++;
+      return true;
     },
     // 文件个数超出
     handleExceed() {
       this.$modal.msgError(strFormat(i18n.t('upload.number-exceeds-range'),this.limit));
     },
-    // 上传成功回调
+    // 上传成功：就地替换 el-upload 已追加的临时项为服务端 URL（追加而非覆盖上一张）
     handleUploadSuccess(res, file) {
       const fileName = res && (res.fileName || (res.data && res.data.fileName));
       if (res && res.code === 200 && fileName) {
-        this.uploadList.push(this.toUploadFileItem(fileName));
-        this.uploadedSuccessfully();
+        const item = this.toUploadFileItem(fileName, { uid: file && file.uid });
+        const idx = file && file.uid != null
+          ? this.fileList.findIndex((f) => f.uid === file.uid)
+          : -1;
+        if (idx >= 0) {
+          const next = this.fileList.slice();
+          next[idx] = { ...this.fileList[idx], ...item };
+          this.fileList = next;
+        } else {
+          this.fileList = [...this.fileList, item];
+        }
+        this.commitFileListValue();
+        this.finishUploadLoading();
       } else {
-        this.number = Math.max(0, this.number - 1);
         this.finishUploadLoading();
         this.$modal.msgError((res && res.msg) || this.$i18n.t('upload.img-fail'));
-        if (this.$refs.imageUpload) {
-          this.$refs.imageUpload.handleRemove(file);
-        }
-        this.uploadedSuccessfully();
+        this.removeFileSilent(file);
       }
     },
-    handleBeforeRemove(file, fileList) {
+    /** 失败项静默移除，避免再弹「确认删除」 */
+    removeFileSilent(file) {
+      if (!file) return;
+      const uid = file.uid;
+      const before = this.fileList.length;
+      if (uid != null) {
+        this.fileList = this.fileList.filter((f) => f.uid !== uid);
+      } else if (file.url) {
+        this.fileList = this.fileList.filter((f) => f.url !== file.url);
+      }
+      if (this.fileList.length !== before) {
+        this.commitFileListValue();
+      }
+    },
+    handleBeforeRemove(file) {
+      // 上传失败/未成功的临时项直接删，不打断
+      if (!file || file.status === 'fail' || (file.url && String(file.url).startsWith('blob:') && file.status !== 'success')) {
+        return true;
+      }
+      const stored = this.toStoredPath(file.url);
+      if (!stored) return true;
       return this.$modal.confirm(
         this.$i18n.t('is-delete-img'),
         this.$i18n.t('prompted').toString(),
@@ -573,52 +627,29 @@ export default {
         return true;
       });
     },
-    // 删除图片
-    handleDelete(file) {
-      const findex = this.fileList.map(f => f.name).indexOf(file.name);
-      if(findex > -1) {
-        this.fileList.splice(findex, 1);
-        this.emitValue(this.listToString(this.fileList));
-      }
+    // 删除图片（el-upload 已从 fileList 移除，这里只回写 v-model）
+    handleDelete() {
+      this.commitFileListValue();
     },
     // 上传失败
     handleUploadError() {
-      this.number = Math.max(0, this.number - 1);
       this.finishUploadLoading();
       this.$modal.msgError(this.$i18n.t('upload.img-fail'));
-      this.uploadedSuccessfully();
-    },
-    // 上传结束处理
-    uploadedSuccessfully() {
-      if (this.number > 0 && this.uploadList.length === this.number) {
-        this.fileList = this.fileList.concat(this.uploadList);
-        this.uploadList = [];
-        this.number = 0;
-        this.pendingUploadCount = 0;
-        const nextValue = this.listToString(this.fileList);
-        this.emitValue(nextValue);
-        this.$modal.closeAllLoading();
-        this.syncFileListFromValue(nextValue);
-      } else if (this.pendingUploadCount > 0) {
-        this.pendingUploadCount = 0;
-        this.$modal.closeAllLoading();
-      }
     },
     // 预览
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url;
       this.dialogVisible = true;
     },
-    // 对象转成指定字符串分隔
+    // 对象转成指定字符串分隔（跳过上传中的 blob）
     listToString(list, separator) {
-      let strs = "";
       separator = separator || ",";
-      for (let i in list) {
-        if (list[i].url) {
-          strs += list[i].url.replace(this.baseUrl, "") + separator;
-        }
-      }
-      return strs != '' ? strs.substr(0, strs.length - 1) : '';
+      const parts = [];
+      (list || []).forEach((item) => {
+        const path = this.toStoredPath(item && item.url);
+        if (path) parts.push(path);
+      });
+      return parts.join(separator);
     }
   }
 };

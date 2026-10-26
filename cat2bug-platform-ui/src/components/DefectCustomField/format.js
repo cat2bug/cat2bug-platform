@@ -136,13 +136,22 @@ export function formatCustomFieldValue(field, value) {
   return String(value)
 }
 
+/** 排除误写入的 Event 字符串等非路径值 */
+function isLikelyUploadPathPart(value) {
+  if (value == null) return false
+  const s = String(value).trim()
+  if (!s || s === 'null' || s === 'undefined') return false
+  if (s.includes('[object ')) return false
+  return s.startsWith('/') || s.startsWith('http') || s.includes('/profile/') || s.includes('/upload')
+}
+
 /** 提交前将 image/file 逗号串转为 URL 数组（与后端 string[] 约定一致） */
 export function urlListFromCustomFieldValue(value) {
   if (value == null || value === '') return []
-  if (Array.isArray(value)) {
-    return value.map(v => String(v).trim()).filter(Boolean)
-  }
-  return String(value).split(',').map(s => s.trim()).filter(Boolean)
+  const parts = Array.isArray(value)
+    ? value.map(v => String(v).trim())
+    : String(value).split(',').map(s => s.trim())
+  return parts.filter(isLikelyUploadPathPart)
 }
 
 export function normalizeCustomFieldsForSubmit(customFields, fieldList) {

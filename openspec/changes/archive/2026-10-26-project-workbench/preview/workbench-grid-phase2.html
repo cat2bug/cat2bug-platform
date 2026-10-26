@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>二期自由栅格示意</title>
+  <link rel="stylesheet" href="preview-shared.css" />
+  <script src="preview-theme.js"></script>
+</head>
+<body>
+  <div class="frame">
+    <div class="meta">
+      <h1>5 · 二期自由栅格</h1>
+      <p>已实现：12 列 CSS Grid · 编辑态拖位置 / 右下角改尺寸 · 小屏纵向回退。视觉与一期同一套 token。</p>
+            <div class="meta-row">
+        <div class="nav-previews">
+          <a href="index.html">索引</a>
+          <a href="workbench-work-tester.html">默认态</a>
+          <a href="workbench-edit.html">编辑态</a>
+          <a href="workbench-board.html">看板</a>
+          <a href="workbench-presets.html">预设</a>
+          <a class="on" href="workbench-grid-phase2.html">二期栅格</a>
+        </div>
+        <div class="theme-switch">
+          <button type="button" data-theme-btn="light">浅色</button>
+          <button type="button" data-theme-btn="dark">暗色</button>
+        </div>
+      </div>
+</div>
+
+    <div class="shell">
+            <aside class="aside">
+        <div class="team-select">
+          <span class="avatar">C</span>
+          <span class="name">Cat2Bug</span>
+          <span class="caret">▾</span>
+        </div>
+        <div class="aside-scroll">
+          <div class="menu-item"><span class="ico"></span>项目管理</div>
+          <div class="aside-divider"></div>
+          <div class="menu-item active"><span class="ico"></span>工作台</div>
+          <div class="menu-item"><span class="ico"></span>源码管理</div>
+          <div class="menu-item"><span class="ico"></span>测试用例</div>
+          <div class="menu-item"><span class="ico"></span>测试计划</div>
+          <div class="menu-item"><span class="ico"></span>缺陷管理</div>
+          <div class="menu-item"><span class="ico"></span>交付物</div>
+          <div class="menu-item"><span class="ico"></span>文档管理</div>
+          <div class="aside-divider"></div>
+          <div class="menu-item"><span class="ico"></span>项目设置</div>
+          <div class="menu-item"><span class="ico"></span>团队设置</div>
+        </div>
+      </aside>
+      <div class="main-col">
+        <div class="navbar">
+          <div class="crumb">团队 / <strong>Demo 项目</strong></div>
+          <div class="right"><span class="avatar">张</span></div>
+        </div>
+        <div class="app-container">
+          <div class="project-label">
+            <div>
+              <div class="name">编辑布局（二期）</div>
+              <div class="hint">12 列网格 · 拖位置 · 右下角改尺寸</div>
+            </div>
+            <div class="actions">
+              <span class="btn">组件库 +</span>
+              <span class="btn primary">保存</span>
+            </div>
+          </div>
+          <div class="el-tabs-like">
+            <div class="tab active">工作台</div>
+            <div class="tab">看板</div>
+          </div>
+          <div class="grid-phase2">
+            <div class="g span6"><span class="handle"></span><div class="label">w6 · 我的缺陷</div><div class="stats-inline" style="margin-top:8px;">可操作列表…</div></div>
+            <div class="g span3"><span class="handle"></span><div class="label">w3 · 快捷新建</div></div>
+            <div class="g span3"><span class="handle"></span><div class="label">w3 · 通知</div></div>
+            <div class="g span8"><span class="handle"></span><div class="label">w8 · 今日计划项</div></div>
+            <div class="g span4"><span class="handle"></span><div class="label">w4 · 活动</div></div>
+            <div class="g span12"><span class="handle"></span><div class="label">w12 · 可选宽幅统计</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="legend">实现：`WorkbenchFreeGrid` + `config.version≥2` + `tabs.*.layout[{i,x,y,w,h}]`；预设默认仍为一期分区，进入「编辑工作台」并保存后升为自由栅格。</p>
+  </div>
+</body>
+</html>

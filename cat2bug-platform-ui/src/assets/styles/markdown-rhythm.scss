@@ -1,0 +1,56 @@
+/* 缺陷描述等场景：块级上下间距统一。
+   必须压过 index.scss / github markdown-body 的标题大 margin-top。 */
+.markdown-rhythm {
+  &.markdown-it-vue,
+  &.markdown-body,
+  &.md-body,
+  .markdown-it-vue,
+  .markdown-body,
+  .md-body {
+    > * {
+      margin-top: 0 !important;
+      margin-bottom: 0.65em !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+
+    > h1,
+    > h2 {
+      border-bottom: none !important;
+    }
+
+    > *:last-child {
+      margin-bottom: 0 !important;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-size: 1em !important;
+      font-weight: 700;
+      line-height: inherit;
+      color: inherit;
+    }
+
+    li {
+      margin-top: 0.12em !important;
+      margin-bottom: 0.12em !important;
+    }
+
+    li > p {
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+    }
+
+    ul ul,
+    ul ol,
+    ol ul,
+    ol ol {
+      margin-top: 0.12em !important;
+      margin-bottom: 0.12em !important;
+    }
+  }
+}

@@ -1,10 +1,14 @@
-/* 路由切换顶部进度条：浅色蓝 / 暗色黄，由 --page-progress-color 驱动 */
+/* 路由切换顶部进度条：与 #page-load-bar 同款渐变（勿再写成纯色） */
 #nprogress {
   pointer-events: none;
 }
 
 #nprogress .bar {
-  background: var(--page-progress-color, #1890ff) !important;
+  background: linear-gradient(
+    90deg,
+    var(--page-progress-gradient-start, #096dd9),
+    var(--page-progress-color, #1890ff)
+  ) !important;
   position: fixed;
   z-index: 1000001;
   top: 0;
@@ -19,7 +23,9 @@
   right: 0;
   width: 100px;
   height: 100%;
-  box-shadow: 0 0 10px var(--page-progress-color, #1890ff), 0 0 5px var(--page-progress-color, #1890ff) !important;
+  box-shadow:
+    0 0 10px var(--page-progress-glow, rgba(24, 144, 255, 0.45)),
+    0 0 5px var(--page-progress-color, #1890ff) !important;
   opacity: 1;
   transform: rotate(3deg) translate(0, -4px);
 }

@@ -88,3 +88,11 @@ export function memberLineOfDefects(projectId, query) {
     params: query
   })
 }
+
+/** 管理工作台本周运营：角色缺陷动作 + MCP/API/LLM 调用 */
+export function weekOps(projectId) {
+  return request({
+    url: '/system/dashboard/' + projectId + '/week-ops',
+    method: 'get'
+  })
+}

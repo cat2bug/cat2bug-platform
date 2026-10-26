@@ -30,6 +30,16 @@
         <result property="outsideCount" column="outside_count"/>
     </resultMap>
 
+    <resultMap id="SysWeekOpsStatisticsResult" type="com.cat2bug.common.domain.dashboard.SysWeekOpsStatistics">
+        <result property="testerCreated" column="tester_created"/>
+        <result property="testerClosed" column="tester_closed"/>
+        <result property="developerRepaired" column="developer_repaired"/>
+        <result property="outsiderCreated" column="outsider_created"/>
+        <result property="mcpCallCount" column="mcp_call_count"/>
+        <result property="apiCallCount" column="api_call_count"/>
+        <result property="llmCallCount" column="llm_call_count"/>
+    </resultMap>
+
     <resultMap id="SysDefectLineResult" type="com.cat2bug.common.domain.dashboard.SysDefectLine">
         <result property="defectCount" column="defect_count"/>
         <result property="defectTime" column="defect_time"/>
@@ -572,5 +582,89 @@ LEFT JOIN (
             ORDER BY create_time DESC
         ) d
         LEFT JOIN sys_user u ON d.update_by_id = u.user_id
+    </select>
+
+    <!-- 本周角色缺陷动作：create_by × 当前项目角色；CREATE=0 PASS=3 REPAIR=5 CLOSED=6 -->
+    <select id="weekRoleDefectOps" resultMap="SysWeekOpsStatisticsResult">
+        SELECT
+            (
+                SELECT COUNT(*)
+                FROM sys_defect_log l
+                JOIN sys_defect d ON d.defect_id = l.defect_id AND d.project_id = #{projectId}
+                WHERE l.defect_log_type = 0
+                  AND l.create_time &gt;= #{weekStart}
+                  AND l.create_time &lt; #{weekEnd}
+                  AND EXISTS (
+                      SELECT 1
+                      FROM sys_user_project up
+                      JOIN sys_user_project_role upr
+                        ON upr.user_project_id = up.user_project_id AND upr.role_id = 8
+                      WHERE up.project_id = #{projectId}
+                        AND CAST(l.create_by AS CHAR(64)) = CAST(up.user_id AS CHAR(64))
+                  )
+            ) AS tester_created,
+            (
+                SELECT COUNT(*)
+                FROM sys_defect_log l
+                JOIN sys_defect d ON d.defect_id = l.defect_id AND d.project_id = #{projectId}
+                WHERE l.defect_log_type IN (3, 6)
+                  AND l.create_time &gt;= #{weekStart}
+                  AND l.create_time &lt; #{weekEnd}
+                  AND EXISTS (
+                      SELECT 1
+                      FROM sys_user_project up
+                      JOIN sys_user_project_role upr
+                        ON upr.user_project_id = up.user_project_id AND upr.role_id = 8
+                      WHERE up.project_id = #{projectId}
+                        AND CAST(l.create_by AS CHAR(64)) = CAST(up.user_id AS CHAR(64))
+                  )
+            ) AS tester_closed,
+            (
+                SELECT COUNT(*)
+                FROM sys_defect_log l
+                JOIN sys_defect d ON d.defect_id = l.defect_id AND d.project_id = #{projectId}
+                WHERE l.defect_log_type = 5
+                  AND l.create_time &gt;= #{weekStart}
+                  AND l.create_time &lt; #{weekEnd}
+                  AND EXISTS (
+                      SELECT 1
+                      FROM sys_user_project up
+                      JOIN sys_user_project_role upr
+                        ON upr.user_project_id = up.user_project_id AND upr.role_id = 7
+                      WHERE up.project_id = #{projectId}
+                        AND CAST(l.create_by AS CHAR(64)) = CAST(up.user_id AS CHAR(64))
+                  )
+            ) AS developer_repaired,
+            (
+                SELECT COUNT(*)
+                FROM sys_defect_log l
+                JOIN sys_defect d ON d.defect_id = l.defect_id AND d.project_id = #{projectId}
+                WHERE l.defect_log_type = 0
+                  AND l.create_time &gt;= #{weekStart}
+                  AND l.create_time &lt; #{weekEnd}
+                  AND EXISTS (
+                      SELECT 1
+                      FROM sys_user_project up
+                      JOIN sys_user_project_role upr
+                        ON upr.user_project_id = up.user_project_id AND upr.role_id = 9
+                      WHERE up.project_id = #{projectId}
+                        AND CAST(l.create_by AS CHAR(64)) = CAST(up.user_id AS CHAR(64))
+                  )
+            ) AS outsider_created
+    </select>
+
+    <!-- 本周渠道调用：操作日志；LLM 近似匹配 /ai/、/cat2ai/ 或渠道 openai/llm/ai -->
+    <select id="weekChannelOps" resultMap="SysWeekOpsStatisticsResult">
+        SELECT
+            COALESCE(SUM(CASE WHEN oper_channel = 'mcp' THEN 1 ELSE 0 END), 0) AS mcp_call_count,
+            COALESCE(SUM(CASE WHEN oper_channel = 'api' THEN 1 ELSE 0 END), 0) AS api_call_count,
+            COALESCE(SUM(CASE
+                WHEN LOWER(IFNULL(oper_channel, '')) IN ('openai', 'llm', 'ai') THEN 1
+                WHEN oper_url LIKE '%/ai/%' OR oper_url LIKE '%/cat2ai/%' THEN 1
+                ELSE 0
+            END), 0) AS llm_call_count
+        FROM sys_oper_log
+        WHERE oper_time &gt;= #{weekStart}
+          AND oper_time &lt; #{weekEnd}
     </select>
 </mapper>

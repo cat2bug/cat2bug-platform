@@ -787,45 +787,61 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
   }
 }
 
-.el-button-group:focus-within {
-  @include cat2bug-unified-focus-ring;
-  border-radius: $cat2bug-radius;
-}
-
-.el-button-group:focus-within:has(> .el-button--success) {
-  @include cat2bug-success-focus-ring;
-}
-
-.el-button-group:focus-within > .el-button,
-.el-button-group:focus-within > .el-button:focus {
-  box-shadow: none !important;
+/* ========== 动作控件：灭野生 :focus / :focus-visible 外框（EP 2px outline 等）==========
+ * 表单聚焦环、快捷键导航 class（.list-query-toolbar-nav-focused 等）不受影响。
+ */
+.el-button:focus,
+.el-button:focus-visible,
+.el-button.is-text:focus-visible,
+.el-tabs__item:focus,
+.el-tabs__item:focus-visible,
+.right-menu-item:focus,
+.right-menu-item:focus-visible,
+.hamburger-container:focus,
+.hamburger-container:focus-visible,
+.el-menu-item:focus,
+.el-menu-item:focus-visible,
+.el-sub-menu__title:focus,
+.el-sub-menu__title:focus-visible,
+.el-submenu__title:focus,
+.el-submenu__title:focus-visible,
+.tree-sidebar-expand-trigger:focus,
+.tree-sidebar-expand-trigger:focus-visible,
+.tree-sidebar-collapse-toggle:focus,
+.tree-sidebar-collapse-toggle:focus-visible {
   outline: none !important;
 }
 
-/* split-button：组聚焦时子按钮（含下拉三角）不单独高亮，仅整体外框一环 */
-.el-button-group:focus-within > .el-button.el-button--default,
-.el-button-group:focus-within > .el-button:not([type]),
-.el-button-group:focus-within > .el-button.el-button--default:focus,
-.el-button-group:focus-within > .el-button:not([type]):focus {
-  background-color: var(--bg-color-block, var(--input-bg, #ffffff)) !important;
-  border-color: var(--border-color-base, var(--input-border, #dcdfe6)) !important;
-  color: var(--text-color-regular, #606266) !important;
+/* EP tabs：focus-visible 用 inset box-shadow 当焦点框，一并去掉 */
+.el-tabs__item:focus-visible {
+  box-shadow: none !important;
+}
+
+/* 非导航态按钮：点击残留焦点不画统一聚焦环（覆盖 EP focus-visible） */
+.el-button:focus:not(.list-query-toolbar-nav-focused),
+.el-button:focus-visible:not(.list-query-toolbar-nav-focused) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.el-button-group:focus-within > .el-button,
+.el-button-group:focus-within > .el-button:focus,
+.el-button-group:focus-within > .el-button:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .el-button-group:focus-within > .el-button.el-dropdown__caret-button {
   border-left: none !important;
 }
 
-/* plain / 工具栏图标按钮：:focus 仅一层环，border 色不变，避免双边框 */
-.el-button.is-plain:focus,
+/* plain / 工具栏：仅键盘导航 class 画受控环，:focus 不再残留蓝框 */
 .el-button.is-plain.list-query-toolbar-nav-focused,
 .el-button.is-disabled.list-query-toolbar-nav-focused {
   outline: none !important;
   @include cat2bug-unified-focus-ring;
 }
 
-.el-button.is-plain.el-button--default:focus,
-.el-button.is-plain:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info):focus,
 .el-button.is-plain.el-button--default.list-query-toolbar-nav-focused,
 .el-button.is-plain:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info).list-query-toolbar-nav-focused {
   @include cat2bug-unified-focus-border;
@@ -833,14 +849,12 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
   color: #606266 !important;
 }
 
-.el-button--primary.is-plain:focus,
 .el-button--primary.is-plain.list-query-toolbar-nav-focused {
   border-color: #b3d8ff !important;
   background-color: #ecf5ff !important;
   color: var(--cat2bug-primary, #1890ff) !important;
 }
 
-.el-button--success.is-plain:focus,
 .el-button--success.is-plain.list-query-toolbar-nav-focused {
   border-color: #c2e7b0 !important;
   background-color: #f0f9eb !important;
@@ -848,12 +862,10 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
   @include cat2bug-success-focus-ring;
 }
 
-.el-button--success:not(.is-plain):not(.el-button--text):not(.is-circle):focus,
 .el-button--success:not(.is-plain):not(.el-button--text):not(.is-circle).list-query-toolbar-nav-focused {
   @include cat2bug-success-focus-ring;
 }
 
-.el-button--danger.is-plain:focus,
 .el-button--danger.is-plain.list-query-toolbar-nav-focused,
 .el-button--danger.is-plain.is-disabled.list-query-toolbar-nav-focused {
   border-color: #fbc4c4 !important;
@@ -862,12 +874,10 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
   @include cat2bug-danger-focus-ring;
 }
 
-.el-button--danger:not(.is-plain):not(.el-button--text):not(.is-circle):focus,
 .el-button--danger:not(.is-plain):not(.el-button--text):not(.is-circle).list-query-toolbar-nav-focused {
   @include cat2bug-danger-focus-ring;
 }
 
-.el-button--warning.is-plain:focus,
 .el-button--warning.is-plain.list-query-toolbar-nav-focused {
   border-color: #b3d8ff !important;
   background-color: #ecf5ff !important;
@@ -880,21 +890,15 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
   color: var(--cat2bug-primary, #1890ff) !important;
 }
 
-.el-button--info.is-plain:focus,
 .el-button--info.is-plain.list-query-toolbar-nav-focused {
   border-color: #d3d4d6 !important;
   background-color: #f4f4f5 !important;
   color: #909399 !important;
 }
 
-.el-button:not(.is-plain):not(.el-button--text):not(.is-circle):focus,
 .el-button:not(.is-plain):not(.el-button--text):not(.is-circle).list-query-toolbar-nav-focused {
   outline: none !important;
   @include cat2bug-unified-focus-ring;
-}
-
-.el-button:not(.is-plain):not(.el-button--text):not(.is-circle):focus,
-.el-button:not(.is-plain):not(.el-button--text):not(.is-circle).list-query-toolbar-nav-focused {
   @include cat2bug-unified-focus-border;
 }
 
@@ -1139,11 +1143,18 @@ img.cat2bug-image-error__img {
   flex: 0 0 auto;
 }
 
-/* 图片预览 popover：宽度随内容收缩，左右留白对称（EP3 默认 min-width:150px 会在右侧留空） */
+/* 图片预览 popover：宽度随内容收缩；上下左右内边距一致（避免 inline 基线空隙导致底边偏大） */
 .el-popover.cat2bug-preview-image-popover {
   width: fit-content !important;
   min-width: unset !important;
   box-sizing: border-box;
+  padding: 8px !important;
+  line-height: 0;
+  .row-image {
+    display: flex;
+    align-items: center;
+    line-height: 0;
+  }
 }
 
 /* 列表数字/枚举/时间列：水平居中 */
@@ -2972,8 +2983,7 @@ html:not(.dark) .project-option-list-tools .el-button--primary.is-plain {
   gap: var(--cat2bug-toolbar-item-gap, 10px);
   flex-shrink: 0;
 
-  /* 键盘 ←/→ 导航：单环聚焦（border 色不变，避免 border 高亮 + box-shadow 视觉上双环） */
-  .el-button.is-plain:focus,
+  /* 键盘 ←/→ 导航：仅 nav-focused class 画单环 */
   .el-button.is-plain.list-query-toolbar-nav-focused {
     outline: none !important;
     @include cat2bug-unified-focus-border;
@@ -2981,7 +2991,6 @@ html:not(.dark) .project-option-list-tools .el-button--primary.is-plain {
   }
 }
 
-html.dark .project-option-list-tools-right .el-button--primary.is-plain:not(.cat2bug-btn-outline):focus,
 html.dark .project-option-list-tools-right .el-button--primary.is-plain:not(.cat2bug-btn-outline).list-query-toolbar-nav-focused {
   background-color: var(--el-color-primary-light-3, #4ea8ff) !important;
   border-color: var(--el-color-primary, #1890ff) !important;
@@ -2989,7 +2998,6 @@ html.dark .project-option-list-tools-right .el-button--primary.is-plain:not(.cat
   box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
 }
 
-html.dark .project-option-list-tools-right .el-button--primary.is-plain.cat2bug-btn-outline:focus,
 html.dark .project-option-list-tools-right .el-button--primary.is-plain.cat2bug-btn-outline.list-query-toolbar-nav-focused {
   background-color: rgba(24, 144, 255, 0.12) !important;
   border-color: var(--border-color-base) !important;

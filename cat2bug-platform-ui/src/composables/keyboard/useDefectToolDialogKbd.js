@@ -47,7 +47,10 @@ const legacyMixin = {
       return (form && form.$el) || this.$el
     },
     getFieldHintScrollContainer() {
-      const body = this.$el && this.$el.closest('.el-dialog__body')
+      // Vue3 多根/注释节点时 $el 可能不是 Element，没有 closest
+      const el = this.$el
+      const root = el && el.nodeType === 1 ? el : (el && el.parentElement)
+      const body = root && typeof root.closest === 'function' ? root.closest('.el-dialog__body') : null
       return body || this.getFieldHintContainer()
     }
   }

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>角色预设选择</title>
+  <link rel="stylesheet" href="preview-shared.css" />
+  <script src="preview-theme.js"></script>
+</head>
+<body>
+  <div class="frame">
+    <div class="meta">
+      <h1>4 · 角色预设</h1>
+      <p>卡片选中态用主色描边（对齐现网 option card），不用大圆角胶囊。</p>
+            <div class="meta-row">
+        <div class="nav-previews">
+          <a href="index.html">索引</a>
+          <a href="workbench-work-tester.html">默认态</a>
+          <a href="workbench-edit.html">编辑态</a>
+          <a href="workbench-board.html">看板</a>
+          <a class="on" href="workbench-presets.html">预设</a>
+          <a href="workbench-grid-phase2.html">二期栅格</a>
+        </div>
+        <div class="theme-switch">
+          <button type="button" data-theme-btn="light">浅色</button>
+          <button type="button" data-theme-btn="dark">暗色</button>
+        </div>
+      </div>
+</div>
+
+    <div class="shell">
+            <aside class="aside">
+        <div class="team-select">
+          <span class="avatar">C</span>
+          <span class="name">Cat2Bug</span>
+          <span class="caret">▾</span>
+        </div>
+        <div class="aside-scroll">
+          <div class="menu-item"><span class="ico"></span>项目管理</div>
+          <div class="aside-divider"></div>
+          <div class="menu-item active"><span class="ico"></span>工作台</div>
+          <div class="menu-item"><span class="ico"></span>源码管理</div>
+          <div class="menu-item"><span class="ico"></span>测试用例</div>
+          <div class="menu-item"><span class="ico"></span>测试计划</div>
+          <div class="menu-item"><span class="ico"></span>缺陷管理</div>
+          <div class="menu-item"><span class="ico"></span>交付物</div>
+          <div class="menu-item"><span class="ico"></span>文档管理</div>
+          <div class="aside-divider"></div>
+          <div class="menu-item"><span class="ico"></span>项目设置</div>
+          <div class="menu-item"><span class="ico"></span>团队设置</div>
+        </div>
+      </aside>
+      <div class="main-col">
+        <div class="navbar">
+          <div class="crumb">团队 / <strong>Demo 项目</strong></div>
+          <div class="right"><span class="avatar">张</span></div>
+        </div>
+        <div class="app-container">
+          <div class="project-label">
+            <div>
+              <div class="name">选择你的工作台预设</div>
+              <div class="hint">可随时再改 · 改完仍可用「编辑」微调</div>
+            </div>
+            <div class="actions">
+              <span class="btn">取消</span>
+              <span class="btn primary">套用所选</span>
+            </div>
+          </div>
+          <div class="preset-grid">
+            <div class="preset-card selected">
+              <h3>测试</h3>
+              <p>个人 KPI/趋势 · 我的缺陷 · 今日计划 · 待评审<br/>看板：项目轻量 KPI + 活动</p>
+            </div>
+            <div class="preset-card">
+              <h3>开发</h3>
+              <p>个人 KPI/趋势 · 待我修复 · 提交/PR<br/>看板：项目缺陷趋势 + 活动</p>
+            </div>
+            <div class="preset-card">
+              <h3>管理</h3>
+              <p>工作台：团队任务/需求/BUG + 项目待办 + 源码/PR<br/>看板：KPI 墙 + 走势/计划统计</p>
+            </div>
+            <div class="preset-card">
+              <h3>空白</h3>
+              <p>仅快捷新建<br/>看板为空，自行添加组件</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="legend">确认点：四个预设内容是否要微调？</p>
+  </div>
+</body>
+</html>

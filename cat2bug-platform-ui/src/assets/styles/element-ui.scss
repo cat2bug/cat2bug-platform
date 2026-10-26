@@ -24,23 +24,29 @@
 
 /* 增强后 spinner 变窄，须左右+上下绝对居中（勿只 translateY，否则会贴左） */
 .el-loading-mask[data-cat2bug-loading='1'] {
+  overflow: visible;
+
   .el-loading-spinner {
     position: absolute;
     left: 50%;
     top: 50%;
     right: auto;
     bottom: auto;
-    margin: 0;
+    margin: 0 !important;
+    /* 覆盖 EP 默认 margin-top:-21px，避免与 translate 叠加重心上移被裁切 */
+    margin-top: 0 !important;
     width: max-content;
-    max-width: 100%;
+    max-width: calc(100% - 16px);
     transform: translate(-50%, -50%);
     text-align: center;
+    overflow: visible;
   }
 
   .cat2bug-el-loading-host {
     display: inline-flex;
     justify-content: center;
     align-items: center;
+    overflow: visible;
   }
 }
 

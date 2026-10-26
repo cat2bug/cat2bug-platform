@@ -1,0 +1,104 @@
+.wb-list {
+  position: relative;
+  flex: 1 1 auto;
+  align-self: stretch;
+  width: 100%;
+  min-height: 120px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+/* 遮罩铺满列表区，避免猫动画贴顶被父级 overflow 裁切 */
+.wb-list.el-loading-parent--relative,
+.wb-list > .el-loading-mask {
+  min-height: inherit;
+}
+.wb-list > .el-loading-mask {
+  border-radius: inherit;
+}
+.wb-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  padding: 28px 14px;
+  text-align: center;
+  color: var(--text-color-secondary);
+  font-size: 13px;
+}
+.wb-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color-lighter);
+}
+.wb-row:last-child {
+  border-bottom: 0;
+}
+.wb-row:hover {
+  background: var(--table-row-hover-bg, #f5f7fa);
+}
+.wb-row__main {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+.wb-row__title {
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+  font-size: 14px;
+  color: var(--text-color-primary);
+  min-width: 0;
+}
+.wb-row__title .id {
+  color: var(--cat2bug-accent, var(--cat2bug-primary));
+  font-weight: 500;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+.wb-row__title .name,
+.wb-row__title .desc {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-color-primary);
+}
+.wb-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+}
+.wb-row__meta .chip {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 2px;
+  font-size: 12px;
+  background: var(--bg-color-block, #f5f7fa);
+  color: var(--text-color-secondary);
+}
+/* 状态色走 DefectStateFlag / --defect-state-*，此处不再用浅粉底色 */
+.wb-row__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.wb-more {
+  margin-top: auto;
+  padding: 8px 14px 12px;
+  text-align: right;
+  flex-shrink: 0;
+}

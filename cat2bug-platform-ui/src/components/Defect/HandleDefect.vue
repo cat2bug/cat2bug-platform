@@ -34,14 +34,20 @@
     </template>
     <div ref="handleDefectBody" class="app-container defect-edit-body" v-loading="loading">
       <div class="defect-edit-body-log-first">
-        <list-defect-log ref="defectLogFirst" :pageSize="1" />
+        <list-defect-log
+          ref="defectLogFirst"
+          :pageSize="1"
+          :fallback-describe="defect.defectDescribe || ''"
+        />
       </div>
       <el-collapse v-model="activeNames">
         <el-collapse-item name="defectDescribe">
           <template #title>
             <span class="handle-defect-collapse-title" data-collapse-name="defectDescribe">{{ $i18n.t('describe') }}</span>
           </template>
-          <markdown-content v-if="defect.defectDescribe" :content="defect.defectDescribe+''" />
+          <div v-if="defect.defectDescribe" class="defect-describe-body markdown-rhythm">
+            <markdown-content :content="defect.defectDescribe+''" />
+          </div>
           <cat2-bug-empty v-else :description="$t('no-data')" />
         </el-collapse-item>
         <el-collapse-item name="customFields">
@@ -80,7 +86,12 @@
           <template #title>
             <span class="handle-defect-collapse-title" data-collapse-name="log">{{ $i18n.t('log') }}</span>
           </template>
-          <list-defect-log ref="defectLog" :pageSize="5" show-comment />
+          <list-defect-log
+            ref="defectLog"
+            :pageSize="5"
+            show-comment
+            :fallback-describe="defect.defectDescribe || ''"
+          />
         </el-collapse-item>
       </el-collapse>
       <div class="dialog-footer"></div>
@@ -428,11 +439,40 @@ export default {
   .defect-edit-body-log-first {
     margin-bottom: 20px;
   }
+  .defect-describe-body {
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-sizing: border-box;
+    font-size: 14px;
+    line-height: 1.7;
+    font-weight: 500;
+    color: var(--text-color-primary, #303133);
+
+    :deep(.markdown-it-vue),
+    :deep(.md-body) {
+      color: inherit;
+      font-size: inherit;
+      line-height: inherit;
+    }
+    :deep(ul),
+    :deep(ol) {
+      padding-left: 1.35em;
+    }
+  }
+  /* 与暗色 theme-dark .el-collapse 对齐：标题上下各一条分隔线（浅色此前被 border-width:0 抹掉） */
   :deep(.el-collapse){
+    border-top: 1px solid var(--border-color-light, var(--el-border-color-light, #ebeef5));
+    border-bottom: 1px solid var(--border-color-light, var(--el-border-color-light, #ebeef5));
+    border-left: none;
+    border-right: none;
+
     .el-collapse-item__header {
       font-size: 16px;
       overflow: visible;
       position: relative;
+      border-bottom: 1px solid var(--border-color-light, var(--el-border-color-light, #ebeef5));
     }
     .handle-defect-collapse-title {
       position: relative;
@@ -440,21 +480,16 @@ export default {
       padding-right: 4px;
     }
     .el-collapse-item__content {
-      padding-top: 20px;
-      padding-bottom: 0;
+      /* 与标题、下一块标题对称，避免描述区「上大下小」 */
+      padding-top: 10px;
+      padding-bottom: 10px;
 
       > :first-child {
         margin-top: 0;
       }
     }
     > .el-collapse-item > .el-collapse-item__wrap {
-      border-bottom: 1px solid var(--border-color-light, #ebeef5);
-    }
-    border-width: 0px;
-    .el-collapse-item:last-child {
-      .el-collapse-item__wrap {
-        border-width: 0px;
-      }
+      border-bottom: 1px solid var(--border-color-light, var(--el-border-color-light, #ebeef5));
     }
   }
   h5 {

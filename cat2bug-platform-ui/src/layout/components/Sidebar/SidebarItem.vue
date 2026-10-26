@@ -108,6 +108,15 @@ export default {
       if (isExternal(this.basePath)) {
         return this.basePath
       }
+      // 已是绝对命名空间菜单 path（/{teamKey}/{projectKey}/module），勿再与 basePath 拼接
+      const raw = routePath != null ? String(routePath) : ''
+      if (raw.startsWith('/')) {
+        if (routeQuery) {
+          let query = JSON.parse(routeQuery)
+          return { path: raw, query }
+        }
+        return raw
+      }
       if (routeQuery) {
         let query = JSON.parse(routeQuery);
         return { path: path.resolve(this.basePath, routePath), query: query }

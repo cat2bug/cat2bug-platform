@@ -121,6 +121,13 @@ public class DashboardResource {
         return AjaxResult.success(sysDashboardService.memberOfDefectsLine(projectId, timeType));
     }
 
+    @GET
+    @Path("/{projectId}/week-ops")
+    @RequiresPermissions("system:dashboard:query")
+    public AjaxResult weekOps(@PathParam("projectId") Long projectId) {
+        return AjaxResult.success(sysDashboardService.weekOps(projectId));
+    }
+
     @POST
     @Path("/{projectId}/defect-line/export")
     @Produces(SPREADSHEET_MEDIA_TYPE)

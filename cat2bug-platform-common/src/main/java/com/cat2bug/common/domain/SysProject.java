@@ -22,6 +22,8 @@ public class SysProject {
     private Boolean lock;
     private String lockRemark;
     private List<SysUser> members;
+    /** 列表查询：仅返回当前用户参与的项目（「我参与的」） */
+    private Boolean memberOnly;
 
     public Long getProjectId() {
         return projectId;
@@ -165,5 +167,13 @@ public class SysProject {
 
     public void setMembers(List<SysUser> members) {
         this.members = members;
+    }
+
+    public Boolean getMemberOnly() {
+        return memberOnly;
+    }
+
+    public void setMemberOnly(Boolean memberOnly) {
+        this.memberOnly = memberOnly;
     }
 }

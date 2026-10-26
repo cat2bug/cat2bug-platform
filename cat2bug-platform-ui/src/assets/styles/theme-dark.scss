@@ -419,7 +419,8 @@ html.dark {
   background-color: var(--bg-color-page);
   color: var(--text-color-primary);
 
-  --page-progress-color: var(--cat2bug-primary);
+  /* 进度条：黄 → 品牌蓝（与 index.html 冷启动条一致） */
+  --page-progress-color: #1890ff;
   --page-progress-glow: rgba(24, 144, 255, 0.55);
   --page-progress-gradient-start: #e6ac00;
 
@@ -1997,11 +1998,11 @@ html.dark {
       --el-button-hover-text-color: var(--cat2bug-primary);
       --el-button-hover-bg-color: rgba(24, 144, 255, 0.12);
       --el-button-hover-border-color: var(--cat2bug-primary);
-      --el-button-outline-color: var(--cat2bug-field-focus-color, var(--cat2bug-field-focus-color));
+      --el-button-outline-color: transparent;
 
+      &:focus,
       &:focus-visible {
-        outline: 2px solid var(--cat2bug-field-focus-color, var(--cat2bug-field-focus-color)) !important;
-        outline-offset: 1px;
+        outline: none !important;
       }
     }
   }
@@ -2648,15 +2649,15 @@ html.dark {
       border-color: var(--border-color-base) !important;
       color: var(--text-color-regular) !important;
 
-      &:hover, &:focus {
+      &:hover {
         background-color: rgba(24, 144, 255, 0.15) !important;
         border-color: var(--cat2bug-primary) !important;
         color: var(--cat2bug-primary) !important;
       }
 
+      &:focus,
       &:focus-visible {
-        outline: 2px solid var(--cat2bug-field-focus-color, var(--cat2bug-field-focus-color)) !important;
-        outline-offset: 1px;
+        outline: none !important;
       }
 
       &:active {
@@ -2866,8 +2867,10 @@ html.dark {
       color: var(--cat2bug-primary) !important;
     }
 
+    &:focus,
     &:focus-visible {
-      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.35) !important;
+      outline: none !important;
+      box-shadow: none !important;
     }
   }
 
@@ -2944,15 +2947,15 @@ html.dark {
       border-color: var(--border-color-base) !important;
       color: var(--text-color-regular) !important;
 
-      &:hover, &:focus {
+      &:hover {
         background-color: rgba(24, 144, 255, 0.12) !important;
         border-color: var(--cat2bug-primary) !important;
         color: var(--cat2bug-primary) !important;
       }
 
+      &:focus,
       &:focus-visible {
-        outline: 2px solid var(--cat2bug-field-focus-color, var(--cat2bug-field-focus-color)) !important;
-        outline-offset: 1px;
+        outline: none !important;
       }
 
       &:active {
@@ -2962,21 +2965,21 @@ html.dark {
 
     // 强类型的朴素按钮单独微调（Hover 时保持其本身主题色）
     &--success.is-plain:not(.is-disabled) {
-      &:hover, &:focus {
+      &:hover {
         background-color: rgba(103, 194, 58, 0.15) !important;
         border-color: #67c23a !important;
         color: #67c23a !important;
       }
     }
     &--warning.is-plain:not(.is-disabled) {
-      &:hover, &:focus {
+      &:hover {
         background-color: rgba(230, 162, 44, 0.15) !important;
         border-color: #e6a23c !important;
         color: #e6a23c !important;
       }
     }
     &--danger.is-plain:not(.is-disabled) {
-      &:hover, &:focus {
+      &:hover {
         background-color: rgba(251, 83, 91, 0.15) !important;
         border-color: var(--cat2bug-delete-color, rgb(251, 83, 91)) !important;
         color: var(--cat2bug-delete-color, rgb(251, 83, 91)) !important;
@@ -2990,7 +2993,7 @@ html.dark {
       border-color: var(--cat2bug-primary) !important;
       color: #ffffff !important;
 
-      &:hover, &:focus {
+      &:hover {
         background-color: var(--el-color-primary-light-3, #4ea8ff) !important;
         border-color: var(--el-color-primary-light-3, #4ea8ff) !important;
         color: #ffffff !important;
@@ -3009,7 +3012,7 @@ html.dark {
       border-color: var(--border-color-base) !important;
       color: var(--text-color-regular) !important;
 
-      &:hover, &:focus {
+      &:hover {
         background-color: rgba(24, 144, 255, 0.12) !important;
         border-color: var(--cat2bug-primary) !important;
         color: var(--cat2bug-primary) !important;
@@ -3024,8 +3027,7 @@ html.dark {
       border-color: #2e7d32 !important;
       color: #ffffff !important;
 
-      &:hover,
-      &:focus {
+      &:hover {
         background-color: #43a047 !important;
         border-color: #43a047 !important;
         color: #ffffff !important;

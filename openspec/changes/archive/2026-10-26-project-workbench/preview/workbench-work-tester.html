@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>工作台默认态 · 测试预设</title>
+  <link rel="stylesheet" href="preview-shared.css" />
+  <script src="preview-theme.js"></script>
+</head>
+<body>
+  <div class="frame">
+    <div class="meta">
+      <h1>1 · 工作台默认态（测试预设）</h1>
+      <p>工作台 = <b>我</b>的待办 + <b>我</b>的统计；看板 = 项目级健康度。下方已加个人 KPI / 趋势 / 状态分布示意。</p>
+      <div class="meta-row">
+        <div class="nav-previews">
+          <a href="index.html">索引</a>
+          <a class="on" href="workbench-work-tester.html">默认态</a>
+          <a href="workbench-edit.html">编辑态</a>
+          <a href="workbench-board.html">看板</a>
+          <a href="workbench-presets.html">预设</a>
+          <a href="workbench-grid-phase2.html">二期栅格</a>
+        </div>
+        <div class="theme-switch">
+          <button type="button" data-theme-btn="light">浅色</button>
+          <button type="button" data-theme-btn="dark">暗色</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="shell">
+      <aside class="aside">
+        <div class="team-select">
+          <span class="avatar">C</span>
+          <span class="name">Cat2Bug</span>
+          <span class="caret">▾</span>
+        </div>
+        <div class="aside-scroll">
+          <div class="menu-item"><span class="ico"></span>项目管理</div>
+          <div class="aside-divider"></div>
+          <div class="menu-item active"><span class="ico"></span>工作台</div>
+          <div class="menu-item"><span class="ico"></span>源码管理</div>
+          <div class="menu-item"><span class="ico"></span>测试用例</div>
+          <div class="menu-item"><span class="ico"></span>测试计划</div>
+          <div class="menu-item"><span class="ico"></span>缺陷管理</div>
+          <div class="menu-item"><span class="ico"></span>交付物</div>
+          <div class="menu-item"><span class="ico"></span>文档管理</div>
+          <div class="aside-divider"></div>
+          <div class="menu-item"><span class="ico"></span>项目设置</div>
+          <div class="menu-item"><span class="ico"></span>团队设置</div>
+        </div>
+      </aside>
+      <div class="main-col">
+        <div class="navbar">
+          <div class="left">
+            <div class="hamburger" aria-hidden="true"><span></span></div>
+            <div class="crumb">首页 / <strong>工作台</strong></div>
+          </div>
+          <div class="right">
+            <div class="nav-icon" title="主题">◐</div>
+            <div class="nav-icon" title="通知">◉</div>
+            <div class="user-chip"><span class="ava">张</span></div>
+          </div>
+        </div>
+        <div class="app-container">
+          <div class="project-label">
+            <div>
+              <div class="name">工作台</div>
+              <div class="hint">早上好，张三 · 待办 5 · 今日计划 3 · 未读通知 2</div>
+            </div>
+            <div class="actions">
+              <span class="btn ghost">预设：测试 ▾</span>
+              <span class="btn">编辑工作台</span>
+            </div>
+          </div>
+
+          <div class="el-tabs-like">
+            <div class="tab active">工作台</div>
+            <div class="tab">看板</div>
+          </div>
+
+          <div class="list-page-toolbar">
+            <div class="list-page-toolbar__filters stats-inline">tester 预设 · 含个人统计 · 可关可排</div>
+            <div class="list-page-toolbar__actions">
+              <span class="btn primary plain">+ 新建缺陷</span>
+              <span class="btn">+ 新建用例</span>
+              <span class="btn">+ 新建计划</span>
+              <span class="btn">+ 新建文档</span>
+            </div>
+          </div>
+
+          <!-- 个人 KPI：仅当前用户 -->
+          <div class="kpi-row cols-4">
+            <div class="kpi mine">
+              <div class="n">5</div>
+              <div class="l">待我处理</div>
+              <div class="sub">指派给我 · PENDING</div>
+            </div>
+            <div class="kpi mine">
+              <div class="n">2</div>
+              <div class="l">待我审核</div>
+              <div class="sub">AUDIT · 验证通过/驳回</div>
+            </div>
+            <div class="kpi mine">
+              <div class="n">3</div>
+              <div class="l">今日已处理</div>
+              <div class="sub">关闭 / 通过 / 指派</div>
+            </div>
+            <div class="kpi mine">
+              <div class="n">1/3</div>
+              <div class="l">今日计划进度</div>
+              <div class="sub">我执行的计划项</div>
+            </div>
+          </div>
+
+          <div class="personal-charts">
+            <div class="widget">
+              <div class="widget-hd">
+                <div><span class="name">我的处理趋势</span></div>
+                <span class="chip muted">近 14 天 · 仅本人</span>
+              </div>
+              <div class="widget-bd" style="padding:12px 14px 14px;">
+                <div class="mini-bars" aria-hidden="true">
+                  <i style="height:35%"></i><i style="height:50%"></i><i style="height:28%"></i>
+                  <i style="height:62%"></i><i style="height:40%"></i><i style="height:70%"></i>
+                  <i style="height:55%"></i><i style="height:48%"></i><i style="height:66%"></i>
+                  <i style="height:44%"></i><i style="height:58%"></i><i style="height:72%"></i>
+                  <i style="height:38%"></i><i style="height:60%"></i>
+                </div>
+                <div class="stats-inline" style="margin-top:8px;">处理量（指派/修复/关闭等）· 可切换 14 / 30 天</div>
+              </div>
+            </div>
+            <div class="widget">
+              <div class="widget-hd">
+                <div><span class="name">我的缺陷状态</span></div>
+                <span class="chip muted">名下分布</span>
+              </div>
+              <div class="mix-row">
+                <div class="donut-fake" aria-hidden="true"></div>
+                <div class="mix-legend">
+                  <span><b>5</b> 处理中 PENDING</span>
+                  <span><b>2</b> 待审核 AUDIT</span>
+                  <span><b>12</b> 已关闭（本月）</span>
+                  <span><b>1</b> 其它</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="widget">
+              <div class="widget-hd">
+                <div><span class="name">我的缺陷</span><span class="count">(5)</span></div>
+                <span class="chip muted">台面可操作</span>
+              </div>
+              <div class="widget-bd">
+                <div class="row-item">
+                  <div class="main">
+                    <div><span class="id">#102</span><span class="desc">支付回调偶发失败</span></div>
+                    <div class="meta-line">
+                      <span class="chip pending">PENDING</span>
+                      <span class="chip high">高</span>
+                      <span>指派给我</span>
+                    </div>
+                  </div>
+                  <div class="actions">
+                    <span class="op orange">指派</span>
+                    <span class="op muted">详情</span>
+                  </div>
+                </div>
+                <div class="row-item">
+                  <div class="main">
+                    <div><span class="id">#98</span><span class="desc">列表在空数据时空白无提示</span></div>
+                    <div class="meta-line">
+                      <span class="chip audit">AUDIT</span>
+                      <span>待我验证</span>
+                    </div>
+                  </div>
+                  <div class="actions">
+                    <span class="op green">通过</span>
+                    <span class="op orange">驳回</span>
+                    <span class="op red">关闭</span>
+                  </div>
+                </div>
+                <div class="row-item">
+                  <div class="main">
+                    <div><span class="id">#91</span><span class="desc">导出 Excel 列宽错乱</span></div>
+                    <div class="meta-line"><span class="chip pending">PENDING</span></div>
+                  </div>
+                  <div class="actions"><span class="op orange">指派</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div class="widget">
+                <div class="widget-hd">
+                  <div><span class="name">今日计划项</span><span class="count">(3)</span></div>
+                </div>
+                <div class="widget-bd">
+                  <div class="row-item">
+                    <div class="main">
+                      <div class="desc">登录成功路径</div>
+                      <div class="meta-line">计划：Sprint 12 · 未执行</div>
+                    </div>
+                    <div class="actions">
+                      <span class="op green">通过</span>
+                      <span class="op orange">失败</span>
+                    </div>
+                  </div>
+                  <div class="row-item">
+                    <div class="main">
+                      <div class="desc">边界金额校验</div>
+                      <div class="meta-line">计划：Sprint 12 · 未执行</div>
+                    </div>
+                    <div class="actions">
+                      <span class="op green">通过</span>
+                      <span class="op orange">失败</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="widget">
+                <div class="widget-hd">
+                  <div><span class="name">待评审用例</span><span class="count">(2)</span></div>
+                </div>
+                <div class="widget-bd">
+                  <div class="row-item">
+                    <div class="main"><div class="desc">TC-88 支付超时重试</div></div>
+                    <div class="actions"><span class="op">去评审</span></div>
+                  </div>
+                  <div class="row-item">
+                    <div class="main"><div class="desc">TC-92 优惠券叠加</div></div>
+                    <div class="actions"><span class="op">去评审</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="legend">右上角「浅色 / 暗色」可切换。侧栏结构对照现网：团队选择 + 项目管理 / 业务菜单 / 设置。</p>
+  </div>
+</body>
+</html>

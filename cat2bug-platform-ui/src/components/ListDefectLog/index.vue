@@ -12,7 +12,11 @@
       :class="{ 'list-defect-log-item--divider': logIndex < logList.length - 1 }"
     >
       <el-col class="list-defect-log-row" :span="24">
-        <component :is="logComponentType(log)" :log="log"></component>
+        <component
+          :is="logComponentType(log)"
+          :log="log"
+          :fallback-describe="fallbackDescribe"
+        />
         <div>
           <el-button v-if="commentPermi" :icon="$legacyIcon('el-icon-chat-line-round')" size="small" link @click="showCommentInputHandle(log,logIndex)">{{$i18n.t('comment')}}</el-button>
           <span class="time">{{ parseTime(log.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
@@ -103,6 +107,11 @@ export default {
     showComment: {
       type: Boolean,
       default: false
+    },
+    /** CREATE 日志未落库描述时，用缺陷正文兜底展示 */
+    fallbackDescribe: {
+      type: String,
+      default: ''
     }
   },
   computed: {

@@ -1,5 +1,5 @@
 <template>
-  <div class="cat2bug-preview-image" @click.stop>
+  <div class="cat2bug-preview-image" :class="{ 'is-cover': fit === 'cover' }" @click.stop>
     <div v-if="imageCount==1">
       <cat2-bug-image
         v-for="(img,index) in images"
@@ -9,7 +9,8 @@
         :src="resolveImage(img, index)"
         class="click"
         :preview-src-list="resolvedPreviewList"
-        fit="contain"
+        :initial-index="index"
+        :fit="fit"
         @error="onImageError(index)"
       ></cat2-bug-image>
     </div>
@@ -29,7 +30,8 @@
           :src="resolveImage(img, index)"
           class="click"
           :preview-src-list="resolvedPreviewList"
-          fit="contain"
+          :initial-index="index"
+          :fit="fit"
           @error="onImageError(index)"
         ></cat2-bug-image>
       </div>
@@ -40,7 +42,8 @@
             style="width: 100%; height: 100%;"
             :src="previewUrl"
             :preview-src-list="resolvedPreviewList"
-            fit="contain"
+            :initial-index="0"
+            :fit="fit"
           ></cat2-bug-image>
           <span v-if="imageCount>1" class="number">+{{ imageCount }}</span>
         </div>
@@ -70,11 +73,15 @@ export default {
     },
     width: {
       type: Number,
-      default: 100
+      default: 52
     },
     height: {
       type: Number,
-      default: 100
+      default: 52
+    },
+    fit: {
+      type: String,
+      default: 'cover'
     }
   },
   watch: {
@@ -118,47 +125,65 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-:deep(.el-image){
-  background-color: var(--cat2bug-image-placeholder-bg, #f2f6fc);
-  padding: 5px;
-  border-radius: var(--cat2bug-border-radius, 4px);
-  box-sizing: border-box;
+.cat2bug-preview-image {
+  :deep(.el-image) {
+    background-color: var(--cat2bug-image-placeholder-bg, #f2f6fc);
+    padding: 5px;
+    border-radius: var(--cat2bug-border-radius, 4px);
+    box-sizing: border-box;
+  }
+  &.is-cover :deep(.el-image) {
+    padding: 0;
+  }
+  :deep(.el-popover__reference-wrapper) {
+    display: inline-flex;
+  }
 }
 .el-image:hover, .button:hover {
   background-color: var(--table-row-hover-bg, #e8f4ff);
 }
 .row-image {
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 5px;
+  align-items: center;
+  gap: 6px;
+  line-height: 0;
+  font-size: 0;
   .el-image:hover {
     z-index: 999;
     border: 1px solid #DCDFE6;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* 鼠标滑过时显示阴影 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
   }
 }
 .preview {
   position: relative;
+  overflow: visible;
   .number {
     position: absolute;
-    right: 5px;
-    bottom: 5px;
-    background-color: rgba(255,255,255,0.8);
+    right: 4px;
+    bottom: 4px;
+    z-index: 2;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
     border-radius: 3px;
-    padding: 3px;
-    line-height: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.62);
+    pointer-events: none;
+    box-sizing: border-box;
   }
 }
 .click, button {
   cursor: pointer;
 }
 .click:hover {
-  scale: 1.2;
-}
-.cat2bug-preview-image {
-  :deep(.el-popover__reference-wrapper){
-    display: inline-flex;
-  }
+  /* 用 transform，避免 scale 属性撑大布局导致底部空隙偏大 */
+  transform: scale(1.08);
+  transform-origin: center center;
 }
 </style>

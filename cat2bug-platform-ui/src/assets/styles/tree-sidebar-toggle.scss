@@ -33,9 +33,12 @@
   background-color: var(--sidebar-expand-trigger-hover-bg, #ecf5ff);
 }
 
+.tree-sidebar-expand-trigger:focus,
 .tree-sidebar-expand-trigger:focus-visible,
+.tree-sidebar-collapse-toggle:focus,
 .tree-sidebar-collapse-toggle:focus-visible {
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
+  outline: none;
+  box-shadow: none;
 }
 
 .tree-sidebar-expand-trigger .tree-sidebar-expand-svg,

@@ -1,0 +1,306 @@
+/* 对齐 openspec/.../preview/preview-shared.css 工作台视觉 */
+
+.wb-proto {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wb-proto__kpi {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1100px) {
+  .wb-proto__kpi { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .wb-proto__kpi { grid-template-columns: 1fr; }
+}
+
+/* 顶栏：左上周报 + 右侧 KPI（等高拉伸） */
+.wb-proto__top {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
+  gap: 12px;
+  align-items: stretch;
+  min-height: 200px;
+}
+.wb-proto__top.is-weekly-only,
+.wb-proto__top.is-kpi-only,
+.wb-proto__top.is-personal-kpi {
+  grid-template-columns: 1fr;
+  min-height: 0;
+}
+.wb-proto__top.is-team-top {
+  grid-template-columns: minmax(300px, 1.1fr) minmax(0, 1.9fr);
+  align-items: stretch;
+  min-height: 280px;
+}
+.wb-proto__top > .wb-widget--weekly {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+.wb-proto__top > .wb-widget--weekly .wb-widget__bd {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.wb-proto__top-kpi {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* 挂载点，不加边框/底色/内边距，避免与 .wb-proto gap:12px 叠出双层间距 */
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+/* 测试/开发：通栏 4 卡（:deep 仅在带 scoped 的入口里生效，见 index.vue） */
+.wb-proto__top-kpi.is-personal {
+  height: auto;
+}
+/* 管理：任务 / 需求 / BUG 与周报同列等高 */
+.wb-proto__top.is-team-top .wb-proto__top-kpi.is-team {
+  height: 100%;
+}
+@media (max-width: 1100px) {
+  .wb-proto__top,
+  .wb-proto__top.is-team-top {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .wb-proto__top-kpi.is-personal :deep(.my-kpi) {
+    grid-template-columns: 1fr 1fr;
+  }
+  .wb-proto__top-kpi.is-team :deep(.kpi-row) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .wb-proto__top-kpi.is-personal :deep(.my-kpi),
+  .wb-proto__top-kpi.is-team :deep(.kpi-row) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.wb-proto__charts {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 12px;
+  align-items: stretch;
+
+  > .wb-widget {
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+  }
+
+  > .wb-widget .wb-widget__bd {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+.wb-proto__charts:has(> :only-child) {
+  grid-template-columns: 1fr;
+}
+@media (max-width: 960px) {
+  .wb-proto__charts { grid-template-columns: 1fr; }
+}
+
+/* 左：缺陷列表；右：计划 / 评审 / 源码 / PR 纵向堆叠，底边对齐 */
+.wb-proto__main {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 12px;
+  align-items: stretch;
+
+  > .wb-widget {
+    display: flex;
+    flex-direction: column;
+    min-height: 280px;
+  }
+
+  > .wb-widget .wb-widget__bd {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+  }
+
+  > .wb-widget .wb-widget__bd > * {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+  }
+}
+@media (max-width: 960px) {
+  .wb-proto__main { grid-template-columns: 1fr; }
+}
+
+.wb-proto__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+
+  > .wb-widget {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* 有列表的块略放大，空态块保持紧凑 */
+  > .wb-widget .wb-widget__bd {
+    min-height: 72px;
+  }
+}
+
+/* 看板：项目统计 KPI 墙 */
+.wb-proto__board-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1280px) {
+  .wb-proto__board-stats { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .wb-proto__board-stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .wb-proto__board-stats { grid-template-columns: 1fr; }
+}
+.wb-proto.is-board {
+  gap: var(--project-list-section-v-gap, 10px);
+}
+.wb-widget.is-stat .wb-widget__bd.is-pad {
+  padding-top: 4px;
+}
+
+.wb-proto__rest {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+@media (max-width: 960px) {
+  .wb-proto__rest { grid-template-columns: 1fr; }
+}
+
+.wb-widget {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--cat2bug-border-radius, 4px);
+  overflow: hidden;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.wb-widget.is-editing {
+  outline: 1px dashed var(--cat2bug-primary);
+  outline-offset: -1px;
+}
+.wb-widget__hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border-color-lighter);
+  background: var(--card-bg);
+  flex-shrink: 0;
+}
+.wb-widget__hd .name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-color-primary);
+}
+.wb-widget__hd .count {
+  margin-left: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-color-secondary);
+}
+.wb-widget__hd-left {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+}
+.wb-widget__hd-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+/* 计划燃尽：标题栏右侧计划下拉（Teleport 自 PlanBurndownChart） */
+.wb-widget__hd-right .plan-select-header {
+  width: min(200px, 42vw);
+  max-width: 220px;
+}
+.wb-widget__hd-right .plan-select-header :deep(.el-select__wrapper) {
+  min-height: 28px;
+  height: 28px;
+  padding: 0 8px;
+}
+.wb-widget__bd {
+  padding: 0;
+}
+.wb-widget__bd.is-pad {
+  padding: 12px 14px 14px;
+}
+
+.wb-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 2px;
+  font-size: 12px;
+  line-height: 20px;
+  background: var(--bg-color-block, #f5f7fa);
+  color: var(--text-color-secondary);
+}
+.wb-range {
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--text-color-secondary);
+  white-space: nowrap;
+}
+.wb-chip.pending {
+  background: var(--defect-state-processing-bg, #e04e4e);
+  color: var(--defect-state-processing-color, #fff);
+}
+.wb-chip.audit {
+  background: var(--defect-state-audit-bg, #337ecc);
+  color: var(--defect-state-audit-color, #fff);
+}
+.wb-chip.high {
+  background: transparent;
+  border: 1px solid var(--border-color-light, #dcdfe6);
+  color: var(--text-color-secondary);
+}
+
+.wb-op {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--cat2bug-operate-text-primary, var(--cat2bug-primary));
+}
+.wb-op + .wb-op { margin-left: 10px; }
+.wb-op.green { color: var(--cat2bug-operate-text-success, #67c23a); }
+.wb-op.red { color: var(--cat2bug-operate-text-danger, #f56c6c); }
+.wb-op.orange { color: #e6a23c; }
+.wb-op.muted { color: var(--text-color-regular); }
+.wb-op.muted:hover { color: var(--cat2bug-primary); }

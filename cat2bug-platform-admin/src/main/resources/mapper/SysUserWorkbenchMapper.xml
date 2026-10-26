@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysUserWorkbenchMapper">
+
+    <resultMap id="SysUserWorkbenchResult" type="com.cat2bug.common.domain.SysUserWorkbench">
+        <id property="workbenchId" column="workbench_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="configJson" column="config_json"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectByUserAndProject" resultMap="SysUserWorkbenchResult">
+        select workbench_id, user_id, project_id, config_json, create_time, update_time
+        from sys_user_workbench
+        where user_id = #{userId} and project_id = #{projectId}
+        limit 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="workbenchId">
+        insert into sys_user_workbench (user_id, project_id, config_json, create_time, update_time)
+        values (#{userId}, #{projectId}, #{configJson}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="updateConfig">
+        update sys_user_workbench
+        set config_json = #{configJson},
+            update_time = #{updateTime}
+        where user_id = #{userId} and project_id = #{projectId}
+    </update>
+</mapper>

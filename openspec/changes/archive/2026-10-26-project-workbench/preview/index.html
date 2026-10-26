@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>工作台效果图索引 · project-workbench</title>
+  <link rel="stylesheet" href="preview-shared.css" />
+  <script src="preview-theme.js"></script>
+</head>
+<body>
+  <div class="frame">
+    <div class="meta">
+      <h1>项目工作台 · 效果图索引</h1>
+      <p>变更 <code>project-workbench</code> · 一期 A+C+D · 二期 B（示意）· 样式对齐现网 token</p>
+      <div class="meta-row">
+        <div class="nav-previews">
+          <a class="on" href="index.html">索引</a>
+          <a href="workbench-work-tester.html">默认态</a>
+          <a href="workbench-edit.html">编辑态</a>
+          <a href="workbench-board.html">看板</a>
+          <a href="workbench-presets.html">预设</a>
+          <a href="workbench-grid-phase2.html">二期栅格</a>
+        </div>
+        <div class="theme-switch">
+          <button type="button" data-theme-btn="light">浅色</button>
+          <button type="button" data-theme-btn="dark">暗色</button>
+        </div>
+      </div>
+      <div class="tags">
+        <span class="tag">仅项目内</span>
+        <span class="tag">双页签</span>
+        <span class="tag">角色预设</span>
+        <span class="tag">显隐+排序</span>
+        <span class="tag">统计墙组件化</span>
+      </div>
+      <div class="nav-previews" style="margin-top:10px;">
+        <a class="on" href="workbench-work-tester.html">看默认态效果图 →</a>
+      </div>
+    </div>
+    <div class="shell" style="min-height:auto;">
+            <aside class="aside">
+        <div class="team-select">
+          <span class="avatar">C</span>
+          <span class="name">Cat2Bug</span>
+          <span class="caret">▾</span>
+        </div>
+        <div class="aside-scroll">
+          <div class="menu-item"><span class="ico"></span>项目管理</div>
+          <div class="aside-divider"></div>
+          <div class="menu-item active"><span class="ico"></span>工作台</div>
+          <div class="menu-item"><span class="ico"></span>源码管理</div>
+          <div class="menu-item"><span class="ico"></span>测试用例</div>
+          <div class="menu-item"><span class="ico"></span>测试计划</div>
+          <div class="menu-item"><span class="ico"></span>缺陷管理</div>
+          <div class="menu-item"><span class="ico"></span>交付物</div>
+          <div class="menu-item"><span class="ico"></span>文档管理</div>
+          <div class="aside-divider"></div>
+          <div class="menu-item"><span class="ico"></span>项目设置</div>
+          <div class="menu-item"><span class="ico"></span>团队设置</div>
+        </div>
+      </aside>
+      <div class="main-col">
+        <div class="navbar">
+          <div class="crumb">效果图目录 · 请点下面条目</div>
+        </div>
+        <div class="app-container index-list">
+          <div class="widget">
+            <a class="row-item" href="workbench-work-tester.html">
+              <div class="main">
+                <div class="desc">1. 工作台默认态（测试预设）</div>
+                <div class="meta-line">待办优先 · 台面快捷操作 · 快捷新建</div>
+              </div>
+              <span class="op">打开</span>
+            </a>
+            <a class="row-item" href="workbench-edit.html">
+              <div class="main">
+                <div class="desc">2. 编辑态（显隐 + 排序）</div>
+                <div class="meta-line">右侧组件库 · 当前页签拖拽排序</div>
+              </div>
+              <span class="op">打开</span>
+            </a>
+            <a class="row-item" href="workbench-board.html">
+              <div class="main">
+                <div class="desc">3. 看板页签（统计组件可开关）</div>
+                <div class="meta-line">原仪表盘拆件 · 非死布局整页</div>
+              </div>
+              <span class="op">打开</span>
+            </a>
+            <a class="row-item" href="workbench-presets.html">
+              <div class="main">
+                <div class="desc">4. 角色预设选择</div>
+                <div class="meta-line">测试 / 开发 / 管理 / 空白</div>
+              </div>
+              <span class="op">打开</span>
+            </a>
+            <a class="row-item" href="workbench-grid-phase2.html">
+              <div class="main">
+                <div class="desc">5. 二期自由栅格（示意，不实现）</div>
+                <div class="meta-line">12 列 · 位置与尺寸 · version:2</div>
+              </div>
+              <span class="op">打开</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="legend">推荐入口：<a href="http://127.0.0.1:8766/workbench-work-tester.html">http://127.0.0.1:8766/workbench-work-tester.html</a></p>
+    <p class="legend" style="margin-top:8px;">实现旁注（2026-10-21）：一期实现与效果图大体对齐；编辑态排序为卡片把手拖拽（非右侧独立组件库面板）；快捷新建落在工具条而非独立大卡；`prs-to-review` 一期未做（disabled）。「我的缺陷状态」为环形饼图+图例。待评审用例走 <code>GET /system/case-review</code>（勿用 <code>/list</code>）。暗色依赖现网 CSS 变量。</p>
+  </div>
+</body>
+</html>

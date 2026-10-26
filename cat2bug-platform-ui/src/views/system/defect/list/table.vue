@@ -239,7 +239,8 @@ import {
   defectDisplayFieldPickerOptions,
   resolveDefectMergedColumns
 } from "@/utils/defect-display-field";
-import { enumOptionTextStyle, enumOptions, formatCustomFieldValue } from "@/components/DefectCustomField/format";
+import { enumOptionTextStyle, enumOptions, formatCustomFieldValue, urlListFromCustomFieldValue } from "@/components/DefectCustomField/format";
+import { resolveCommaSeparatedUrls } from "@/utils/upload-asset";
 import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
 import multipaneTreeTableHeightSync from "@/mixins/multipaneTreeTableHeightSync";
 
@@ -374,14 +375,7 @@ export default {
     },
     getUrl: function () {
       return function (urls){
-        if(urls) {
-          let files = urls ? urls.split(',') : [];
-          return files.map(i => {
-            return process.env.VUE_APP_BASE_API + i;
-          })
-        } else {
-          return [];
-        }
+        return resolveCommaSeparatedUrls(urls)
       }
     },
     getFileName: function () {
@@ -450,12 +444,8 @@ export default {
       const cf = row.customFields;
       const val = cf && typeof cf === 'object' ? cf[key] : undefined;
       if (val == null || val === '') return [];
-      const parts = Array.isArray(val) ? val : String(val).split(',');
-      const base = process.env.VUE_APP_BASE_API || '';
-      return parts
-        .map((s) => String(s).trim())
-        .filter(Boolean)
-        .map((u) => (u.startsWith('http') ? u : base + u));
+      // 与工作台一致：过滤 [object Event] 等脏数据，并按路径编码
+      return resolveCommaSeparatedUrls(urlListFromCustomFieldValue(val));
     },
     formatCustomFieldCell(row, column) {
       const key = column.customFieldKey;

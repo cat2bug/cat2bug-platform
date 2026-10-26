@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>看板页签 · 统计组件可开关</title>
+  <link rel="stylesheet" href="preview-shared.css" />
+  <script src="preview-theme.js"></script>
+</head>
+<body>
+  <div class="frame">
+    <div class="meta">
+      <h1>3 · 看板页签（项目级统计）</h1>
+      <p>看板看<strong>整个项目</strong>健康度（原仪表盘拆件）；个人数字/趋势在「工作台」页签，不放这里抢叙事。</p>
+            <div class="meta-row">
+        <div class="nav-previews">
+          <a href="index.html">索引</a>
+          <a href="workbench-work-tester.html">默认态</a>
+          <a href="workbench-edit.html">编辑态</a>
+          <a class="on" href="workbench-board.html">看板</a>
+          <a href="workbench-presets.html">预设</a>
+          <a href="workbench-grid-phase2.html">二期栅格</a>
+        </div>
+        <div class="theme-switch">
+          <button type="button" data-theme-btn="light">浅色</button>
+          <button type="button" data-theme-btn="dark">暗色</button>
+        </div>
+      </div>
+</div>
+
+    <div class="shell">
+            <aside class="aside">
+        <div class="team-select">
+          <span class="avatar">C</span>
+          <span class="name">Cat2Bug</span>
+          <span class="caret">▾</span>
+        </div>
+        <div class="aside-scroll">
+          <div class="menu-item"><span class="ico"></span>项目管理</div>
+          <div class="aside-divider"></div>
+          <div class="menu-item active"><span class="ico"></span>工作台</div>
+          <div class="menu-item"><span class="ico"></span>源码管理</div>
+          <div class="menu-item"><span class="ico"></span>测试用例</div>
+          <div class="menu-item"><span class="ico"></span>测试计划</div>
+          <div class="menu-item"><span class="ico"></span>缺陷管理</div>
+          <div class="menu-item"><span class="ico"></span>交付物</div>
+          <div class="menu-item"><span class="ico"></span>文档管理</div>
+          <div class="aside-divider"></div>
+          <div class="menu-item"><span class="ico"></span>项目设置</div>
+          <div class="menu-item"><span class="ico"></span>团队设置</div>
+        </div>
+      </aside>
+      <div class="main-col">
+        <div class="navbar">
+          <div class="crumb">团队 / <strong>Demo 项目</strong></div>
+          <div class="right"><span class="avatar">张</span></div>
+        </div>
+        <div class="app-container">
+          <div class="project-label">
+            <div>
+              <div class="name">工作台</div>
+              <div class="hint">看板 = 健康度 / 趋势 · 不替代工作台待办</div>
+            </div>
+            <div class="actions">
+              <span class="btn ghost">预设：管理 ▾</span>
+              <span class="btn">编辑看板组件</span>
+            </div>
+          </div>
+          <div class="el-tabs-like">
+            <div class="tab">工作台</div>
+            <div class="tab active">看板</div>
+          </div>
+          <div class="list-page-toolbar">
+            <div class="list-page-toolbar__filters stats-inline">管理预设 · 项目统计 KPI 墙 + 走势/计划（活动/排行默不放）</div>
+            <div class="list-page-toolbar__actions">
+              <span class="chip muted">可编辑加：活动 · 成员排行</span>
+            </div>
+          </div>
+          <div class="kpi-row cols-5">
+            <div class="kpi"><div class="n">128</div><div class="l">缺陷</div></div>
+            <div class="kpi"><div class="n">40</div><div class="l">用例</div></div>
+            <div class="kpi"><div class="n">12</div><div class="l">模块</div></div>
+            <div class="kpi"><div class="n">26</div><div class="l">文档</div></div>
+            <div class="kpi"><div class="n">8</div><div class="l">成员</div></div>
+          </div>
+          <div class="grid-2">
+            <div class="widget">
+              <div class="widget-hd"><span class="name">缺陷状态变化走势</span></div>
+              <div class="chart-fake">
+                <i style="height:40%"></i><i style="height:55%"></i><i style="height:35%"></i>
+                <i style="height:70%"></i><i style="height:50%"></i><i style="height:65%"></i>
+                <i style="height:45%"></i>
+              </div>
+            </div>
+            <div class="widget">
+              <div class="widget-hd"><span class="name">成员处理缺陷走势</span></div>
+              <div class="chart-fake">
+                <i style="height:30%"></i><i style="height:45%"></i><i style="height:60%"></i>
+                <i style="height:40%"></i><i style="height:75%"></i><i style="height:50%"></i>
+              </div>
+            </div>
+            <div class="widget">
+              <div class="widget-hd"><span class="name">测试计划统计</span></div>
+              <div class="chart-fake">
+                <i style="height:50%"></i><i style="height:65%"></i><i style="height:40%"></i>
+                <i style="height:70%"></i><i style="height:55%"></i>
+              </div>
+            </div>
+            <div class="widget">
+              <div class="widget-hd"><span class="name">测试计划燃尽</span></div>
+              <div class="chart-fake">
+                <i style="height:80%"></i><i style="height:70%"></i><i style="height:55%"></i>
+                <i style="height:40%"></i><i style="height:28%"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="legend">确认点：测试预设的看板是否默认只留「轻量 KPI + 活动」？</p>
+  </div>
+</body>
+</html>
