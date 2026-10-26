@@ -577,6 +577,8 @@
   "defect.delete-defect-tab": "هل تريد حذف علامة تبويب الخلل؟",
   "defect.tab": "علامة تبويب الخلل",
   "defect.create-tab": "إنشاء علامة تبويب خلل جديدة",
+  "defect.edit-tab": "تحرير علامة تبويب الخلل",
+  "defect.tab-delete": "حذف علامة التبويب",
   "defect.tab-name": "اسم علامة التبويب",
   "defect.title": "اسم الخلل",
   "defect.enter-like-title": "يرجى إدخال اسم الخلل للبحث غير الدقيق",

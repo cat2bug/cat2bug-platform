@@ -579,6 +579,8 @@
   "defect.delete-defect-tab": "是否刪除缺陷頁籤?",
   "defect.tab": "缺陷頁籤",
   "defect.create-tab": "建立缺陷頁籤",
+  "defect.edit-tab": "編輯缺陷頁籤",
+  "defect.tab-delete": "刪除頁籤",
   "defect.tab-name": "頁籤名稱",
   "defect.title": "缺陷名稱",
   "defect.enter-like-title": "請輸入可模糊搜尋的缺陷名稱",

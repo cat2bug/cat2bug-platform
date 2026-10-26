@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    :title="$t('defect.create-tab')"
+    :title="dialogTitle"
     v-model="dialogVisible"
     width="40%"
     :before-close="handleBeforeClose"
@@ -45,7 +45,7 @@
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="close">{{ $t('cancel') }}</el-button>
-        <el-button type="primary" @click="onCreateTab">{{ $t('create') }}</el-button>
+        <el-button type="primary" @click="onSubmitTab">{{ submitButtonLabel }}</el-button>
       </div>
     </template>
   </el-dialog>
@@ -54,8 +54,35 @@
 <script>
 import {configDefect} from "@/api/system/defect";
 import DefectTabOrderedFilterFields from "@/components/Defect/DefectTabOrderedFilterFields";
-import {addTabs} from "@/api/system/DefectTabs";
+import {addTabs, updateTabs} from "@/api/system/DefectTabs";
 import { loadDefectColumnLayout } from '@/utils/defect-custom-field-columns'
+
+function cloneTabPayload(tab) {
+  try {
+    return JSON.parse(JSON.stringify(tab))
+  } catch (e) {
+    return null
+  }
+}
+
+function ensureConfigShape(config) {
+  const base = config && typeof config === 'object' ? config : {}
+  const params = base.params && typeof base.params === 'object' ? { ...base.params } : {}
+  if (params.delFlag == null || params.delFlag === '') {
+    params.delFlag = '0'
+  }
+  if (params.collect == null || params.collect === '') {
+    params.collect = '0'
+  }
+  if (!Array.isArray(params.defectStates)) {
+    params.defectStates = []
+  }
+  return {
+    ...base,
+    params,
+    customFieldFilters: Array.isArray(base.customFieldFilters) ? base.customFieldFilters : []
+  }
+}
 
 export default {
   name: "DefectTabDialog",
@@ -63,6 +90,7 @@ export default {
   data() {
     return {
       dialogVisible: false,
+      editMode: false,
       config: {},
       fieldLayout: null,
       form: {
@@ -89,6 +117,18 @@ export default {
       default: 0
     }
   },
+  computed: {
+    dialogTitle() {
+      return this.editMode
+        ? this.$t('defect.edit-tab')
+        : this.$t('defect.create-tab')
+    },
+    submitButtonLabel() {
+      return this.editMode
+        ? this.$t('save')
+        : this.$t('create')
+    }
+  },
   created() {
     this.getDefectConfig();
   },
@@ -109,9 +149,15 @@ export default {
     },
     handleClosed() {
       this.fieldLayout = null
+      this.editMode = false
     },
-    open() {
-      this.reset();
+    /** @param {object} [tab] 传入则进入编辑模式并预填 */
+    open(tab) {
+      if (tab && tab.tabId != null) {
+        this.resetFromTab(tab)
+      } else {
+        this.reset()
+      }
       this.loadFieldLayout();
       this.dialogVisible = true;
     },
@@ -127,23 +173,47 @@ export default {
       })
     },
     reset() {
+      this.editMode = false
       this.form = {
         projectId: this.projectId,
         userId: this.memberId,
-        config: {
+        // 越大越靠前，与列表 order by tab_sort desc 一致
+        tabSort: Date.now(),
+        config: ensureConfigShape({
           customFieldFilters: [],
           params: {
             delFlag: '0',
             collect: '0',
             defectStates: []
           }
-        }
+        })
       }
       this.resetForm("form");
     },
-    onCreateTab() {
+    resetFromTab(tab) {
+      const cloned = cloneTabPayload(tab)
+      this.editMode = true
+      this.form = {
+        tabId: cloned.tabId,
+        tabName: cloned.tabName,
+        projectId: cloned.projectId != null ? cloned.projectId : this.projectId,
+        userId: cloned.userId != null ? cloned.userId : this.memberId,
+        tabSort: cloned.tabSort,
+        config: ensureConfigShape(cloned.config)
+      }
+      this.resetForm("form");
+    },
+    onSubmitTab() {
       this.$refs["form"].validate(valid => {
-        if (valid) {
+        if (!valid) return
+        if (this.editMode) {
+          updateTabs(this.form).then(res => {
+            this.$message.success(this.$i18n.t('modify-success').toString());
+            const payload = (res && res.data) ? res.data : this.form
+            this.$emit("update", payload);
+            this.close();
+          });
+        } else {
           addTabs(this.form).then(res=>{
             this.$message.success(this.$i18n.t('create-success').toString());
             this.$emit("add",res.data);

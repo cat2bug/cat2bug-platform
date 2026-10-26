@@ -25,102 +25,66 @@
         @tab-change="onTabChange"
         @tab-click="onTabClick"
       >
-        <el-tab-pane v-if="workTabVisible" name="work">
-          <template #label>
-            <span class="wb-tab-label">
-              <el-icon class="wb-tab-kind is-private" :title="$t('workbench.tab-dialog.private')">
-                <LockIcon />
-              </el-icon>
-              <span class="wb-tab-text" :title="$t('workbench.tab.work')">{{ $t('workbench.tab.work') }}</span>
-              <span v-if="!editing" class="wb-tab-actions" @mousedown.stop @click.stop>
-                <el-icon
-                  class="wb-tab-action"
-                  :title="$t('workbench.edit')"
-                  @click.stop="editTabSurface('work')"
-                >
-                  <EditPenIcon />
-                </el-icon>
-                <el-icon
-                  v-if="canDeleteMoreTabs"
-                  class="wb-tab-action is-danger"
-                  :title="$t('workbench.tab-delete')"
-                  @click.stop="deleteWorkTab"
-                >
-                  <CloseBoldIcon />
-                </el-icon>
-              </span>
-            </span>
-          </template>
-        </el-tab-pane>
         <el-tab-pane
-          v-for="tab in sharedTabs"
-          :key="'s-' + tab.tabId"
-          :name="String(tab.tabId)"
+          v-for="entry in orderedNavEntries"
+          :key="entry.key"
+          :name="entry.name"
         >
           <template #label>
             <span class="wb-tab-label">
-              <el-icon class="wb-tab-kind is-shared" :title="$t('workbench.tab-dialog.shared')">
+              <el-icon
+                v-if="entry.kind === 'work'"
+                class="wb-tab-kind is-private"
+                :title="$t('workbench.tab-dialog.private')"
+              >
+                <LockIcon />
+              </el-icon>
+              <el-icon
+                v-else-if="entry.tab && entry.tab.visibility === 'project'"
+                class="wb-tab-kind is-shared"
+                :title="$t('workbench.tab-dialog.shared')"
+              >
                 <ShareIcon />
               </el-icon>
-              <span class="wb-tab-text" :title="tab.tabName">{{ tab.tabName }}</span>
-              <span
-                v-if="!editing && canEditTab(tab)"
-                class="wb-tab-actions"
-                @mousedown.stop
-                @click.stop
+              <el-icon
+                v-else
+                class="wb-tab-kind is-private"
+                :title="$t('workbench.tab-dialog.private')"
               >
-                <el-icon
-                  class="wb-tab-action"
-                  :title="$t('workbench.edit')"
-                  @click.stop="editTabSurface(String(tab.tabId))"
-                >
-                  <EditPenIcon />
-                </el-icon>
-                <el-icon
-                  v-if="canDeleteMoreTabs"
-                  class="wb-tab-action is-danger"
-                  :title="$t('workbench.tab-delete')"
-                  @click.stop="deleteTabById(tab.tabId)"
-                >
-                  <CloseBoldIcon />
-                </el-icon>
-              </span>
-            </span>
-          </template>
-        </el-tab-pane>
-        <el-tab-pane
-          v-for="tab in privateTabs"
-          :key="'p-' + tab.tabId"
-          :name="String(tab.tabId)"
-        >
-          <template #label>
-            <span class="wb-tab-label">
-              <el-icon class="wb-tab-kind is-private" :title="$t('workbench.tab-dialog.private')">
                 <LockIcon />
               </el-icon>
-              <span class="wb-tab-text" :title="tab.tabName">{{ tab.tabName }}</span>
               <span
-                v-if="!editing && canEditTab(tab)"
-                class="wb-tab-actions"
+                class="wb-tab-text"
+                :title="entry.kind === 'work' ? $t('workbench.tab.work') : entry.tab.tabName"
+              >{{ entry.kind === 'work' ? $t('workbench.tab.work') : entry.tab.tabName }}</span>
+              <el-dropdown
+                v-if="!editing && (entry.kind === 'work' || canEditTab(entry.tab))"
+                trigger="click"
+                class="wb-tab-menu"
+                @command="onTabMenuCommand"
+                @pointerdown.stop
                 @mousedown.stop
                 @click.stop
               >
-                <el-icon
-                  class="wb-tab-action"
-                  :title="$t('workbench.edit')"
-                  @click.stop="editTabSurface(String(tab.tabId))"
-                >
-                  <EditPenIcon />
-                </el-icon>
-                <el-icon
-                  v-if="canDeleteMoreTabs"
-                  class="wb-tab-action is-danger"
-                  :title="$t('workbench.tab-delete')"
-                  @click.stop="deleteTabById(tab.tabId)"
-                >
-                  <CloseBoldIcon />
-                </el-icon>
-              </span>
+                <span class="wb-tab-menu-trigger" @pointerdown.stop @mousedown.stop @click.stop>
+                  <el-icon><MoreFilledIcon /></el-icon>
+                </span>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item
+                      :command="'edit:' + entry.name"
+                      :icon="EditPenIcon"
+                    >{{ $t('modify') }}</el-dropdown-item>
+                    <el-dropdown-item
+                      v-if="canDeleteMoreTabs"
+                      :command="'delete:' + entry.name"
+                      :icon="DeleteIcon"
+                      divided
+                      class="wb-tab-menu-danger"
+                    >{{ $t('delete') }}</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
             </span>
           </template>
         </el-tab-pane>
@@ -230,9 +194,10 @@ import {
   ArrowDown,
   Check,
   Close,
-  CloseBold as CloseBoldIcon,
-  EditPen as EditPenIcon,
+  Delete,
+  EditPen,
   Lock as LockIcon,
+  MoreFilled,
   RefreshRight,
   Share as ShareIcon
 } from '@element-plus/icons-vue'
@@ -267,12 +232,18 @@ import { normalizeRows, CONFIG_VERSION } from './workbench/row-layout'
 import { getWidgetDef } from './workbench/widget-registry'
 
 const ADD_TAB_PANE = '__workbench_add_tab__'
+const WORK_TAB_KEY = 'work'
 const TAB_CACHE_PREFIX = 'workbench-tab:'
 const WORK_HIDDEN_PREFIX = 'workbench-work-hidden:'
+/** 个人页签条完整顺序（含工作台与共享/私有交织），按项目存本地 */
+const TAB_ORDER_PREFIX = 'workbench-tab-order:'
 /** :icon 传入的组件勿进 data 响应式，否则 Vue 会告警 */
 const ResetIcon = markRaw(RefreshRight)
 const CloseIcon = markRaw(Close)
 const CheckIcon = markRaw(Check)
+const MoreFilledIcon = markRaw(MoreFilled)
+const EditPenIcon = markRaw(EditPen)
+const DeleteIcon = markRaw(Delete)
 
 function readTabCache(projectId) {
   try {
@@ -315,6 +286,55 @@ function writeWorkHidden(projectId, hidden) {
   }
 }
 
+function readTabOrder(projectId) {
+  try {
+    const raw = localStorage.getItem(TAB_ORDER_PREFIX + projectId)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed.map(String) : null
+  } catch (e) {
+    return null
+  }
+}
+
+function writeTabOrder(projectId, order) {
+  try {
+    if (!projectId) return
+    localStorage.setItem(TAB_ORDER_PREFIX + projectId, JSON.stringify(order || []))
+  } catch (e) {
+    /* ignore */
+  }
+}
+
+/** 默认：工作台 → 共享(tabSort desc) → 私有(tabSort desc) */
+function defaultTabOrder(workVisible, customTabs) {
+  const list = customTabs || []
+  const bySort = (a, b) => Number(b.tabSort || 0) - Number(a.tabSort || 0)
+  const shared = list.filter(t => t.visibility === 'project').slice().sort(bySort)
+  const priv = list.filter(t => t.visibility === 'private').slice().sort(bySort)
+  return [
+    ...(workVisible ? [WORK_TAB_KEY] : []),
+    ...shared.map(t => String(t.tabId)),
+    ...priv.map(t => String(t.tabId))
+  ]
+}
+
+function mergeTabOrder(saved, workVisible, customTabs) {
+  const valid = new Set([
+    ...(workVisible ? [WORK_TAB_KEY] : []),
+    ...(customTabs || []).map(t => String(t.tabId))
+  ])
+  const out = []
+  for (const id of saved || []) {
+    const s = String(id)
+    if (valid.has(s) && !out.includes(s)) out.push(s)
+  }
+  for (const id of defaultTabOrder(workVisible, customTabs)) {
+    if (!out.includes(id)) out.push(id)
+  }
+  return out.filter(id => valid.has(id))
+}
+
 export default {
   name: 'ProjectWorkbench',
   components: {
@@ -322,16 +342,15 @@ export default {
     Cat2BugAvatar,
     QuickCreate,
     ArrowDown,
-    EditPenIcon,
-    CloseBoldIcon,
     ShareIcon,
     LockIcon,
+    MoreFilledIcon,
     WorkbenchRows,
     WorkbenchRowEditor,
     WorkbenchTabDialog
   },
   setup() {
-    return { ResetIcon, CloseIcon, CheckIcon }
+    return { ResetIcon, CloseIcon, CheckIcon, EditPenIcon, DeleteIcon }
   },
   data() {
     return {
@@ -356,7 +375,9 @@ export default {
       tabSortSaving: false,
       draftTabName: '',
       /** 个人「工作台」页签是否显示；删除后本地隐藏，布局数据仍保留 */
-      workTabVisible: true
+      workTabVisible: true,
+      /** 页签条完整顺序键：'work' | tabId 字符串 */
+      navTabOrder: []
     }
   },
   watch: {
@@ -379,13 +400,36 @@ export default {
   computed: {
     tabNavBindKey() {
       const ids = (this.customTabs || []).map(t => `${t.tabId}:${t.visibility}`).join('|')
-      return `${ids}#${this.canManageShared ? 1 : 0}#${this.workTabVisible ? 1 : 0}`
+      return `${ids}#${this.canManageShared ? 1 : 0}#${this.workTabVisible ? 1 : 0}#${(this.navTabOrder || []).join(',')}`
     },
     sharedTabs() {
       return (this.customTabs || []).filter(t => t.visibility === 'project')
     },
     privateTabs() {
       return (this.customTabs || []).filter(t => t.visibility === 'private')
+    },
+    /** 按个人顺序渲染的页签条（工作台可插在任意位置） */
+    orderedNavEntries() {
+      const byId = new Map((this.customTabs || []).map(t => [String(t.tabId), t]))
+      const entries = []
+      for (const key of this.navTabOrder || []) {
+        if (key === WORK_TAB_KEY) {
+          if (this.workTabVisible) {
+            entries.push({ key: 'nav-work', name: WORK_TAB_KEY, kind: 'work', tab: null })
+          }
+          continue
+        }
+        const tab = byId.get(String(key))
+        if (tab) {
+          entries.push({
+            key: 'nav-' + tab.tabId,
+            name: String(tab.tabId),
+            kind: 'custom',
+            tab
+          })
+        }
+      }
+      return entries
     },
     /** 可见页签数（工作台 + 自定义）；仅剩 1 个时禁止删除 */
     visibleTabCount() {
@@ -518,10 +562,14 @@ export default {
       })
     },
     resolveActiveTab(candidate) {
+      const firstNav = (this.navTabOrder || []).find(id => {
+        if (id === WORK_TAB_KEY) return this.workTabVisible
+        return (this.customTabs || []).some(t => String(t.tabId) === String(id))
+      })
       const firstCustom = this.customTabs?.length ? String(this.customTabs[0].tabId) : null
-      const fallback = this.workTabVisible ? 'work' : firstCustom || 'work'
+      const fallback = firstNav || (this.workTabVisible ? WORK_TAB_KEY : firstCustom || WORK_TAB_KEY)
       if (!candidate || candidate === ADD_TAB_PANE) return fallback
-      if (candidate === 'work') return this.workTabVisible ? 'work' : fallback
+      if (candidate === WORK_TAB_KEY) return this.workTabVisible ? WORK_TAB_KEY : fallback
       if ((this.customTabs || []).some(t => String(t.tabId) === String(candidate))) {
         return String(candidate)
       }
@@ -532,10 +580,21 @@ export default {
       this.workTabVisible = true
       writeWorkHidden(this.projectId, false)
     },
+    /** 合并本地顺序与当前可见页签；新 tab 追加到末尾 */
+    ensureNavTabOrder() {
+      const merged = mergeTabOrder(
+        readTabOrder(this.projectId) || this.navTabOrder,
+        this.workTabVisible,
+        this.customTabs || []
+      )
+      this.navTabOrder = merged
+      if (this.projectId) writeTabOrder(this.projectId, merged)
+    },
     setWorkTabVisible(visible) {
       this.workTabVisible = !!visible
       writeWorkHidden(this.projectId, !this.workTabVisible)
       this.ensureAtLeastOneTab()
+      this.ensureNavTabOrder()
     },
     widgetTitleOf(widget) {
       const type = typeof widget === 'string' ? widget : widget?.type
@@ -583,6 +642,7 @@ export default {
       if (!this.projectId) {
         this.config = buildConfigFromPreset(fallback)
         this.workTabVisible = true
+        this.ensureNavTabOrder()
         this.activeTab = 'work'
         this.tabsReady = true
         return
@@ -620,12 +680,14 @@ export default {
 
         this.workTabVisible = !readWorkHidden(this.projectId)
         this.ensureAtLeastOneTab()
+        this.ensureNavTabOrder()
         const cached = readTabCache(this.projectId)
         this.activeTab = this.resolveActiveTab(cached)
         writeTabCache(this.projectId, this.activeTab)
       } catch (e) {
         this.config = buildConfigFromPreset(fallback)
         this.workTabVisible = true
+        this.ensureNavTabOrder()
         this.activeTab = 'work'
       } finally {
         this.loadingConfig = false
@@ -644,6 +706,7 @@ export default {
         this.canManageShared = !!data.canManageShared
         this.projectRoleKeys = data.projectRoleKeys || []
         this.ensureAtLeastOneTab()
+        this.ensureNavTabOrder()
         this.activeTab = this.resolveActiveTab(this.activeTab)
       } catch (e) {
         /* keep */
@@ -652,6 +715,10 @@ export default {
     onTabCreated(tab) {
       this.refreshTabs().then(() => {
         const id = String(tab.tabId)
+        if (!this.navTabOrder.includes(id)) {
+          this.navTabOrder = [...this.navTabOrder, id]
+          writeTabOrder(this.projectId, this.navTabOrder)
+        }
         this.activeTab = id
         writeTabCache(this.projectId, id)
         this.startEdit()
@@ -664,29 +731,46 @@ export default {
     },
     destroyTabSortable() {
       if (this.tabSortable) {
+        const nav = this.tabSortable.el
+        if (nav && nav.removeEventListener) {
+          nav.removeEventListener('selectstart', this.onTabNavSelectStart)
+        }
         this.tabSortable.destroy()
         this.tabSortable = null
       }
     },
+    tabNavItemEl(el) {
+      if (!el || el.nodeType !== 1) return null
+      if (el.classList && el.classList.contains('el-tabs__item')) return el
+      return typeof el.closest === 'function' ? el.closest('.el-tabs__item') : null
+    },
+    tabNameFromNavEl(el) {
+      const item = this.tabNavItemEl(el)
+      if (!item || !item.id) return null
+      const name = String(item.id).replace(/^tab-/, '')
+      if (!name || name === ADD_TAB_PANE) return null
+      return name
+    },
     tabFromNavEl(el) {
-      if (!el || !el.id) return null
-      const name = String(el.id).replace(/^tab-/, '')
-      if (name === 'work' || name === ADD_TAB_PANE) return null
+      const name = this.tabNameFromNavEl(el)
+      if (!name || name === WORK_TAB_KEY) return null
       return (this.customTabs || []).find(t => String(t.tabId) === String(name)) || null
     },
     isTabNavDraggable(el) {
       if (this.editing || this.tabSortSaving) return false
-      const tab = this.tabFromNavEl(el)
-      return !!(tab && this.canEditTab(tab))
+      if (this.visibleTabCount < 2) return false
+      const name = this.tabNameFromNavEl(el)
+      if (!name) return false
+      // 工作台、任意可见自定义页签均可拖（个人条顺序）；加号除外
+      if (name === WORK_TAB_KEY) return this.workTabVisible
+      return (this.customTabs || []).some(t => String(t.tabId) === String(name))
     },
-    /** 把 nav DOM 恢复成当前 Vue 数据顺序，避免 Sortable 挪节点后与 VNode/i18n 错位 */
+    /** 把 nav DOM 恢复成当前 Vue 个人顺序，避免 Sortable 挪节点后与 VNode/i18n 错位 */
     syncTabNavDomToData(nav) {
       if (!nav) return
       const expected = [
-        ...(this.workTabVisible ? ['work'] : []),
-        ...this.sharedTabs.map(t => String(t.tabId)),
-        ...this.privateTabs.map(t => String(t.tabId)),
-        ADD_TAB_PANE
+        ...(this.navTabOrder || []),
+        ...(this.editing ? [] : [ADD_TAB_PANE])
       ]
       const map = new Map()
       for (const el of [...nav.querySelectorAll('.el-tabs__item')]) {
@@ -699,6 +783,17 @@ export default {
       }
       if (bar) nav.insertBefore(bar, nav.firstChild)
     },
+    onTabNavSelectStart(evt) {
+      evt.preventDefault()
+    },
+    /** 给可拖页签打标记：光标用 */
+    refreshTabSortableClasses(nav) {
+      if (!nav) return
+      for (const el of nav.querySelectorAll('.el-tabs__item')) {
+        if (this.isTabNavDraggable(el)) el.classList.add('is-wb-sortable')
+        else el.classList.remove('is-wb-sortable')
+      }
+    },
     bindTabSortable() {
       this.destroyTabSortable()
       if (this.editing || !this.projectId || this.tabSortSaving) return
@@ -707,22 +802,37 @@ export default {
       const nav = root.querySelector('.workbench-tabs .el-tabs__nav')
       if (!nav) return
       const self = this
+      this.refreshTabSortableClasses(nav)
+      nav.addEventListener('selectstart', this.onTabNavSelectStart)
       this.tabSortable = Sortable.create(nav, {
         animation: 150,
-        // 用拖影，避免拖真实 Vue 节点导致卸载时 vue-i18n __disposer 报错
         forceFallback: true,
         fallbackOnBody: true,
-        fallbackTolerance: 3,
+        fallbackTolerance: 0,
+        direction: 'horizontal',
+        swapThreshold: 0.65,
+        supportPointer: false,
         draggable: '.el-tabs__item',
-        filter(el) {
-          return !self.isTabNavDraggable(el)
+        filter(evt, target) {
+          const origin = evt && (evt.target || evt.srcElement)
+          if (origin && typeof origin.closest === 'function' && origin.closest('.wb-tab-menu')) {
+            return true
+          }
+          const item = self.tabNavItemEl(target) || self.tabNavItemEl(origin)
+          return !self.isTabNavDraggable(item)
         },
         preventOnFilter: false,
+        onStart() {
+          try {
+            window.getSelection && window.getSelection().removeAllRanges()
+          } catch (e) { /* ignore */ }
+        },
         onMove(evt) {
-          const from = self.tabFromNavEl(evt.dragged)
-          const to = self.tabFromNavEl(evt.related)
-          if (!from || !to) return false
-          if (from.visibility !== to.visibility) return false
+          const relatedName = self.tabNameFromNavEl(evt.related)
+          // 不可插到加号上；其余（工作台 / 共享 / 私有）均可互插
+          if (!relatedName || relatedName === ADD_TAB_PANE) return false
+          const dragName = self.tabNameFromNavEl(evt.dragged)
+          if (!dragName || dragName === ADD_TAB_PANE) return false
           return true
         },
         onEnd(evt) {
@@ -733,62 +843,79 @@ export default {
     async onTabSortEnd(evt) {
       if (this.tabSortSaving) return
       const nav = evt.to || evt.from
-      const moved = this.tabFromNavEl(evt.item)
-      if (!nav || !moved || !this.canEditTab(moved)) {
-        this.destroyTabSortable()
-        this.syncTabNavDomToData(nav)
-        this.$nextTick(() => this.bindTabSortable())
-        return
-      }
-      // 先记下 Sortable 挪完后的顺序，再立刻把 DOM 还原给 Vue
-      const ids = [...nav.querySelectorAll('.el-tabs__item')]
+      if (!nav) return
+      const order = [...nav.querySelectorAll('.el-tabs__item')]
         .map(el => String(el.id || '').replace(/^tab-/, ''))
-        .filter(id => id && id !== 'work' && id !== ADD_TAB_PANE)
+        .filter(id => id && id !== ADD_TAB_PANE)
       this.destroyTabSortable()
+      this.navTabOrder = order
+      writeTabOrder(this.projectId, order)
       this.syncTabNavDomToData(nav)
 
       const byId = new Map((this.customTabs || []).map(t => [String(t.tabId), t]))
-      const groupVis = moved.visibility
-      const groupOrder = ids.map(id => byId.get(String(id))).filter(t => t && t.visibility === groupVis)
-      if (groupOrder.length === 0) {
-        this.$nextTick(() => this.bindTabSortable())
-        return
+      const privateOrder = order.map(id => byId.get(id)).filter(t => t && t.visibility === 'private')
+      const sharedOrder = order.map(id => byId.get(id)).filter(t => t && t.visibility === 'project')
+
+      const relativeChanged = (group, prevList) => {
+        if (group.length === 0) return false
+        if (group.length !== prevList.length) return true
+        return group.some((t, i) => String(t.tabId) !== String(prevList[i].tabId))
       }
-      const unchanged =
-        groupOrder.length === (groupVis === 'project' ? this.sharedTabs : this.privateTabs).length &&
-        groupOrder.every((t, i) => {
-          const cur = (groupVis === 'project' ? this.sharedTabs : this.privateTabs)[i]
-          return cur && String(cur.tabId) === String(t.tabId)
-        })
-      if (unchanged) {
-        this.$nextTick(() => this.bindTabSortable())
-        return
-      }
+
+      const payloads = []
       const base = Date.now()
-      const payload = groupOrder.map((t, i) => ({
-        tabId: t.tabId,
-        tabSort: base - i
-      }))
-      const sortMap = new Map(payload.map(p => [String(p.tabId), p.tabSort]))
-      const next = (this.customTabs || []).map(t => {
+      let offset = 0
+      const pushGroup = (group, prevList, allowed) => {
+        if (!allowed || !relativeChanged(group, prevList)) return
+        for (let i = 0; i < group.length; i++) {
+          payloads.push({ tabId: group[i].tabId, tabSort: base - offset - i, _vis: group[i].visibility })
+        }
+        offset += group.length
+      }
+      pushGroup(privateOrder, this.privateTabs, true)
+      pushGroup(sharedOrder, this.sharedTabs, this.canManageShared)
+
+      if (payloads.length === 0) {
+        this.$nextTick(() => this.bindTabSortable())
+        return
+      }
+
+      const sortMap = new Map(payloads.map(p => [String(p.tabId), p.tabSort]))
+      this.tabSortSaving = true
+      this.customTabs = (this.customTabs || []).map(t => {
         const s = sortMap.get(String(t.tabId))
         return s == null ? t : { ...t, tabSort: s }
       })
-      next.sort((a, b) => {
-        const av = a.visibility === 'project' ? 0 : 1
-        const bv = b.visibility === 'project' ? 0 : 1
-        if (av !== bv) return av - bv
-        return Number(b.tabSort || 0) - Number(a.tabSort || 0)
-      })
-      this.tabSortSaving = true
-      this.customTabs = next
       try {
-        await sortWorkbenchTabs(this.projectId, payload)
+        const privPayload = payloads
+          .filter(p => p._vis === 'private')
+          .map(({ tabId, tabSort }) => ({ tabId, tabSort }))
+        const sharePayload = payloads
+          .filter(p => p._vis === 'project')
+          .map(({ tabId, tabSort }) => ({ tabId, tabSort }))
+        // 后端禁止单次请求跨 visibility，分组提交
+        if (privPayload.length) await sortWorkbenchTabs(this.projectId, privPayload)
+        if (sharePayload.length) await sortWorkbenchTabs(this.projectId, sharePayload)
       } catch (e) {
         await this.refreshTabs()
       } finally {
         this.tabSortSaving = false
         this.$nextTick(() => this.bindTabSortable())
+      }
+    },
+    onTabMenuCommand(command) {
+      const raw = String(command || '')
+      const sep = raw.indexOf(':')
+      if (sep < 0) return
+      const action = raw.slice(0, sep)
+      const tabKey = raw.slice(sep + 1)
+      if (action === 'edit') {
+        this.editTabSurface(tabKey)
+        return
+      }
+      if (action === 'delete') {
+        if (tabKey === 'work') this.deleteWorkTab()
+        else this.deleteTabById(tabKey)
       }
     },
     editTabSurface(tabKey) {
@@ -1087,12 +1214,23 @@ html:not(.dark) .workbench-hello {
 .workbench-tabs :deep(.el-tabs__item) {
   height: 40px;
   line-height: 40px;
+  user-select: none;
+  -webkit-user-select: none;
 }
-.workbench-tabs :deep(.el-tabs__item:not(#tab-work):not(#tab-__workbench_add_tab__)) {
+.workbench-tabs :deep(.el-tabs__item.is-wb-sortable) {
   cursor: grab;
 }
-.workbench-tabs :deep(.el-tabs__item:not(#tab-work):not(#tab-__workbench_add_tab__).sortable-chosen) {
+.workbench-tabs :deep(.el-tabs__item.is-wb-sortable.sortable-chosen),
+.workbench-tabs :deep(.el-tabs__item.is-wb-sortable.sortable-drag) {
   cursor: grabbing;
+}
+.workbench-tabs :deep(.el-tabs__item.sortable-ghost) {
+  opacity: 0.35;
+}
+.workbench-tabs :deep(.wb-tab-text),
+.workbench-tabs :deep(.wb-tab-label) {
+  user-select: none;
+  -webkit-user-select: none;
 }
 .workbench-tabs :deep(.el-tabs__active-bar) {
   z-index: 2;
@@ -1191,32 +1329,51 @@ html:not(.dark) .workbench-hello {
     color: var(--el-text-color-secondary);
   }
 }
+/* 激活页签：图标跟文字同色（主色），覆盖私有默认灰 */
+.workbench-tabs :deep(.el-tabs__item.is-active) .wb-tab-kind,
+.workbench-tabs :deep(.el-tabs__item.is-active) .wb-tab-kind.is-private,
+.workbench-tabs :deep(.el-tabs__item.is-active) .wb-tab-kind.is-shared {
+  color: var(--el-color-primary);
+}
 .wb-tab-text {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.wb-tab-actions {
+.wb-tab-menu {
   display: none;
   flex: 0 0 auto;
   align-items: center;
-  gap: 2px;
+  vertical-align: middle;
+  line-height: 1;
 }
-.workbench-tabs :deep(.el-tabs__item:hover) .wb-tab-actions {
+.workbench-tabs :deep(.el-tabs__item:hover) .wb-tab-menu,
+.wb-tab-menu:has([aria-expanded='true']) {
   display: inline-flex;
 }
-.wb-tab-action {
-  width: 16px;
-  height: 16px;
-  font-size: 13px;
+.wb-tab-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  font-size: 12px;
   color: var(--el-text-color-secondary);
   cursor: pointer;
-  border-radius: 2px;
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--cat2bug-border-radius, 4px);
+  background: var(--el-bg-color);
+  outline: none;
   &:hover {
     color: var(--el-color-primary);
+    border-color: var(--el-color-primary);
   }
-  &.is-danger:hover {
+}
+.wb-tab-menu-danger {
+  color: var(--el-color-danger);
+  :deep(.el-icon) {
     color: var(--el-color-danger);
   }
 }

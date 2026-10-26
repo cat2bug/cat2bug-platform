@@ -577,6 +577,8 @@
   "defect.delete-defect-tab": "不具合タブを削除しますか？",
   "defect.tab": "不具合タブ",
   "defect.create-tab": "不具合タブを新規作成",
+  "defect.edit-tab": "不具合タブを編集",
+  "defect.tab-delete": "タブを削除",
   "defect.tab-name": "タブ名",
   "defect.title": "不具合名",
   "defect.enter-like-title": "曖昧検索可能な不具合名を入力してください",

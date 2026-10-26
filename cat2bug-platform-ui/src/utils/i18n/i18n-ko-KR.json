@@ -577,6 +577,8 @@
   "defect.delete-defect-tab": "결함 탭을 삭제하시겠습니까?",
   "defect.tab": "결함 탭",
   "defect.create-tab": "결함 탭 새로 만들기",
+  "defect.edit-tab": "결함 탭 편집",
+  "defect.tab-delete": "탭 삭제",
   "defect.tab-name": "탭 이름",
   "defect.title": "결함 이름",
   "defect.enter-like-title": "모호하게 찾을 수 있는 결함 이름을 입력하세요",

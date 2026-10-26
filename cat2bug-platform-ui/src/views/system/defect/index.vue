@@ -32,7 +32,28 @@
               <span class="defect-tab-label">
                 <svg-icon icon-class="list2" class="defect-tab-icon" />
                 <span class="defect-tab-text" :title="tab.tabName">{{ tab.tabName }}</span>
-                <legacy-icon icon="el-icon-close" style="width: 14px;" @click.stop="removeDefectTabHandle(tab.tabId)" />
+                <el-dropdown
+                  trigger="click"
+                  class="defect-tab-menu"
+                  @command="onDefectTabMenuCommand"
+                  @mousedown.stop
+                  @click.stop
+                >
+                  <span class="defect-tab-menu-trigger" @mousedown.stop @click.stop>
+                    <el-icon><MoreFilledIcon /></el-icon>
+                  </span>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item :command="'edit:' + tab.tabId" :icon="EditPenIcon">{{ $t('modify') }}</el-dropdown-item>
+                      <el-dropdown-item
+                        :command="'delete:' + tab.tabId"
+                        :icon="DeleteIcon"
+                        divided
+                        class="defect-tab-menu-danger"
+                      >{{ $t('delete') }}</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
               </span>
             </template>
           </el-tab-pane>
@@ -291,7 +312,13 @@
         @done="onDefectBatchDone"
       />
       <!-- 添加页签对话框 -->
-      <defect-tab-dialog ref="defectTabDialog" :project-id="getProjectId()" :member-id="userId" @add="tabAddHandle" />
+      <defect-tab-dialog
+        ref="defectTabDialog"
+        :project-id="getProjectId()"
+        :member-id="userId"
+        @add="tabAddHandle"
+        @update="tabUpdateHandle"
+      />
       <!-- 导入缺陷 -->
       <defect-import ref="defectImportDialog" :project-id="getProjectId()" @upload="search(queryParams)" />
     </div>
@@ -299,8 +326,11 @@
 </template>
 
 <script>
+import { markRaw } from 'vue'
+import { Delete, EditPen, MoreFilled } from '@element-plus/icons-vue'
+import Sortable from 'sortablejs'
 import { checkPermi } from '@/utils/permission'
-import { delTabs } from '@/api/system/DefectTabs'
+import { delTabs, updateSortOfTabs } from '@/api/system/DefectTabs'
 import { configDefect, delDefect } from '@/api/system/defect'
 import AddDefect from '@/components/Defect/AddDefect'
 import HandleDefect from '@/components/Defect/HandleDefect'
@@ -450,10 +480,13 @@ export default {
     DefectTable,
     DefectExcel,
     DefectImport,
+    MoreFilledIcon: markRaw(MoreFilled),
   },
   setup() {
     return {
-      userStore: useUserStore()
+      userStore: useUserStore(),
+      EditPenIcon: markRaw(EditPen),
+      DeleteIcon: markRaw(Delete)
     }
   },
   data() {
@@ -472,6 +505,9 @@ export default {
       defectTabsReady: false,
       /** 首挂一帧关掉 active-bar transition，防止 EP 仍做入场滑动 */
       defectTabsSkipTransition: false,
+      /** 自定义页签拖序 */
+      defectTabSortable: null,
+      defectTabSortSaving: false,
 
       // 显示搜索条件
       showSearch: true,
@@ -698,6 +734,7 @@ export default {
     this.$nextTick(() => {
       this.$_bindDefectQueryNavFocusIn()
       this.$_bindDefectToolbarNavFocusIn()
+      if (this.defectTabsReady) this.bindDefectTabSortable()
     })
     /** keep-alive 返回后刷新表格布局（固定列等） */
     this.$nextTick(() => {
@@ -714,6 +751,7 @@ export default {
     })
   },
   deactivated() {
+    this.destroyDefectTabSortable()
     this.exitDefectTabKeyboardNav()
     this.exitDefectQueryKeyboardNav()
     this.exitDefectRightToolbarNav()
@@ -727,6 +765,7 @@ export default {
   },
   // 移除滚动条监听
   destroyed() {
+    this.destroyDefectTabSortable()
     this.exitDefectTabKeyboardNav()
     this.exitDefectQueryKeyboardNav()
     this.exitDefectRightToolbarNav()
@@ -2649,6 +2688,7 @@ export default {
       this.defectTabsReady = true
       this.$nextTick(() => {
         this.selectDefectTabHandle()
+        this.bindDefectTabSortable()
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             this.defectTabsSkipTransition = false
@@ -2658,6 +2698,140 @@ export default {
           this.$nextTick(() => this.addDefectTabHandle())
         }
       })
+    },
+    destroyDefectTabSortable() {
+      if (this.defectTabSortable) {
+        this.defectTabSortable.destroy()
+        this.defectTabSortable = null
+      }
+    },
+    defectTabNameFromNavEl(el) {
+      if (!el || !el.id) return null
+      return String(el.id).replace(/^tab-/, '')
+    },
+    isDefectCustomTabNavEl(el) {
+      const name = this.defectTabNameFromNavEl(el)
+      if (!name || name === ALL_TAB_NAME || name === DELETED_TAB_NAME || name === DEFECT_ADD_TAB_PANE_NAME) {
+        return false
+      }
+      return (this.config.tabs || []).some(t => String(t.tabId) === name)
+    },
+    /** 把 nav DOM 恢复成当前 Vue 数据顺序，避免 Sortable 挪节点后与 VNode 错位 */
+    syncDefectTabNavDomToData(nav) {
+      if (!nav) return
+      const expected = [
+        ...(this.config.tabs || []).map(t => String(t.tabId)),
+        ALL_TAB_NAME,
+        DELETED_TAB_NAME,
+        DEFECT_ADD_TAB_PANE_NAME
+      ]
+      const map = new Map()
+      for (const el of [...nav.querySelectorAll('.el-tabs__item')]) {
+        map.set(String(el.id || '').replace(/^tab-/, ''), el)
+      }
+      const bar = nav.querySelector('.el-tabs__active-bar')
+      for (const name of expected) {
+        const el = map.get(name)
+        if (el) nav.appendChild(el)
+      }
+      if (bar) nav.insertBefore(bar, nav.firstChild)
+    },
+    bindDefectTabSortable() {
+      this.destroyDefectTabSortable()
+      if (!this.defectTabsReady || this.defectTabSortSaving) return
+      const root = this.$el
+      if (!root || !root.querySelector) return
+      const nav = root.querySelector('.defect-tools-tab .el-tabs__nav')
+      if (!nav) return
+      const self = this
+      this.defectTabSortable = Sortable.create(nav, {
+        animation: 150,
+        forceFallback: true,
+        fallbackOnBody: true,
+        fallbackTolerance: 3,
+        draggable: '.el-tabs__item',
+        filter(evt, target) {
+          const origin = evt && (evt.target || evt.srcElement)
+          if (origin && typeof origin.closest === 'function' && origin.closest('.defect-tab-menu')) {
+            return true
+          }
+          return !self.isDefectCustomTabNavEl(target)
+        },
+        preventOnFilter: false,
+        onMove(evt) {
+          const from = self.defectTabNameFromNavEl(evt.dragged)
+          const to = self.defectTabNameFromNavEl(evt.related)
+          if (!from || !to) return false
+          const fromOk = self.isDefectCustomTabNavEl(evt.dragged)
+          const toOk = self.isDefectCustomTabNavEl(evt.related)
+          return fromOk && toOk
+        },
+        onEnd(evt) {
+          self.onDefectTabSortEnd(evt)
+        }
+      })
+    },
+    async onDefectTabSortEnd(evt) {
+      if (this.defectTabSortSaving) return
+      const nav = evt.to || evt.from
+      const movedName = this.defectTabNameFromNavEl(evt.item)
+      if (!nav || !movedName || !this.isDefectCustomTabNavEl(evt.item)) {
+        this.destroyDefectTabSortable()
+        this.syncDefectTabNavDomToData(nav)
+        this.$nextTick(() => this.bindDefectTabSortable())
+        return
+      }
+      const customIds = [...nav.querySelectorAll('.el-tabs__item')]
+        .map(el => this.defectTabNameFromNavEl(el))
+        .filter(id => id && id !== ALL_TAB_NAME && id !== DELETED_TAB_NAME && id !== DEFECT_ADD_TAB_PANE_NAME)
+      this.destroyDefectTabSortable()
+      this.syncDefectTabNavDomToData(nav)
+
+      const byId = new Map((this.config.tabs || []).map(t => [String(t.tabId), t]))
+      const ordered = customIds.map(id => byId.get(String(id))).filter(Boolean)
+      if (ordered.length === 0) {
+        this.$nextTick(() => this.bindDefectTabSortable())
+        return
+      }
+      const unchanged =
+        ordered.length === (this.config.tabs || []).length &&
+        ordered.every((t, i) => String(t.tabId) === String(this.config.tabs[i].tabId))
+      if (unchanged) {
+        this.$nextTick(() => this.bindDefectTabSortable())
+        return
+      }
+      const base = Date.now()
+      const payload = ordered.map((t, i) => ({
+        tabId: t.tabId,
+        tabSort: base - i
+      }))
+      const sortMap = new Map(payload.map(p => [String(p.tabId), p.tabSort]))
+      this.defectTabSortSaving = true
+      this.config.tabs = ordered.map(t => ({
+        ...t,
+        tabSort: sortMap.get(String(t.tabId))
+      }))
+      try {
+        await updateSortOfTabs(payload)
+      } catch (e) {
+        await this.reloadDefectTabsKeepActive()
+      } finally {
+        this.defectTabSortSaving = false
+        this.$nextTick(() => this.bindDefectTabSortable())
+      }
+    },
+    /** 排序失败时重新拉配置，尽量保留当前激活页签 */
+    reloadDefectTabsKeepActive() {
+      const keep = this.activeDefectTabName
+      return configDefect().then(res => {
+        this.config = res.data || { tabs: [] }
+        if (!Array.isArray(this.config.tabs)) this.config.tabs = []
+        const still =
+          keep === ALL_TAB_NAME ||
+          keep === DELETED_TAB_NAME ||
+          (this.config.tabs || []).some(t => String(t.tabId) === String(keep))
+        this.activeDefectTabName = still ? keep : ALL_TAB_NAME
+      }).catch(() => {})
     },
     /** 获取当前用户缺陷配置 */
     getDefectConfig() {
@@ -2992,11 +3166,45 @@ export default {
         }
       })
     },
+    /** 自定义页签下拉：编辑 / 删除 */
+    onDefectTabMenuCommand(command) {
+      const raw = String(command || '')
+      const sep = raw.indexOf(':')
+      if (sep < 0) return
+      const action = raw.slice(0, sep)
+      const tabId = raw.slice(sep + 1)
+      if (action === 'edit') {
+        const tab = (this.config.tabs || []).find(t => String(t.tabId) === String(tabId))
+        this.editDefectTabHandle(tab)
+        return
+      }
+      if (action === 'delete') {
+        this.removeDefectTabHandle(tabId)
+      }
+    },
+    /** 打开编辑缺陷页签对话框 */
+    editDefectTabHandle(tab) {
+      if (!tab || tab.tabId == null) return
+      this.$refs.defectTabDialog.open(tab)
+    },
     /** 添加页签处理 */
     tabAddHandle(tab) {
       this.config.tabs.push(tab)
       this.activeDefectTabName = tab.tabId + ''
       this.selectDefectTabHandle()
+      this.$nextTick(() => this.bindDefectTabSortable())
+    },
+    /** 更新页签处理 */
+    tabUpdateHandle(tab) {
+      if (!tab || tab.tabId == null) return
+      const id = String(tab.tabId)
+      const idx = (this.config.tabs || []).findIndex(t => String(t.tabId) === id)
+      if (idx >= 0) {
+        this.config.tabs.splice(idx, 1, tab)
+      }
+      if (String(this.activeDefectTabName) === id) {
+        this.selectDefectTabHandle()
+      }
     },
     /** 移除页签处理 */
     removeDefectTabHandle(tabId) {
@@ -3029,6 +3237,7 @@ export default {
         this.config.tabs = this.config.tabs.filter(t => (t.tabId + '') != tabId)
         this.selectDefectTabHandle()
         this.$modal.msgSuccess(this.$i18n.t('delete.success'))
+        this.$nextTick(() => this.bindDefectTabSortable())
       }).catch(() => {})
     },
     /** 打开导入缺陷对话框 */
@@ -3600,9 +3809,6 @@ export default {
     color: inherit;
     fill: currentColor;
   }
-  .el-icon-close {
-    flex-shrink: 0;
-  }
 }
 .defect-tab-text {
   flex: 1 1 auto;
@@ -3610,6 +3816,43 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.defect-tab-menu {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  vertical-align: middle;
+  line-height: 1;
+}
+.defect-tools-tab :deep(.el-tabs__item:hover) .defect-tab-menu,
+.defect-tools-tab.defect-tab-keyboard-nav :deep(.el-tabs__item.defect-tab-nav-focused) .defect-tab-menu,
+.defect-tab-menu:has([aria-expanded='true']) {
+  display: inline-flex;
+}
+.defect-tab-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  cursor: pointer;
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--cat2bug-border-radius, 4px);
+  background: var(--el-bg-color);
+  outline: none;
+  &:hover {
+    color: var(--el-color-primary);
+    border-color: var(--el-color-primary);
+  }
+}
+.defect-tab-menu-danger {
+  color: var(--el-color-danger);
+  :deep(.el-icon) {
+    color: var(--el-color-danger);
+  }
 }
 .defect-tools-tab-right {
   position: relative;

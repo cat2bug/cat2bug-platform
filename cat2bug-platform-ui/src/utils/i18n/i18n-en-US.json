@@ -650,6 +650,8 @@
   "defect.delete-defect-tab": "Do you want to delete the defect tab?",
   "defect.tab": "Defect Tab",
   "defect.create-tab": "Create Defect Tab",
+  "defect.edit-tab": "Edit Defect Tab",
+  "defect.tab-delete": "Delete tab",
   "defect.tab-name": "Tab Name",
   "defect.title": "Defect Title",
   "defect.enter-like-title": "Please enter a title that can be fuzzily searched for",

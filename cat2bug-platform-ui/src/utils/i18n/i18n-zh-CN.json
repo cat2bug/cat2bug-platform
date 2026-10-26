@@ -650,6 +650,8 @@
   "defect.delete-defect-tab": "是否删除缺陷页签?",
   "defect.tab": "缺陷页签",
   "defect.create-tab": "新建缺陷页签",
+  "defect.edit-tab": "编辑缺陷页签",
+  "defect.tab-delete": "删除页签",
   "defect.tab-name": "页签名称",
   "defect.title": "缺陷名称",
   "defect.enter-like-title": "请输入可模糊查找的缺陷名称",

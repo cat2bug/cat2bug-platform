@@ -577,6 +577,8 @@
   "defect.delete-defect-tab": "Удалить вкладку дефектов?",
   "defect.tab": "Вкладка дефектов",
   "defect.create-tab": "Создать вкладку дефектов",
+  "defect.edit-tab": "Изменить вкладку дефектов",
+  "defect.tab-delete": "Удалить вкладку",
   "defect.tab-name": "Название вкладки",
   "defect.title": "Название дефекта",
   "defect.enter-like-title": "Введите название дефекта для нечеткого поиска",
