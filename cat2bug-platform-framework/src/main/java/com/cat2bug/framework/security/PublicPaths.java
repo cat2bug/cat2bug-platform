@@ -46,6 +46,10 @@ public final class PublicPaths {
         if (normalized.startsWith("profile/")) {
             return true;
         }
+        // 对齐 Spring SecurityConfig 的 /**/login、/**/bind（微信小程序登录/绑定）
+        if (normalized.startsWith("wechat-mp/")) {
+            return true;
+        }
         if (isDefectShardPath(normalized)) {
             return true;
         }

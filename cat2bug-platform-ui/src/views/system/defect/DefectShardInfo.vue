@@ -4,8 +4,9 @@
       <div class="shard-pass-gate__backdrop" aria-hidden="true" />
       <div class="shard-pass-card" role="dialog" aria-modal="true" :aria-label="$t('shard.password-gate-title')">
         <div class="shard-pass-card__brand">
-          <img class="shard-pass-card__logo" :src="logoImg" alt="Cat2Bug" />
-          <span class="shard-pass-card__brand-name">Cat2Bug</span>
+          <span class="shard-pass-card__brand-name">
+            <span class="brand-name-cat2">Cat2</span><span class="brand-name-bug">Bug</span>
+          </span>
         </div>
         <div class="shard-pass-card__lock" aria-hidden="true">
           <svg-icon icon-class="password" class="shard-pass-card__lock-icon" />
@@ -216,7 +217,6 @@ import LangSelect from "@/components/LangSelect";
 import Cat2BugEmpty from '@/components/Cat2BugEmpty'
 import {getCase} from "@/api/system/case";
 import webQrcode from '@/assets/images/web_qrcode.png'
-import logoImg from '@/assets/logo/logo.png'
 import {
   accordionRowHasContent,
   customFieldAccordionCollapseName,
@@ -241,7 +241,6 @@ export default {
   data() {
     return {
       webQrcode,
-      logoImg,
       defectShardId: null,
       params: {
         password: null
@@ -623,17 +622,17 @@ export default {
   gap: 8px;
   margin-bottom: 20px;
 }
-.shard-pass-card__logo {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  object-fit: contain;
-}
 .shard-pass-card__brand-name {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   letter-spacing: 0.02em;
+  line-height: 1;
+}
+.brand-name-cat2 {
   color: var(--text-color-primary, #303133);
+}
+.brand-name-bug {
+  color: var(--cat2bug-primary, #1890ff);
 }
 .shard-pass-card__lock {
   width: 52px;

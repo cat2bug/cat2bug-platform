@@ -138,6 +138,18 @@ class QuarkusAdminTest {
     }
 
     @Test
+    void wechatMpLoginIsPublicNotUnauthorized() {
+        // 未配小程序凭证时业务可能失败，但不得再被 JwtAuthFilter 打成 401
+        given()
+                .contentType(ContentType.JSON)
+                .body("{\"code\":\"test\"}")
+                .when().post("/wechat-mp/login")
+                .then()
+                .statusCode(200)
+                .body("code", org.hamcrest.Matchers.not(equalTo(401)));
+    }
+
+    @Test
     void wrongPasswordReturnsErrorWithoutToken() {
         given()
                 .contentType(ContentType.JSON)
