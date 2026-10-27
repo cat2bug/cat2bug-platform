@@ -2371,5 +2371,17 @@
   "workbench.weekly.ops-tester-meta": "Open {0} · Close {1}",
   "workbench.weekly.ops-developer-meta": "Fixed {0}",
   "workbench.weekly.ops-outsider-meta": "Opened {0}",
-  "workbench.weekly.ops-calls-meta": "MCP {0} · API {1} · OpenAI {2}"
+  "workbench.weekly.ops-calls-meta": "MCP {0} · API {1} · OpenAI {2}",
+  "workbench.catalog.used": "Added",
+  "workbench.catalog.searchPlaceholder": "Search by name",
+  "workbench.catalog.searchEmpty": "No matching widgets",
+  "workbench.catalog.group.overview": "Overview",
+  "workbench.catalog.group.notice": "Notices",
+  "workbench.catalog.group.defect": "Defects",
+  "workbench.catalog.group.case": "Test cases",
+  "workbench.catalog.group.document": "Documents",
+  "workbench.catalog.group.git": "Repository",
+  "workbench.catalog.group.plan": "Test plans",
+  "workbench.catalog.group.member": "Members",
+  "workbench.catalog.group.deliverable": "Deliverables"
 }

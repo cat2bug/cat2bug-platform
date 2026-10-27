@@ -2371,5 +2371,17 @@
   "workbench.weekly.ops-tester-meta": "提 {0} · 关 {1}",
   "workbench.weekly.ops-developer-meta": "修复 {0}",
   "workbench.weekly.ops-outsider-meta": "提缺陷 {0}",
-  "workbench.weekly.ops-calls-meta": "MCP {0} · API {1} · OpenAI {2}"
+  "workbench.weekly.ops-calls-meta": "MCP {0} · API {1} · OpenAI {2}",
+  "workbench.catalog.used": "已添加",
+  "workbench.catalog.searchPlaceholder": "搜索组件名称",
+  "workbench.catalog.searchEmpty": "无匹配组件",
+  "workbench.catalog.group.overview": "总览",
+  "workbench.catalog.group.notice": "通知",
+  "workbench.catalog.group.defect": "缺陷",
+  "workbench.catalog.group.case": "测试用例",
+  "workbench.catalog.group.document": "文档",
+  "workbench.catalog.group.git": "代码仓库",
+  "workbench.catalog.group.plan": "测试计划",
+  "workbench.catalog.group.member": "成员",
+  "workbench.catalog.group.deliverable": "交付物"
 }

@@ -9,6 +9,7 @@ import ko from 'element-plus/es/locale/lang/ko'
 import ru from 'element-plus/es/locale/lang/ru'
 
 import myI18nZh from './i18n-zh-CN.json'
+import myI18nEn from './i18n-en-US.json'
 
 const lang = 'zh_CN'
 
@@ -34,12 +35,18 @@ const i18n = createI18n({
   legacy: true,
   globalInjection: true,
   locale: lang,
+  fallbackLocale: 'en_US',
   messages: {
-    zh_CN: { ...zhCn, ...myI18nZh }
+    zh_CN: { ...zhCn, ...myI18nZh },
+    // 预置英文，供其它语言缺 key 时回退
+    en_US: { ...en, ...myI18nEn }
   }
 })
 
-const loadedLocales = new Map([[lang, Promise.resolve()]])
+const loadedLocales = new Map([
+  [lang, Promise.resolve()],
+  ['en_US', Promise.resolve()]
+])
 
 /** 非默认语言按需加载；切换 locale 时自动触发，启动时需在 mount 前 await 已保存的语言以免闪现 key */
 export function loadLocaleMessages(locale) {

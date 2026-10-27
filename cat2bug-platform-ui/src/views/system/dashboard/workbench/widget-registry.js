@@ -20,7 +20,7 @@ const DocumentPin = defineAsyncComponent(() => import('./widgets/DocumentPin.vue
 
 /**
  * tabAffinity: 'work' | 'deferred' | 'both'
- * deferred = 原看板统计，保留组件供动态 Tab，不进工作台目录
+ * group: 组件库业务域（catalog 分组）
  * catalogHidden / disabled / toolbar 见各字段
  * bare = 查看态不套卡片边框/底色（自带视觉）；标题栏仍显示
  * minSpan = 24 栅格下最小占格（空槽默认 2）；拖拽/比例下拉不可低于此值
@@ -30,30 +30,46 @@ export const EMPTY_COL_MIN_SPAN = 2
 /** 未声明 minSpan 的组件默认最小占格 */
 export const DEFAULT_WIDGET_MIN_SPAN = 6
 
+/** 目录分组顺序与 i18n key：workbench.catalog.group.<id> */
+export const CATALOG_GROUP_ORDER = [
+  'overview',
+  'notice',
+  'git',
+  'case',
+  'plan',
+  'defect',
+  'document',
+  'deliverable',
+  'member'
+]
+
 export const WORKBENCH_WIDGETS = {
-  'my-kpi': { id: 'my-kpi', tabAffinity: 'work', titleKey: 'workbench.widget.my-kpi', component: MyKpi, bare: true, minSpan: 8 },
-  'team-type-kpi': { id: 'team-type-kpi', tabAffinity: 'work', titleKey: 'workbench.widget.team-type-kpi', component: TeamTypeKpi, bare: true, minSpan: 8 },
-  'my-defect-trend': { id: 'my-defect-trend', tabAffinity: 'work', titleKey: 'workbench.widget.my-defect-trend', component: MyDefectTrend, minSpan: 8 },
+  'my-kpi': { id: 'my-kpi', group: 'overview', tabAffinity: 'work', titleKey: 'workbench.widget.my-kpi', component: MyKpi, bare: true, minSpan: 8 },
+  'team-type-kpi': { id: 'team-type-kpi', group: 'overview', tabAffinity: 'work', titleKey: 'workbench.widget.team-type-kpi', component: TeamTypeKpi, bare: true, minSpan: 8 },
+  'my-defect-trend': { id: 'my-defect-trend', group: 'defect', tabAffinity: 'work', titleKey: 'workbench.widget.my-defect-trend', component: MyDefectTrend, minSpan: 8 },
   'team-defect-trend': {
     id: 'team-defect-trend',
+    group: 'defect',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.team-defect-trend',
     component: MyDefectTrend,
     props: { scope: 'team' },
     minSpan: 8
   },
-  'my-workload-mix': { id: 'my-workload-mix', tabAffinity: 'work', titleKey: 'workbench.widget.my-workload-mix', component: MyWorkloadMix, minSpan: 8 },
+  'my-workload-mix': { id: 'my-workload-mix', group: 'overview', tabAffinity: 'work', titleKey: 'workbench.widget.my-workload-mix', component: MyWorkloadMix, minSpan: 8 },
   'team-workload-mix': {
     id: 'team-workload-mix',
+    group: 'overview',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.team-workload-mix',
     component: MyWorkloadMix,
     props: { scope: 'team' },
     minSpan: 8
   },
-  'my-defects': { id: 'my-defects', tabAffinity: 'work', titleKey: 'workbench.widget.my-defects', component: MyDefects, bare: true, minSpan: 8 },
+  'my-defects': { id: 'my-defects', group: 'defect', tabAffinity: 'work', titleKey: 'workbench.widget.my-defects', component: MyDefects, bare: true, minSpan: 8 },
   'team-defects': {
     id: 'team-defects',
+    group: 'defect',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.team-defects',
     component: MyDefects,
@@ -63,6 +79,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'defects-pending-repair': {
     id: 'defects-pending-repair',
+    group: 'defect',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.defects-pending-repair',
     component: DefectsPendingRepair,
@@ -71,6 +88,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'case-pending-review': {
     id: 'case-pending-review',
+    group: 'case',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.case-pending-review',
     component: CasePendingReview,
@@ -79,6 +97,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'team-weekly-report': {
     id: 'team-weekly-report',
+    group: 'overview',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.team-weekly-report',
     component: MyWeeklyReport,
@@ -88,6 +107,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'quick-create': {
     id: 'quick-create',
+    group: 'overview',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.quick-create',
     component: QuickCreate,
@@ -97,6 +117,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'notices-summary': {
     id: 'notices-summary',
+    group: 'notice',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.notices-summary',
     component: NoticesSummary,
@@ -104,6 +125,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'recent-commits': {
     id: 'recent-commits',
+    group: 'git',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.recent-commits',
     component: RecentCommits,
@@ -111,6 +133,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'git-repo-stats': {
     id: 'git-repo-stats',
+    group: 'git',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.git-repo-stats',
     component: GitRepoStats,
@@ -118,6 +141,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'open-pull-requests': {
     id: 'open-pull-requests',
+    group: 'git',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.open-pull-requests',
     component: OpenPullRequests,
@@ -125,6 +149,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'prs-to-review': {
     id: 'prs-to-review',
+    group: 'git',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.open-pull-requests',
     component: OpenPullRequests,
@@ -133,6 +158,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'my-documents': {
     id: 'my-documents',
+    group: 'document',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.my-documents',
     component: DocumentList,
@@ -142,6 +168,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'document-list': {
     id: 'document-list',
+    group: 'document',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.document-list',
     component: DocumentList,
@@ -151,6 +178,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'document-pin': {
     id: 'document-pin',
+    group: 'document',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.document-pin',
     component: DocumentPin,
@@ -159,6 +187,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'plan-burndown': {
     id: 'plan-burndown',
+    group: 'plan',
     tabAffinity: 'both',
     titleKey: 'workbench.widget.plan-burndown',
     component: BoardChartHost,
@@ -170,6 +199,7 @@ export const WORKBENCH_WIDGETS = {
   // —— 项目级统计（原看板，现入组件库） ——
   'stat-case': {
     id: 'stat-case',
+    group: 'case',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.stat-case',
     component: BoardChartHost,
@@ -177,6 +207,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'stat-defect': {
     id: 'stat-defect',
+    group: 'defect',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.stat-defect',
     component: BoardChartHost,
@@ -184,6 +215,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'stat-module': {
     id: 'stat-module',
+    group: 'deliverable',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.stat-module',
     component: BoardChartHost,
@@ -191,6 +223,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'stat-document': {
     id: 'stat-document',
+    group: 'document',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.stat-document',
     component: BoardChartHost,
@@ -198,6 +231,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'stat-member': {
     id: 'stat-member',
+    group: 'member',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.stat-member',
     component: BoardChartHost,
@@ -205,6 +239,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'defect-state-chart': {
     id: 'defect-state-chart',
+    group: 'defect',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.defect-state-chart',
     component: BoardChartHost,
@@ -212,6 +247,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'member-defect-line': {
     id: 'member-defect-line',
+    group: 'member',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.member-defect-line',
     component: BoardChartHost,
@@ -219,6 +255,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'plan-statistics': {
     id: 'plan-statistics',
+    group: 'plan',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.plan-statistics',
     component: BoardChartHost,
@@ -226,6 +263,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'action-list': {
     id: 'action-list',
+    group: 'plan',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.action-list',
     component: BoardChartHost,
@@ -233,6 +271,7 @@ export const WORKBENCH_WIDGETS = {
   },
   'member-defect-rank': {
     id: 'member-defect-rank',
+    group: 'member',
     tabAffinity: 'work',
     titleKey: 'workbench.widget.member-defect-rank',
     component: BoardChartHost,
@@ -282,6 +321,37 @@ export const BOARD_STAT_IDS = new Set([
 /** 工作台编辑器组件库 */
 export function listCatalogWidgets() {
   return listWidgetsForTab('work')
+}
+
+/** 按业务域聚合目录项：[{ group, titleKey, widgets }] */
+export function listCatalogGroups() {
+  const widgets = listCatalogWidgets()
+  const byGroup = Object.create(null)
+  for (const w of widgets) {
+    const g = w.group || 'overview'
+    if (!byGroup[g]) byGroup[g] = []
+    byGroup[g].push(w)
+  }
+  const groups = []
+  const seen = new Set()
+  for (const g of CATALOG_GROUP_ORDER) {
+    if (!byGroup[g]?.length) continue
+    seen.add(g)
+    groups.push({
+      group: g,
+      titleKey: `workbench.catalog.group.${g}`,
+      widgets: byGroup[g]
+    })
+  }
+  for (const g of Object.keys(byGroup)) {
+    if (seen.has(g)) continue
+    groups.push({
+      group: g,
+      titleKey: `workbench.catalog.group.${g}`,
+      widgets: byGroup[g]
+    })
+  }
+  return groups
 }
 
 /** 按页签列出可配置组件 */

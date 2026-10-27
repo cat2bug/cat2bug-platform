@@ -1,17 +1,9 @@
 <template>
   <div class="wb-editor">
-    <aside class="wb-editor__catalog">
-      <div class="wb-editor__catalog-title">{{ $t('workbench.editor.catalog') }}</div>
-      <div
-        v-for="w in catalog"
-        :key="w.id"
-        class="wb-editor__chip"
-        draggable="true"
-        @dragstart="onCatalogDragStart($event, w.id)"
-      >
-        {{ $t(w.titleKey) }}
-      </div>
-    </aside>
+    <workbench-widget-catalog
+      :used-types="usedTypesOnSurface"
+      @catalog-drag-start="onCatalogTypeDrag"
+    />
 
     <div class="wb-editor__canvas">
       <div v-for="(row, ri) in localRows" :key="row.id" class="wb-editor__row">
@@ -196,11 +188,13 @@ import {
   spansLabel
 } from './row-layout'
 import { listCatalogWidgets, colMinSpans } from './widget-registry'
+import WorkbenchWidgetCatalog from './WorkbenchWidgetCatalog.vue'
 
 const STACK_MQ = 720
 
 export default {
   name: 'WorkbenchRowEditor',
+  components: { WorkbenchWidgetCatalog },
   props: {
     rows: { type: Array, default: () => [] },
     titleOf: { type: Function, required: true },
@@ -226,6 +220,17 @@ export default {
     },
     localRows() {
       return this.rows || []
+    },
+    usedTypesOnSurface() {
+      const types = []
+      for (const row of this.localRows) {
+        for (const col of row.cols || []) {
+          for (const w of colWidgets(col)) {
+            if (w?.type) types.push(w.type)
+          }
+        }
+      }
+      return types
     }
   },
   mounted() {
@@ -418,12 +423,10 @@ export default {
       }
       this.emitRows(next)
     },
-    onCatalogDragStart(e, type) {
+    onCatalogTypeDrag(type) {
       this.dragType = type
       this.dragFromColId = null
       this.dragInstanceId = null
-      e.dataTransfer.setData('text/plain', 'catalog:' + type)
-      e.dataTransfer.effectAllowed = 'copy'
     },
     onInstanceDragStart(e, colId, instanceId) {
       this.dragFromColId = colId
@@ -486,55 +489,28 @@ export default {
 <style scoped lang="scss">
 .wb-editor {
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
+  grid-template-columns: 240px minmax(0, 1fr);
   gap: 12px;
-  align-items: start;
+  align-items: stretch;
+  /* 编辑区锁视口剩余高度：左右分栏各自滚，避免整页滚时左侧 sticky 下方缺一块 */
+  height: calc(100vh - 200px);
+  min-height: 360px;
+  max-height: calc(100vh - 160px);
 }
 @media (max-width: 900px) {
   .wb-editor {
     grid-template-columns: 1fr;
+    height: auto;
+    max-height: none;
   }
-}
-.wb-editor__catalog {
-  position: sticky;
-  top: 8px;
-  padding: 10px;
-  border: 1px solid var(--el-border-color-lighter, #ebeef5);
-  border-radius: 10px;
-  background: var(--el-bg-color, var(--bg-color-base, #fff));
-  color: var(--text-color-primary, var(--el-text-color-primary, #303133));
-  max-height: calc(100vh - 160px);
-  overflow: auto;
-}
-.wb-editor__catalog-title {
-  margin-bottom: 8px;
-  font-size: 13px;
-  font-weight: 650;
-  color: var(--text-color-primary, var(--el-text-color-primary, #303133));
-}
-.wb-editor__chip {
-  padding: 8px 10px;
-  margin-bottom: 6px;
-  border-radius: 8px;
-  border: 1px solid var(--el-border-color-lighter, transparent);
-  background: var(--el-fill-color, var(--bg-color-block, #f5f7fa));
-  color: var(--text-color-primary, var(--el-text-color-primary, #303133));
-  font-size: 12px;
-  cursor: grab;
-  user-select: none;
-}
-.wb-editor__chip:hover {
-  background: var(--el-fill-color-dark, var(--el-fill-color-light, #ebeef5));
-  color: var(--text-color-primary, var(--el-text-color-primary, #303133));
-}
-.wb-editor__chip:active {
-  cursor: grabbing;
 }
 .wb-editor__canvas {
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+  min-height: 0;
+  overflow: auto;
 }
 .wb-editor__row {
   padding: 10px;
