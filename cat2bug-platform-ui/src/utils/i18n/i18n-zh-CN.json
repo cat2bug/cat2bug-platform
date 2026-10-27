@@ -379,6 +379,7 @@
   "project.path-key-placeholder": "例如 my-app（团队内唯一）",
   "project.path-key-hint": "规则同团队路径；与团队路径组成 /{'{'}团队{'}'}/{'{'}项目{'}'} ，用于源码路径和分享链接。",
   "project.path-key-required": "项目路径名不能为空",
+  "project.path-key-duplicate": "项目路径名在该团队内已存在",
   "project.path-share": "项目分享路径",
   "project.path-share-copied": "分享链接已复制到剪贴板",
   "path-key.format-invalid": "路径键格式不正确（1–100 字符，字母数字及 . _ -，首尾须为字母或数字）",

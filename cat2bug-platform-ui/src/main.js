@@ -65,6 +65,7 @@ import DefectDrawerShortcutsPlugin from '@/plugins/defect-drawer-shortcuts'
 import WebSocketPlugin from '@/plugins/websocket'
 import VueExcelEditor from '@/vendor/vue-excel-editor'
 import { ElMessageBox } from 'element-plus'
+import { confirmWithI18n } from '@/utils/message-box-i18n'
 import { appNotify, showAppMessage, appMessageError, appMessageSuccess, appMessageWarning, appMessageInfo } from '@/utils/app-message'
 import { resolveLegacyIcon } from '@/utils/element-icon'
 import { bootstrapAuthenticatedRoutes } from '@/router/bootstrap'
@@ -158,7 +159,10 @@ async function mountApp() {
   app.config.globalProperties.selectDictLabels = selectDictLabels
   app.config.globalProperties.download = download
   app.config.globalProperties.handleTree = handleTree
-  app.config.globalProperties.$confirm = ElMessageBox.confirm
+  // 命令式 MessageBox 需挂上 app context，才能吃到 ConfigProvider locale；
+  // $confirm 再补 vue-i18n 按钮文案，避免中文下仍出现 Cancel/OK。
+  ElMessageBox._context = app._context
+  app.config.globalProperties.$confirm = confirmWithI18n
   app.config.globalProperties.$notify = appNotify
   app.config.globalProperties.$message = Object.assign(
     (content, options) => showAppMessage(content, options),

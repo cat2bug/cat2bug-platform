@@ -33,6 +33,14 @@ const FRAME_H = 280
 const FRAME_N = 6
 const FRAME_MS = 130
 
+/** 加载猫高度标准（px），与 docs/04-UI规范/组件与交互约定.md 一致；enhance 与直挂组件共用 */
+export const CAT2BUG_LOADING_SIZE = Object.freeze({
+  /** 列表页 / 表格 / 区域默认 */
+  list: 44,
+  /** 统计卡、工具条 KPI 等矮格 */
+  stat: 24
+})
+
 /**
  * Cat2Bug 品牌加载：奔跑猫轮廓 + 文案。
  * props: text / size(高度 px) / variant(light|dark|auto)
@@ -46,7 +54,7 @@ export default {
     },
     size: {
       type: Number,
-      default: 44
+      default: CAT2BUG_LOADING_SIZE.list
     },
     variant: {
       type: String,
@@ -82,7 +90,7 @@ export default {
     },
     catH() {
       const n = Number(this.size)
-      return Number.isFinite(n) && n > 0 ? n : 44
+      return Number.isFinite(n) && n > 0 ? n : CAT2BUG_LOADING_SIZE.list
     },
     rootStyle() {
       const sheet = this.resolvedVariant === 'dark' ? sheetDark : sheetLight
@@ -168,6 +176,8 @@ export default {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  /* 促进合成层，避免缺陷列表等重渲染时主线程堵死帧动画 */
+  transform: translateZ(0);
 }
 
 .cat2bug-loading__shade {
@@ -181,21 +191,25 @@ export default {
   background: var(--shade);
   pointer-events: none;
   transform-origin: center center;
-  transform: translateX(-50%) scale(1, 1);
+  transform: translate3d(-50%, 0, 0) scale(1, 1);
   animation: cat2bug-shade-pulse var(--cycle) infinite;
+  will-change: transform;
 }
 
+/*
+ * 用 transform 抽帧，不用 background-position：
+ * 后者走主线程 paint，缺陷列表大数据渲染时猫会「卡住不跑」。
+ */
 .cat2bug-loading__run {
-  width: 100%;
+  width: calc(100% * var(--n));
   height: 100%;
-  overflow: hidden;
   background-image: var(--sheet);
   background-repeat: no-repeat;
-  background-size:
-    calc(var(--cat-h) * var(--fw) / var(--fh) * var(--n))
-    var(--cat-h);
+  background-size: 100% 100%;
   background-position: 0 0;
-  animation: cat2bug-run-steps var(--cycle) steps(var(--n)) infinite;
+  transform: translate3d(0, 0, 0);
+  animation: cat2bug-run-steps var(--cycle) steps(6) infinite;
+  will-change: transform;
 }
 
 .cat2bug-loading__dust {
@@ -269,37 +283,38 @@ export default {
 
 @keyframes cat2bug-run-steps {
   from {
-    background-position: 0 0;
+    transform: translate3d(0, 0, 0);
   }
   to {
-    background-position: calc(var(--cat-h) * var(--fw) / var(--fh) * var(--n) * -1) 0;
+    /* 条带宽 = 6 帧；steps(6) 停在第 0～5 帧 */
+    transform: translate3d(-100%, 0, 0);
   }
 }
 
 @keyframes cat2bug-shade-pulse {
   0%,
   16.666% {
-    transform: translateX(-50%) scale(1, 1);
+    transform: translate3d(-50%, 0, 0) scale(1, 1);
   }
   16.667%,
   33.333% {
-    transform: translateX(-50%) scale(0.82, 0.92);
+    transform: translate3d(-50%, 0, 0) scale(0.82, 0.92);
   }
   33.334%,
   50% {
-    transform: translateX(-50%) scale(0.95, 1.05);
+    transform: translate3d(-50%, 0, 0) scale(0.95, 1.05);
   }
   50.001%,
   66.666% {
-    transform: translateX(-50%) scale(0.77, 0.85);
+    transform: translate3d(-50%, 0, 0) scale(0.77, 0.85);
   }
   66.667%,
   83.333% {
-    transform: translateX(-50%) scale(0.95, 0.95);
+    transform: translate3d(-50%, 0, 0) scale(0.95, 0.95);
   }
   83.334%,
   100% {
-    transform: translateX(-50%) scale(0.76, 0.88);
+    transform: translate3d(-50%, 0, 0) scale(0.76, 0.88);
   }
 }
 

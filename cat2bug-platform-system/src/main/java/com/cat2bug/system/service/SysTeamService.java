@@ -98,10 +98,10 @@ public class SysTeamService {
         }
         String teamKey = PathKeyValidator.normalizeOrNull(sysTeam.getTeamKey());
         if (teamKey == null) {
-            throw new ApiException(MessageUtils.message("team.path-key-invalid"));
+            throw new ApiException(400, MessageUtils.message("team.path-key-invalid"));
         }
         if (sysTeamMapper.selectSysTeamByTeamKey(teamKey) != null) {
-            throw new ApiException(MessageUtils.message("team.path-key-duplicate"));
+            throw new ApiException(400, MessageUtils.message("team.path-key-duplicate"));
         }
         sysTeam.setTeamKey(teamKey);
         String now = LocalDateTime.now().format(TIME_FMT);
@@ -119,8 +119,30 @@ public class SysTeamService {
     }
 
     public int updateSysTeam(SysTeam sysTeam) {
+        applyTeamKeyOnUpdate(sysTeam);
         sysTeam.setUpdateTime(LocalDateTime.now().format(TIME_FMT));
         return sysTeamMapper.updateSysTeam(sysTeam);
+    }
+
+    /**
+     * 更新时若带了 teamKey：规范化并校验全局唯一，避免唯一索引冲突落到「服务器内部错误」。
+     */
+    private void applyTeamKeyOnUpdate(SysTeam sysTeam) {
+        if (sysTeam == null || sysTeam.getTeamId() == null) {
+            throw new ApiException("团队不能为空");
+        }
+        if (sysTeam.getTeamKey() == null || sysTeam.getTeamKey().isBlank()) {
+            return;
+        }
+        String teamKey = PathKeyValidator.normalizeOrNull(sysTeam.getTeamKey());
+        if (teamKey == null) {
+            throw new ApiException(400, MessageUtils.message("team.path-key-invalid"));
+        }
+        SysTeam byKey = sysTeamMapper.selectSysTeamByTeamKey(teamKey);
+        if (byKey != null && byKey.getTeamId() != null && !byKey.getTeamId().equals(sysTeam.getTeamId())) {
+            throw new ApiException(400, MessageUtils.message("team.path-key-duplicate"));
+        }
+        sysTeam.setTeamKey(teamKey);
     }
 
     @Transactional

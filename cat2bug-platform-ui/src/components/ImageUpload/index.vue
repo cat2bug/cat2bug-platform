@@ -711,6 +711,9 @@ export default {
   height: 148px;
   border-radius: var(--cat2bug-border-radius, 4px);
   overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 :deep(.el-upload-list--picture-card .el-upload-list__item-thumbnail){
   width: 100%;
@@ -718,6 +721,16 @@ export default {
   object-fit: cover;
   object-position: center;
   border-radius: var(--cat2bug-border-radius, 4px);
+}
+/* 加载失败回退 default-image：保留 72% 占位尺寸，并在卡片内居中 */
+:deep(.el-upload-list--picture-card .el-upload-list__item-thumbnail.cat2bug-image-error__img){
+  width: auto;
+  height: auto;
+  max-width: 72%;
+  max-height: 72%;
+  object-fit: contain;
+  object-position: center center;
+  margin: auto;
 }
 :deep(.el-upload-list--picture-card .el-upload-list__item.is-keyboard-focus){
   outline: none !important;

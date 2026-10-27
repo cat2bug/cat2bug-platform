@@ -5,11 +5,11 @@
       'is-column-resizing': columnResizeActive,
       'is-layout-ready': tableLayoutReady
     }"
-    :style="operateColumnWrapStyle"
+    :style="tableWrapStyle"
+    v-loading="loading"
   >
     <el-table ref="elTable"
               :key="tableKey"
-              v-loading="loading"
               :data="data"
               :fit="true"
               :row-key="rowKey || undefined"
@@ -269,6 +269,18 @@ export default {
         '--cat2bug-operate-col-padding-x': `${this.operateColumnPaddingX}px`,
         '--cat2bug-table-row-max-height': `${DATA_ROW_MAX_HEIGHT_PX}px`
       };
+    },
+    /**
+     * loading 且父页已量出 tableMaxHeight 时撑开 wrap，
+     * 避免空表矮遮罩里猫先贴顶、列表区定高后再跳到中间（计划/用例等 x-scroll 不 flex:1）。
+     */
+    tableWrapStyle() {
+      const style = { ...this.operateColumnWrapStyle };
+      const maxH = this.elTableMaxHeight;
+      if (this.loading && maxH != null && Number(maxH) > 0) {
+        style.minHeight = `${Number(maxH)}px`;
+      }
+      return style;
     },
     elTableMaxHeight() {
       const v = this.tableMaxHeight;
@@ -2339,6 +2351,10 @@ export default {
 <style lang="scss" scoped>
 .cat2-bug-table-wrap {
   position: relative;
+  /* 列表宿主已定高时铺满，v-loading 遮罩与奔跑猫居中区域稳定，避免空表矮→有表高时猫上下跳 */
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
   /* 首屏 layout 完成前隐藏，避免弹性列/spacer/操作列测宽造成列宽跳动 */
   opacity: 0;
   &.is-layout-ready {

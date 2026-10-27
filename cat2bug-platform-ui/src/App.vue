@@ -4,7 +4,7 @@
     :size="elementPlusSize"
     :message="elementPlusMessage"
   >
-    <div id="app">
+    <div class="app-root">
       <router-view />
       <theme-picker ghost />
     </div>
@@ -124,8 +124,12 @@ export default {
 }
 </script>
 <style>
+.app-root {
+  height: 100%;
+  overflow: hidden;
+}
 /* 根级 ThemePicker 仅负责启动时换肤，不可见；设置抽屉内单独实例不带 ghost */
-#app > .theme-picker.theme-picker--ghost {
+.app-root > .theme-picker.theme-picker--ghost {
   position: absolute !important;
   width: 0 !important;
   height: 0 !important;

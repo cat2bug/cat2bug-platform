@@ -7,6 +7,7 @@ import {
   appMessageWarning,
   appNotify
 } from '@/utils/app-message'
+import { withMessageBoxI18nDefaults } from '@/utils/message-box-i18n'
 
 const t = (key) => i18n.global.t(key)
 
@@ -27,16 +28,16 @@ export default {
     appMessageWarning(content)
   },
   alert(content) {
-    MessageBox.alert(content, t('prompted').toString())
+    MessageBox.alert(content, t('prompted').toString(), withMessageBoxI18nDefaults())
   },
   alertError(content) {
-    MessageBox.alert(content, t('prompted').toString(), { type: 'error' })
+    MessageBox.alert(content, t('prompted').toString(), withMessageBoxI18nDefaults({ type: 'error' }))
   },
   alertSuccess(content) {
-    MessageBox.alert(content, t('prompted').toString(), { type: 'success' })
+    MessageBox.alert(content, t('prompted').toString(), withMessageBoxI18nDefaults({ type: 'success' }))
   },
   alertWarning(content) {
-    MessageBox.alert(content, t('prompted').toString(), { type: 'warning' })
+    MessageBox.alert(content, t('prompted').toString(), withMessageBoxI18nDefaults({ type: 'warning' }))
   },
   notify(content) {
     appNotify(typeof content === 'string' ? content : { ...content, type: content.type || 'info' })
@@ -51,18 +52,18 @@ export default {
     appNotify.warning(content)
   },
   confirm(content, title, options) {
-    return MessageBox.confirm(content, title || t('prompted').toString(), options || {
-      confirmButtonText: t('ok').toString(),
-      cancelButtonText: t('cancel').toString(),
-      type: 'warning'
-    })
+    return MessageBox.confirm(
+      content,
+      title || t('prompted').toString(),
+      withMessageBoxI18nDefaults({ type: 'warning', ...(options || {}) })
+    )
   },
   prompt(content, title, options) {
-    return MessageBox.prompt(content, title || t('prompted').toString(), options || {
-      confirmButtonText: t('ok').toString(),
-      cancelButtonText: t('cancel').toString(),
-      type: 'warning'
-    })
+    return MessageBox.prompt(
+      content,
+      title || t('prompted').toString(),
+      withMessageBoxI18nDefaults({ type: 'warning', ...(options || {}) })
+    )
   },
   loading(content) {
     if (loadingCount === 0) {

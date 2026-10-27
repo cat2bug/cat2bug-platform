@@ -98,6 +98,8 @@ export default {
     position: relative;
     height: 100%;
     width: 100%;
+    /* 钳住外壳高度，纵向只让 .main-container 出现滚动条 */
+    overflow: hidden;
 
     &.mobile.openSidebar {
       position: fixed;
@@ -138,6 +140,14 @@ export default {
   .main-container {
     overflow-x: hidden;
     overflow-y: auto;
-    /* 不用 scrollbar-gutter，避免无纵向滚动条时右侧仍预留槽位、与左侧 20px 不对称 */
+    /* 全局不用 scrollbar-gutter：无纵向滚动时右侧仍占槽，与左侧 20px 不对称；
+       且部分 Chromium 下 gutter 轨道会与真实滚动条并排，看起来像双条。 */
+  }
+  /*
+   * 工作台 tab 切换时内容高度骤变，滚动条显隐会抢宽度。
+   * 用常显纵向滚动条占位（勿用 scrollbar-gutter），打断宽度抖动且只保留一条。
+   */
+  .main-container:has(.workbench-page) {
+    overflow-y: scroll;
   }
 </style>

@@ -21,3 +21,7 @@
 ## 以后怎么避免
 
 不要在 Element Plus（或其它库）已托管的 DOM 节点上 `innerHTML` / 嵌套 `createApp`。品牌化 loading 用体外挂载或纯 CSS 替换视觉即可。
+
+## 连带：统计卡内容已出猫还停 1～2 秒
+
+body 浮动猫不在遮罩子树里，EP `close()` 后遮罩还要 leave 淡出约 400ms 才卸 DOM；这段时间内容已透出、猫却仍不透明。enhance 须在 mask 出现 `leave` class / `display:none` 时立刻 teardown 浮动层（见 `isMaskHiding`）。

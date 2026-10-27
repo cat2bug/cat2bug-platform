@@ -379,6 +379,7 @@
   "project.path-key-placeholder": "e.g. my-app (unique within the team)",
   "project.path-key-hint": "Same rules as the team path; forms /{'{'}team{'}'}/{'{'}project{'}'} for source paths and share links.",
   "project.path-key-required": "Project path name is required",
+  "project.path-key-duplicate": "Project path name already exists in this team",
   "project.path-share": "Project share path",
   "project.path-share-copied": "Share link copied to clipboard",
   "path-key.format-invalid": "Invalid path key (1–100 chars, letters/digits and . _ -, must start and end with a letter or digit)",

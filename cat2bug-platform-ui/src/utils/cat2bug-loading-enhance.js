@@ -1,5 +1,5 @@
 import { createApp, h } from 'vue'
-import Cat2BugLoading from '@/components/Cat2BugLoading/index.vue'
+import Cat2BugLoading, { CAT2BUG_LOADING_SIZE } from '@/components/Cat2BugLoading/index.vue'
 import i18n from '@/utils/i18n/i18n.js'
 import { pinia } from '@/store/pinia.js'
 
@@ -37,17 +37,33 @@ function readLoadingText(spinner) {
   return t || undefined
 }
 
-/** 统计卡片等矮区域用更小的奔跑猫，避免撑满整格 */
+/**
+ * 加载猫高度：列表/表格等主内容区固定 list 标准尺寸，不随遮罩高度变化；
+ * 仅统计卡等矮格用 stat。见 docs/04-UI规范/组件与交互约定.md。
+ */
+function isStatisticMask(mask) {
+  return !!(mask && typeof mask.closest === 'function'
+    && mask.closest('.statistic-item, .statistic-box, .defect-tools-statistic'))
+}
+
 function resolveLoadingSize(mask) {
-  if (mask && typeof mask.closest === 'function') {
-    if (mask.closest('.statistic-item, .statistic-box, .defect-tools-statistic')) {
-      return 24
-    }
+  if (isStatisticMask(mask)) {
+    return CAT2BUG_LOADING_SIZE.stat
   }
-  const h = mask && mask.getBoundingClientRect ? mask.getBoundingClientRect().height : 0
-  if (h > 0 && h < 200) return 28
-  if (h > 0 && h < 360) return 36
-  return 44
+  return CAT2BUG_LOADING_SIZE.list
+}
+
+/**
+ * EP close() 后遮罩仍留在 DOM 淡出约 400ms（v-show + Transition）。
+ * 猫挂在 body 上不会跟着淡，内容已透出时还会硬显示；一旦开始 leave 就立刻收掉。
+ * 勿用 opacity 判断：enter 淡入时也会很低，会误拆。
+ */
+function isMaskHiding(mask) {
+  if (!mask || !mask.isConnected) return true
+  const cls = typeof mask.className === 'string' ? mask.className : String(mask.className || '')
+  if (/\bleave\b/i.test(cls)) return true
+  const cs = getComputedStyle(mask)
+  return cs.display === 'none' || cs.visibility === 'hidden'
 }
 
 function clearPendingTimer(mask) {
@@ -120,38 +136,101 @@ function mountCatLoading(mask) {
   app.use(i18n)
   app.mount(host)
 
+  /**
+   * 高度未稳定前不显示猫；稳定后再锁定视口纵坐标。
+   * 避免空表矮遮罩「居中贴顶」→ 列表区 / max-height 撑开后再跳到中间。
+   * 统计卡较矮，阈值用更小值。
+   */
+  let lockedCatCenterY = null
+  let closedEarly = false
+  let lastHeight = -1
+  let stableFrames = 0
+  const MIN_LOCK_HEIGHT = isStatisticMask(mask) ? 48 : 120
+  const STABLE_FRAMES = 2
   const syncPos = () => {
-    if (!mask.isConnected || !host.isConnected) return
+    if (closedEarly || !host.isConnected) return
+    if (!mask.isConnected || isMaskHiding(mask)) {
+      closedEarly = true
+      teardown(mask)
+      return
+    }
     const r = mask.getBoundingClientRect()
-    const zRaw = getComputedStyle(mask).zIndex
+    const cs = getComputedStyle(mask)
+    const zRaw = cs.zIndex
     const zNum = Number.parseInt(zRaw, 10)
+    const h = Math.max(r.height, 0)
+    const w = Math.max(r.width, 0)
+    if (lastHeight >= 0 && Math.abs(h - lastHeight) <= 2) {
+      stableFrames += 1
+    } else {
+      stableFrames = 0
+      lastHeight = h
+      lockedCatCenterY = null
+      // 高度刚变化时再采两帧，避免只触发一次 RO 时 stableFrames 永远到不了阈值
+      requestAnimationFrame(() => {
+        requestAnimationFrame(syncPos)
+      })
+    }
+    const ready = h >= MIN_LOCK_HEIGHT && stableFrames >= STABLE_FRAMES
+    const liveCenter = r.top + h / 2
+    if (ready && lockedCatCenterY == null) {
+      lockedCatCenterY = liveCenter
+    }
+    const catApprox = Math.max(host.offsetHeight || 0, size || 72)
+    const half = catApprox / 2
+    const targetY =
+      lockedCatCenterY != null
+        ? Math.min(Math.max(lockedCatCenterY, r.top + half), r.bottom - half)
+        : liveCenter
+    const padTop = lockedCatCenterY != null ? Math.max(0, targetY - r.top - half) : 0
     Object.assign(host.style, {
       position: 'fixed',
       left: `${r.left}px`,
       top: `${r.top}px`,
-      width: `${Math.max(r.width, 0)}px`,
-      height: `${Math.max(r.height, 0)}px`,
+      width: `${w}px`,
+      height: `${h}px`,
       zIndex: Number.isFinite(zNum) ? String(zNum + 1) : '2010',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'center',
+      paddingTop: `${padTop}px`,
+      visibility: lockedCatCenterY != null ? 'visible' : 'hidden',
       pointerEvents: 'none',
       boxSizing: 'border-box'
     })
   }
   syncPos()
+  // 首帧后立刻再采一次，让 stableFrames 在定高后尽快达标
+  requestAnimationFrame(() => {
+    requestAnimationFrame(syncPos)
+  })
 
   let ro = null
   if (typeof ResizeObserver !== 'undefined') {
     ro = new ResizeObserver(syncPos)
     ro.observe(mask)
   }
+  const attrObserver = new MutationObserver(syncPos)
+  attrObserver.observe(mask, { attributes: true, attributeFilter: ['style', 'class'] })
+  const onTransition = () => syncPos()
+  mask.addEventListener('transitionstart', onTransition)
+  mask.addEventListener('transitionrun', onTransition)
+  mask.addEventListener('transitionend', onTransition)
   window.addEventListener('scroll', syncPos, true)
   window.addEventListener('resize', syncPos)
 
   disposers.set(mask, () => {
+    closedEarly = true
     window.removeEventListener('scroll', syncPos, true)
     window.removeEventListener('resize', syncPos)
+    mask.removeEventListener('transitionstart', onTransition)
+    mask.removeEventListener('transitionrun', onTransition)
+    mask.removeEventListener('transitionend', onTransition)
+    try {
+      attrObserver.disconnect()
+    } catch (_e) {
+      /* ignore */
+    }
     if (ro) {
       try {
         ro.disconnect()

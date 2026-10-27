@@ -49,6 +49,9 @@ public class SysProjectService {
         PageDomain page = PageDomain.of(pageNum, pageSize);
         long total = sysProjectMapper.countSysProjectList(userId, query);
         List<SysProject> rows = sysProjectMapper.selectSysProjectList(userId, query, page.getOffset(), page.getPageSize());
+        // 与管理端列表一致：补齐成员，供前端「成员」列与进入项目成员校验（members 为空会误报无权限）
+        rows.forEach(project -> project.setMembers(
+                sysUserProjectMapper.selectSysUserListByProjectId(project.getProjectId(), null, 0, Integer.MAX_VALUE)));
         return new TableDataInfo(rows, total);
     }
 
@@ -100,10 +103,10 @@ public class SysProjectService {
         }
         String projectKey = PathKeyValidator.normalizeOrNull(sysProject.getProjectKey());
         if (projectKey == null) {
-            throw new ApiException(MessageUtils.message("project.path-key-invalid"));
+            throw new ApiException(400, MessageUtils.message("project.path-key-invalid"));
         }
         if (sysProjectMapper.countByTeamIdAndProjectKey(sysProject.getTeamId(), projectKey, null) != 0) {
-            throw new ApiException(MessageUtils.message("project.path-key-duplicate"));
+            throw new ApiException(400, MessageUtils.message("project.path-key-duplicate"));
         }
         sysProject.setProjectKey(projectKey);
         String now = LocalDateTime.now().format(TIME_FMT);
@@ -133,14 +136,45 @@ public class SysProjectService {
         return 1;
     }
     public int updateSysProject(SysProject sysProject, Long userId) {
+        applyProjectKeyOnUpdate(sysProject);
         sysProject.setUpdateBy(String.valueOf(userId));
         sysProject.setUpdateTime(LocalDateTime.now().format(TIME_FMT));
         return sysProjectMapper.updateSysProject(sysProject);
     }
 
     public int updateSysProject(SysProject sysProject) {
+        applyProjectKeyOnUpdate(sysProject);
         sysProject.setUpdateTime(LocalDateTime.now().format(TIME_FMT));
         return sysProjectMapper.updateSysProject(sysProject);
+    }
+
+    /**
+     * 更新时若带了 projectKey：规范化并校验团队内唯一，避免唯一索引冲突落到「服务器内部错误」。
+     * 未传 / 空串时视为不改路径键（如管理端仅改锁定状态）。
+     */
+    private void applyProjectKeyOnUpdate(SysProject sysProject) {
+        if (sysProject == null || sysProject.getProjectId() == null) {
+            throw new ApiException("项目不能为空");
+        }
+        if (sysProject.getProjectKey() == null || sysProject.getProjectKey().isBlank()) {
+            return;
+        }
+        String projectKey = PathKeyValidator.normalizeOrNull(sysProject.getProjectKey());
+        if (projectKey == null) {
+            throw new ApiException(400, MessageUtils.message("project.path-key-invalid"));
+        }
+        Long teamId = sysProject.getTeamId();
+        if (teamId == null) {
+            SysProject existing = sysProjectMapper.selectSysProjectByProjectId(sysProject.getProjectId(), null);
+            if (existing == null || existing.getTeamId() == null) {
+                throw new ApiException(404, MessageUtils.message("git.repo.project-not-found"));
+            }
+            teamId = existing.getTeamId();
+        }
+        if (sysProjectMapper.countByTeamIdAndProjectKey(teamId, projectKey, sysProject.getProjectId()) != 0) {
+            throw new ApiException(400, MessageUtils.message("project.path-key-duplicate"));
+        }
+        sysProject.setProjectKey(projectKey);
     }
 
     public int deleteSysProjectByProjectId(Long projectId) {

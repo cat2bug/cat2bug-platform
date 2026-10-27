@@ -608,7 +608,10 @@ export default {
       if (!project) return false
       if (parseInt(project.createBy) === this.currentUserId) return true
       const members = project.members || []
-      return members.some(m => m.userId == this.currentUserId)
+      if (members.some(m => m.userId == this.currentUserId)) return true
+      // 「我参与的」已由后端 memberOnly 过滤；列表若未带 members 时勿误判为非成员
+      if (this.queryParams && this.queryParams.memberOnly) return true
+      return false
     },
     /** 修改按钮操作（旧对话框，保留备用） */
     handleUpdate(row) {
@@ -696,14 +699,20 @@ export default {
         this.$router.push({ name: fallbackName })
       }
     },
-    /** 点击项目跳转：进入首个有权限的模块 */
+    /** 点击项目跳转：进入首个有权限的模块；成员身份已确认时即使当前会话无模块权限也先切换再进工作台 */
     clickProject(project) {
       const shortcuts = this.collectShortcuts(project)
-      if (!shortcuts.length) {
-        this.$message.warning(this.$i18n.t('project.no-permission-access-project').toString())
+      if (shortcuts.length) {
+        this.goCollectShortcut(null, project, shortcuts[0])
         return
       }
-      this.goCollectShortcut(null, project, shortcuts[0])
+      if (this.isProjectMemberOrCreator(project)) {
+        useUserStore().SwitchCurrentProject(project.projectId).then(() => {
+          this.pushProjectModule(project, 'dashboard', 'ProjectDashboard')
+        })
+        return
+      }
+      this.$message.warning(this.$i18n.t('project.no-permission-access-project').toString())
     },
     /** 收藏卡片快捷入口跳转 */
     goCollectShortcut(e, project, item) {

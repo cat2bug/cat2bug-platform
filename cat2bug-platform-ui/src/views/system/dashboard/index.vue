@@ -1101,7 +1101,20 @@ export default {
 @import './workbench/workbench-proto.scss';
 
 .workbench-page {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* 矮内容时仍铺满；flex-shrink:0 避免被 AppMain 首子 min-height:0 压矮 */
   min-height: 100%;
+  flex-shrink: 0;
+  /*
+   * 避免 tab 切换瞬间横向溢出。
+   * 必须用 clip + visible：若写 overflow-x:hidden，CSS 会把 overflow-y 算成 auto；
+   * 再叠加 AppMain 对首子 flex/min-height:0，工作台会被压矮并自己出滚动条，
+   * 与 .main-container 叠成右侧双条。纵向只让 .main-container 滚。
+   */
+  overflow-x: clip;
+  overflow-y: visible;
 }
 .workbench-header {
   display: flex;

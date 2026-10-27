@@ -35,8 +35,12 @@ export default {
   min-height: calc(100vh - 50px);
   width: 100%;
   position: relative;
-  /* hidden 会在个别布局下裁掉主区域底部内容；整页滚动由 main-container 承担 */
-  overflow-x: hidden;
+  /*
+   * 整页滚动只由 .main-container 承担。
+   * 勿写 overflow-x:hidden + overflow-y:visible：CSS 会把 visible 算成 auto，
+   * 容易与外层叠出双滚动条。clip 不会触发该回落。
+   */
+  overflow-x: clip;
   overflow-y: visible;
   /* 路由根节点（transition/keep-alive 为抽象组件，不占 DOM）作为首子元素铺满，避免仅 min-height 时底部留白 */
   display: flex;

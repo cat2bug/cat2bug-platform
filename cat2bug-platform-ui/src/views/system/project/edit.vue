@@ -122,6 +122,7 @@ import {
   confirmPathKeyRename,
   createPathKeyValidator
 } from '@/utils/path-key'
+import { buildProjectModulePath } from '@/utils/project-module-path'
 
 export default {
   name: "ProjectEdit",
@@ -334,17 +335,36 @@ export default {
     /** 提交按钮 */
     onSubmit() {
       this.$refs["form"].validate(valid => {
-        if (valid) {
-          confirmPathKeyRename(this, this.originalProjectKey, this.form.projectKey, () => {
-            updateProject(this.form).then(response => {
-              this.$modal.msgSuccess(this.$i18n.t('update.success'));
-              this.originalProjectKey = this.form.projectKey;
-              this.pageFormCloseBaseline = null;
-              this.goBack();
-            });
-          });
-        }
-      });
+        if (!valid) return
+        confirmPathKeyRename(this, this.originalProjectKey, this.form.projectKey, () => {
+          const prevKey = (this.originalProjectKey != null ? String(this.originalProjectKey) : '').trim()
+          const nextKey = (this.form.projectKey != null ? String(this.form.projectKey) : '').trim()
+          const keyChanged = !!(prevKey && nextKey && prevKey !== nextKey)
+          updateProject(this.form).then(() => {
+            this.$modal.msgSuccess(this.$i18n.t('update.success'))
+            this.originalProjectKey = this.form.projectKey
+            this.pageFormCloseBaseline = null
+            if (!keyChanged) {
+              this.goBack()
+              return
+            }
+            // 路径键已变：立刻刷新侧栏/动态路由并改写 URL，避免仍点旧 /{team}/{oldKey}/** 连续 404
+            const projectId = this.getProjectId()
+            const teamKey = this.form.teamKey
+            useUserStore().SwitchCurrentProject(projectId, {
+              rewriteUrl: true,
+              currentPath: this.$route.fullPath
+            }).then(() => {
+              const optionPath = buildProjectModulePath(teamKey, nextKey, 'option')
+              if (optionPath) {
+                return this.$router.replace(optionPath)
+              }
+            }).catch(() => {
+              this.$router.go(0)
+            })
+          })
+        })
+      })
     },
     clipboardShareSuccess() {
       this.$modal.msgSuccess(this.$t('project.path-share-copied'));

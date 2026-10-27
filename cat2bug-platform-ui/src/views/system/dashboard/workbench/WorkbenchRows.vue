@@ -137,13 +137,20 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .wb-rows__row {
   display: flex;
   flex-wrap: nowrap;
   gap: 12px;
   align-items: stretch;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
+  box-sizing: border-box;
 }
 .wb-rows.is-stack .wb-rows__row {
   flex-direction: column;

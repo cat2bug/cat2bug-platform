@@ -59,6 +59,8 @@
 
 body {
   height: 100%;
+  /* 文档层不滚：后台主区滚动只走 .main-container，避免右侧双滚动条 */
+  overflow: hidden;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -78,11 +80,13 @@ label {
 
 html {
   height: 100%;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
 #app {
   height: 100%;
+  overflow: hidden;
 }
 
 *,
