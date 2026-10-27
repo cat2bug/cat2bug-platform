@@ -422,6 +422,40 @@ function setColWidgetList(col, list) {
   col.widget = widgets[0] || null
 }
 
+/** 列内是否已有指定 type（同列 type 唯一） */
+export function columnHasWidgetType(col, type) {
+  const t = String(type || '')
+  if (!t) return false
+  return colWidgets(col).some(w => w.type === t)
+}
+
+/** 按 instanceId 查找组件所在列 */
+export function findWidgetInstance(rows, instanceId) {
+  const id = String(instanceId || '')
+  if (!id) return null
+  for (let ri = 0; ri < (rows || []).length; ri++) {
+    const cols = rows[ri].cols || []
+    for (let ci = 0; ci < cols.length; ci++) {
+      const list = colWidgets(cols[ci])
+      const wi = list.findIndex(w => w.instanceId === id)
+      if (wi >= 0) {
+        return {
+          rowIndex: ri,
+          colIndex: ci,
+          widgetIndex: wi,
+          row: rows[ri],
+          col: cols[ci],
+          widget: list[wi]
+        }
+      }
+    }
+  }
+  return null
+}
+
+/**
+ * @deprecated 整列互换；编辑器改用 moveWidgetInstance。保留供兼容。
+ */
 export function swapColWidgets(rows, colIdA, colIdB) {
   const a = findCol(rows, colIdA)
   const b = findCol(rows, colIdB)
@@ -435,20 +469,89 @@ export function swapColWidgets(rows, colIdA, colIdB) {
   return next
 }
 
-export function placeWidgetInCol(rows, colId, type, props = {}) {
+/**
+ * 向列追加（或按 insertIndex 插入）组件；同列已有相同 type 时原样返回 rows（引用不变）。
+ * @param {number} [insertIndex] 省略则追加到末尾
+ */
+export function placeWidgetInCol(rows, colId, type, props = {}, insertIndex) {
   const hit = findCol(rows, colId)
-  if (!hit) return rows
+  if (!hit || !type) return rows
+  if (columnHasWidgetType(hit.col, type)) return rows
   const next = JSON.parse(JSON.stringify(rows))
-  setColWidgetList(next[hit.rowIndex].cols[hit.colIndex], [
-    { type, props, instanceId: newId('i') }
-  ])
+  const col = next[hit.rowIndex].cols[hit.colIndex]
+  const list = colWidgets(col).slice()
+  const widget = { type, props, instanceId: newId('i') }
+  const at =
+    insertIndex == null || !Number.isFinite(Number(insertIndex))
+      ? list.length
+      : Math.max(0, Math.min(list.length, Number(insertIndex)))
+  list.splice(at, 0, widget)
+  setColWidgetList(col, list)
   return next
 }
 
+/** 清空整列组件 */
 export function clearColWidget(rows, colId) {
   const hit = findCol(rows, colId)
   if (!hit) return rows
   const next = JSON.parse(JSON.stringify(rows))
   setColWidgetList(next[hit.rowIndex].cols[hit.colIndex], [])
+  return next
+}
+
+/** 按 instanceId 删除单个组件；找不到则原样返回 */
+export function removeWidgetInstance(rows, instanceId) {
+  const hit = findWidgetInstance(rows, instanceId)
+  if (!hit) return rows
+  const next = JSON.parse(JSON.stringify(rows))
+  const col = next[hit.rowIndex].cols[hit.colIndex]
+  const list = colWidgets(col).slice()
+  list.splice(hit.widgetIndex, 1)
+  setColWidgetList(col, list)
+  return next
+}
+
+/**
+ * 将组件移到目标列的 toIndex（省略则末尾）；同列改序或跨列移动。
+ * 跨列且目标已有相同 type 时原样返回 rows（引用不变）。
+ */
+export function moveWidgetInstance(rows, instanceId, toColId, toIndex) {
+  const from = findWidgetInstance(rows, instanceId)
+  const to = findCol(rows, toColId)
+  if (!from || !to) return rows
+  const sameCol = from.col.id === to.col.id
+  if (!sameCol && columnHasWidgetType(to.col, from.widget.type)) return rows
+
+  const next = JSON.parse(JSON.stringify(rows))
+  const srcCol = next[from.rowIndex].cols[from.colIndex]
+  const dstHit = findCol(next, toColId)
+  if (!dstHit) return rows
+  const dstCol = next[dstHit.rowIndex].cols[dstHit.colIndex]
+
+  const srcList = colWidgets(srcCol).slice()
+  const [widget] = srcList.splice(from.widgetIndex, 1)
+  if (!widget) return rows
+
+  if (sameCol) {
+    // toIndex = 落点组件在「移除前」的下标，作为移动后的最终下标（上面拖到下面即可换位）
+    // 不要在 from < to 时再 -1：那会把「拖到下一个」变成空操作
+    let at =
+      toIndex == null || !Number.isFinite(Number(toIndex))
+        ? srcList.length
+        : Number(toIndex)
+    at = Math.max(0, Math.min(srcList.length, at))
+    srcList.splice(at, 0, widget)
+    setColWidgetList(srcCol, srcList)
+    return next
+  }
+
+  setColWidgetList(srcCol, srcList)
+  const dstList = colWidgets(dstCol).slice()
+  const at =
+    toIndex == null || !Number.isFinite(Number(toIndex))
+      ? dstList.length
+      : Math.max(0, Math.min(dstList.length, Number(toIndex)))
+  dstList.splice(at, 0, widget)
+  setColWidgetList(dstCol, dstList)
   return next
 }

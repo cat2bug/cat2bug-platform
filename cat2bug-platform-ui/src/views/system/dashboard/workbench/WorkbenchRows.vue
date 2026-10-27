@@ -102,7 +102,14 @@ export default {
     rowStyle(row) {
       const h = row.height || { mode: 'row' }
       if (h.mode === 'fixed' && h.px) {
-        return { minHeight: h.px + 'px', height: h.px + 'px' }
+        const px = Math.max(80, Number(h.px) || 240)
+        // 锁定行高：仅设 height 时，子项 min-height:auto 仍可能把行撑破
+        return {
+          height: px + 'px',
+          minHeight: px + 'px',
+          maxHeight: px + 'px',
+          overflow: 'hidden'
+        }
       }
       return {}
     },
@@ -117,7 +124,10 @@ export default {
       }
       const h = this.effectiveHeight(row, col)
       if (h.mode === 'fixed' && h.px) {
-        style.height = h.px + 'px'
+        const px = Math.max(80, Number(h.px) || 240)
+        style.height = px + 'px'
+        style.minHeight = '0'
+        style.maxHeight = px + 'px'
         style.overflow = 'auto'
       } else if (h.mode === 'content') {
         // 内容高度：不随行拉伸（行默认 align-items:stretch）
@@ -125,6 +135,7 @@ export default {
         style.height = 'auto'
       } else if (h.mode === 'row' || (!col.height && row.height?.mode === 'row')) {
         style.alignSelf = 'stretch'
+        style.minHeight = '0'
       }
       return style
     }
@@ -159,15 +170,40 @@ export default {
   min-width: 0;
   box-sizing: border-box;
 }
+.wb-rows__row.is-h-fixed {
+  box-sizing: border-box;
+}
+.wb-rows__col.is-h-fixed,
+.wb-rows__col.is-h-row {
+  box-sizing: border-box;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 .wb-rows__col.is-stack-col {
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-height: 0;
+  align-items: stretch;
 }
-.wb-rows__col.is-stack-col .wb-widget {
-  flex: 1 1 0;
+/* 堆叠默认：均分列高；内容在组件内滚动，禁止画出盒子盖住兄弟/上一行 */
+.wb-rows__col.is-stack-col > .wb-widget {
+  flex: 1 1 0%;
   min-height: 0;
+  height: auto;
+  max-height: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 0;
+}
+/* content：各组件取自然高度，列高=堆叠之和；行高由各列 max 决定 */
+.wb-rows__col.is-h-content.is-stack-col > .wb-widget {
+  flex: 0 0 auto;
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
 }
 .wb-rows.is-stack .wb-rows__col {
   flex: 1 1 auto !important;
@@ -188,10 +224,45 @@ export default {
 .wb-rows__col.is-h-content .wb-widget {
   height: auto;
 }
+/* 指定高度/行高度：仅非堆叠单组件列吃满列高 */
+.wb-rows__col.is-h-fixed:not(.is-stack-col) > .wb-widget,
+.wb-rows__col.is-h-row:not(.is-stack-col) > .wb-widget {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  max-height: 100%;
+  overflow: hidden;
+}
+/* 行高度 + 堆叠：均分列高 */
+.wb-rows__col.is-h-row.is-stack-col > .wb-widget {
+  flex: 1 1 0%;
+  min-height: 0;
+  height: auto;
+  overflow: hidden;
+}
+/* 指定高度 + 堆叠：组件按内容高度自上而下排列，超出在列上滚动（勿均分压扁） */
+.wb-rows__col.is-h-fixed.is-stack-col > .wb-widget {
+  flex: 0 0 auto;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+.wb-rows__col.is-h-fixed.is-stack-col > .wb-widget.is-bare {
+  overflow: visible;
+}
+.wb-rows__col.is-h-fixed.is-stack-col .wb-widget__bd {
+  overflow: visible;
+}
 .wb-widget.is-bare {
   border: none;
   background: transparent;
   overflow: visible;
+}
+/* bare 在固定/行高/堆叠列内必须裁剪，否则会盖住相邻组件标题 */
+.wb-rows__col.is-h-fixed .wb-widget.is-bare,
+.wb-rows__col.is-h-row .wb-widget.is-bare,
+.wb-rows__col.is-stack-col .wb-widget.is-bare {
+  overflow: hidden;
 }
 .wb-widget.is-bare .wb-widget__hd {
   padding-left: 0;
@@ -203,6 +274,7 @@ export default {
   justify-content: space-between;
   gap: 8px;
   padding: 10px 12px 0;
+  flex: 0 0 auto;
 }
 .wb-widget__hd .name {
   font-size: 14px;
@@ -216,9 +288,13 @@ export default {
 .wb-widget__bd {
   flex: 1 1 auto;
   min-height: 0;
+  overflow: auto;
 }
 .wb-widget__bd.is-pad {
   padding: 8px 12px 12px;
+}
+.wb-rows__col.is-h-content .wb-widget__bd {
+  overflow: visible;
 }
 .workbench-empty {
   padding: 48px 0;

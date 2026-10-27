@@ -80,7 +80,7 @@ Flyway：新增 MySQL（及 H2 测试用）脚本建 `c_auth_user`、`c_project_
 
 ### 8. 拟新增长期决策
 
-实现并归档时新增 ADR：**ADR-018-云站以 Quarkus 为底座且 cloud 配置只使用华为 OBS**。说明云站不再保留 Spring 回滚线，以及 OBS 仅在 cloud profile 启用。
+实现并归档时新增 ADR：**ADR-022-云站以 Quarkus 为底座且 cloud 配置只使用华为 OBS**（ADR-018 已被「移除报告模块」占用）。说明云站不再保留 Spring 回滚线，以及 OBS 仅在 cloud profile 启用。
 
 ## Risks / Trade-offs
 
@@ -111,4 +111,4 @@ Flyway：新增 MySQL（及 H2 测试用）脚本建 `c_auth_user`、`c_project_
 - `docs/02-系统架构/部署.md`
 - `docs/07-技术决策/说明.md`
 - `docs/07-技术决策/ADR-010-移除Spring后端并统一模块命名.md`
-- 拟新增：`docs/07-技术决策/ADR-018-云站以Quarkus为底座且cloud配置只使用华为OBS.md`
+- `docs/07-技术决策/ADR-022-云站以Quarkus为底座且cloud配置只使用华为OBS.md`

@@ -65,40 +65,77 @@
 
         <div
           class="wb-editor__cols"
-          :class="{ 'is-stack': stackMode, 'is-resizing': resize?.ri === ri }"
+          :class="{
+            'is-stack': stackMode,
+            'is-resizing': resize?.ri === ri,
+            'is-h-fixed': row.height?.mode === 'fixed',
+            'is-h-content': row.height?.mode === 'content',
+            'is-h-row': !row.height?.mode || row.height?.mode === 'row'
+          }"
+          :style="colsStyle(row)"
         >
           <template v-for="(col, ci) in row.cols" :key="col.id">
             <div
               class="wb-editor__slot"
               :style="slotStyle(row, col)"
-              :class="{ 'is-over': dragOverColId === col.id }"
-              @dragover.prevent="dragOverColId = col.id"
+              :class="{
+                'is-over': dragOverColId === col.id && dragOverInstanceId == null,
+                'is-empty': !colWidgetsOf(col).length
+              }"
+              @dragover.prevent="onSlotDragOver($event, col.id, null)"
               @dragleave="onSlotLeave(col.id)"
-              @drop="onDrop($event, col.id)"
+              @drop="onDrop($event, col.id, null)"
             >
               <template v-if="colWidgetsOf(col).length">
-                <div
-                  class="wb-editor__filled"
-                  :class="{ 'is-stack': colWidgetsOf(col).length > 1 }"
-                  draggable="true"
-                  @dragstart="onSlotDragStart($event, col.id)"
-                >
-                  <div class="wb-editor__filled-hd">
-                    <span>{{ colWidgetsOf(col).map(w => titleOf(w)).join(' / ') }}</span>
-                    <div class="wb-editor__filled-actions">
-                      <el-button link type="danger" size="small" @click="clearSlot(col.id)">{{ $t('remove') }}</el-button>
+                <div class="wb-editor__stack">
+                  <div
+                    v-for="(w, wi) in colWidgetsOf(col)"
+                    :key="w.instanceId || w.type"
+                    class="wb-editor__item"
+                    :class="{
+                      'is-over': dragOverColId === col.id && dragOverInstanceId === w.instanceId
+                    }"
+                    draggable="true"
+                    @dragstart.stop="onInstanceDragStart($event, col.id, w.instanceId)"
+                    @dragover.prevent.stop="onSlotDragOver($event, col.id, w.instanceId, wi)"
+                    @drop.stop="onDrop($event, col.id, wi)"
+                  >
+                    <div class="wb-editor__filled-hd">
+                      <span class="wb-editor__drag-hint" :title="$t('workbench.editor.drag-reorder')">⋮⋮</span>
+                      <span class="wb-editor__item-title">{{ titleOf(w) }}</span>
+                      <div class="wb-editor__filled-actions">
+                        <el-button
+                          link
+                          type="danger"
+                          size="small"
+                          @click.stop="removeInstance(w.instanceId)"
+                        >{{ $t('remove') }}</el-button>
+                      </div>
+                    </div>
+                    <div class="wb-editor__filled-bd">
+                      <component
+                        :is="componentOf(w.type)"
+                        v-bind="propsOf(w, true)"
+                        @update:doc-id="(id) => onDocId(col.id, id, w.instanceId)"
+                      />
                     </div>
                   </div>
-                  <div
-                    v-for="w in colWidgetsOf(col)"
-                    :key="w.instanceId || w.type"
-                    class="wb-editor__filled-bd"
-                  >
-                    <component
-                      :is="componentOf(w.type)"
-                      v-bind="propsOf(w, true)"
-                      @update:doc-id="(id) => onDocId(col.id, id, w.instanceId)"
-                    />
+                  <div class="wb-editor__add">
+                    <el-select
+                      size="small"
+                      filterable
+                      clearable
+                      :placeholder="$t('workbench.editor.add-widget')"
+                      style="width: 100%; max-width: 220px"
+                      @update:model-value="(type) => pickWidget(col.id, type)"
+                    >
+                      <el-option
+                        v-for="opt in catalogForCol(col)"
+                        :key="opt.id"
+                        :label="$t(opt.titleKey)"
+                        :value="opt.id"
+                      />
+                    </el-select>
                   </div>
                 </div>
               </template>
@@ -114,10 +151,10 @@
                     @update:model-value="(type) => pickWidget(col.id, type)"
                   >
                     <el-option
-                      v-for="w in catalog"
-                      :key="w.id"
-                      :label="$t(w.titleKey)"
-                      :value="w.id"
+                      v-for="opt in catalogForCol(col)"
+                      :key="opt.id"
+                      :label="$t(opt.titleKey)"
+                      :value="opt.id"
                     />
                   </el-select>
                 </div>
@@ -145,7 +182,11 @@ import {
   applyRatioString,
   placeWidgetInCol,
   clearColWidget,
-  swapColWidgets,
+  removeWidgetInstance,
+  moveWidgetInstance,
+  columnHasWidgetType,
+  findWidgetInstance,
+  findCol,
   ratioSelectOptions,
   normalizeSpans,
   resizeAdjacentSpans,
@@ -171,7 +212,9 @@ export default {
     return {
       dragType: null,
       dragFromColId: null,
+      dragInstanceId: null,
       dragOverColId: null,
+      dragOverInstanceId: null,
       stackMode: false,
       /** { ri, ci, startX, rowWidth, spans, mins } */
       resize: null
@@ -239,6 +282,16 @@ export default {
     emitRows(next) {
       this.$emit('update:rows', next)
     },
+    warnDuplicateType() {
+      this.$message.warning(this.$t('workbench.editor.duplicate-type'))
+    },
+    applyPlaceOrWarn(prev, next) {
+      if (next === prev) {
+        this.warnDuplicateType()
+        return
+      }
+      this.emitRows(next)
+    },
     ratioLabel(row) {
       return spansLabel(normalizeSpans((row.cols || []).map(c => c.ratio)))
     },
@@ -247,15 +300,27 @@ export default {
       const opts = ratioSelectOptions(row.cols?.length || 1, label)
       return filterRatioOptionsByMins(opts, colMinSpans(row.cols), label)
     },
+    colsStyle(row) {
+      const h = row?.height
+      if (h?.mode === 'fixed' && h.px) {
+        const px = Math.max(80, Number(h.px) || 240)
+        return {
+          height: px + 'px',
+          minHeight: px + 'px',
+          maxHeight: px + 'px'
+        }
+      }
+      return {}
+    },
     slotStyle(row, col) {
       if (this.stackMode) return {}
       const idx = row.cols.findIndex(c => c.id === col.id)
       const spans = normalizeSpans((row.cols || []).map(c => c.ratio))
       const span = spans[idx] || 1
-      // 与查看态一致：按 span grow，宽度在扣除列 gap 后分配
       return {
         flex: `${span} ${span} 0`,
-        minWidth: '0'
+        minWidth: '0',
+        minHeight: '0'
       }
     },
     setColCount(ri, n) {
@@ -294,7 +359,7 @@ export default {
       ])
     },
     rowHasContent(row) {
-      return (row?.cols || []).some(c => c.widget?.type)
+      return (row?.cols || []).some(c => colWidgets(c).length > 0)
     },
     doRemoveRow(ri) {
       const next = this.localRows.slice()
@@ -319,12 +384,22 @@ export default {
     colWidgetsOf(col) {
       return colWidgets(col)
     },
+    catalogForCol(col) {
+      const used = new Set(colWidgets(col).map(w => w.type))
+      return this.catalog.filter(w => !used.has(w.id))
+    },
     clearSlot(colId) {
       this.emitRows(clearColWidget(this.localRows, colId))
     },
+    removeInstance(instanceId) {
+      if (!instanceId) return
+      this.emitRows(removeWidgetInstance(this.localRows, instanceId))
+    },
     pickWidget(colId, type) {
       if (!type) return
-      this.emitRows(placeWidgetInCol(this.localRows, colId, type, {}))
+      const prev = this.localRows
+      const next = placeWidgetInCol(prev, colId, type, {})
+      this.applyPlaceOrWarn(prev, next)
     },
     onDocId(colId, docId, instanceId) {
       const next = JSON.parse(JSON.stringify(this.localRows))
@@ -346,37 +421,63 @@ export default {
     onCatalogDragStart(e, type) {
       this.dragType = type
       this.dragFromColId = null
+      this.dragInstanceId = null
       e.dataTransfer.setData('text/plain', 'catalog:' + type)
       e.dataTransfer.effectAllowed = 'copy'
     },
-    onSlotDragStart(e, colId) {
+    onInstanceDragStart(e, colId, instanceId) {
       this.dragFromColId = colId
+      this.dragInstanceId = instanceId
       this.dragType = null
-      e.dataTransfer.setData('text/plain', 'slot:' + colId)
+      e.dataTransfer.setData('text/plain', 'instance:' + instanceId)
       e.dataTransfer.effectAllowed = 'move'
     },
-    onSlotLeave(colId) {
-      if (this.dragOverColId === colId) this.dragOverColId = null
+    onSlotDragOver(e, colId, instanceId) {
+      this.dragOverColId = colId
+      this.dragOverInstanceId = instanceId || null
     },
-    onDrop(e, colId) {
+    onSlotLeave(colId) {
+      if (this.dragOverColId === colId) {
+        this.dragOverColId = null
+        this.dragOverInstanceId = null
+      }
+    },
+    /**
+     * @param {string} colId
+     * @param {number|null} insertIndex 落在某组件上时为该组件下标（移动后的最终位置）；列空白为 null → 追加末尾
+     */
+    onDrop(e, colId, insertIndex) {
       e.preventDefault()
       this.dragOverColId = null
+      this.dragOverInstanceId = null
       const raw = e.dataTransfer.getData('text/plain') || ''
-      if (raw.startsWith('catalog:')) {
-        const type = raw.slice(8)
-        this.emitRows(placeWidgetInCol(this.localRows, colId, type, {}))
-      } else if (raw.startsWith('slot:')) {
-        const from = raw.slice(5)
-        if (from && from !== colId) {
-          this.emitRows(swapColWidgets(this.localRows, from, colId))
+      const prev = this.localRows
+
+      if (raw.startsWith('catalog:') || this.dragType) {
+        const type = raw.startsWith('catalog:') ? raw.slice(8) : this.dragType
+        const hit = findCol(prev, colId)
+        if (hit && columnHasWidgetType(hit.col, type)) {
+          this.warnDuplicateType()
+        } else {
+          const next = placeWidgetInCol(prev, colId, type, {}, insertIndex)
+          this.applyPlaceOrWarn(prev, next)
         }
-      } else if (this.dragType) {
-        this.emitRows(placeWidgetInCol(this.localRows, colId, this.dragType, {}))
-      } else if (this.dragFromColId && this.dragFromColId !== colId) {
-        this.emitRows(swapColWidgets(this.localRows, this.dragFromColId, colId))
+      } else if (raw.startsWith('instance:') || this.dragInstanceId) {
+        const instanceId = raw.startsWith('instance:') ? raw.slice(9) : this.dragInstanceId
+        const from = findWidgetInstance(prev, instanceId)
+        if (!from) {
+          /* ignore */
+        } else if (from.col.id === colId && (insertIndex == null || insertIndex === from.widgetIndex)) {
+          /* no-op same spot */
+        } else {
+          const next = moveWidgetInstance(prev, instanceId, colId, insertIndex)
+          this.applyPlaceOrWarn(prev, next)
+        }
       }
+
       this.dragType = null
       this.dragFromColId = null
+      this.dragInstanceId = null
     }
   }
 }
@@ -457,10 +558,14 @@ export default {
   display: flex;
   gap: 0;
   align-items: stretch;
+  box-sizing: border-box;
 }
 .wb-editor__cols.is-stack {
   flex-direction: column;
   gap: 10px;
+}
+.wb-editor__cols.is-h-fixed {
+  overflow: hidden;
 }
 .wb-editor__slot {
   min-width: 0;
@@ -468,6 +573,13 @@ export default {
   box-sizing: border-box;
   padding-right: 5px;
   padding-left: 5px;
+  display: flex;
+  flex-direction: column;
+}
+.wb-editor__cols.is-h-fixed .wb-editor__slot {
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 .wb-editor__slot:first-child {
   padding-left: 0;
@@ -511,7 +623,8 @@ export default {
 .wb-editor__cols.is-stack .wb-editor__resize {
   display: none;
 }
-.wb-editor__slot.is-over {
+.wb-editor__slot.is-over,
+.wb-editor__item.is-over {
   outline: 2px solid var(--el-color-primary);
   outline-offset: 2px;
 }
@@ -531,27 +644,34 @@ export default {
   font-size: 12px;
   box-sizing: border-box;
 }
-.wb-editor__filled {
-  height: 100%;
+.wb-editor__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   min-height: 120px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.wb-editor__cols.is-h-fixed .wb-editor__stack {
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+}
+.wb-editor__item {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--el-border-color-lighter, #ebeef5);
   border-radius: 8px;
   background: var(--el-bg-color, #fff);
   overflow: hidden;
   cursor: grab;
+  min-height: 0;
 }
-.wb-editor__filled.is-stack {
-  display: flex;
-  flex-direction: column;
-  min-height: 240px;
-}
-.wb-editor__filled.is-stack .wb-editor__filled-bd {
+.wb-editor__cols.is-h-fixed .wb-editor__item {
   flex: 1 1 0;
-  min-height: 100px;
-  border-top: 1px solid var(--el-border-color-lighter, #ebeef5);
 }
-.wb-editor__filled.is-stack .wb-editor__filled-bd:first-of-type {
-  border-top: none;
+.wb-editor__item:active {
+  cursor: grabbing;
 }
 .wb-editor__filled-hd {
   display: flex;
@@ -565,6 +685,20 @@ export default {
   background: var(--el-fill-color, var(--bg-color-block, #f5f7fa));
   color: var(--text-color-primary, var(--el-text-color-primary, #303133));
 }
+.wb-editor__drag-hint {
+  color: var(--text-color-secondary, #909399);
+  letter-spacing: -2px;
+  font-weight: 700;
+  cursor: grab;
+  user-select: none;
+}
+.wb-editor__item-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .wb-editor__filled-actions {
   display: flex;
   align-items: center;
@@ -575,6 +709,16 @@ export default {
   padding: 8px;
   max-height: 280px;
   overflow: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.wb-editor__cols.is-h-fixed .wb-editor__filled-bd {
+  max-height: none;
+}
+.wb-editor__add {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 2px;
 }
 .wb-editor__add-row {
   align-self: flex-start;
