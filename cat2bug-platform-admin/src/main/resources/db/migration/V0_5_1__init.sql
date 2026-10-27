@@ -5005,8 +5005,6 @@ VALUES (5, 2001);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (5, 2013);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (5, 2015);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (5, 2019);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (5, 2020);
@@ -5380,50 +5378,19 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (9, 2108);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (9, 2110);
+-- default：仅引导（项目/团队列表、新建团队、通知）；团队设置与业务模块由团队/项目角色授予
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (10, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (10, 2001);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2013);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2015);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2016);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2017);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2018);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2019);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2020);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (10, 2043);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (10, 2047);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2048);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2049);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (10, 2050);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (10, 2051);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2057);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2058);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2059);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2074);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2075);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2087);
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-VALUES (10, 2088);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (10, 2107);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
