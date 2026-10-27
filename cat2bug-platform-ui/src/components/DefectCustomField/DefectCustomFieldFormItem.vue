@@ -1,6 +1,7 @@
 <template>
   <el-form-item
     :label="field.fieldLabel"
+    :prop="formProp"
     :required="field.required"
     :class="{
       'cat2bug-form-item-upload': field.fieldType === 'image' || field.fieldType === 'file'
@@ -153,6 +154,10 @@ export default {
   },
   computed: {
     defectDatetimeValueFormat: () => DEFECT_DATETIME_VALUE_FORMAT,
+    /** 挂到表单 model.customFields.<fieldKey>，配合父级 rules 做必填校验 */
+    formProp() {
+      return this.field && this.field.fieldKey ? `customFields.${this.field.fieldKey}` : undefined
+    },
     fieldValue: {
       get() {
         if (this.field.fieldType === 'enum') {

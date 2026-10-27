@@ -183,6 +183,33 @@ export function isEmptyCustomFieldValue(value) {
   return false
 }
 
+/**
+ * 为启用且必填的自定义字段生成 el-form rules（prop 形如 customFields.<fieldKey>）。
+ * @param {Array} fields 已 normalize 的字段定义
+ * @param {(field: object) => string} messageFor 错误文案
+ */
+export function buildRequiredCustomFieldFormRules(fields, messageFor) {
+  const rules = {}
+  ;(fields || []).forEach(f => {
+    if (!f || !f.fieldKey) return
+    if (!(f.required === 1 || f.required === true)) return
+    const prop = `customFields.${f.fieldKey}`
+    rules[prop] = [
+      {
+        validator(rule, value, callback) {
+          if (isEmptyCustomFieldValue(value)) {
+            callback(new Error(typeof messageFor === 'function' ? messageFor(f) : String(messageFor || '')))
+          } else {
+            callback()
+          }
+        },
+        trigger: ['change', 'blur']
+      }
+    ]
+  })
+  return rules
+}
+
 /** 将字段定义中的默认值转为表单初始值 */
 export function cloneDefaultFieldValue(field, defaultValue) {
   if (isEmptyCustomFieldValue(defaultValue)) return undefined

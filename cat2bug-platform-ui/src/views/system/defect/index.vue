@@ -3105,7 +3105,7 @@ export default {
               tabItem.config.params.delFlag = '0'
             }
             const tc = tabItem.config
-            const tp = tc.params
+            const tp = tc.params || (tc.params = {})
             if (tp.nameVersionKeyword != null && String(tp.nameVersionKeyword).trim() !== '') {
               if (tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === '') {
                 tc.nameVersionKeyword = String(tp.nameVersionKeyword).trim()
@@ -3119,6 +3119,18 @@ export default {
               tc.nameVersionKeyword = hasDn ? String(tc.defectName).trim() : String(tc.moduleVersion).trim()
               tc.defectName = null
               tc.moduleVersion = null
+            }
+            // 创建人：列表 API 认顶层 createByIds[i]；兼容旧数据写在 params 里
+            if ((!Array.isArray(tc.createByIds) || !tc.createByIds.length) && Array.isArray(tp.createByIds) && tp.createByIds.length) {
+              tc.createByIds = tp.createByIds.map(Number).filter(n => !Number.isNaN(n))
+            }
+            if (Array.isArray(tc.createByIds) && tc.createByIds.length) {
+              tc.createByIds = tc.createByIds.map(Number).filter(n => !Number.isNaN(n))
+            } else {
+              tc.createByIds = null
+            }
+            if (tp.createByIds != null) {
+              delete tp.createByIds
             }
             this.queryParams = tabItem.config
             clearExtensionParams(this.queryParams, this)

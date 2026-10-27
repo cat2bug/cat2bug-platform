@@ -485,6 +485,7 @@
   "defect.custom-field.default-value-array-placeholder": "JSON array, e.g. [\"a\",\"b\"]",
   "defect.custom-field.default-value-array-invalid": "Default must be a JSON array",
   "defect.custom-field.required": "Required",
+  "defect.custom-field.value-required": "{label} is required",
   "defect.custom-field.nullable": "Nullable",
   "defect.custom-field.enabled": "Enabled",
   "defect.custom-field.enabled-locked": "Defect name and handler are required and cannot be disabled",

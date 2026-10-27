@@ -485,6 +485,7 @@
   "defect.custom-field.default-value-array-placeholder": "JSON 数组，如 [\"a\",\"b\"]",
   "defect.custom-field.default-value-array-invalid": "默认值须为 JSON 数组",
   "defect.custom-field.required": "必填",
+  "defect.custom-field.value-required": "{label}不能为空",
   "defect.custom-field.nullable": "可空",
   "defect.custom-field.enabled": "启用",
   "defect.custom-field.enabled-locked": "缺陷名称与处理人为系统必填项，不可关闭",

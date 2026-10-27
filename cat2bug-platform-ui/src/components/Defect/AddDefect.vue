@@ -99,6 +99,10 @@ import {
 } from "@/api/ai/AiDefect";
 import {strFormat} from "@/utils";
 import {normalizeDefectTypeAndLevel} from "@/utils/defect-defaults";
+import {
+  buildRequiredCustomFieldFormRules,
+  normalizeFieldRow
+} from "@/components/DefectCustomField/format";
 import defectBuiltinFieldVisibility from "@/mixins/defect-builtin-field-visibility";
 import dialogFormShortcuts from "@/mixins/dialog-form-shortcuts";
 import defectFormDrawerClose from "@/mixins/defect-form-drawer-close";
@@ -198,7 +202,19 @@ export default {
           { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: 'input' }
         ]
       }
+      const customFields = ((this.defectFieldLayout && this.defectFieldLayout.customFields) || [])
+        .filter(f => f && f.enabled !== 0 && f.enabled !== false)
+        .map(normalizeFieldRow)
+      Object.assign(
+        rules,
+        buildRequiredCustomFieldFormRules(customFields, f =>
+          this.$t('defect.custom-field.value-required', { label: f.fieldLabel || f.fieldKey })
+        )
+      )
       this.rules = rules
+      this.$nextTick(() => {
+        this.$refs.form && this.$refs.form.clearValidate && this.$refs.form.clearValidate()
+      })
     },
     /** 处理保存表单缓存开关状态改变的操作 */
     handleSaveFormCache() {
@@ -213,7 +229,7 @@ export default {
     saveIsSaveFormCacheValue() {
       const isCache = this.$cache.local.set(IS_SAVE_FORM_CACHE_KEY,this.isSaveFormCache);
     },
-    /** 获取添加的表单本地缓存（覆盖 reset 后的默认值，用于连续新建） */
+    /** 获取添加的表单本地缓存（覆盖 reset 后的默认值，用于连续新建）。不含 defectDescribe：描述永不免填。 */
     readAddFormCache() {
       const cacheForm = this.$cache.local.getJSON(FORM_CACHE_KEY) || {};
       if (cacheForm.defectType != null && cacheForm.defectType !== '') {
@@ -232,7 +248,7 @@ export default {
         this.form.moduleId = cacheForm.moduleId;
       }
     },
-    /** 保存添加表单本地缓存 */
+    /** 保存添加表单本地缓存（仅类型/优先级/处理人/版本/交付物；故意不含描述） */
     saveAddFormCache() {
       this.$cache.local.setJSON(FORM_CACHE_KEY, {
         defectType: this.form.defectType,
@@ -310,10 +326,25 @@ export default {
         customFields: {}
       };
       this.resetForm("form");
+      // resetFields 可能把已登记的 customFields.* 初始值写回；免填也不缓存自定义字段，此处再清空
+      this.form.customFields = {};
       this.readIsSaveFormCacheValue();
       if(this.isSaveFormCache) {
         this.readAddFormCache();
       }
+      this.$nextTick(() => {
+        const orderedFields = this.$refs.orderedFields
+        if (orderedFields) {
+          if (typeof orderedFields.resetCustomFields === 'function') {
+            orderedFields.resetCustomFields()
+          } else if (typeof orderedFields.refreshCustomFieldDefaults === 'function') {
+            orderedFields.refreshCustomFieldDefaults()
+          }
+          if (typeof orderedFields.clearDescribeEditor === 'function') {
+            orderedFields.clearDescribeEditor()
+          }
+        }
+      });
     },
     /** 提交按钮 */
     submitForm() {
@@ -346,6 +377,9 @@ export default {
                 this.$nextTick(() => {
                   const orderedFields = this.$refs.orderedFields
                   if (orderedFields) {
+                    if (typeof orderedFields.resetCustomFields === 'function') {
+                      orderedFields.resetCustomFields()
+                    }
                     const selectModule = orderedFields.getSelectModuleRef && orderedFields.getSelectModuleRef()
                     if (selectModule && typeof selectModule.resetFromForm === 'function') {
                       selectModule.resetFromForm(this.form.moduleId)

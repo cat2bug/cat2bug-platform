@@ -65,6 +65,17 @@ function cloneTabPayload(tab) {
   }
 }
 
+function normalizeIdList(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map(v => (v == null || v === '' ? null : Number(v)))
+      .filter(v => v != null && !Number.isNaN(v))
+  }
+  if (value == null || value === '') return []
+  const n = Number(value)
+  return Number.isNaN(n) ? [] : [n]
+}
+
 function ensureConfigShape(config) {
   const base = config && typeof config === 'object' ? config : {}
   const params = base.params && typeof base.params === 'object' ? { ...base.params } : {}
@@ -77,8 +88,17 @@ function ensureConfigShape(config) {
   if (!Array.isArray(params.defectStates)) {
     params.defectStates = []
   }
+  // 创建人：须落在 SysDefect.createByIds（历史误写 params.createByIds 时迁回顶层）
+  let createByIds = normalizeIdList(base.createByIds)
+  if (!createByIds.length) {
+    createByIds = normalizeIdList(params.createByIds)
+  }
+  if (params.createByIds != null) {
+    delete params.createByIds
+  }
   return {
     ...base,
+    createByIds,
     params,
     customFieldFilters: Array.isArray(base.customFieldFilters) ? base.customFieldFilters : []
   }
@@ -180,6 +200,7 @@ export default {
         // 越大越靠前，与列表 order by tab_sort desc 一致
         tabSort: Date.now(),
         config: ensureConfigShape({
+          createByIds: [],
           customFieldFilters: [],
           params: {
             delFlag: '0',

@@ -6,6 +6,7 @@
       :placeholder="placeholder"
       :maxlength="maxlength"
       :rows="showRows"
+      @input="changeHandle"
       @keyup.stop="changeHandle"
     />
     <div v-show="showTools" class="tools">
@@ -52,13 +53,14 @@ export default {
     }
   },
   watch: {
-    modelValue(n, o) {
-      if (n !== o) {
+    modelValue(n) {
+      if (n !== this.textContent) {
         this.textContent = n
       }
     },
-    content(n, o) {
-      if (n !== o) {
+    content(n) {
+      // 与内部 textContent 比较：父级 reset 为 null 且此前未回写时，n/o 都是 null，旧逻辑不会清空编辑器
+      if (n !== this.textContent) {
         this.textContent = n
       }
     },
@@ -138,6 +140,11 @@ export default {
   methods: {
     maxWindows() {
       this.dialogVisible = true;
+    },
+    /** 外部重置表单时清空可见内容并通知父级 */
+    clear() {
+      this.textContent = null
+      this.changeHandle()
     },
     changeHandle(event) {
       this.$emit('update:modelValue', this.textContent)

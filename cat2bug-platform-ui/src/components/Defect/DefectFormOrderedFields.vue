@@ -4,11 +4,14 @@
       <el-form-item
         v-if="item.kind === 'builtin' && item.formKey === 'defectName'"
         :key="'builtin-' + item.formKey"
+        class="defect-name-form-item"
         :label="$t('defect.name')"
         prop="defectName"
       >
         <el-input
           ref="defectNameInput"
+          class="defect-name-input"
+          style="width: 100%; max-width: 100%"
           v-model="form.defectName"
           size="small"
           :placeholder="$t('defect.enter-name')"
@@ -137,6 +140,7 @@
           :placeholder="$t('defect.enter-markdown-describe').toString()"
           :tools="describeTools"
           :content="form.defectDescribe"
+          @change="onDescribeChange"
           maxlength="65536"
           rows="8"
           show-word-limit
@@ -168,7 +172,7 @@
 
       <defect-custom-field-form-item
         v-else-if="item.kind === 'custom'"
-        :key="'custom-' + item.fieldKey"
+        :key="'custom-' + item.fieldKey + '-' + customFieldsEpoch"
         :field="item.meta"
         :value="customFieldValue(item.fieldKey)"
         @input="setCustomFieldValue(item.fieldKey, $event)"
@@ -217,7 +221,9 @@ export default {
   },
   data() {
     return {
-      orderedFormFields: []
+      orderedFormFields: [],
+      /** 连续新建时递增，迫使自定义字段控件重建，清掉下拉内部残留 */
+      customFieldsEpoch: 0
     }
   },
   computed: {
@@ -252,10 +258,39 @@ export default {
     refreshCustomFieldDefaults() {
       this.applyCustomFieldDefaults(this.orderedFormFields)
     },
+    /**
+     * 连续新建 / 重置：丢弃上次填写的自定义字段，只按字段配置的默认值重建。
+     * 免填缓存不含自定义字段；整对象替换以免 resetFields / 下拉内部状态残留。
+     */
+    resetCustomFields() {
+      if (!this.form) return
+      this.form.customFields = {}
+      this.customFieldsEpoch += 1
+      this.$nextTick(() => {
+        this.applyCustomFieldDefaults(this.orderedFormFields)
+      })
+    },
     focusDefectName() {
       const ref = this.$refs.defectNameInput
       const input = Array.isArray(ref) ? ref[0] : ref
       input && input.focus && input.focus()
+    },
+    onDescribeChange(value) {
+      if (!this.form) return
+      this.form.defectDescribe = value == null || value === '' ? null : value
+    },
+    /** 连续新建 / 重置后清空描述编辑器可见内容（避免仅 content=null 且模型本就为 null 时不刷新） */
+    clearDescribeEditor() {
+      if (this.form) {
+        this.form.defectDescribe = null
+      }
+      const ref = this.$refs.cat2bugTextarea
+      const ta = Array.isArray(ref) ? ref[0] : ref
+      if (ta && typeof ta.clear === 'function') {
+        ta.clear()
+      } else if (ta) {
+        ta.textContent = null
+      }
     },
     getSelectCaseRef() {
       const ref = this.$refs.selectCase
@@ -334,5 +369,17 @@ export default {
   max-width: var(--cat2bug-defect-form-plan-range-max-width, 480px);
   min-width: 0 !important;
   box-sizing: border-box;
+}
+
+/* 缺陷名称拉满：保持 EP inline-flex，强制 wrapper 100% */
+.defect-form-ordered-fields :deep(.defect-name-form-item .el-form-item__content > .el-input) {
+  display: inline-flex !important;
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+.defect-form-ordered-fields :deep(.defect-name-form-item .el-form-item__content > .el-input .el-input__wrapper) {
+  width: 100%;
+  flex: 1 1 auto;
 }
 </style>

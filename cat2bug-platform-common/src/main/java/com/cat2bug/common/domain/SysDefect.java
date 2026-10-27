@@ -45,6 +45,10 @@ public class SysDefect {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
     private List<Long> handleBy;
+    /**
+     * 缺陷标签页筛选：创建人 userId 列表（非表字段；随 tabs.config JSON 持久化，列表查询经 params.createByIds 生效）。
+     */
+    private List<Long> createByIds;
     private List<SysUser> handleByList = new ArrayList<>();
     private List<SysUser> focusList;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -70,6 +74,10 @@ public class SysDefect {
     private String modulePath;
     /** 自定义字段 JSON */
     private Map<String, Object> customFields = new LinkedHashMap<>();
+    /**
+     * 缺陷标签页筛选：自定义字段条件（非表字段；随 tabs.config JSON 持久化）。
+     */
+    private List<Map<String, Object>> customFieldFilters;
 
     public Long getDefectId() {
         return defectId;
@@ -271,6 +279,14 @@ public class SysDefect {
         this.handleBy = handleBy;
     }
 
+    public List<Long> getCreateByIds() {
+        return createByIds;
+    }
+
+    public void setCreateByIds(List<Long> createByIds) {
+        this.createByIds = createByIds;
+    }
+
     public List<SysUser> getHandleByList() {
         return handleByList;
     }
@@ -397,5 +413,13 @@ public class SysDefect {
 
     public void setCustomFields(Map<String, Object> customFields) {
         this.customFields = customFields;
+    }
+
+    public List<Map<String, Object>> getCustomFieldFilters() {
+        return customFieldFilters;
+    }
+
+    public void setCustomFieldFilters(List<Map<String, Object>> customFieldFilters) {
+        this.customFieldFilters = customFieldFilters;
     }
 }

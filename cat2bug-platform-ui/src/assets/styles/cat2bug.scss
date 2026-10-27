@@ -355,8 +355,39 @@
 .defect-drawer-accent .defect-form-ordered-fields {
   width: 100%;
 
+  /*
+   * 缺陷名称拉满内容区。
+   * 注意：不能用 display:block —— EP 的 .el-input 依赖 inline-flex，
+   * block 后 .el-input__wrapper 只剩占位符宽度（实测约 125px）。
+   */
+  .defect-name-form-item .el-form-item__content > .el-input,
+  .el-form-item__content > .el-input.defect-name-input {
+    display: inline-flex !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .defect-name-form-item .el-form-item__content > .el-input .el-input__wrapper {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
   .el-form-item__content {
-    > .el-input:not(.el-textarea),
+    /* 单行 el-input：须 inline-flex，block 会导致内部 wrapper 缩成占位符宽 */
+    > .el-input:not(.el-textarea):not(.defect-name-input) {
+      display: inline-flex;
+      max-width: var(--cat2bug-defect-form-field-max-width, 300px);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    > .el-input:not(.el-textarea):not(.defect-name-input) .el-input__wrapper {
+      width: 100%;
+      flex: 1 1 auto;
+    }
+
+    /* 下拉/数字/日期等保持原 block，勿套 inline-flex（会挤掉选中文案） */
     > .el-select,
     > .el-input-number,
     > .el-date-editor:not(.el-range-editor),
@@ -365,6 +396,7 @@
       display: block;
       max-width: var(--cat2bug-defect-form-field-max-width, 300px);
       width: 100%;
+      box-sizing: border-box;
     }
 
     > .el-date-editor.defect-plan-datetimerange {

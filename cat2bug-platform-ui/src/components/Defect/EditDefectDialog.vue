@@ -74,6 +74,10 @@ import {
 } from '@/api/ai/AiDefect'
 import { strFormat } from '@/utils'
 import { normalizeDefectTypeAndLevel } from '@/utils/defect-defaults'
+import {
+  buildRequiredCustomFieldFormRules,
+  normalizeFieldRow
+} from '@/components/DefectCustomField/format'
 import defectBuiltinFieldVisibility from '@/mixins/defect-builtin-field-visibility'
 import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts'
 import defectFormDrawerClose from '@/mixins/defect-form-drawer-close'
@@ -137,7 +141,19 @@ export default {
           { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: 'input' }
         ]
       }
+      const customFields = ((this.defectFieldLayout && this.defectFieldLayout.customFields) || [])
+        .filter(f => f && f.enabled !== 0 && f.enabled !== false)
+        .map(normalizeFieldRow)
+      Object.assign(
+        rules,
+        buildRequiredCustomFieldFormRules(customFields, f =>
+          this.$t('defect.custom-field.value-required', { label: f.fieldLabel || f.fieldKey })
+        )
+      )
       this.rules = rules
+      this.$nextTick(() => {
+        this.$refs.form && this.$refs.form.clearValidate && this.$refs.form.clearValidate()
+      })
     },
     getDefectConfig() {
       configDefect().then(res => {

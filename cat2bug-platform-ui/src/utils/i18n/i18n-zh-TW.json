@@ -421,6 +421,7 @@
   "defect.custom-field.default-value-array-placeholder": "JSON 陣列，如 [\"a\",\"b\"]",
   "defect.custom-field.default-value-array-invalid": "預設值須為 JSON 陣列",
   "defect.custom-field.required": "必填",
+  "defect.custom-field.value-required": "{label}不能為空",
   "defect.custom-field.nullable": "可空",
   "defect.custom-field.enabled": "啟用",
   "defect.custom-field.enabled-locked": "缺陷名稱與處理人為系統必填項，不可關閉",
