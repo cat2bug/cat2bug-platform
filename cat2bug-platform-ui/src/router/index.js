@@ -12,6 +12,7 @@ import {
   createLegacyGitBrowseRedirect
 } from '@/utils/git-repo-route-guards.js'
 import { createLegacyProjectModuleRedirect } from '@/utils/legacy-project-module-redirect.js'
+import { clearAddedRoutes } from '@/router/helper'
 
 /* Layout */
 import Layout from '@/layout'
@@ -276,7 +277,8 @@ function buildProjectScopedChildren() {
       component: view,
       meta: {
         title: mod,
-        titleI18nKey: mod === 'document' ? 'doc' : mod,
+        // 模块段即 titleI18nKey（document→doc）；api 用 project.api-key 以免缺「api」文案
+        titleI18nKey: mod === 'document' ? 'doc' : (mod === 'api' ? 'project.api-key' : mod),
         projectScoped: true,
         projectModule: mod,
         projectModuleView: PROJECT_MODULE_VIEW[mod] || null
@@ -753,58 +755,58 @@ export const dynamicRoutes = [
     ]
   },
   {
-    path: '/project/case-types',
+    path: '/team-options/team-case-types',
     component: Layout,
+    name: 'TeamCaseTypesRoot',
     hidden: true,
-    permissions: ['system:project:case-type:list'],
+    permissions: ['system:team:case-type:list'],
     children: [
       {
         path: '',
-        component: () => import('@/views/system/project/case-types/index'),
-        name: 'ProjectCaseTypes',
+        component: () => import('@/views/system/team/option/case-types/index'),
+        name: 'TeamCaseTypes',
         meta: {
           title: i18n.global.t('case.type.manage'),
           titleI18nKey: 'case.type.manage',
-          activeMenu: '/project/option',
-          projectListPage: true
+          activeMenu: '/team-options/team-option'
         }
       }
     ]
   },
   {
-    path: '/project/case-settings',
+    path: '/team-options/team-case-settings',
     component: Layout,
+    name: 'TeamCaseSettingsRoot',
     hidden: true,
-    permissions: ['system:project:case-type:list'],
+    permissions: ['system:team:case-type:list'],
     children: [
       {
         path: '',
-        component: () => import('@/views/system/project/case-settings/index'),
-        name: 'ProjectCaseSettings',
+        component: () => import('@/views/system/team/option/case-settings/index'),
+        name: 'TeamCaseSettings',
         meta: {
           title: i18n.global.t('case.review.template'),
           titleI18nKey: 'case.review.template',
-          activeMenu: '/project/option',
-          projectListPage: true
+          activeMenu: '/team-options/team-option'
         }
       }
     ]
   },
   {
-    path: '/project/defect-fields',
+    path: '/team-options/team-defect-fields',
     component: Layout,
+    name: 'TeamDefectFieldsRoot',
     hidden: true,
-    permissions: ['system:project:defect-field:list'],
+    permissions: ['system:team:defect-field:list'],
     children: [
       {
         path: '',
-        component: () => import('@/views/system/project/defect-fields/index'),
-        name: 'ProjectDefectFields',
+        component: () => import('@/views/system/team/option/defect-fields/index'),
+        name: 'TeamDefectFields',
         meta: {
           title: i18n.global.t('defect.custom-field.title'),
           titleI18nKey: 'defect.custom-field.title',
-          activeMenu: '/project/option',
-          projectListPage: true
+          activeMenu: '/team-options/team-option'
         }
       }
     ]
@@ -832,6 +834,8 @@ collectRouteNames(constantRoutes)
 
 /** 切换项目后重新注入动态菜单时，先移除动态路由再 addRoute，避免旧项目路由残留 */
 export function resetRouter() {
+  // 先按 addRoute 卸载函数清掉（含历史上无 name 的 Layout 父级壳，否则会白屏）
+  clearAddedRoutes()
   router.getRoutes().forEach(route => {
     if (route.name && !constantRouteNames.has(route.name)) {
       router.removeRoute(route.name)

@@ -62,91 +62,93 @@
                 <el-tooltip class="item" effect="dark" :content="$t('clear')" placement="top">
                   <el-button class="cat2-bug-textarea-button" link @click="handleClearPromptContent"><svg-icon icon-class="delete"></svg-icon></el-button>
                 </el-tooltip>
-                <el-tooltip class="item" effect="dark" :content="$t('case.prompt-tooltip')" placement="top">
-                  <el-popover
-                    placement="bottom"
-                    :title="$t('case.prompt')"
-                    popper-class="cloud-case-prompt-popover"
-                    ref="cloudCasePromptPopover"
-                    v-model="casePromptVisible"
-                    @show="handlePromptChange"
-                    :width="480"
-                    trigger="click">
-                    <div class="cloud-case-prompt">
-                      <div v-show="addCasePromptVisible">
-                        <h4><legacy-icon icon="el-icon-plus"></legacy-icon>{{ $t('case.add-prompt') }}</h4>
-                        <add-case-prompt ref="addCasePrompt" :project-id="projectId" @added="handleAddCasePrompt" @cancel="addCasePromptVisible=false" />
-                        <el-divider></el-divider>
+                <el-popover
+                  placement="bottom"
+                  :title="$t('case.prompt')"
+                  popper-class="cloud-case-prompt-popover"
+                  ref="cloudCasePromptPopover"
+                  v-model="casePromptVisible"
+                  @show="handlePromptChange"
+                  :width="480"
+                  trigger="click">
+                  <div class="cloud-case-prompt">
+                    <div v-show="addCasePromptVisible">
+                      <h4><legacy-icon icon="el-icon-plus"></legacy-icon>{{ $t('case.add-prompt') }}</h4>
+                      <add-case-prompt ref="addCasePrompt" :project-id="projectId" @added="handleAddCasePrompt" @cancel="addCasePromptVisible=false" />
+                      <el-divider></el-divider>
+                    </div>
+                    <div class="cloud-case-prompt-tools">
+                      <div>
+                        <h4><legacy-icon icon="el-icon-tickets"></legacy-icon>{{ $t('case.prompt-list') }}</h4>
                       </div>
-                      <div class="cloud-case-prompt-tools">
-                        <div>
-                          <h4><legacy-icon icon="el-icon-tickets"></legacy-icon>{{ $t('case.prompt-list') }}</h4>
-                        </div>
-                        <div>
-                          <el-button :icon="$legacyIcon('el-icon-plus')" v-show="!addCasePromptVisible" size="small" @click="handleOpenAddCasePrompt">{{ $t('case.add-prompt') }}</el-button>
-                          <el-pagination
-                            style="float: right"
-                            v-model:current-page="casePromptQuery.pageNum"
-                            :page-size="casePromptQuery.pageSize"
-                            layout="prev, pager, next"
-                            :total="casePromptTotal"
-                            @size-change="getCasePrompt"
-                            @current-change="getCasePrompt">
-                          </el-pagination>
-                        </div>
-                      </div>
-                      <div v-if="casePromptList && casePromptList.length>0">
-                        <el-table
-                          :data="casePromptList"
-                          :show-header="false"
-                          @row-click="handleCasePromptClick"
-                          style="width: 100%">
-                          <el-table-column
-                            prop="casePromptContent">
-                            <template #default="scope">
-                              <div v-show="!scope.row.isEditVisible" class="case-prompt-content" v-html="renderCasePromptContent(scope.row.casePromptContent)"></div>
-                              <add-case-prompt v-show="scope.row.isEditVisible" :is-add="false" :case-prompt="scope.row" :auto-size="{ minRows: 1, maxRows: 15 }" @click="handleEditCasePromptClick" @updated="getCasePrompt" @cancel="scope.row.isEditVisible=false" />
-                            </template>
-                          </el-table-column>
-                          <el-table-column
-                            prop="operate"
-                            width="120">
-                            <template #default="scope">
-                              <el-button
-                                size="small"
-                                link
-                                :icon="$legacyIcon('el-icon-edit')"
-                                v-hasPermi="['system:case:add']"
-                                @click="handlePromptEdit($event, scope.row)"
-                              >{{ $t('modify') }}</el-button>
-                              <el-button
-                                size="small"
-                                link
-                                class="red"
-                                :icon="$legacyIcon('el-icon-close')"
-                                v-hasPermi="['system:case:add']"
-                                @click="handlePromptDelete($event, scope.row)"
-                              >{{ $t('delete') }}</el-button>
-                            </template>
-                          </el-table-column>
-                        </el-table>
+                      <div>
+                        <el-button :icon="$legacyIcon('el-icon-plus')" v-show="!addCasePromptVisible" size="small" @click="handleOpenAddCasePrompt">{{ $t('case.add-prompt') }}</el-button>
                         <el-pagination
-                          style="float: right; margin-top: 10px;"
+                          style="float: right"
                           v-model:current-page="casePromptQuery.pageNum"
                           :page-size="casePromptQuery.pageSize"
-                          layout="total, prev, pager, next"
+                          layout="prev, pager, next"
                           :total="casePromptTotal"
                           @size-change="getCasePrompt"
                           @current-change="getCasePrompt">
                         </el-pagination>
                       </div>
-                      <cat2-bug-empty v-if="!casePromptList || casePromptList.length==0" size="default" :description="$t('case.empty-prompt')" />
                     </div>
-                    <template #reference>
-                      <el-button class="cat2-bug-textarea-button" link><svg-icon icon-class="tips"></svg-icon></el-button>
-                    </template>
-                  </el-popover>
-                </el-tooltip>
+                    <div v-if="casePromptList && casePromptList.length>0">
+                      <el-table
+                        :data="casePromptList"
+                        :show-header="false"
+                        @row-click="handleCasePromptClick"
+                        style="width: 100%">
+                        <el-table-column
+                          prop="casePromptContent">
+                          <template #default="scope">
+                            <div v-show="!scope.row.isEditVisible" class="case-prompt-content" v-html="renderCasePromptContent(scope.row.casePromptContent)"></div>
+                            <add-case-prompt v-show="scope.row.isEditVisible" :is-add="false" :case-prompt="scope.row" :auto-size="{ minRows: 1, maxRows: 15 }" @click="handleEditCasePromptClick" @updated="getCasePrompt" @cancel="scope.row.isEditVisible=false" />
+                          </template>
+                        </el-table-column>
+                        <el-table-column
+                          prop="operate"
+                          width="120">
+                          <template #default="scope">
+                            <el-button
+                              size="small"
+                              link
+                              :icon="$legacyIcon('el-icon-edit')"
+                              v-hasPermi="['system:case:add']"
+                              @click="handlePromptEdit($event, scope.row)"
+                            >{{ $t('modify') }}</el-button>
+                            <el-button
+                              size="small"
+                              link
+                              class="red"
+                              :icon="$legacyIcon('el-icon-close')"
+                              v-hasPermi="['system:case:add']"
+                              @click="handlePromptDelete($event, scope.row)"
+                            >{{ $t('delete') }}</el-button>
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                      <el-pagination
+                        style="float: right; margin-top: 10px;"
+                        v-model:current-page="casePromptQuery.pageNum"
+                        :page-size="casePromptQuery.pageSize"
+                        layout="total, prev, pager, next"
+                        :total="casePromptTotal"
+                        @size-change="getCasePrompt"
+                        @current-change="getCasePrompt">
+                      </el-pagination>
+                    </div>
+                    <cat2-bug-empty v-if="!casePromptList || casePromptList.length==0" size="default" :description="$t('case.empty-prompt')" />
+                  </div>
+                  <template #reference>
+                    <span class="cloud-case-prompt-trigger">
+                      <el-tooltip class="item" effect="dark" :content="$t('case.prompt-tooltip')" placement="top">
+                        <el-button class="cat2-bug-textarea-button" link><svg-icon icon-class="tips"></svg-icon></el-button>
+                      </el-tooltip>
+                    </span>
+                  </template>
+                </el-popover>
               </div>
             </template>
           </cat2-bug-textarea>

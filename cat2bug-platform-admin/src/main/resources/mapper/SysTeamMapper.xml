@@ -18,11 +18,13 @@
         <result property="memberCount" column="member_count"/>
         <result property="lock" column="is_lock"/>
         <result property="lockRemark" column="lock_remark"/>
+        <result property="defectBuiltinFieldConfig" column="defect_builtin_field_config"/>
+        <result property="caseReviewTemplate" column="case_review_template"/>
     </resultMap>
 
     <sql id="selectSysTeamVo">
         select t.team_id, t.team_name, t.team_key, t.team_icon, t.create_by, t.create_time, t.update_by, t.update_time,
-               t.introduce, t.is_del, t.is_lock, t.lock_remark,
+               t.introduce, t.is_del, t.is_lock, t.lock_remark, t.defect_builtin_field_config, t.case_review_template,
                IFNULL(p.project_count, 0) as project_count,
                IFNULL(m.member_count, 0) as member_count
         from sys_team t
@@ -119,6 +121,8 @@
             <if test="updateBy != null">update_by,</if>
             <if test="updateTime != null">update_time,</if>
             <if test="introduce != null">introduce,</if>
+            <if test="defectBuiltinFieldConfig != null">defect_builtin_field_config,</if>
+            <if test="caseReviewTemplate != null">case_review_template,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="teamName != null">#{teamName},</if>
@@ -129,6 +133,8 @@
             <if test="updateBy != null">#{updateBy},</if>
             <if test="updateTime != null">#{updateTime},</if>
             <if test="introduce != null">#{introduce},</if>
+            <if test="defectBuiltinFieldConfig != null">#{defectBuiltinFieldConfig},</if>
+            <if test="caseReviewTemplate != null">#{caseReviewTemplate},</if>
         </trim>
     </insert>
 
@@ -143,6 +149,8 @@
             <if test="introduce != null">introduce = #{introduce},</if>
             <if test="lock != null">is_lock = #{lock},</if>
             <if test="lockRemark != null">lock_remark = #{lockRemark},</if>
+            <if test="defectBuiltinFieldConfig != null">defect_builtin_field_config = #{defectBuiltinFieldConfig},</if>
+            <if test="caseReviewTemplate != null">case_review_template = #{caseReviewTemplate},</if>
         </trim>
         where team_id = #{teamId}
     </update>

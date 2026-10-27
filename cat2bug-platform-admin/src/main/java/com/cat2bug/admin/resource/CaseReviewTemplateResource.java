@@ -1,6 +1,7 @@
 package com.cat2bug.admin.resource;
 
 import com.cat2bug.common.api.AjaxResult;
+import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.framework.security.RequiresPermissions;
 import com.cat2bug.system.service.SysCaseTypeService;
 import jakarta.inject.Inject;
@@ -18,6 +19,10 @@ import java.util.Map;
 @Produces(MediaType.APPLICATION_JSON)
 public class CaseReviewTemplateResource {
 
+    private static final int HTTP_GONE = 410;
+    private static final String MIGRATED_MSG =
+            "评审纪要模板已迁至团队设置，请使用 /system/team/{teamId}/case-review-template";
+
     @Inject
     SysCaseTypeService sysCaseTypeService;
 
@@ -32,7 +37,6 @@ public class CaseReviewTemplateResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @RequiresPermissions("system:project:case-type:edit")
     public AjaxResult save(@PathParam("projectId") Long projectId, Map<String, String> body) {
-        sysCaseTypeService.saveReviewTemplate(projectId, body == null ? null : body.get("template"));
-        return AjaxResult.success();
+        throw new ApiException(HTTP_GONE, MIGRATED_MSG);
     }
 }

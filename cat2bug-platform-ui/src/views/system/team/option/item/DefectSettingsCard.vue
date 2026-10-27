@@ -12,7 +12,7 @@
       </template>
       <router-link
         v-if="canListDefectFields"
-        :to="href('defect-fields')"
+        :to="href('team-defect-fields')"
       >
         <el-link>{{ $t('defect.custom-field.manage') }}</el-link>
       </router-link>
@@ -21,26 +21,20 @@
 </template>
 
 <script>
-import { hasAnyPermi, projectOptionHref } from '@/utils/project-option-card'
+import { hasAnyPermi, teamOptionHref } from '@/utils/project-option-card'
 
 export default {
-  name: "DefectSettingsCard",
-  props: {
-    project: {
-      type: Object,
-      default: () => ({})
-    }
-  },
+  name: 'TeamDefectSettingsCard',
   computed: {
     canListDefectFields() {
-      return hasAnyPermi(['system:project:defect-field:list'])
+      return hasAnyPermi(['system:team:defect-field:list'])
     },
     cardVisible() {
       return this.canListDefectFields
     }
   },
   methods: {
-    href: projectOptionHref
+    href: teamOptionHref
   }
 }
 </script>

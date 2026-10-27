@@ -597,13 +597,8 @@ public final class DefectCustomFieldExcelSupport {
             return text;
         }
         if ("boolean".equals(type)) {
-            if ("true".equalsIgnoreCase(text) || "1".equals(text)) {
-                return true;
-            }
-            if ("false".equalsIgnoreCase(text) || "0".equals(text)) {
-                return false;
-            }
-            return text;
+            Boolean bool = DefectCustomFieldsValidator.coerceBoolean(text);
+            return bool != null ? bool : text;
         }
         if ("number".equals(type)) {
             try {
@@ -627,6 +622,11 @@ public final class DefectCustomFieldExcelSupport {
             return list.isEmpty() ? null : list;
         }
         return text;
+    }
+
+    /** 导入模版布尔列下拉：与导出文本一致的 true/false。 */
+    public static String[] resolveBooleanComboLabels() {
+        return new String[] {"true", "false"};
     }
 
     public static String[] resolveEnumComboLabels(SysProjectDefectField def) {

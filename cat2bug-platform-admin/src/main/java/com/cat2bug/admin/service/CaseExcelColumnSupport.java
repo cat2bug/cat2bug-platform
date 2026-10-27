@@ -173,6 +173,10 @@ final class CaseExcelColumnSupport {
         return null;
     }
 
+    static boolean isImageColumn(ColumnDef column) {
+        return column != null && "imgUrls".equals(column.fieldName());
+    }
+
     static int moduleColumnIndex(List<ColumnDef> columns) {
         for (int i = 0; i < columns.size(); i++) {
             if ("moduleName".equals(columns.get(i).fieldName())) {

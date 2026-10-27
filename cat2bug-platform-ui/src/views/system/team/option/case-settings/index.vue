@@ -1,6 +1,6 @@
 <template>
   <div class="app-container project-list-page-host case-settings-page">
-    <el-row class="project-add-page-header">
+    <el-row class="project-add-page-header team-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('case.review.template')" />
     </el-row>
     <cat2-bug-editor
@@ -21,12 +21,18 @@
 <script>
 import { getCaseReviewTemplate, saveCaseReviewTemplate } from '@/api/system/case-type'
 import { checkPermi } from '@/utils/permission'
+import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user'
 import Cat2BugEditor from '@/components/Cat2BugEditor/index.vue'
 
 export default {
-  name: 'ProjectCaseSettings',
+  name: 'TeamCaseSettings',
   components: { Cat2BugEditor },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       template: '',
@@ -36,11 +42,11 @@ export default {
     }
   },
   computed: {
-    projectId() {
-      return parseInt(useUserStore().config.currentProjectId)
+    teamId() {
+      return parseInt(this.config.currentTeamId)
     },
     canEdit() {
-      return checkPermi(['system:project:case-type:edit'])
+      return checkPermi(['system:team:case-type:edit'])
     },
     dirty() {
       return this.template !== this.savedTemplate
@@ -87,10 +93,10 @@ export default {
         if (!ok) return
         this.leaveConfirmed = true
       }
-      this.$router.push('/project/option')
+      this.$router.push('/team-options/team-option')
     },
     load() {
-      getCaseReviewTemplate(this.projectId).then(res => {
+      getCaseReviewTemplate(this.teamId).then(res => {
         this.template = (res.data && res.data.template) || ''
         this.savedTemplate = this.template
       }).catch(() => {})
@@ -98,7 +104,7 @@ export default {
     saveTemplate() {
       if (!this.canEdit || this.saving || !this.dirty) return
       this.saving = true
-      saveCaseReviewTemplate(this.projectId, this.template).then(() => {
+      saveCaseReviewTemplate(this.teamId, this.template).then(() => {
         this.savedTemplate = this.template
         this.$modal.msgSuccess(this.$t('modify-success'))
       }).finally(() => {

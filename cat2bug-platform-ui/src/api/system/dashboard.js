@@ -96,3 +96,11 @@ export function weekOps(projectId) {
     method: 'get'
   })
 }
+
+/** 用户周排行：缺陷处理 + 代码提交 + 文档处理 */
+export function memberWeeklyRank(projectId) {
+  return request({
+    url: '/system/dashboard/' + projectId + '/member-weekly-rank',
+    method: 'get'
+  })
+}

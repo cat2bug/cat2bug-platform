@@ -779,7 +779,7 @@
   "case.level3-explain": "عادي، تندرج ضمن الوظائف الثانوية، لها تأثير معين على الأعمال ولكنها ليست نقطة حاسمة.",
   "case.level4-explain": "ثانوي، وظيفة هامشية أو ذات تردد استخدام منخفض، لها تأثير ضئيل نسبيًا على الأعمال.",
   "case.level5-explain": "أدنى، متطلبات غير وظيفية، مثل اختبار الأداء، اختبار التوافق، وغيرها، وعادة ما يتم إجراؤها قبل إصدار المنتج.",
-  "case.add-prompt-placeholder": "يرجى إدخال محتوى المتطلبات، يمكن إضافة متغيرات في المحتوى، وتنسيق المتغير هو ${اسم_المتغير}، حيث يتكون اسم المتغير من أحرف إنجليزية أو أرقام.",
+  "case.add-prompt-placeholder": "يرجى إدخال محتوى المتطلبات، يمكن إضافة متغيرات في المحتوى، وتنسيق المتغير هو {'${اسم_المتغير}'}، حيث يتكون اسم المتغير من أحرف إنجليزية أو أرقام.",
   "case.is-delete-prompt": "هل تريد حذف نص التلميح؟",
   "case.local-ai-service": "خدمة الذكاء الاصطناعي المحلية",
   "case.openai-service": "خدمة OpenAI",
@@ -992,6 +992,7 @@
   "notice.content-not-empty": "لا يمكن ترك محتوى الإشعار فارغًا",
   "notice.receiver-not-empty": "لا يمكن ترك المستقبل فارغًا",
   "option": "خيار",
+  "api": "مفتاح API",
   "notice.system.bgm-enable": "تمكين صوت الإشعار",
   "notice.system.panel": "عرض نافذة الإشعار في الزاوية العلوية اليمنى بشكل فوري",
   "notice.option.save-error": "لا يمكن حفظ إعدادات الإشعارات، الرجاء التحقق من جميع الخيارات للتأكد من صحتها!",
@@ -1295,6 +1296,7 @@
   "upgrade.step.execute": "تنفيذ",
   "upgrade.step.result": "اكتمال",
   "upgrade.auth.desc": "سيُحدّث الترقية مخطط قاعدة البيانات والإعدادات. أدخل حساب مدير النظام للمتابعة.",
+  "upgrade.auth.requiredForAction": "يرجى إدخال اسم مستخدم وكلمة مرور مدير النظام قبل المتابعة",
   "upgrade.overview.currentVersion": "الإصدار الحالي",
   "upgrade.overview.targetVersion": "الإصدار المستهدف",
   "upgrade.overview.databaseType": "نوع قاعدة البيانات",
@@ -2292,5 +2294,12 @@
   "workbench.widget.document-pin": "تثبيت مستند",
   "workbench.widget.my-commits": "سجلّات الـ Commit الخاصة بي",
   "workbench.widget.my-documents": "مستنداتي",
-  "workbench.widget.my-prs": "طلبات السحب (PR) الخاصة بي"
+  "workbench.widget.my-prs": "طلبات السحب (PR) الخاصة بي",
+  "workbench.widget.member-weekly-rank": "نشاط الأعضاء الأسبوعي",
+  "workbench.weekly-rank.defect": "العيوب",
+  "workbench.weekly-rank.commit": "الالتزامات",
+  "workbench.weekly-rank.file": "المستندات",
+  "workbench.weekly-rank.empty": "لا نشاط هذا الأسبوع",
+  "workbench.editor.duplicate-type-named": "العمود يحتوي بالفعل على «{0}»؛ لا يمكن تكرار نفس النوع في العمود نفسه",
+  "workbench.weekly-rank.total": "المجموع"
 }

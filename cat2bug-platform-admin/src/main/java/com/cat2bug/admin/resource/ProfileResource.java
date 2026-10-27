@@ -56,7 +56,8 @@ public class ProfileResource {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return Response.status(Response.Status.NOT_FOUND).build();
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
+            // 非法 URI / 回源失败 → 404，避免空格等字符触发 500
             return Response.status(Response.Status.NOT_FOUND).build();
         }
     }

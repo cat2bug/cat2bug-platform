@@ -25,6 +25,9 @@ export function getUpgradePreflight() {
   })
 }
 
+/** 大库备份还原/迁移可能超过 5 分钟 */
+const UPGRADE_LONG_TIMEOUT_MS = 900000
+
 /** 提交升级 */
 export function submitUpgrade(data) {
   return request({
@@ -32,7 +35,7 @@ export function submitUpgrade(data) {
     headers: upgradeHeaders,
     method: 'post',
     data,
-    timeout: 300000,
+    timeout: UPGRADE_LONG_TIMEOUT_MS,
     silentError: true
   })
 }
@@ -44,7 +47,7 @@ export function retryUpgrade(data) {
     headers: upgradeHeaders,
     method: 'post',
     data,
-    timeout: 300000,
+    timeout: UPGRADE_LONG_TIMEOUT_MS,
     silentError: true
   })
 }
@@ -56,6 +59,7 @@ export function rollbackUpgrade(data) {
     headers: upgradeHeaders,
     method: 'post',
     data,
-    timeout: 300000
+    timeout: UPGRADE_LONG_TIMEOUT_MS,
+    silentError: true
   })
 }

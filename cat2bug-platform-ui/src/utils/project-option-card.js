@@ -22,12 +22,24 @@ export function projectOptionHref(menuPath) {
   return `/project/${seg}`
 }
 
-/** 缺陷属性管理（团队/项目创建人、管理员） */
+/**
+ * Absolute History path for team-option card links.
+ * @param {string} menuPath sys_menu.path segment (e.g. `team-case-types`)
+ * @returns {string}
+ */
+export function teamOptionHref(menuPath) {
+  const seg = String(menuPath || '').trim().replace(/^\/+|\/+$/g, '')
+  if (!seg) return '/team-options/team-option'
+  if (seg.startsWith('team-options/')) return `/${seg}`
+  return `/team-options/${seg}`
+}
+
+/** 缺陷属性管理（团队级） */
 export const DEFECT_FIELD_MANAGE_PERMS = [
-  'system:project:defect-field:list',
-  'system:project:defect-field:add',
-  'system:project:defect-field:edit',
-  'system:project:defect-field:remove'
+  'system:team:defect-field:list',
+  'system:team:defect-field:add',
+  'system:team:defect-field:edit',
+  'system:team:defect-field:remove'
 ]
 
 export function canManageDefectFields() {

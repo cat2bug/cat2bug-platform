@@ -1,7 +1,7 @@
 <template>
   <el-form ref="form" :model="form" :rules="rules" label-width="120px">
     <el-form-item :label="$t('title')" prop="caseName">
-      <el-input type="textarea" v-model="form.caseName" :placeholder="$t('case.please-enter-title')" rows="3" maxlength="255" show-word-limit />
+      <el-input type="textarea" v-model="form.caseName" :placeholder="$t('case.please-enter-title')" :rows="3" maxlength="255" show-word-limit />
     </el-form-item>
     <el-row>
       <el-col :span="12">
@@ -23,18 +23,18 @@
       </el-col>
     </el-row>
     <el-form-item :label="$t('preconditions')" prop="casePreconditions">
-      <el-input type="textarea" v-model="form.casePreconditions" :placeholder="$t('case.please-enter-prerequisite')" maxlength="65535" rows="3" show-word-limit />
+      <el-input type="textarea" v-model="form.casePreconditions" :placeholder="$t('case.please-enter-prerequisite')" maxlength="65535" :rows="3" show-word-limit />
     </el-form-item>
     <el-form-item :label="$t('expect')" prop="caseExpect">
-      <el-input type="textarea" v-model="form.caseExpect" :placeholder="$t('case.please-enter-expectations')" maxlength="65535" rows="3" show-word-limit />
+      <el-input type="textarea" v-model="form.caseExpect" :placeholder="$t('case.please-enter-expectations')" maxlength="65535" :rows="3" show-word-limit />
     </el-form-item>
     <el-form-item :label="$t('step')" prop="caseStep">
       <template #label>
         <div class="form-item-case-form-step">
           <el-radio-group v-model="caseStepSwitchType" @input="caseStepPanelTypeChangeHandle($event)">
-            <el-radio-button label=""><svg-icon icon-class="option" /></el-radio-button>
-            <el-radio-button label="list"><svg-icon icon-class="list2" /></el-radio-button>
-            <el-radio-button label="input"><svg-icon icon-class="textarea" /></el-radio-button>
+            <el-radio-button value=""><svg-icon icon-class="option" /></el-radio-button>
+            <el-radio-button value="list"><svg-icon icon-class="list2" /></el-radio-button>
+            <el-radio-button value="input"><svg-icon icon-class="textarea" /></el-radio-button>
           </el-radio-group>
           <label>{{ $t('step') }}</label>
         </div>
@@ -42,7 +42,7 @@
       <case-step-panel ref="caseStepPanel" v-model:caseStep="form.caseStep" :panel-type="caseStepSwitchType" />
     </el-form-item>
     <el-form-item :label="$t('remark')" prop="remark">
-      <el-input type="textarea" v-model="form.remark" :placeholder="$t('please-enter-remark')" maxlength="255" rows="6" show-word-limit />
+      <el-input type="textarea" v-model="form.remark" :placeholder="$t('please-enter-remark')" maxlength="255" :rows="6" show-word-limit />
     </el-form-item>
   </el-form>
 </template>

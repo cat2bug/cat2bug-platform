@@ -29,9 +29,9 @@
             <label>测试步骤</label>
             <div class="form-item-case-form-step">
               <el-radio-group v-model="d.caseStepSwitchType">
-                <el-radio-button label=""><svg-icon icon-class="option" /></el-radio-button>
-                <el-radio-button label="list"><svg-icon icon-class="list2" /></el-radio-button>
-                <el-radio-button label="input"><svg-icon icon-class="textarea" /></el-radio-button>
+                <el-radio-button value=""><svg-icon icon-class="option" /></el-radio-button>
+                <el-radio-button value="list"><svg-icon icon-class="list2" /></el-radio-button>
+                <el-radio-button value="input"><svg-icon icon-class="textarea" /></el-radio-button>
               </el-radio-group>
             </div>
           </div>

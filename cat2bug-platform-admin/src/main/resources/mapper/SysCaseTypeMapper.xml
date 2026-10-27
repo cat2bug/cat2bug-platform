@@ -3,56 +3,69 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cat2bug.system.mapper.SysCaseTypeMapper">
 
-    <select id="selectByProjectId" resultType="com.cat2bug.common.domain.SysCaseType">
-        SELECT t.type_id AS typeId, t.project_id AS projectId, t.type_name AS typeName, t.sort_order AS sortOrder,
-               t.enabled AS enabled,
-               (SELECT COUNT(*) FROM sys_case c WHERE c.project_id = t.project_id AND c.case_type = t.type_id) AS caseCount
+    <select id="selectByTeamId" resultType="com.cat2bug.common.domain.SysCaseType">
+        SELECT t.type_id AS typeId, t.team_id AS teamId, t.project_id AS projectId, t.type_name AS typeName,
+               t.sort_order AS sortOrder, t.enabled AS enabled,
+               (SELECT COUNT(*)
+                FROM sys_case c
+                         INNER JOIN sys_project p ON c.project_id = p.project_id
+                WHERE p.team_id = t.team_id AND c.case_type = t.type_id) AS caseCount
         FROM sys_case_type t
-        WHERE t.project_id = #{projectId}
+        WHERE t.team_id = #{teamId}
         ORDER BY t.sort_order, t.type_id
     </select>
 
     <select id="selectById" resultType="com.cat2bug.common.domain.SysCaseType">
-        SELECT type_id AS typeId, project_id AS projectId, type_name AS typeName, sort_order AS sortOrder, enabled AS enabled
+        SELECT type_id AS typeId, team_id AS teamId, project_id AS projectId, type_name AS typeName,
+               sort_order AS sortOrder, enabled AS enabled
         FROM sys_case_type WHERE type_id = #{typeId}
     </select>
 
-    <select id="selectByProjectAndName" resultType="com.cat2bug.common.domain.SysCaseType">
-        SELECT type_id AS typeId, project_id AS projectId, type_name AS typeName, sort_order AS sortOrder, enabled AS enabled
+    <select id="selectByTeamAndName" resultType="com.cat2bug.common.domain.SysCaseType">
+        SELECT type_id AS typeId, team_id AS teamId, project_id AS projectId, type_name AS typeName,
+               sort_order AS sortOrder, enabled AS enabled
         FROM sys_case_type
-        WHERE project_id = #{projectId} AND type_name = #{typeName}
+        WHERE team_id = #{teamId} AND type_name = #{typeName}
     </select>
 
     <select id="countCases" resultType="int">
-        SELECT COUNT(*) FROM sys_case WHERE project_id = #{projectId} AND case_type = #{typeId}
+        SELECT COUNT(*)
+        FROM sys_case c
+                 INNER JOIN sys_project p ON c.project_id = p.project_id
+        WHERE p.team_id = #{teamId}
+          AND c.case_type = #{typeId}
     </select>
 
     <insert id="insert" parameterType="com.cat2bug.common.domain.SysCaseType" useGeneratedKeys="true" keyProperty="typeId">
-        INSERT INTO sys_case_type (project_id, type_name, sort_order, enabled)
-        VALUES (#{projectId}, #{typeName}, #{sortOrder}, #{enabled})
+        INSERT INTO sys_case_type (team_id, type_name, sort_order, enabled)
+        VALUES (#{teamId}, #{typeName}, #{sortOrder}, #{enabled})
     </insert>
 
     <update id="updateName">
-        UPDATE sys_case_type SET type_name = #{typeName} WHERE type_id = #{typeId} AND project_id = #{projectId}
+        UPDATE sys_case_type SET type_name = #{typeName} WHERE type_id = #{typeId} AND team_id = #{teamId}
     </update>
 
     <update id="updateEnabled">
-        UPDATE sys_case_type SET enabled = #{enabled} WHERE type_id = #{typeId} AND project_id = #{projectId}
+        UPDATE sys_case_type SET enabled = #{enabled} WHERE type_id = #{typeId} AND team_id = #{teamId}
     </update>
 
     <delete id="deleteById">
         DELETE FROM sys_case_type WHERE type_id = #{typeId}
     </delete>
 
+    <select id="selectTeamIdByProjectId" resultType="long">
+        SELECT team_id FROM sys_project WHERE project_id = #{projectId}
+    </select>
+
     <select id="selectProjectName" resultType="string">
         SELECT project_name FROM sys_project WHERE project_id = #{projectId}
     </select>
 
     <select id="selectReviewTemplate" resultType="string">
-        SELECT case_review_template FROM sys_project WHERE project_id = #{projectId}
+        SELECT case_review_template FROM sys_team WHERE team_id = #{teamId}
     </select>
 
     <update id="updateReviewTemplate">
-        UPDATE sys_project SET case_review_template = #{template} WHERE project_id = #{projectId}
+        UPDATE sys_team SET case_review_template = #{template} WHERE team_id = #{teamId}
     </update>
 </mapper>

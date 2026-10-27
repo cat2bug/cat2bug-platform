@@ -10,10 +10,10 @@
           </div>
         </div>
       </template>
-      <router-link v-if="canList" :to="href('case-types')">
+      <router-link v-if="canList" :to="href('team-case-types')">
         <el-link>{{ $t('case.type.manage') }}</el-link>
       </router-link>
-      <router-link v-if="canList" :to="href('case-settings')">
+      <router-link v-if="canList" :to="href('team-case-settings')">
         <el-link>{{ $t('case.review.template') }}</el-link>
       </router-link>
     </el-card>
@@ -21,26 +21,20 @@
 </template>
 
 <script>
-import { hasAnyPermi, projectOptionHref } from '@/utils/project-option-card'
+import { hasAnyPermi, teamOptionHref } from '@/utils/project-option-card'
 
 export default {
-  name: 'CaseTypeCard',
-  props: {
-    project: {
-      type: Object,
-      default: () => ({})
-    }
-  },
+  name: 'TeamCaseSettingsCard',
   computed: {
     canList() {
-      return hasAnyPermi(['system:project:case-type:list'])
+      return hasAnyPermi(['system:team:case-type:list'])
     },
     cardVisible() {
       return this.canList
     }
   },
   methods: {
-    href: projectOptionHref
+    href: teamOptionHref
   }
 }
 </script>

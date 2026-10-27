@@ -194,7 +194,7 @@ final class DefectExcelColumnSupport {
                 defect.setModulePath(value);
             }
             case "moduleVersion" -> defect.setModuleVersion(value);
-            case "imgObjects" -> defect.setImgUrls(value);
+            case "imgUrls", "imgObjects" -> defect.setImgUrls(value);
             case "handleByNames" -> defect.setHandleByNames(value);
             default -> {
             }
@@ -228,6 +228,19 @@ final class DefectExcelColumnSupport {
             }
         }
         return -1;
+    }
+
+    /** 系统 imgUrls 或自定义 image 字段：导出时嵌图而非写 URL 文本。 */
+    static boolean isImageColumn(ColumnDef column) {
+        if (column == null) {
+            return false;
+        }
+        if ("imgUrls".equals(column.fieldName())) {
+            return true;
+        }
+        return column.custom()
+                && column.customDef() != null
+                && "image".equals(column.customDef().getFieldType());
     }
 
     private static ColumnDef customColumn(SysProjectDefectField def, Locale locale) {

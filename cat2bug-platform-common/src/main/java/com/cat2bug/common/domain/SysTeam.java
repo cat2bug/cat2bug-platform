@@ -16,6 +16,8 @@ public class SysTeam {
     private int memberCount;
     private Boolean lock;
     private String lockRemark;
+    private String defectBuiltinFieldConfig;
+    private String caseReviewTemplate;
 
     public Long getTeamId() {
         return teamId;
@@ -127,5 +129,21 @@ public class SysTeam {
 
     public void setLockRemark(String lockRemark) {
         this.lockRemark = lockRemark;
+    }
+
+    public String getDefectBuiltinFieldConfig() {
+        return defectBuiltinFieldConfig;
+    }
+
+    public void setDefectBuiltinFieldConfig(String defectBuiltinFieldConfig) {
+        this.defectBuiltinFieldConfig = defectBuiltinFieldConfig;
+    }
+
+    public String getCaseReviewTemplate() {
+        return caseReviewTemplate;
+    }
+
+    public void setCaseReviewTemplate(String caseReviewTemplate) {
+        this.caseReviewTemplate = caseReviewTemplate;
     }
 }

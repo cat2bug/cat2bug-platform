@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container case-body defect-field-page defect-field-list-layout project-list-page-host" ref="projectOptionSubMain">
-    <el-row class="project-add-page-header project-add-page-header--with-filter project-option-sub-hint-back">
+  <div class="app-container case-body defect-field-page defect-field-list-layout project-list-page-host" ref="teamOptionSubMain">
+    <el-row class="project-add-page-header project-add-page-header--with-filter team-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('defect.custom-field.title')">
       </el-page-header>
     </el-row>
@@ -363,7 +363,8 @@ import {
   supportsFieldMaxLength
 } from '@/components/DefectCustomField/format'
 import { hasAnyPermi } from '@/utils/project-option-card'
-import projectOptionSubKbd, { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-option-sub-kbd'
+import teamOptionSubKbd from '@/mixins/team-option-sub-kbd'
+import { TEAM_OPTION_KBD_SCOPE } from '@/composables/keyboard/useTeamOptionSubKbd'
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import {
@@ -380,8 +381,8 @@ const FIELD_TYPES = ['string', 'number', 'boolean', 'datetime', 'enum', 'object'
 const FIELD_KEY_PATTERN = /^[a-z][a-z0-9_]{0,63}$/
 
 export default {
-  name: 'ProjectDefectFields',
-  mixins: [projectOptionSubKbd, defectToolDialogKbd],
+  name: 'TeamDefectFields',
+  mixins: [teamOptionSubKbd, defectToolDialogKbd],
   components: { DefectFieldDefaultValueInput },
   setup() {
     const settingsStore = useSettingsStore()
@@ -422,17 +423,20 @@ export default {
     sourceTagSystemClass() {
       return this.themeMode === 'dark' ? 'defect-field-source-tag--system' : ''
     },
+    teamId() {
+      return parseInt(this.config.currentTeamId)
+    },
     projectId() {
       return parseInt(this.config.currentProjectId)
     },
     canAddDefectField() {
-      return hasAnyPermi(['system:project:defect-field:add'])
+      return hasAnyPermi(['system:team:defect-field:add'])
     },
     canEditDefectField() {
-      return hasAnyPermi(['system:project:defect-field:edit'])
+      return hasAnyPermi(['system:team:defect-field:edit'])
     },
     canRemoveDefectField() {
-      return hasAnyPermi(['system:project:defect-field:remove'])
+      return hasAnyPermi(['system:team:defect-field:remove'])
     },
     canShowOperateColumn() {
       return this.canEditDefectField || this.canRemoveDefectField
@@ -527,6 +531,9 @@ export default {
     this.destroyDefectFieldListBodyResizeObserver()
   },
   methods: {
+    goBack() {
+      this.$router.push('/team-options/team-option')
+    },
     shouldProjectOptionSubEscGoBack() {
       return !this.open
     },
@@ -568,7 +575,7 @@ export default {
       ]
     },
     getProjectOptionSubActionHints() {
-      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
+      const L = (key, def) => shortcutStore.getLetter(`action.${TEAM_OPTION_KBD_SCOPE}.${key}`, def)
       return [
         {
           key: 'create',
@@ -835,7 +842,7 @@ export default {
     },
     getList() {
       this.loading = true
-      listFields(this.projectId).then(response => {
+      listFields(this.teamId).then(response => {
         const data = response.data
         const rows = Array.isArray(data) ? data : (response.rows || [])
         this.fieldList = rows.map(row => this.decorateFieldRow(row))
@@ -899,7 +906,7 @@ export default {
     },
     buildPatchPayload(row, patch) {
       return {
-        projectId: row.projectId || this.projectId,
+        teamId: row.teamId || this.teamId,
         fieldId: row.fieldId,
         fieldKey: row.fieldKey,
         fieldLabel: row.fieldLabel,
@@ -921,8 +928,8 @@ export default {
       const enabled = val ? 1 : 0
       row._toggleLoading = true
       const request = this.isBuiltinField(row)
-        ? updateBuiltinFieldLayout(this.projectId, this.builtinLayoutPayload(row, { enabled }))
-        : updateField(this.projectId, row.fieldId, this.buildPatchPayload(row, { enabled }))
+        ? updateBuiltinFieldLayout(this.teamId, this.builtinLayoutPayload(row, { enabled }))
+        : updateField(this.teamId, row.fieldId, this.buildPatchPayload(row, { enabled }))
       request
         .then(() => {
           row.enabled = enabled
@@ -976,8 +983,8 @@ export default {
       Promise.all(changes.map(c => {
         const r = c.row
         return this.isBuiltinField(r)
-          ? updateBuiltinFieldLayout(this.projectId, this.builtinLayoutPayload(r, { sortOrder: c.sortOrder }))
-          : updateField(this.projectId, r.fieldId, this.buildPatchPayload(r, { sortOrder: c.sortOrder }))
+          ? updateBuiltinFieldLayout(this.teamId, this.builtinLayoutPayload(r, { sortOrder: c.sortOrder }))
+          : updateField(this.teamId, r.fieldId, this.buildPatchPayload(r, { sortOrder: c.sortOrder }))
       }))
         .then(() => {
           changes.forEach(c => {
@@ -997,7 +1004,7 @@ export default {
     reset() {
       this.form = {
         fieldId: null,
-        projectId: this.projectId,
+        teamId: this.teamId,
         fieldKey: null,
         fieldLabel: null,
         fieldType: 'string',
@@ -1040,7 +1047,7 @@ export default {
       }
       this.form = {
         fieldId: row.fieldId,
-        projectId: row.projectId || this.projectId,
+        teamId: row.teamId || this.teamId,
         fieldKey: row.fieldKey,
         fieldLabel: row.fieldLabel,
         fieldType: row.fieldType,
@@ -1115,8 +1122,8 @@ export default {
         }
         const payload = this.buildSubmitPayload()
         const request = payload.fieldId
-          ? updateField(this.projectId, payload.fieldId, payload)
-          : addField(this.projectId, payload)
+          ? updateField(this.teamId, payload.fieldId, payload)
+          : addField(this.teamId, payload)
         request.then(() => {
           this.$modal.msgSuccess(payload.fieldId ? this.$t('modify-success') : this.$t('create-success'))
           this.open = false
@@ -1135,7 +1142,7 @@ export default {
     },
     handleDelete(row) {
       this.$modal.confirm(this.$t('defect.custom-field.delete-confirm'))
-        .then(() => deleteField(this.projectId, row.fieldId))
+        .then(() => deleteField(this.teamId, row.fieldId))
         .then(() => {
           clearCustomFieldColumnsCache()
           return listEnabledFields(this.projectId)

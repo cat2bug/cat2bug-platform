@@ -414,9 +414,10 @@ function parseCustomFieldExcelImportText(text, col) {
     return raw;
   }
   if (col.fieldType === "boolean") {
-    if (raw === "true" || raw === "1") return true;
-    if (raw === "false" || raw === "0") return false;
-    return raw;
+    const lower = raw.toLowerCase()
+    if (lower === "true" || raw === "1" || lower === "yes" || lower === "y" || raw === "是") return true
+    if (lower === "false" || raw === "0" || lower === "no" || lower === "n" || raw === "否") return false
+    return raw
   }
   if (col.fieldType === "number") {
     const n = Number(raw);

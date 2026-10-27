@@ -54,13 +54,32 @@ public class SysProjectDefectFieldService {
     @Inject
     DefectCustomFieldsValidator customFieldsValidator;
 
+    public Long resolveTeamIdFromProject(Long projectId) {
+        if (projectId == null) {
+            throw new ApiException("项目ID不能为空");
+        }
+        Long teamId = fieldMapper.selectTeamIdByProjectId(projectId);
+        if (teamId == null) {
+            throw new ApiException("项目不存在");
+        }
+        return teamId;
+    }
+
     public List<SysProjectDefectField> selectListByProjectId(Long projectId) {
-        return fieldMapper.selectListByProjectId(projectId);
+        return selectListByTeamId(resolveTeamIdFromProject(projectId));
+    }
+
+    public List<SysProjectDefectField> selectListByTeamId(Long teamId) {
+        return fieldMapper.selectListByTeamId(teamId);
     }
 
     public List<SysProjectDefectFieldManageItem> selectManageListByProjectId(Long projectId) {
+        return selectManageListByTeamId(resolveTeamIdFromProject(projectId));
+    }
+
+    public List<SysProjectDefectFieldManageItem> selectManageListByTeamId(Long teamId) {
         Map<String, BuiltinDef> defs = DefectBuiltinFieldRegistry.definitionByKey();
-        ObjectNode config = loadBuiltinConfigObject(projectId);
+        ObjectNode config = loadBuiltinConfigObject(teamId);
         List<SysProjectDefectFieldManageItem> items = new ArrayList<>();
 
         for (BuiltinDef def : DefectBuiltinFieldRegistry.definitions()) {
@@ -75,7 +94,7 @@ public class SysProjectDefectFieldService {
                     def, DefectBuiltinFieldRegistry.resolveBuiltinLabel(def.fieldKey), enabled, sortOrder));
         }
 
-        for (SysProjectDefectField field : fieldMapper.selectListByProjectId(projectId)) {
+        for (SysProjectDefectField field : fieldMapper.selectListByTeamId(teamId)) {
             items.add(toCustomManageItem(field));
         }
 
@@ -88,12 +107,12 @@ public class SysProjectDefectFieldService {
     }
 
     @Transactional
-    public int updateBuiltinFieldLayout(Long projectId, List<SysProjectDefectFieldManageItem> layout) {
+    public int updateBuiltinFieldLayout(Long teamId, List<SysProjectDefectFieldManageItem> layout) {
         if (layout == null || layout.isEmpty()) {
             return 0;
         }
         Map<String, BuiltinDef> defs = DefectBuiltinFieldRegistry.definitionByKey();
-        ObjectNode config = loadBuiltinConfigObject(projectId);
+        ObjectNode config = loadBuiltinConfigObject(teamId);
         for (SysProjectDefectFieldManageItem item : layout) {
             if (item == null || StringUtils.isEmpty(item.getFieldKey()) || !defs.containsKey(item.getFieldKey())) {
                 continue;
@@ -111,18 +130,26 @@ public class SysProjectDefectFieldService {
         }
         try {
             return fieldMapper.updateDefectBuiltinFieldConfig(
-                    projectId, MAPPER.writeValueAsString(config), new Date());
+                    teamId, MAPPER.writeValueAsString(config), new Date());
         } catch (Exception e) {
             throw new ApiException("更新内置字段布局失败");
         }
     }
 
     public List<SysProjectDefectField> selectEnabledListByProjectId(Long projectId) {
-        return fieldMapper.selectEnabledListByProjectId(projectId);
+        return selectEnabledListByTeamId(resolveTeamIdFromProject(projectId));
+    }
+
+    public List<SysProjectDefectField> selectEnabledListByTeamId(Long teamId) {
+        return fieldMapper.selectEnabledListByTeamId(teamId);
     }
 
     public SysProjectDefectFieldColumnLayout selectColumnLayoutByProjectId(Long projectId) {
-        ObjectNode config = loadBuiltinConfigObject(projectId);
+        return selectColumnLayoutByTeamId(resolveTeamIdFromProject(projectId));
+    }
+
+    public SysProjectDefectFieldColumnLayout selectColumnLayoutByTeamId(Long teamId) {
+        ObjectNode config = loadBuiltinConfigObject(teamId);
         List<String> enabledBuiltinKeys = new ArrayList<>();
         for (BuiltinDef def : DefectBuiltinFieldRegistry.definitions()) {
             if (DefectBuiltinFieldRegistry.isAlwaysEnabled(def.fieldKey)) {
@@ -136,9 +163,9 @@ public class SysProjectDefectFieldService {
         }
         SysProjectDefectFieldColumnLayout layout = new SysProjectDefectFieldColumnLayout();
         layout.setEnabledBuiltinFieldKeys(enabledBuiltinKeys);
-        layout.setCustomFields(fieldMapper.selectEnabledListByProjectId(projectId));
+        layout.setCustomFields(fieldMapper.selectEnabledListByTeamId(teamId));
         List<String> orderedEnabledFieldKeys = new ArrayList<>();
-        for (SysProjectDefectFieldManageItem item : selectManageListByProjectId(projectId)) {
+        for (SysProjectDefectFieldManageItem item : selectManageListByTeamId(teamId)) {
             if (item.getEnabled() != null && item.getEnabled() == 1 && StringUtils.isNotEmpty(item.getFieldKey())) {
                 orderedEnabledFieldKeys.add(item.getFieldKey());
             }
@@ -153,8 +180,8 @@ public class SysProjectDefectFieldService {
 
     @Transactional
     public SysProjectDefectField insert(SysProjectDefectField field) {
-        if (field.getProjectId() == null) {
-            throw new ApiException("项目ID不能为空");
+        if (field.getTeamId() == null) {
+            throw new ApiException("团队ID不能为空");
         }
         normalizeDefaults(field);
         validateFieldKey(field.getFieldKey());
@@ -162,15 +189,15 @@ public class SysProjectDefectFieldService {
         validateTypeConfig(field.getFieldType(), field.getTypeConfig());
         normalizeDefaultValue(field);
 
-        if (fieldMapper.selectByProjectIdAndFieldKey(field.getProjectId(), field.getFieldKey()) != null) {
-            throw new ApiException("属性键在该项目中已存在");
+        if (fieldMapper.selectByTeamIdAndFieldKey(field.getTeamId(), field.getFieldKey()) != null) {
+            throw new ApiException("属性键在该团队中已存在");
         }
         if (DefectBuiltinFieldRegistry.definitionByKey().containsKey(field.getFieldKey())) {
             throw new ApiException("属性键与缺陷内置属性冲突，请更换");
         }
         assertFieldLabelLength(field.getFieldLabel());
-        assertFieldLabelUnique(field.getProjectId(), null, field.getFieldLabel());
-        assertEnabledLimit(field.getProjectId(), null, field.getEnabled());
+        assertFieldLabelUnique(field.getTeamId(), null, field.getFieldLabel());
+        assertEnabledLimit(field.getTeamId(), null, field.getEnabled());
 
         Date now = new Date();
         field.setCreateTime(now);
@@ -187,7 +214,7 @@ public class SysProjectDefectFieldService {
             throw new ApiException("字段ID不能为空");
         }
         SysProjectDefectField existing = fieldMapper.selectByFieldId(field.getFieldId());
-        if (existing == null || !existing.getProjectId().equals(field.getProjectId())) {
+        if (existing == null || !existing.getTeamId().equals(field.getTeamId())) {
             throw new ApiException("字段定义不存在");
         }
         if (field.getFieldKey() != null && !field.getFieldKey().equals(existing.getFieldKey())) {
@@ -196,7 +223,7 @@ public class SysProjectDefectFieldService {
 
         String newType = field.getFieldType() != null ? field.getFieldType() : existing.getFieldType();
         if (field.getFieldType() != null && !field.getFieldType().equals(existing.getFieldType())) {
-            if (fieldMapper.countCustomFieldKeyUsed(existing.getProjectId(), existing.getFieldKey()) > 0) {
+            if (fieldMapper.countCustomFieldKeyUsedByTeamId(existing.getTeamId(), existing.getFieldKey()) > 0) {
                 throw new ApiException("该字段已有缺陷数据，不可修改类型");
             }
             validateFieldType(newType);
@@ -214,29 +241,29 @@ public class SysProjectDefectFieldService {
         field.setDefaultValue(customFieldsValidator.normalizeDefaultValue(defaultProbe, field.getDefaultValue()));
 
         Integer newEnabled = field.getEnabled() != null ? field.getEnabled() : existing.getEnabled();
-        assertEnabledLimit(existing.getProjectId(), existing.getFieldId(), newEnabled);
+        assertEnabledLimit(existing.getTeamId(), existing.getFieldId(), newEnabled);
 
         String newLabel = field.getFieldLabel() != null ? field.getFieldLabel() : existing.getFieldLabel();
         assertFieldLabelLength(newLabel);
-        assertFieldLabelUnique(existing.getProjectId(), existing.getFieldId(), newLabel);
+        assertFieldLabelUnique(existing.getTeamId(), existing.getFieldId(), newLabel);
 
         field.setFieldKey(existing.getFieldKey());
-        field.setProjectId(existing.getProjectId());
+        field.setTeamId(existing.getTeamId());
         field.setUpdateTime(new Date());
         return fieldMapper.update(field);
     }
 
     @Transactional
-    public int softDelete(Long projectId, Long fieldId) {
+    public int softDelete(Long teamId, Long fieldId) {
         SysProjectDefectField existing = fieldMapper.selectByFieldId(fieldId);
-        if (existing == null || !existing.getProjectId().equals(projectId)) {
+        if (existing == null || !existing.getTeamId().equals(teamId)) {
             throw new ApiException("字段定义不存在");
         }
-        return fieldMapper.softDelete(fieldId, projectId, new Date());
+        return fieldMapper.softDelete(fieldId, teamId, new Date());
     }
 
-    private ObjectNode loadBuiltinConfigObject(Long projectId) {
-        String raw = fieldMapper.selectDefectBuiltinFieldConfig(projectId);
+    private ObjectNode loadBuiltinConfigObject(Long teamId) {
+        String raw = fieldMapper.selectDefectBuiltinFieldConfig(teamId);
         ObjectNode stored;
         try {
             stored = (raw != null && !raw.isBlank())
@@ -376,11 +403,11 @@ public class SysProjectDefectFieldService {
         }
     }
 
-    private void assertEnabledLimit(Long projectId, Long excludeFieldId, Integer enabledFlag) {
+    private void assertEnabledLimit(Long teamId, Long excludeFieldId, Integer enabledFlag) {
         if (enabledFlag == null || enabledFlag != 1) {
             return;
         }
-        int count = fieldMapper.countEnabledByProjectId(projectId);
+        int count = fieldMapper.countEnabledByTeamId(teamId);
         if (excludeFieldId != null) {
             SysProjectDefectField existing = fieldMapper.selectByFieldId(excludeFieldId);
             if (existing != null && existing.getEnabled() != null && existing.getEnabled() == 1) {
@@ -388,7 +415,7 @@ public class SysProjectDefectFieldService {
             }
         }
         if (count >= MAX_ENABLED_FIELDS) {
-            throw new ApiException("单项目启用字段不得超过 " + MAX_ENABLED_FIELDS + " 个");
+            throw new ApiException("单团队启用字段不得超过 " + MAX_ENABLED_FIELDS + " 个");
         }
     }
 
@@ -401,7 +428,7 @@ public class SysProjectDefectFieldService {
         }
     }
 
-    private void assertFieldLabelUnique(Long projectId, Long excludeFieldId, String fieldLabel) {
+    private void assertFieldLabelUnique(Long teamId, Long excludeFieldId, String fieldLabel) {
         if (StringUtils.isEmpty(fieldLabel)) {
             return;
         }
@@ -409,12 +436,12 @@ public class SysProjectDefectFieldService {
         for (BuiltinDef def : DefectBuiltinFieldRegistry.definitions()) {
             String builtinLabel = DefectBuiltinFieldRegistry.resolveBuiltinLabel(def.fieldKey).trim().toLowerCase();
             if (builtinLabel.equals(normalized)) {
-                throw new ApiException("显示名称在该项目中已存在");
+                throw new ApiException("显示名称在该团队中已存在");
             }
         }
-        SysProjectDefectField existing = fieldMapper.selectByProjectIdAndFieldLabel(projectId, fieldLabel);
+        SysProjectDefectField existing = fieldMapper.selectByTeamIdAndFieldLabel(teamId, fieldLabel);
         if (existing != null && (excludeFieldId == null || !existing.getFieldId().equals(excludeFieldId))) {
-            throw new ApiException("显示名称在该项目中已存在");
+            throw new ApiException("显示名称在该团队中已存在");
         }
     }
 }

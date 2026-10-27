@@ -116,7 +116,21 @@ public class UpgradeInstallService {
         if (StringUtils.isEmpty(backupPath)) {
             throw new ApiException(SetupMessages.msg("upgrade.rollback.no.backup"));
         }
-        upgradeDatabaseBackupService.restore(request, Paths.get(backupPath));
+        try {
+            upgradeDatabaseBackupService.restore(request, Paths.get(backupPath));
+        } catch (ApiException e) {
+            throw e;
+        } catch (Exception e) {
+            Throwable root = e;
+            while (root.getCause() != null) {
+                root = root.getCause();
+            }
+            String detail = root.getMessage() != null ? root.getMessage() : e.toString();
+            if (SetupSubmitDataSourceFactory.isMysql(request)) {
+                throw new ApiException(SetupMessages.msg("upgrade.rollback.mysql.failed") + ": " + detail);
+            }
+            throw new ApiException(SetupMessages.msg("upgrade.rollback.h2.failed", detail));
+        }
         setupMigrationService.invalidatePendingMigrationCache();
         upgradeService.resetAfterRollback(SetupMessages.msg("upgrade.rollback.completed"));
         Map<String, Object> result = new HashMap<>(4);

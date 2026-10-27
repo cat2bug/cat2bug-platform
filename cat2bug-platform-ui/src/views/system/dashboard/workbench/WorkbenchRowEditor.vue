@@ -187,7 +187,7 @@ import {
   GRID_SPAN,
   spansLabel
 } from './row-layout'
-import { listCatalogWidgets, colMinSpans } from './widget-registry'
+import { listCatalogWidgets, colMinSpans, getWidgetDef } from './widget-registry'
 import WorkbenchWidgetCatalog from './WorkbenchWidgetCatalog.vue'
 
 const STACK_MQ = 720
@@ -287,12 +287,18 @@ export default {
     emitRows(next) {
       this.$emit('update:rows', next)
     },
-    warnDuplicateType() {
-      this.$message.warning(this.$t('workbench.editor.duplicate-type'))
+    warnDuplicateType(type) {
+      const def = type ? getWidgetDef(type) : null
+      const name = def?.titleKey ? this.$t(def.titleKey) : ''
+      this.$message.warning(
+        name
+          ? this.$t('workbench.editor.duplicate-type-named', [name])
+          : this.$t('workbench.editor.duplicate-type')
+      )
     },
-    applyPlaceOrWarn(prev, next) {
+    applyPlaceOrWarn(prev, next, type) {
       if (next === prev) {
-        this.warnDuplicateType()
+        this.warnDuplicateType(type)
         return
       }
       this.emitRows(next)
@@ -404,7 +410,7 @@ export default {
       if (!type) return
       const prev = this.localRows
       const next = placeWidgetInCol(prev, colId, type, {})
-      this.applyPlaceOrWarn(prev, next)
+      this.applyPlaceOrWarn(prev, next, type)
     },
     onDocId(colId, docId, instanceId) {
       const next = JSON.parse(JSON.stringify(this.localRows))
@@ -460,10 +466,10 @@ export default {
         const type = raw.startsWith('catalog:') ? raw.slice(8) : this.dragType
         const hit = findCol(prev, colId)
         if (hit && columnHasWidgetType(hit.col, type)) {
-          this.warnDuplicateType()
+          this.warnDuplicateType(type)
         } else {
           const next = placeWidgetInCol(prev, colId, type, {}, insertIndex)
-          this.applyPlaceOrWarn(prev, next)
+          this.applyPlaceOrWarn(prev, next, type)
         }
       } else if (raw.startsWith('instance:') || this.dragInstanceId) {
         const instanceId = raw.startsWith('instance:') ? raw.slice(9) : this.dragInstanceId
@@ -474,7 +480,7 @@ export default {
           /* no-op same spot */
         } else {
           const next = moveWidgetInstance(prev, instanceId, colId, insertIndex)
-          this.applyPlaceOrWarn(prev, next)
+          this.applyPlaceOrWarn(prev, next, from.widget?.type)
         }
       }
 
@@ -492,16 +498,17 @@ export default {
   grid-template-columns: 240px minmax(0, 1fr);
   gap: 12px;
   align-items: stretch;
-  /* 编辑区锁视口剩余高度：左右分栏各自滚，避免整页滚时左侧 sticky 下方缺一块 */
-  height: calc(100vh - 200px);
+  /* 高度由 .workbench-page.is-editing 的 flex 分配；此处仅兜底 */
+  height: 100%;
   min-height: 360px;
-  max-height: calc(100vh - 160px);
+  max-height: 100%;
 }
 @media (max-width: 900px) {
   .wb-editor {
     grid-template-columns: 1fr;
     height: auto;
     max-height: none;
+    min-height: 0;
   }
 }
 .wb-editor__canvas {
@@ -511,6 +518,9 @@ export default {
   min-width: 0;
   min-height: 0;
   overflow: auto;
+  /* 末行 /「添加一行」不被滚动区底边贴死裁切 */
+  padding-bottom: 28px;
+  box-sizing: border-box;
 }
 .wb-editor__row {
   padding: 10px;

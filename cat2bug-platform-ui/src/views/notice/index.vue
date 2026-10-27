@@ -5,7 +5,7 @@
       </el-page-header>
     </el-row>
     <div class="tabs-tools-row">
-      <el-tabs v-model="activeTabName" class="notice-hint-tabs" @tab-click="handleQuery">
+      <el-tabs v-model="activeTabName" class="notice-hint-tabs" @tab-change="onNoticeTabChange">
         <el-tab-pane v-for="(group,index) in groupList" :key="index" :name="group.groupName">
           <template #label><span class="row notice-tab-label">
             <span>{{ tabName(group.groupName) }}</span>
@@ -379,10 +379,20 @@ export default {
         this.loading = false;
       });
     },
+    /**
+     * 切换通知分组；用 @tab-change（此时 v-model 已更新）。
+     * 勿用 @tab-click：点击时 activeTabName 可能仍是旧值，会出现「点人工却查出缺陷」。
+     */
+    onNoticeTabChange(name) {
+      if (name != null && name !== '') {
+        this.activeTabName = name
+      }
+      this.handleQuery()
+    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
-      this.queryParams.groupName = this.activeTabName=='all'?null:this.activeTabName;
+      this.queryParams.groupName = this.activeTabName === 'all' ? null : this.activeTabName;
       this.getList();
     },
     /** 重置按钮操作 */

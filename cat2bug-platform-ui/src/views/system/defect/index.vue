@@ -3620,40 +3620,31 @@ export default {
       color: #303133;
     }
   }
-  :deep(.defect-tab-add-btn.svg-icon){
-    vertical-align: middle !important;
+  /* 与工作台 .wb-tab-add-btn 一致：纯图标，无边框/底色 */
+  :deep(.defect-tab-add-btn.svg-icon),
+  :deep(.defect-tab-add-btn){
+    flex-shrink: 0;
     width: 15px !important;
     height: 15px !important;
     font-size: 11px;
+    vertical-align: middle !important;
+    padding: 0 !important;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1;
+    overflow: visible !important;
+    cursor: pointer;
   }
   :deep(.defect-tab-add-btn.defect-tab-shortcut-active){
     position: relative;
     z-index: 4;
     box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color);
-  }
-  :deep(.defect-tab-add-btn){
-    flex-shrink: 0;
-    width: 15px !important;
-    height: 15px !important;
-    box-sizing: border-box;
-    padding: 0 !important;
-    border: 1px solid #c0c4cc;
-    border-radius: var(--cat2bug-border-radius, 4px);
-    background: #fff;
-    color: #606266;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    line-height: 1;
-    vertical-align: middle !important;
-    overflow: visible !important;
-    cursor: pointer;
-    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
-    &:hover {
-      color: var(--cat2bug-primary, #1890ff);
-      border-color: #c6e2ff;
-      background-color: #ecf5ff;
-    }
   }
   :deep(.el-tabs__item.is-active){
     overflow: visible !important;

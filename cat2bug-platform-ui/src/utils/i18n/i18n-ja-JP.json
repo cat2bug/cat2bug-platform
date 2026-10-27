@@ -779,7 +779,7 @@
   "case.level3-explain": "一般、次要的な机能です。业务に一定の影响はありますが、重要なポイントではありません。",
   "case.level4-explain": "次要、周辺的または使用频度の低い机能です。业务への影响は比较的小さいです。",
   "case.level5-explain": "最低、非机能的要件です。例えば性能テスト、可用性テストなどが该当し、通常制品リリース前に実施されます。",
-  "case.add-prompt-placeholder": "要件内容を入力してください。内容に変数を追加できます。変数形式は${変数名}で、変数名は英字または数字で构成されます。",
+  "case.add-prompt-placeholder": "要件内容を入力してください。内容に変数を追加できます。変数形式は{'${変数名}'}で、変数名は英字または数字で构成されます。",
   "case.is-delete-prompt": "プロンプトを削除しますか?",
   "case.local-ai-service": "ローカルAIサービス",
   "case.openai-service": "OpenAIサービス",
@@ -992,6 +992,7 @@
   "notice.content-not-empty": "通知内容は空にできません",
   "notice.receiver-not-empty": "受信者は空にできません",
   "option": "オプション",
+  "api": "APIキー",
   "notice.system.bgm-enable": "通知音を有効にする",
   "notice.system.panel": "右上隅に通知ウィンドウをリアルタイムで表示",
   "notice.option.save-error": "通知設定を保存できません。すべてのオプションが正常か確認してください！",
@@ -1295,6 +1296,7 @@
   "upgrade.step.execute": "実行",
   "upgrade.step.result": "完了",
   "upgrade.auth.desc": "アップグレードはデータベースと設定を変更します。システム管理者のアカウントで本人確認してください。",
+  "upgrade.auth.requiredForAction": "続行する前にシステム管理者のユーザー名とパスワードを入力してください",
   "upgrade.overview.currentVersion": "現在のバージョン",
   "upgrade.overview.targetVersion": "対象バージョン",
   "upgrade.overview.databaseType": "データベース種別",
@@ -2292,5 +2294,12 @@
   "workbench.weekly.ops-tester-meta": "登録 {0} · クローズ {1}",
   "workbench.widget.document-list": "ドキュメント一覧",
   "workbench.widget.document-pin": "ドキュメントをピン留め",
-  "workbench.widget.my-documents": "自分のドキュメント"
+  "workbench.widget.my-documents": "自分のドキュメント",
+  "workbench.widget.member-weekly-rank": "メンバー今週の貢献",
+  "workbench.weekly-rank.defect": "欠陥処理",
+  "workbench.weekly-rank.commit": "コミット",
+  "workbench.weekly-rank.file": "ドキュメント",
+  "workbench.weekly-rank.empty": "今週の活動はありません",
+  "workbench.editor.duplicate-type-named": "この列にはすでに「{0}」があります。同じ列に同種は置けません",
+  "workbench.weekly-rank.total": "合計"
 }

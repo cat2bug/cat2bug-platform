@@ -132,7 +132,7 @@ public class SysProjectService {
             throw new ApiException("创建项目角色失败");
         }
         sysProjectMcpService.createDefault(sysProject.getProjectId(), String.valueOf(userId));
-        sysCaseTypeService.seedDefaults(sysProject.getProjectId());
+        sysCaseTypeService.ensureTeamDefaultsIfEmpty(sysProject.getProjectId());
         return 1;
     }
     public int updateSysProject(SysProject sysProject, Long userId) {

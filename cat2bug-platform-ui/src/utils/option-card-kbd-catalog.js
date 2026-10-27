@@ -12,19 +12,19 @@ export const PROJECT_OPTION_CARD_CATALOG = [
   { key: 'route-ollama', titleKey: 'project.ai-model-manager', defaultLetter: '5' },
   { key: 'route-openai', titleKey: 'project.ai-account-manager', defaultLetter: '6' },
   { key: 'route-mcp-access', titleKey: 'project-mcp.entry', defaultLetter: 'M' },
-  { key: 'route-defect-fields', titleKey: 'defect.custom-field.manage', defaultLetter: '7' },
   { key: 'route-ding', titleKey: 'ding', defaultLetter: '8' },
   { key: 'route-feishu', titleKey: 'feishu', defaultLetter: '9' },
   { key: 'route-enterprise-wechat', titleKey: 'enterprise-wechat', defaultLetter: 'E' },
-  { key: 'route-project-member', titleKey: 'project.member', defaultLetter: 'F' },
-  { key: 'route-case-types', titleKey: 'case.type.manage', defaultLetter: 'C' },
-  { key: 'route-case-settings', titleKey: 'case.review.template', defaultLetter: 'S' }
+  { key: 'route-project-member', titleKey: 'project.member', defaultLetter: 'F' }
 ]
 
-/** 团队设置枢纽页卡片入口 */
+/** 团队设置枢纽页卡片入口（顺序：信息 → 用例 → 缺陷 → 成员） */
 export const TEAM_OPTION_CARD_CATALOG = [
   { key: 'route-team-base-info', titleKey: 'team.base-info', defaultLetter: '1' },
   { key: 'delete-team', titleKey: 'team.delete', defaultLetter: '2' },
+  { key: 'route-team-case-types', titleKey: 'case.type.manage', defaultLetter: 'C' },
+  { key: 'route-team-case-settings', titleKey: 'case.review.template', defaultLetter: 'S' },
+  { key: 'route-team-defect-fields', titleKey: 'defect.custom-field.manage', defaultLetter: '7' },
   { key: 'route-team-member', titleKey: 'team.member', defaultLetter: '3' }
 ]
 

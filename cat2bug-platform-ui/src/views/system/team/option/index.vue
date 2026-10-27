@@ -4,6 +4,8 @@
       <el-col :span="6">
         <team-base-info-card />
       </el-col>
+      <team-case-settings-card />
+      <team-defect-settings-card />
       <el-col :span="6">
         <team-member-card />
       </el-col>
@@ -14,6 +16,8 @@
 <script>
 import TeamBaseInfoCard from './item/base'
 import TeamMemberCard from './item/member'
+import TeamCaseSettingsCard from './item/CaseSettingsCard'
+import TeamDefectSettingsCard from './item/DefectSettingsCard'
 import pageActionHints from '@/mixins/page-action-hints'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import {
@@ -26,7 +30,12 @@ const TEAM_OPTION_KBD_SCOPE = 'team-option'
 export default {
   name: "Team",
   mixins: [pageActionHints],
-  components: { TeamBaseInfoCard, TeamMemberCard },
+  components: {
+    TeamBaseInfoCard,
+    TeamMemberCard,
+    TeamCaseSettingsCard,
+    TeamDefectSettingsCard
+  },
   mounted() {
     this.registerTeamOptionShortcuts();
   },
@@ -67,6 +76,16 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+  $team-option-card-gap: 20px;
+
+  :deep(.el-row){
+    margin-bottom: -$team-option-card-gap;
+  }
+
+  :deep(.el-col){
+    margin-bottom: $team-option-card-gap;
+  }
+
   :deep(.el-card__header){
     font-weight: 600;
     div:first-child {

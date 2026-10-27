@@ -1,6 +1,8 @@
 package com.cat2bug.admin.resource;
 
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /** 本地 profile 目录没有文件时，按配置的站点根地址去取同一条 /profile 路径。 */
 public final class ProfileRemoteFile {
@@ -26,6 +28,18 @@ public final class ProfileRemoteFile {
         if (path.isBlank() || path.contains("..")) {
             return null;
         }
-        return URI.create(base + "/profile/" + path);
+        StringBuilder remote = new StringBuilder(base).append("/profile");
+        for (String segment : path.split("/")) {
+            if (segment.isEmpty()) {
+                continue;
+            }
+            // URLEncoder 按表单编码空格为 +，URI 路径需用 %20
+            remote.append('/').append(URLEncoder.encode(segment, StandardCharsets.UTF_8).replace("+", "%20"));
+        }
+        try {
+            return URI.create(remote.toString());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }

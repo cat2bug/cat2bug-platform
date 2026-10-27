@@ -3,6 +3,8 @@ package com.cat2bug.common.domain;
 public class SysCaseType {
 
     private Long typeId;
+    private Long teamId;
+    /** 迁移后可为空，仅团队维度生效 */
     private Long projectId;
     private String typeName;
     private Integer sortOrder;
@@ -16,6 +18,14 @@ public class SysCaseType {
 
     public void setTypeId(Long typeId) {
         this.typeId = typeId;
+    }
+
+    public Long getTeamId() {
+        return teamId;
+    }
+
+    public void setTeamId(Long teamId) {
+        this.teamId = teamId;
     }
 
     public Long getProjectId() {

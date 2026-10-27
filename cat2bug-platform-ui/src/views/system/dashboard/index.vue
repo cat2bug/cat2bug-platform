@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container workbench-page">
+  <div class="app-container workbench-page" :class="{ 'is-editing': editing }">
     <div class="workbench-header">
       <div class="workbench-header__bar">
         <project-label class="workbench-header__project" />
@@ -1115,6 +1115,34 @@ export default {
    */
   overflow-x: clip;
   overflow-y: visible;
+}
+/*
+ * 编辑态：页面锁在视口剩余高度内，行编辑器 flex 吃满；画布内部滚，
+ * 避免旧版 calc(100vh-200px) 低估顶栏导致底部组件被裁切。
+ */
+.workbench-page.is-editing {
+  height: calc(100vh - 50px);
+  max-height: calc(100vh - 50px);
+  min-height: 0;
+  flex-shrink: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+:global(.hasTagsView) .workbench-page.is-editing {
+  height: calc(100vh - 84px);
+  max-height: calc(100vh - 84px);
+}
+.workbench-page.is-editing > .workbench-header,
+.workbench-page.is-editing > .workbench-tools-tab,
+.workbench-page.is-editing > .workbench-edit-hint {
+  flex-shrink: 0;
+}
+.workbench-page.is-editing :deep(.wb-editor) {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  max-height: none;
 }
 .workbench-header {
   display: flex;

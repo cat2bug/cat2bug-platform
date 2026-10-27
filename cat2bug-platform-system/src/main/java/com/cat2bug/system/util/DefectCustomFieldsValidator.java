@@ -33,7 +33,11 @@ public class DefectCustomFieldsValidator {
      * 校验并返回仅含已启用 field_key 的 map（剥离未定义/已停用键）。
      */
     public Map<String, Object> validateAndStrip(Long projectId, Map<String, Object> customFields) {
-        List<SysProjectDefectField> definitions = fieldMapper.selectEnabledListByProjectId(projectId);
+        Long teamId = fieldMapper.selectTeamIdByProjectId(projectId);
+        if (teamId == null) {
+            throw new ApiException("项目不存在");
+        }
+        List<SysProjectDefectField> definitions = fieldMapper.selectEnabledListByTeamId(teamId);
         Set<String> allowedKeys = definitions.stream()
                 .map(SysProjectDefectField::getFieldKey)
                 .collect(Collectors.toSet());
@@ -82,10 +86,11 @@ public class DefectCustomFieldsValidator {
                 validateNumber(def, value);
                 return value;
             case "boolean":
-                if (!(value instanceof Boolean)) {
+                Boolean bool = coerceBoolean(value);
+                if (bool == null) {
                     throw fieldError(def);
                 }
-                return value;
+                return bool;
             case "datetime":
                 if (!(value instanceof String) || ((String) value).isBlank()) {
                     throw fieldError(def);
@@ -132,6 +137,42 @@ public class DefectCustomFieldsValidator {
         if (!keys.contains(value)) {
             throw fieldError(def);
         }
+    }
+
+    /**
+     * 接受 Boolean / 0|1 / true|false|yes|no|y|n|是|否（大小写不敏感）。
+     */
+    static Boolean coerceBoolean(Object value) {
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+        if (value instanceof Number number) {
+            if (number.intValue() == 1) {
+                return true;
+            }
+            if (number.intValue() == 0) {
+                return false;
+            }
+            return null;
+        }
+        if (!(value instanceof String)) {
+            return null;
+        }
+        String text = ((String) value).trim();
+        if (text.isEmpty()) {
+            return null;
+        }
+        if ("true".equalsIgnoreCase(text) || "1".equals(text)
+                || "yes".equalsIgnoreCase(text) || "y".equalsIgnoreCase(text)
+                || "是".equals(text)) {
+            return true;
+        }
+        if ("false".equalsIgnoreCase(text) || "0".equals(text)
+                || "no".equalsIgnoreCase(text) || "n".equalsIgnoreCase(text)
+                || "否".equals(text)) {
+            return false;
+        }
+        return null;
     }
 
     private static void validateObject(SysProjectDefectField def, Object value) {
@@ -244,6 +285,57 @@ public class DefectCustomFieldsValidator {
     }
 
     private static ApiException fieldError(SysProjectDefectField def) {
+        String example = valueExample(def);
+        if (StringUtils.isNotEmpty(example)) {
+            return new ApiException("自定义字段「" + def.getFieldLabel() + "」值无效（例如：" + example + "）");
+        }
         return new ApiException("自定义字段「" + def.getFieldLabel() + "」值无效");
+    }
+
+    /** 固定取值域类型在报错中附带示例，便于导入改填。 */
+    static String valueExample(SysProjectDefectField def) {
+        if (def == null || StringUtils.isEmpty(def.getFieldType())) {
+            return null;
+        }
+        return switch (def.getFieldType()) {
+            case "boolean" -> "true、false";
+            case "number" -> "1、3.14";
+            case "datetime" -> "2026-10-27 12:00:00";
+            case "enum" -> enumExample(def.getTypeConfig());
+            case "object" -> "{\"key\":\"value\"}";
+            case "image", "file" -> "/profile/upload/...（多条用逗号分隔）";
+            case "array" -> "a, b（逗号分隔）";
+            default -> null;
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String enumExample(Map<String, Object> cfg) {
+        if (cfg == null) {
+            return null;
+        }
+        Object optionsObj = cfg.get("options");
+        if (!(optionsObj instanceof List<?> options) || options.isEmpty()) {
+            return null;
+        }
+        List<String> samples = new ArrayList<>();
+        for (Object optObj : options) {
+            if (!(optObj instanceof Map)) {
+                continue;
+            }
+            Map<String, Object> opt = (Map<String, Object>) optObj;
+            Object label = opt.get("label");
+            Object key = opt.get("key");
+            String text = label != null && StringUtils.isNotEmpty(String.valueOf(label))
+                    ? String.valueOf(label).trim()
+                    : (key != null ? String.valueOf(key).trim() : null);
+            if (StringUtils.isNotEmpty(text) && !samples.contains(text)) {
+                samples.add(text);
+            }
+            if (samples.size() >= 3) {
+                break;
+            }
+        }
+        return samples.isEmpty() ? null : String.join("、", samples);
     }
 }

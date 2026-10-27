@@ -781,7 +781,7 @@
   "case.level3-explain": "一般，屬於次要功能，對業務存在一定影響，但並非關鍵要點。",
   "case.level4-explain": "次要，處於邊緣狀態或低使用頻率的功能，對業務影響相對較小。",
   "case.level5-explain": "最低，非功能性需求，例如效能測試、可用性測試等，通常在產品發布前進行。",
-  "case.add-prompt-placeholder": "請輸入需求內容，內容中可新增變數，變數格式為${變數名}，變數名由英文或數組組成。",
+  "case.add-prompt-placeholder": "請輸入需求內容，內容中可新增變數，變數格式為{'${變數名}'}，變數名由英文或數組組成。",
   "case.is-delete-prompt": "是否刪除提示詞？",
   "case.local-ai-service": "本地AI服務",
   "case.openai-service": "OpenAI服務",
@@ -1001,6 +1001,7 @@
   "notice.content-not-empty": "通知內容不能為空",
   "notice.receiver-not-empty": "接收人不能為空",
   "option": "選項",
+  "api": "API KEY",
   "notice.system.bgm-enable": "開啟通知音效",
   "notice.system.panel": "在右上角即時顯示通知視窗",
   "notice.option.save-error": "無法儲存通知設定，請檢查所有選項是否正常!",
@@ -1304,6 +1305,7 @@
   "upgrade.step.execute": "執行升級",
   "upgrade.step.result": "完成",
   "upgrade.auth.desc": "升級將修改資料庫結構與系統配置，請輸入系統管理員帳號和密碼以確認身份。",
+  "upgrade.auth.requiredForAction": "請先填寫系統管理員帳號和密碼後再繼續",
   "upgrade.overview.currentVersion": "目前版本",
   "upgrade.overview.targetVersion": "目標版本",
   "upgrade.overview.databaseType": "資料庫類型",
@@ -2301,5 +2303,12 @@
   "workbench.doc-pin.pick-placeholder": "搜尋文件…",
   "workbench.doc-pin.pick-title": "選擇 Markdown 文件",
   "workbench.doc-pin.reselect": "重新選擇",
-  "workbench.widget.document-pin": "釘選文件"
+  "workbench.widget.document-pin": "釘選文件",
+  "workbench.widget.member-weekly-rank": "成員本週貢獻",
+  "workbench.weekly-rank.defect": "缺陷處理",
+  "workbench.weekly-rank.commit": "程式提交",
+  "workbench.weekly-rank.file": "文件處理",
+  "workbench.weekly-rank.empty": "本週暫無貢獻",
+  "workbench.editor.duplicate-type-named": "該列已有「{0}」，同一列不能重複添加",
+  "workbench.weekly-rank.total": "合計"
 }

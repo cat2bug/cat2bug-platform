@@ -45,6 +45,9 @@ public class SysTeamService {
     SysUserTeamRoleMapper sysUserTeamRoleMapper;
 
     @Inject
+    SysCaseTypeService sysCaseTypeService;
+
+    @Inject
     SysUserConfigMapper sysUserConfigMapper;
 
     @Inject
@@ -115,6 +118,7 @@ public class SysTeamService {
         if (userTeamId != null) {
             sysTeamMapper.insertSysUserTeamRole(userTeamId, TEAM_CREATE_BY_ROLE_ID);
         }
+        sysCaseTypeService.seedDefaultsForTeam(sysTeam.getTeamId());
         return sysTeam;
     }
 

@@ -128,6 +128,13 @@ public class DashboardResource {
         return AjaxResult.success(sysDashboardService.weekOps(projectId));
     }
 
+    @GET
+    @Path("/{projectId}/member-weekly-rank")
+    @RequiresPermissions("system:dashboard:query")
+    public AjaxResult memberWeeklyRank(@PathParam("projectId") Long projectId) {
+        return AjaxResult.success(sysDashboardService.memberWeeklyRank(projectId));
+    }
+
     @POST
     @Path("/{projectId}/defect-line/export")
     @Produces(SPREADSHEET_MEDIA_TYPE)

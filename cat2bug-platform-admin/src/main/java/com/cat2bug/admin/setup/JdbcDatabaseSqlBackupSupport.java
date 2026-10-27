@@ -1,5 +1,6 @@
 package com.cat2bug.admin.setup;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -107,22 +108,126 @@ final class JdbcDatabaseSqlBackupSupport
     static void restoreDatabase(Connection connection, Path backupFile, Dialect dialect)
             throws SQLException, IOException
     {
-        String sql = Files.readString(backupFile, StandardCharsets.UTF_8);
-        List<String> statements = splitSqlStatements(sql);
-        try (Statement statement = connection.createStatement())
+        // 大备份勿整文件读入内存：流式拆语句并逐条执行
+        try (BufferedReader reader = Files.newBufferedReader(backupFile, StandardCharsets.UTF_8);
+                Statement statement = connection.createStatement())
         {
-            for (String chunk : statements)
+            StringBuilder current = new StringBuilder(4096);
+            boolean inSingleQuote = false;
+            boolean inDoubleQuote = false;
+            boolean inBacktick = false;
+            boolean inLineComment = false;
+            boolean inBlockComment = false;
+            int prev = -1;
+            int ch;
+            while ((ch = reader.read()) != -1)
             {
-                String trimmed = chunk.trim();
-                if (trimmed.isEmpty() || isCommentOnly(trimmed))
+                char c = (char) ch;
+                if (inLineComment)
                 {
+                    current.append(c);
+                    if (c == '\n')
+                    {
+                        inLineComment = false;
+                    }
+                    prev = ch;
                     continue;
                 }
-                statement.execute(trimmed);
+                if (inBlockComment)
+                {
+                    current.append(c);
+                    if (prev == '*' && c == '/')
+                    {
+                        inBlockComment = false;
+                    }
+                    prev = ch;
+                    continue;
+                }
+                if (!inSingleQuote && !inDoubleQuote && !inBacktick)
+                {
+                    if (prev == '-' && c == '-')
+                    {
+                        current.append(c);
+                        inLineComment = true;
+                        prev = ch;
+                        continue;
+                    }
+                    if (prev == '/' && c == '*')
+                    {
+                        current.append(c);
+                        inBlockComment = true;
+                        prev = ch;
+                        continue;
+                    }
+                }
+
+                if (!inDoubleQuote && !inBacktick && c == '\'')
+                {
+                    // SQL 转义 '' 不切换引号状态
+                    if (inSingleQuote && peek(reader) == '\'')
+                    {
+                        current.append(c);
+                        current.append((char) reader.read());
+                        prev = '\'';
+                        continue;
+                    }
+                    inSingleQuote = !inSingleQuote;
+                    current.append(c);
+                    prev = ch;
+                    continue;
+                }
+                if (!inSingleQuote && !inBacktick && c == '"')
+                {
+                    inDoubleQuote = !inDoubleQuote;
+                    current.append(c);
+                    prev = ch;
+                    continue;
+                }
+                if (!inSingleQuote && !inDoubleQuote && c == '`')
+                {
+                    inBacktick = !inBacktick;
+                    current.append(c);
+                    prev = ch;
+                    continue;
+                }
+
+                if (c == ';' && !inSingleQuote && !inDoubleQuote && !inBacktick)
+                {
+                    executeStatement(statement, current.toString());
+                    current.setLength(0);
+                    prev = -1;
+                    continue;
+                }
+
+                current.append(c);
+                prev = ch;
+            }
+            if (!current.isEmpty())
+            {
+                executeStatement(statement, current.toString());
             }
         }
     }
 
+    private static int peek(BufferedReader reader) throws IOException
+    {
+        reader.mark(1);
+        int next = reader.read();
+        reader.reset();
+        return next;
+    }
+
+    private static void executeStatement(Statement statement, String chunk) throws SQLException
+    {
+        String trimmed = chunk.trim();
+        if (trimmed.isEmpty() || isCommentOnly(trimmed))
+        {
+            return;
+        }
+        statement.execute(trimmed);
+    }
+
+    /** 测试与调试用：将整段 SQL 拆成语句列表。 */
     static List<String> splitSqlStatements(String sql)
     {
         List<String> statements = new ArrayList<>();
@@ -178,6 +283,12 @@ final class JdbcDatabaseSqlBackupSupport
 
             if (!inDoubleQuote && !inBacktick && ch == '\'')
             {
+                if (inSingleQuote && next == '\'')
+                {
+                    current.append(ch).append(next);
+                    i++;
+                    continue;
+                }
                 inSingleQuote = !inSingleQuote;
                 current.append(ch);
                 continue;

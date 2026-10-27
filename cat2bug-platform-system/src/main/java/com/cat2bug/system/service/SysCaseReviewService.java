@@ -262,10 +262,7 @@ public class SysCaseReviewService {
     }
 
     private String render(SysCaseReview review, List<SysCaseReviewItem> items, String completer, int passed, int changes) {
-        String template = sysCaseTypeMapper.selectReviewTemplate(review.getProjectId());
-        if (template == null || template.isBlank()) {
-            template = sysCaseTypeService.builtinReviewTemplate();
-        }
+        String template = sysCaseTypeService.reviewTemplate(review.getProjectId());
         String project = sysCaseTypeMapper.selectProjectName(review.getProjectId());
         Set<String> reviewers = new LinkedHashSet<>();
         if (review.getCreateBy() != null && !review.getCreateBy().isBlank()) {

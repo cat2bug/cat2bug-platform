@@ -22,7 +22,7 @@ export default function(app, options) {
       this.dict.init(this.$options.dicts).then(() => {
         options.onReady && options.onReady(this.dict)
         this.$nextTick(() => {
-          this.$emit('dictReady', this.dict)
+          // 全局 mixin 未声明 emits，勿 $emit，避免 Vue3 控制台告警；业务侧用 onDictReady 钩子
           if (this.$options.methods && this.$options.methods.onDictReady instanceof Function) {
             this.$options.methods.onDictReady.call(this, this.dict)
           }

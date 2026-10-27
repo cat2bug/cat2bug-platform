@@ -1,7 +1,25 @@
+/** 记录 addRoute 返回的卸载函数，供 resetRouter 清掉无 name 的父级壳。 */
+let dynamicRouteRemovers = []
+
 /** vue-router 4 helpers (replaces Router.prototype.addRoutes). */
 export function addRoutes(router, routes) {
   routes.forEach(route => {
-    router.addRoute(route)
+    const remove = router.addRoute(route)
+    if (typeof remove === 'function') {
+      dynamicRouteRemovers.push(remove)
+    }
+  })
+}
+
+/** 移除本会话通过 addRoutes 注入的全部动态路由（含无名 Layout 父级）。 */
+export function clearAddedRoutes() {
+  const removers = dynamicRouteRemovers.splice(0, dynamicRouteRemovers.length)
+  removers.forEach(remove => {
+    try {
+      remove()
+    } catch (_e) {
+      /* 路由可能已被同名覆盖移除 */
+    }
   })
 }
 

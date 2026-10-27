@@ -779,7 +779,7 @@
   "case.level3-explain": "Обычный, относятся к второстепенным функциям, оказывают некоторое влияние на бизнес, но не являются ключевыми.",
   "case.level4-explain": "Второстепенный, функции находятся на периферии или имеют низкую частоту использования, их влияние на бизнес относительно невелико.",
   "case.level5-explain": "Наименьший, нефункциональные требования, например тестирование производительности, удобства использования и т.д., обычно проводятся перед выпуском продукта.",
-  "case.add-prompt-placeholder": "Введите содержание требований. В текст можно добавить переменные в формате ${имя_переменной}, где имя переменной состоит из латинских букв или цифр.",
+  "case.add-prompt-placeholder": "Введите содержание требований. В текст можно добавить переменные в формате {'${имя_переменной}'}, где имя переменной состоит из латинских букв или цифр.",
   "case.is-delete-prompt": "Удалить подсказочный текст?",
   "case.local-ai-service": "Локальный сервис ИИ",
   "case.openai-service": "Сервис OpenAI",
@@ -992,6 +992,7 @@
   "notice.content-not-empty": "Содержимое уведомления не может быть пустым",
   "notice.receiver-not-empty": "Получатель не может быть пустым",
   "option": "Опция",
+  "api": "Ключ API",
   "notice.system.bgm-enable": "Включить звук уведомлений",
   "notice.system.panel": "Показывать окно уведомлений в правом верхнем углу в режиме реального времени",
   "notice.option.save-error": "Не удалось сохранить настройки уведомлений. Пожалуйста, проверьте все параметры на корректность!",
@@ -1295,6 +1296,7 @@
   "upgrade.step.execute": "Выполнение",
   "upgrade.step.result": "Завершение",
   "upgrade.auth.desc": "Обновление изменит схему БД и конфигурацию. Введите учётную запись системного администратора.",
+  "upgrade.auth.requiredForAction": "Сначала введите имя пользователя и пароль системного администратора",
   "upgrade.overview.currentVersion": "Текущая версия",
   "upgrade.overview.targetVersion": "Целевая версия",
   "upgrade.overview.databaseType": "Тип базы данных",
@@ -2292,5 +2294,12 @@
   "workbench.widget.document-pin": "Закрепить документ",
   "workbench.widget.my-commits": "Мои коммиты",
   "workbench.widget.my-documents": "Мои документы",
-  "workbench.widget.my-prs": "Мои pull request"
+  "workbench.widget.my-prs": "Мои pull request",
+  "workbench.widget.member-weekly-rank": "Активность участников за неделю",
+  "workbench.weekly-rank.defect": "Дефекты",
+  "workbench.weekly-rank.commit": "Коммиты",
+  "workbench.weekly-rank.file": "Документы",
+  "workbench.weekly-rank.empty": "Нет активности на этой неделе",
+  "workbench.editor.duplicate-type-named": "В этой колонке уже есть «{0}»; один тип нельзя добавить дважды",
+  "workbench.weekly-rank.total": "Итого"
 }

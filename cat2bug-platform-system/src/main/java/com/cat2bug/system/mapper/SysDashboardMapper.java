@@ -12,6 +12,7 @@ import com.cat2bug.common.domain.dashboard.SysMemberStatistics;
 import com.cat2bug.common.domain.dashboard.SysColumnsInChart;
 import com.cat2bug.common.domain.dashboard.SysMemberOfDefectsLine;
 import com.cat2bug.common.domain.dashboard.SysMemberRankOfDefects;
+import com.cat2bug.common.domain.dashboard.SysMemberWeeklyMetricRow;
 import com.cat2bug.common.domain.dashboard.SysModuleStatistics;
 import com.cat2bug.common.domain.dashboard.SysWeekOpsStatistics;
 import org.apache.ibatis.annotations.Mapper;
@@ -61,4 +62,18 @@ public interface SysDashboardMapper {
      */
     SysWeekOpsStatistics weekChannelOps(@Param("weekStart") Date weekStart,
                                         @Param("weekEnd") Date weekEnd);
+
+    /**
+     * 本周：成员缺陷处理数（distinct defect_id，create_by）。
+     */
+    List<SysMemberWeeklyMetricRow> memberWeeklyDefectCounts(@Param("projectId") Long projectId,
+                                                            @Param("weekStart") Date weekStart,
+                                                            @Param("weekEnd") Date weekEnd);
+
+    /**
+     * 本周：成员文档处理数（create/update 落入周窗，按 doc 去重）。
+     */
+    List<SysMemberWeeklyMetricRow> memberWeeklyDocumentCounts(@Param("projectId") Long projectId,
+                                                              @Param("weekStart") Date weekStart,
+                                                              @Param("weekEnd") Date weekEnd);
 }

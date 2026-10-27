@@ -207,6 +207,8 @@ export default {
   data() {
     return {
       editor: null,
+      /** 程序化 setContent 时抑制 onUpdate → v-model，避免未编辑却标脏 */
+      suppressEmit: false,
       tools: editorToolbarTools(this.includeBusinessTools),
       linkDialogVisible: false,
       linkForm: { describe: '', url: '' }
@@ -229,6 +231,8 @@ export default {
   },
   mounted() {
     const placeholder = this.placeholder
+    // 初始 content 解析/规范化可能触发 onUpdate，先抑制以免父页误判 dirty
+    this.suppressEmit = true
     this.editor = new Editor({
       editable: this.editable,
       content: this.modelValue || '',
@@ -273,6 +277,9 @@ export default {
         }
       }
     })
+    this.$nextTick(() => {
+      this.suppressEmit = false
+    })
   },
   beforeUnmount() {
     if (this.editor) {
@@ -282,7 +289,7 @@ export default {
   },
   methods: {
     emitMarkdown() {
-      if (!this.editor) return
+      if (!this.editor || this.suppressEmit) return
       const markdown = this.editor.getMarkdown()
       if (markdown !== this.modelValue) {
         this.$emit('update:modelValue', markdown)
@@ -292,7 +299,15 @@ export default {
       if (!this.editor) return
       const incoming = next || ''
       if (incoming === this.editor.getMarkdown()) return
-      this.editor.commands.setContent(incoming, { contentType: 'markdown' })
+      this.suppressEmit = true
+      try {
+        this.editor.commands.setContent(incoming, {
+          contentType: 'markdown',
+          emitUpdate: false
+        })
+      } finally {
+        this.suppressEmit = false
+      }
     },
     onToolSelect(_tools, tool) {
       if (!tool || !this.editor) return

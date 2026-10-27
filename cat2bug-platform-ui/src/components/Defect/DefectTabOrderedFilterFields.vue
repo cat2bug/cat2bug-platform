@@ -50,7 +50,7 @@
         <select-project-member
           v-model:memberId="config.handleBy"
           :project-id="projectId"
-          :placeholder="$t('defect.select-handle-by').toString()"
+          placeholder="defect.select-handle-by"
           :is-head="false"
           size="medium"
         />
@@ -128,7 +128,7 @@
         <select-project-member
           v-model:memberId="config.createByIds"
           :project-id="projectId"
-          :placeholder="$t('defect.select-create-by').toString()"
+          placeholder="defect.select-create-by"
           :is-head="false"
           size="medium"
         />

@@ -17,6 +17,7 @@ const MyWeeklyReport = defineAsyncComponent(() => import('./widgets/MyWeeklyRepo
 const TeamTypeKpi = defineAsyncComponent(() => import('./widgets/TeamTypeKpi.vue'))
 const DocumentList = defineAsyncComponent(() => import('./widgets/DocumentList.vue'))
 const DocumentPin = defineAsyncComponent(() => import('./widgets/DocumentPin.vue'))
+const MemberWeeklyRank = defineAsyncComponent(() => import('./widgets/MemberWeeklyRank.vue'))
 
 /**
  * tabAffinity: 'work' | 'deferred' | 'both'
@@ -276,6 +277,15 @@ export const WORKBENCH_WIDGETS = {
     titleKey: 'workbench.widget.member-defect-rank',
     component: BoardChartHost,
     boardChart: 'MemberOfDefectRank'
+  },
+  'member-weekly-rank': {
+    id: 'member-weekly-rank',
+    group: 'member',
+    tabAffinity: 'work',
+    titleKey: 'workbench.widget.member-weekly-rank',
+    component: MemberWeeklyRank,
+    bare: true,
+    minSpan: 8
   }
 }
 

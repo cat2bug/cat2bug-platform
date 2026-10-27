@@ -298,6 +298,8 @@ export default {
       LOGIN_PASSWORD_MAX_LENGTH,
       executing: false,
       rollingBack: false,
+      /** 失败页回滚时若尚无管理员凭证，先回验证步，验证通过后自动继续回滚 */
+      pendingRollbackAfterAuth: false,
       waitingForRestart: false,
       waitElapsed: 0,
       readyConfirmCount: 0,
@@ -633,8 +635,17 @@ export default {
           return
         }
         form.validate(valid => {
-          if (valid && this.activeStep < this.wizardExecuteStepIndex) {
-            this.status.lastError = ''
+          if (!valid) {
+            return
+          }
+          this.status.lastError = ''
+          if (this.pendingRollbackAfterAuth) {
+            this.pendingRollbackAfterAuth = false
+            this.activeStep = this.resultStepIndex
+            this.confirmAndRollback()
+            return
+          }
+          if (this.activeStep < this.wizardExecuteStepIndex) {
             this.activeStep += 1
           }
         })
@@ -643,6 +654,9 @@ export default {
       if (this.activeStep < this.wizardExecuteStepIndex) {
         this.activeStep += 1
       }
+    },
+    hasAdminCredentials() {
+      return !!(this.form.adminUsername || '').trim() && !!this.form.adminPassword
     },
     buildSubmitPayload() {
       const payload = {
@@ -774,6 +788,15 @@ export default {
       }
     },
     handleRollback() {
+      if (!this.hasAdminCredentials()) {
+        this.pendingRollbackAfterAuth = true
+        this.$message.warning(this.$t('upgrade.auth.requiredForAction'))
+        this.goBackToAuth()
+        return
+      }
+      this.confirmAndRollback()
+    },
+    confirmAndRollback() {
       this.$confirm(this.$t('upgrade.rollback.confirm').toString(), this.$t('prompted').toString(), {
         confirmButtonText: this.$t('upgrade.rollback.submit').toString(),
         cancelButtonText: this.$t('cancel').toString(),
@@ -787,11 +810,31 @@ export default {
       }).then(() => {
         this.$message.success(this.$t('upgrade.rollback.success'))
         this.activeStep = this.wizardExecuteStepIndex
-      }).catch(() => {}).finally(() => {
+      }).catch(err => {
+        if (err === 'cancel' || err === 'close') {
+          return
+        }
+        const apiMsg = err && (err.msg || err.message)
+        if (this.isAuthErrorMessage(apiMsg)) {
+          this.pendingRollbackAfterAuth = true
+          this.goBackToAuth()
+          this.$message.error(apiMsg || this.$t('upgrade.auth.requiredForAction'))
+          return
+        }
+        if (apiMsg) {
+          this.$message.error(apiMsg)
+        }
+      }).finally(() => {
         this.rollingBack = false
       })
     },
     retryNow() {
+      if (!this.hasAdminCredentials()) {
+        this.pendingRollbackAfterAuth = false
+        this.$message.warning(this.$t('upgrade.auth.requiredForAction'))
+        this.goBackToAuth()
+        return
+      }
       if (this.wizardAuthStepIndex >= 0) {
         const form = this.$refs.adminForm
         if (form) {

@@ -111,8 +111,16 @@ public class DefectImportTemplateService {
 
             for (int i = 0; i < columns.size(); i++) {
                 DefectExcelColumnSupport.ColumnDef column = columns.get(i);
-                if (column.custom() && "enum".equals(column.customDef().getFieldType())) {
-                    applyExplicitListValidation(sheet, i, DefectCustomFieldExcelSupport.resolveEnumComboLabels(column.customDef()));
+                if (!column.custom() || column.customDef() == null) {
+                    continue;
+                }
+                String fieldType = column.customDef().getFieldType();
+                if ("enum".equals(fieldType)) {
+                    applyExplicitListValidation(sheet, i,
+                            DefectCustomFieldExcelSupport.resolveEnumComboLabels(column.customDef()));
+                } else if ("boolean".equals(fieldType)) {
+                    applyExplicitListValidation(sheet, i,
+                            DefectCustomFieldExcelSupport.resolveBooleanComboLabels());
                 }
             }
 

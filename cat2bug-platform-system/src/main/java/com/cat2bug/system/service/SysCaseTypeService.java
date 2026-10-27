@@ -25,13 +25,32 @@ public class SysCaseTypeService {
     @Inject
     SysCaseTypeMapper sysCaseTypeMapper;
 
+    public Long resolveTeamIdFromProject(Long projectId) {
+        if (projectId == null) {
+            throw new ApiException("项目不能为空");
+        }
+        Long teamId = sysCaseTypeMapper.selectTeamIdByProjectId(projectId);
+        if (teamId == null) {
+            throw new ApiException("项目不存在");
+        }
+        return teamId;
+    }
+
     public List<SysCaseType> list(Long projectId) {
         return list(projectId, false);
     }
 
     public List<SysCaseType> list(Long projectId, boolean enabledOnly) {
-        requireProject(projectId);
-        List<SysCaseType> list = sysCaseTypeMapper.selectByProjectId(projectId);
+        return listByTeamId(resolveTeamIdFromProject(projectId), enabledOnly);
+    }
+
+    public List<SysCaseType> listByTeamId(Long teamId) {
+        return listByTeamId(teamId, false);
+    }
+
+    public List<SysCaseType> listByTeamId(Long teamId, boolean enabledOnly) {
+        requireTeam(teamId);
+        List<SysCaseType> list = sysCaseTypeMapper.selectByTeamId(teamId);
         if (!enabledOnly) {
             return list;
         }
@@ -39,15 +58,15 @@ public class SysCaseTypeService {
     }
 
     @Transactional
-    public void seedDefaults(Long projectId) {
-        if (projectId == null) {
+    public void seedDefaultsForTeam(Long teamId) {
+        if (teamId == null) {
             return;
         }
         int sort = 1;
         for (String name : DEFAULT_NAMES) {
-            if (sysCaseTypeMapper.selectByProjectAndName(projectId, name) == null) {
+            if (sysCaseTypeMapper.selectByTeamAndName(teamId, name) == null) {
                 SysCaseType type = new SysCaseType();
-                type.setProjectId(projectId);
+                type.setTeamId(teamId);
                 type.setTypeName(name);
                 type.setSortOrder(sort);
                 type.setEnabled(ENABLED);
@@ -55,9 +74,18 @@ public class SysCaseTypeService {
             }
             sort++;
         }
-        String existing = sysCaseTypeMapper.selectReviewTemplate(projectId);
+        String existing = sysCaseTypeMapper.selectReviewTemplate(teamId);
         if (existing == null || existing.isBlank()) {
-            sysCaseTypeMapper.updateReviewTemplate(projectId, builtinReviewTemplate());
+            sysCaseTypeMapper.updateReviewTemplate(teamId, builtinReviewTemplate());
+        }
+    }
+
+    /** 新建项目时：若团队尚无类型名单，则补种默认项（团队创建时已 seed 则跳过）。 */
+    @Transactional
+    public void ensureTeamDefaultsIfEmpty(Long projectId) {
+        Long teamId = resolveTeamIdFromProject(projectId);
+        if (sysCaseTypeMapper.selectByTeamId(teamId).isEmpty()) {
+            seedDefaultsForTeam(teamId);
         }
     }
 
@@ -65,8 +93,9 @@ public class SysCaseTypeService {
         if (typeId == null) {
             return;
         }
+        Long teamId = resolveTeamIdFromProject(projectId);
         SysCaseType type = sysCaseTypeMapper.selectById(typeId);
-        if (type == null || type.getProjectId() == null || !type.getProjectId().equals(projectId)) {
+        if (type == null || type.getTeamId() == null || !type.getTeamId().equals(teamId)) {
             throw new ApiException("用例类型不属于当前项目");
         }
     }
@@ -78,8 +107,9 @@ public class SysCaseTypeService {
         if (typeId == null) {
             return;
         }
+        Long teamId = resolveTeamIdFromProject(projectId);
         SysCaseType type = sysCaseTypeMapper.selectById(typeId);
-        if (type == null || type.getProjectId() == null || !type.getProjectId().equals(projectId)) {
+        if (type == null || type.getTeamId() == null || !type.getTeamId().equals(teamId)) {
             throw new ApiException("用例类型不属于当前项目");
         }
         if (Objects.equals(typeId, currentTypeId)) {
@@ -91,26 +121,26 @@ public class SysCaseTypeService {
     }
 
     @Transactional
-    public SysCaseType create(Long projectId, String typeName) {
-        requireProject(projectId);
+    public SysCaseType create(Long teamId, String typeName) {
+        requireTeam(teamId);
         String name = normalizeName(typeName);
-        if (sysCaseTypeMapper.selectByProjectAndName(projectId, name) != null) {
+        if (sysCaseTypeMapper.selectByTeamAndName(teamId, name) != null) {
             throw new ApiException("类型名称已存在");
         }
         SysCaseType type = new SysCaseType();
-        type.setProjectId(projectId);
+        type.setTeamId(teamId);
         type.setTypeName(name);
-        type.setSortOrder(nextSort(projectId));
+        type.setSortOrder(nextSort(teamId));
         type.setEnabled(ENABLED);
         sysCaseTypeMapper.insert(type);
         return type;
     }
 
     @Transactional
-    public void rename(Long projectId, Long typeId, String typeName) {
-        SysCaseType existing = requireOwned(projectId, typeId);
+    public void rename(Long teamId, Long typeId, String typeName) {
+        SysCaseType existing = requireOwned(teamId, typeId);
         String name = normalizeName(typeName);
-        SysCaseType same = sysCaseTypeMapper.selectByProjectAndName(projectId, name);
+        SysCaseType same = sysCaseTypeMapper.selectByTeamAndName(teamId, name);
         if (same != null && !same.getTypeId().equals(existing.getTypeId())) {
             throw new ApiException("类型名称已存在");
         }
@@ -119,17 +149,17 @@ public class SysCaseTypeService {
     }
 
     @Transactional
-    public void setEnabled(Long projectId, Long typeId, Integer enabled) {
-        SysCaseType existing = requireOwned(projectId, typeId);
+    public void setEnabled(Long teamId, Long typeId, Integer enabled) {
+        SysCaseType existing = requireOwned(teamId, typeId);
         int value = normalizeEnabled(enabled);
         existing.setEnabled(value);
         sysCaseTypeMapper.updateEnabled(existing);
     }
 
     @Transactional
-    public void delete(Long projectId, Long typeId) {
-        requireOwned(projectId, typeId);
-        int used = sysCaseTypeMapper.countCases(projectId, typeId);
+    public void delete(Long teamId, Long typeId) {
+        requireOwned(teamId, typeId);
+        int used = sysCaseTypeMapper.countCases(teamId, typeId);
         if (used > 0) {
             throw new ApiException("仍有 " + used + " 条用例使用该类型");
         }
@@ -137,8 +167,12 @@ public class SysCaseTypeService {
     }
 
     public String reviewTemplate(Long projectId) {
-        requireProject(projectId);
-        String stored = sysCaseTypeMapper.selectReviewTemplate(projectId);
+        return reviewTemplateByTeam(resolveTeamIdFromProject(projectId));
+    }
+
+    public String reviewTemplateByTeam(Long teamId) {
+        requireTeam(teamId);
+        String stored = sysCaseTypeMapper.selectReviewTemplate(teamId);
         if (stored == null || stored.isBlank()) {
             return builtinReviewTemplate();
         }
@@ -146,10 +180,10 @@ public class SysCaseTypeService {
     }
 
     @Transactional
-    public void saveReviewTemplate(Long projectId, String template) {
-        requireProject(projectId);
+    public void saveReviewTemplateByTeam(Long teamId, String template) {
+        requireTeam(teamId);
         String value = template == null || template.isBlank() ? null : template;
-        sysCaseTypeMapper.updateReviewTemplate(projectId, value);
+        sysCaseTypeMapper.updateReviewTemplate(teamId, value);
     }
 
     /** 完成评审与设置页共用；资源缺失时退回最小骨架。 */
@@ -169,20 +203,20 @@ public class SysCaseTypeService {
         return sysCaseTypeMapper.selectProjectName(projectId);
     }
 
-    private SysCaseType requireOwned(Long projectId, Long typeId) {
-        requireProject(projectId);
+    private SysCaseType requireOwned(Long teamId, Long typeId) {
+        requireTeam(teamId);
         if (typeId == null) {
             throw new ApiException("类型不存在");
         }
         SysCaseType type = sysCaseTypeMapper.selectById(typeId);
-        if (type == null || !projectId.equals(type.getProjectId())) {
+        if (type == null || !teamId.equals(type.getTeamId())) {
             throw new ApiException("类型不存在");
         }
         return type;
     }
 
-    private int nextSort(Long projectId) {
-        List<SysCaseType> list = sysCaseTypeMapper.selectByProjectId(projectId);
+    private int nextSort(Long teamId) {
+        List<SysCaseType> list = sysCaseTypeMapper.selectByTeamId(teamId);
         int max = 0;
         for (SysCaseType type : list) {
             if (type.getSortOrder() != null && type.getSortOrder() > max) {
@@ -217,9 +251,9 @@ public class SysCaseTypeService {
         return type != null && Objects.equals(type.getEnabled(), ENABLED);
     }
 
-    private static void requireProject(Long projectId) {
-        if (projectId == null) {
-            throw new ApiException("项目不能为空");
+    private static void requireTeam(Long teamId) {
+        if (teamId == null) {
+            throw new ApiException("团队不能为空");
         }
     }
 }

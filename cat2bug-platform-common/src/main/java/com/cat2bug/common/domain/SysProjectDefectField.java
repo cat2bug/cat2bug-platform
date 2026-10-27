@@ -11,7 +11,7 @@ import java.util.Map;
 public class SysProjectDefectField {
 
     private Long fieldId;
-    private Long projectId;
+    private Long teamId;
     private String fieldKey;
     private String fieldLabel;
     private String fieldType;
@@ -36,12 +36,21 @@ public class SysProjectDefectField {
         this.fieldId = fieldId;
     }
 
+    public Long getTeamId() {
+        return teamId;
+    }
+
+    public void setTeamId(Long teamId) {
+        this.teamId = teamId;
+    }
+
+    /** 兼容旧 API/JSON，与 {@link #teamId} 同值。 */
     public Long getProjectId() {
-        return projectId;
+        return teamId;
     }
 
     public void setProjectId(Long projectId) {
-        this.projectId = projectId;
+        this.teamId = projectId;
     }
 
     public String getFieldKey() {

@@ -1,13 +1,13 @@
 <template>
   <div class="app-container project-list-page-host">
-    <el-row class="project-add-page-header">
+    <el-row class="project-add-page-header team-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('case.type.manage')" />
     </el-row>
     <div class="list-page-toolbar">
       <div class="list-page-toolbar__filters" />
       <div class="list-page-toolbar__actions">
         <el-button
-          v-hasPermi="['system:project:case-type:add']"
+          v-hasPermi="['system:team:case-type:add']"
           type="primary"
           plain
           class="cat2bug-btn-outline"
@@ -18,7 +18,7 @@
     </div>
     <cat2-bug-table
       ref="cat2BugTable"
-      cache-key="case-types-table"
+      cache-key="team-case-types-table"
       row-key="typeId"
       :columns="caseTypeTableColumns"
       :data="types"
@@ -50,7 +50,7 @@
           <template #default="scope">
             <div class="cat2bug-operate-tools" @click.stop>
               <el-button
-                v-hasPermi="['system:project:case-type:edit']"
+                v-hasPermi="['system:team:case-type:edit']"
                 link
                 size="small"
                 class="green"
@@ -58,7 +58,7 @@
                 @click.stop="handleRename(scope.row)"
               >{{ $t('modify') }}</el-button>
               <el-button
-                v-hasPermi="['system:project:case-type:remove']"
+                v-hasPermi="['system:team:case-type:remove']"
                 link
                 size="small"
                 class="red"
@@ -76,8 +76,16 @@
 <script>
 import { ElMessageBox } from 'element-plus'
 import Cat2BugTable from '@/components/Cat2BugTable'
-import { addCaseType, deleteCaseType, listCaseTypes, updateCaseType, updateCaseTypeEnabled } from '@/api/system/case-type'
+import {
+  addCaseType,
+  deleteCaseType,
+  listTeamCaseTypes,
+  updateCaseType,
+  updateCaseTypeEnabled
+} from '@/api/system/case-type'
 import { checkPermi } from '@/utils/permission'
+import teamOptionSubKbd from '@/mixins/team-option-sub-kbd'
+import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user'
 
 const CASE_TYPE_TABLE_COLUMNS = [
@@ -104,8 +112,14 @@ const CASE_TYPE_TABLE_COLUMNS = [
 ]
 
 export default {
-  name: 'ProjectCaseTypes',
+  name: 'TeamCaseTypes',
   components: { Cat2BugTable },
+  mixins: [teamOptionSubKbd],
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       loading: false,
@@ -114,11 +128,11 @@ export default {
     }
   },
   computed: {
-    projectId() {
-      return parseInt(useUserStore().config.currentProjectId)
+    teamId() {
+      return parseInt(this.config.currentTeamId)
     },
     canEdit() {
-      return checkPermi(['system:project:case-type:edit'])
+      return checkPermi(['system:team:case-type:edit'])
     }
   },
   created() {
@@ -126,7 +140,7 @@ export default {
   },
   methods: {
     goBack() {
-      this.$router.push('/project/option')
+      this.$router.push('/team-options/team-option')
     },
     isEnabled(row) {
       return row != null && Number(row.enabled) === 1
@@ -137,7 +151,7 @@ export default {
     },
     load() {
       this.loading = true
-      listCaseTypes(this.projectId).then(res => {
+      listTeamCaseTypes(this.teamId).then(res => {
         this.types = res.data || []
         this.loading = false
       }).catch(() => { this.loading = false })
@@ -146,7 +160,7 @@ export default {
       const prev = row.enabled
       const next = enabled ? 1 : 0
       row.enabled = next
-      updateCaseTypeEnabled(this.projectId, row.typeId, next).catch(() => {
+      updateCaseTypeEnabled(this.teamId, row.typeId, next).catch(() => {
         row.enabled = prev
       })
     },
@@ -155,7 +169,7 @@ export default {
         inputPattern: /\S+/,
         inputErrorMessage: this.$t('case.type.name'),
         closeOnClickModal: false
-      }).then(({ value }) => addCaseType(this.projectId, value.trim())).then(() => this.load()).catch(() => {})
+      }).then(({ value }) => addCaseType(this.teamId, value.trim())).then(() => this.load()).catch(() => {})
     },
     handleRename(row) {
       ElMessageBox.prompt(this.$t('case.type.name'), this.$t('modify'), {
@@ -163,10 +177,10 @@ export default {
         inputPattern: /\S+/,
         inputErrorMessage: this.$t('case.type.name'),
         closeOnClickModal: false
-      }).then(({ value }) => updateCaseType(this.projectId, row.typeId, value.trim())).then(() => this.load()).catch(() => {})
+      }).then(({ value }) => updateCaseType(this.teamId, row.typeId, value.trim())).then(() => this.load()).catch(() => {})
     },
     handleDelete(row) {
-      this.$modal.confirm(this.$t('delete')).then(() => deleteCaseType(this.projectId, row.typeId)).then(() => this.load()).catch(() => {})
+      this.$modal.confirm(this.$t('delete')).then(() => deleteCaseType(this.teamId, row.typeId)).then(() => this.load()).catch(() => {})
     }
   }
 }

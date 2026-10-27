@@ -3,6 +3,7 @@ package com.cat2bug.admin.resource;
 import com.cat2bug.common.api.AjaxResult;
 import com.cat2bug.common.domain.SysProjectDefectField;
 import com.cat2bug.common.domain.SysProjectDefectFieldManageItem;
+import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.framework.security.RequiresPermissions;
 import com.cat2bug.system.service.SysProjectDefectFieldService;
 import jakarta.inject.Inject;
@@ -22,14 +23,17 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class DefectFieldResource {
 
+    private static final int HTTP_GONE = 410;
+    private static final String MIGRATED_MSG =
+            "缺陷属性已迁至团队设置，请使用 /system/team/{teamId}/defect-fields";
+
     @Inject
     SysProjectDefectFieldService defectFieldService;
 
     @GET
     @RequiresPermissions("system:project:defect-field:list")
     public AjaxResult list(@PathParam("projectId") Long projectId) {
-        List<SysProjectDefectFieldManageItem> list = defectFieldService.selectManageListByProjectId(projectId);
-        return AjaxResult.success(list);
+        return rejectProjectWrite();
     }
 
     @PUT
@@ -39,7 +43,7 @@ public class DefectFieldResource {
     public AjaxResult updateBuiltinLayout(
             @PathParam("projectId") Long projectId,
             List<SysProjectDefectFieldManageItem> layout) {
-        return toAjax(defectFieldService.updateBuiltinFieldLayout(projectId, layout));
+        return rejectProjectWrite();
     }
 
     @GET
@@ -60,8 +64,7 @@ public class DefectFieldResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @RequiresPermissions("system:project:defect-field:add")
     public AjaxResult add(@PathParam("projectId") Long projectId, SysProjectDefectField field) {
-        field.setProjectId(projectId);
-        return AjaxResult.success(defectFieldService.insert(field));
+        return rejectProjectWrite();
     }
 
     @PUT
@@ -72,19 +75,17 @@ public class DefectFieldResource {
             @PathParam("projectId") Long projectId,
             @PathParam("fieldId") Long fieldId,
             SysProjectDefectField field) {
-        field.setProjectId(projectId);
-        field.setFieldId(fieldId);
-        return toAjax(defectFieldService.update(field));
+        return rejectProjectWrite();
     }
 
     @DELETE
     @Path("/{fieldId}")
     @RequiresPermissions("system:project:defect-field:remove")
     public AjaxResult remove(@PathParam("projectId") Long projectId, @PathParam("fieldId") Long fieldId) {
-        return toAjax(defectFieldService.softDelete(projectId, fieldId));
+        return rejectProjectWrite();
     }
 
-    private AjaxResult toAjax(int rows) {
-        return rows > 0 ? AjaxResult.success() : AjaxResult.error("操作失败");
+    private static AjaxResult rejectProjectWrite() {
+        throw new ApiException(HTTP_GONE, MIGRATED_MSG);
     }
 }

@@ -197,15 +197,24 @@ export default {
         updateConfig({
           currentTeamId: currentTeamId,
           currentProjectId: 0
-        }).then(res => {
-          this.userStore.GetInfo().then(() => {
-            let path = '/team/project-list';
-            if (_this.$route.path == path) {
-              location.reload();
-            } else {
-              _this.$router.push({path: path});
-            }
-          });
+        }).then(() => {
+          return this.userStore.GetInfo()
+        }).then(() => {
+          // 与切项目一致：重建动态路由，避免无 name 的 Layout 壳残留导致团队设置子页白屏
+          return import('@/stores/permission').then(({ usePermissionStore }) => {
+            const permissionStore = usePermissionStore()
+            permissionStore.SetRoutesRefreshing(true)
+            return permissionStore.GenerateRoutes().finally(() => {
+              permissionStore.SetRoutesRefreshing(false)
+            })
+          })
+        }).then(() => {
+          let path = '/team/project-list';
+          if (_this.$route.path == path) {
+            location.reload();
+          } else {
+            _this.$router.push({path: path});
+          }
         });
       }
     }

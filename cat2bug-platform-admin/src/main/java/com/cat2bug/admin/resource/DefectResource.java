@@ -296,7 +296,7 @@ public class DefectResource {
     public Response importTemplate(@Context HttpHeaders headers,
                                    @RestForm("params[exportScope]") String exportScope,
                                    @RestForm("params[exportColumns]") String exportColumns) {
-        Map<String, Object> params = buildExportParams(exportScope, exportColumns);
+        Map<String, Object> params = buildExportParams(exportScope, exportColumns, null);
         byte[] workbook = defectImportTemplateService.buildTemplateWorkbook(params, resolveLocale(headers));
         return Response.ok(workbook)
                 .type(SPREADSHEET_MEDIA_TYPE)
@@ -315,14 +315,15 @@ public class DefectResource {
                            @RestForm("defectType") String defectType,
                            @RestForm("moduleId") Long moduleId,
                            @RestForm("params[exportScope]") String exportScope,
-                           @RestForm("params[exportColumns]") String exportColumns) {
+                           @RestForm("params[exportColumns]") String exportColumns,
+                           @RestForm("params[host]") String host) {
         SysDefect query = new SysDefect();
         query.setProjectId(projectId);
         query.setDefectName(defectName);
         query.setDefectState(enumParam(DefectConstants::parseState, defectState));
         query.setDefectType(enumParam(DefectConstants::parseType, defectType));
         query.setModuleId(moduleId);
-        Map<String, Object> params = buildExportParams(exportScope, exportColumns);
+        Map<String, Object> params = buildExportParams(exportScope, exportColumns, host);
         byte[] workbook = defectExcelService.buildExportWorkbook(query, params, resolveLocale(headers));
         return Response.ok(workbook)
                 .type(SPREADSHEET_MEDIA_TYPE)
@@ -344,7 +345,7 @@ public class DefectResource {
         }
         byte[] fileBytes = Files.readAllBytes(file.uploadedFile());
         Long projectId = defectExcelService.resolveCurrentProjectId();
-        Map<String, Object> params = buildExportParams(exportScope, exportColumns);
+        Map<String, Object> params = buildExportParams(exportScope, exportColumns, null);
         var defectList = defectExcelService.parseImportWorkbook(fileBytes, projectId, params, resolveLocale(headers));
         ImportDefectResult result = sysDefectService.importDefect(projectId, defectList, updateSupport);
         if (!result.isSuccess()) {
@@ -364,13 +365,16 @@ public class DefectResource {
         }
     }
 
-    private Map<String, Object> buildExportParams(String exportScope, String exportColumns) {
+    private Map<String, Object> buildExportParams(String exportScope, String exportColumns, String host) {
         Map<String, Object> params = new HashMap<>();
         if (StringUtils.isNotEmpty(exportScope)) {
             params.put(ExcelColumnExportSupport.PARAM_EXPORT_SCOPE, exportScope);
         }
         if (StringUtils.isNotEmpty(exportColumns)) {
             params.put(ExcelColumnExportSupport.PARAM_EXPORT_COLUMNS, exportColumns);
+        }
+        if (StringUtils.isNotEmpty(host)) {
+            params.put("host", host.trim());
         }
         return params;
     }

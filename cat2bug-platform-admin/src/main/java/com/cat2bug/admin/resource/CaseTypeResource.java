@@ -22,6 +22,10 @@ import jakarta.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 public class CaseTypeResource {
 
+    private static final int HTTP_GONE = 410;
+    private static final String MIGRATED_MSG =
+            "用例类型已迁至团队设置，请使用 /system/team/{teamId}/case-types";
+
     @Inject
     SysCaseTypeService sysCaseTypeService;
 
@@ -37,7 +41,7 @@ public class CaseTypeResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @RequiresPermissions("system:project:case-type:add")
     public AjaxResult add(@PathParam("projectId") Long projectId, SysCaseType type) {
-        return AjaxResult.success(sysCaseTypeService.create(projectId, type == null ? null : type.getTypeName()));
+        return rejectProjectWrite();
     }
 
     @PUT
@@ -45,23 +49,17 @@ public class CaseTypeResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @RequiresPermissions("system:project:case-type:edit")
     public AjaxResult update(@PathParam("projectId") Long projectId, @PathParam("typeId") Long typeId, SysCaseType type) {
-        if (type != null && type.getEnabled() != null) {
-            sysCaseTypeService.setEnabled(projectId, typeId, type.getEnabled());
-        }
-        if (type != null && type.getTypeName() != null && !type.getTypeName().isBlank()) {
-            sysCaseTypeService.rename(projectId, typeId, type.getTypeName());
-        }
-        if (type == null || (type.getEnabled() == null && (type.getTypeName() == null || type.getTypeName().isBlank()))) {
-            throw new ApiException("请指定类型名称或启用状态");
-        }
-        return AjaxResult.success();
+        return rejectProjectWrite();
     }
 
     @DELETE
     @Path("/{typeId}")
     @RequiresPermissions("system:project:case-type:remove")
     public AjaxResult remove(@PathParam("projectId") Long projectId, @PathParam("typeId") Long typeId) {
-        sysCaseTypeService.delete(projectId, typeId);
-        return AjaxResult.success();
+        return rejectProjectWrite();
+    }
+
+    private static AjaxResult rejectProjectWrite() {
+        throw new ApiException(HTTP_GONE, MIGRATED_MSG);
     }
 }

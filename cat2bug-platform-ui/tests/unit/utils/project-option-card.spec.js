@@ -1,4 +1,4 @@
-import { projectOptionHref } from '@/utils/project-option-card'
+import { projectOptionHref, teamOptionHref } from '@/utils/project-option-card'
 
 describe('projectOptionHref', () => {
   it('prefixes menu segments under /project/', () => {
@@ -16,5 +16,16 @@ describe('projectOptionHref', () => {
   it('falls back to option hub when empty', () => {
     expect(projectOptionHref('')).toBe('/project/option')
     expect(projectOptionHref(null)).toBe('/project/option')
+  })
+})
+
+describe('teamOptionHref', () => {
+  it('prefixes menu segments under /team-options/', () => {
+    expect(teamOptionHref('team-case-types')).toBe('/team-options/team-case-types')
+    expect(teamOptionHref('team-defect-fields')).toBe('/team-options/team-defect-fields')
+  })
+
+  it('falls back to team option hub when empty', () => {
+    expect(teamOptionHref('')).toBe('/team-options/team-option')
   })
 })

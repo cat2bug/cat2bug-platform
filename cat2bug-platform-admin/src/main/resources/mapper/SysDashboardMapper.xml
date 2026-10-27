@@ -667,4 +667,52 @@ LEFT JOIN (
         WHERE oper_time &gt;= #{weekStart}
           AND oper_time &lt; #{weekEnd}
     </select>
+
+    <resultMap id="SysMemberWeeklyMetricRowResult" type="com.cat2bug.common.domain.dashboard.SysMemberWeeklyMetricRow">
+        <result property="userId" column="user_id"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="userName" column="user_name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="metricCount" column="metric_count"/>
+    </resultMap>
+
+    <select id="memberWeeklyDefectCounts" resultMap="SysMemberWeeklyMetricRowResult">
+        SELECT u.user_id,
+               u.nick_name,
+               u.user_name,
+               u.avatar,
+               COUNT(DISTINCT l.defect_id) AS metric_count
+        FROM sys_defect_log l
+        JOIN sys_defect e ON e.defect_id = l.defect_id
+        JOIN sys_user u ON u.user_id = l.create_by
+        WHERE e.project_id = #{projectId}
+          AND l.create_time &gt;= #{weekStart}
+          AND l.create_time &lt; #{weekEnd}
+        GROUP BY u.user_id, u.nick_name, u.user_name, u.avatar
+    </select>
+
+    <select id="memberWeeklyDocumentCounts" resultMap="SysMemberWeeklyMetricRowResult">
+        SELECT u.user_id,
+               u.nick_name,
+               u.user_name,
+               u.avatar,
+               COUNT(DISTINCT d.doc_id) AS metric_count
+        FROM (
+            SELECT doc_id, create_by_id AS user_id
+            FROM sys_document
+            WHERE project_id = #{projectId}
+              AND create_by_id IS NOT NULL
+              AND create_time &gt;= #{weekStart}
+              AND create_time &lt; #{weekEnd}
+            UNION
+            SELECT doc_id, update_by_id AS user_id
+            FROM sys_document
+            WHERE project_id = #{projectId}
+              AND update_by_id IS NOT NULL
+              AND update_time &gt;= #{weekStart}
+              AND update_time &lt; #{weekEnd}
+        ) d
+        JOIN sys_user u ON u.user_id = d.user_id
+        GROUP BY u.user_id, u.nick_name, u.user_name, u.avatar
+    </select>
 </mapper>

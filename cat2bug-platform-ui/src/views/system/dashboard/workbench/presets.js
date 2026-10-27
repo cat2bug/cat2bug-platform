@@ -93,7 +93,11 @@ export const WORKBENCH_PRESETS = {
             { type: 'team-defects', ratio: 14 },
             {
               ratio: 10,
-              stack: [{ type: 'git-repo-stats' }, { type: 'document-list' }]
+              stack: [
+                { type: 'member-weekly-rank' },
+                { type: 'git-repo-stats' },
+                { type: 'document-list' }
+              ]
             }
           ],
           { mode: 'row' }

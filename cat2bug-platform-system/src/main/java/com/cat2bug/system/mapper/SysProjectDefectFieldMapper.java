@@ -13,22 +13,24 @@ import java.util.List;
 @MapperDataSource(QuarkusMapperDataSources.RUNTIME_MYSQL)
 public interface SysProjectDefectFieldMapper {
 
+    Long selectTeamIdByProjectId(@Param("projectId") Long projectId);
+
     SysProjectDefectField selectByFieldId(@Param("fieldId") Long fieldId);
 
-    SysProjectDefectField selectByProjectIdAndFieldKey(
-            @Param("projectId") Long projectId, @Param("fieldKey") String fieldKey);
+    SysProjectDefectField selectByTeamIdAndFieldKey(
+            @Param("teamId") Long teamId, @Param("fieldKey") String fieldKey);
 
-    SysProjectDefectField selectByProjectIdAndFieldLabel(
-            @Param("projectId") Long projectId, @Param("fieldLabel") String fieldLabel);
+    SysProjectDefectField selectByTeamIdAndFieldLabel(
+            @Param("teamId") Long teamId, @Param("fieldLabel") String fieldLabel);
 
-    List<SysProjectDefectField> selectListByProjectId(@Param("projectId") Long projectId);
+    List<SysProjectDefectField> selectListByTeamId(@Param("teamId") Long teamId);
 
-    List<SysProjectDefectField> selectEnabledListByProjectId(@Param("projectId") Long projectId);
+    List<SysProjectDefectField> selectEnabledListByTeamId(@Param("teamId") Long teamId);
 
-    int countEnabledByProjectId(@Param("projectId") Long projectId);
+    int countEnabledByTeamId(@Param("teamId") Long teamId);
 
-    int countCustomFieldKeyUsed(
-            @Param("projectId") Long projectId, @Param("fieldKey") String fieldKey);
+    int countCustomFieldKeyUsedByTeamId(
+            @Param("teamId") Long teamId, @Param("fieldKey") String fieldKey);
 
     int insert(SysProjectDefectField field);
 
@@ -36,13 +38,13 @@ public interface SysProjectDefectFieldMapper {
 
     int softDelete(
             @Param("fieldId") Long fieldId,
-            @Param("projectId") Long projectId,
+            @Param("teamId") Long teamId,
             @Param("updateTime") Date updateTime);
 
-    String selectDefectBuiltinFieldConfig(@Param("projectId") Long projectId);
+    String selectDefectBuiltinFieldConfig(@Param("teamId") Long teamId);
 
     int updateDefectBuiltinFieldConfig(
-            @Param("projectId") Long projectId,
+            @Param("teamId") Long teamId,
             @Param("config") String config,
             @Param("updateTime") Date updateTime);
 }

@@ -12,13 +12,13 @@ import java.util.List;
 @MapperDataSource(QuarkusMapperDataSources.RUNTIME_MYSQL)
 public interface SysCaseTypeMapper {
 
-    List<SysCaseType> selectByProjectId(@Param("projectId") Long projectId);
+    List<SysCaseType> selectByTeamId(@Param("teamId") Long teamId);
 
     SysCaseType selectById(@Param("typeId") Long typeId);
 
-    SysCaseType selectByProjectAndName(@Param("projectId") Long projectId, @Param("typeName") String typeName);
+    SysCaseType selectByTeamAndName(@Param("teamId") Long teamId, @Param("typeName") String typeName);
 
-    int countCases(@Param("projectId") Long projectId, @Param("typeId") Long typeId);
+    int countCases(@Param("teamId") Long teamId, @Param("typeId") Long typeId);
 
     int insert(SysCaseType type);
 
@@ -28,9 +28,11 @@ public interface SysCaseTypeMapper {
 
     int deleteById(@Param("typeId") Long typeId);
 
+    Long selectTeamIdByProjectId(@Param("projectId") Long projectId);
+
     String selectProjectName(@Param("projectId") Long projectId);
 
-    String selectReviewTemplate(@Param("projectId") Long projectId);
+    String selectReviewTemplate(@Param("teamId") Long teamId);
 
-    int updateReviewTemplate(@Param("projectId") Long projectId, @Param("template") String template);
+    int updateReviewTemplate(@Param("teamId") Long teamId, @Param("template") String template);
 }

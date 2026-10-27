@@ -11,7 +11,7 @@
     <el-form ref="form" :model="form" :rules="rules" label-width="130px">
       <el-form-item :label="$t('notice.receiver')" prop="receiveIds">
         <select-project-member
-          :placeholder="$t('notice.please-select-receiver')"
+          placeholder="notice.please-select-receiver"
           v-model:memberId="form.receiveIds"
           :project-id="getProjectId()"
           :is-head="false"
