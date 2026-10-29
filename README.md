@@ -2,7 +2,7 @@
   <!-- 与登录页 CatIllustration 同源（login-cat-scene-light/dark.jpg） -->
   <img src="readme/images/login-cat-scene-dark.png" width="550" alt="猫陪我改 BUG — Cat2Bug Platform" style="max-width: 100%; height: auto; margin-top: 50px;" />
 </div>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v1.1.1</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v1.2.0</h1>
 <h4 align="center">轻量化智能BUG管理平台</h4>
 
 ## 平台简介
@@ -28,14 +28,13 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 ## 最新版本更新说明
 
-当前最新版本是1.1.1
+当前最新版本是1.2.0
 
-**运行时要求（1.1.1 后端）**：构建与运行需 **JDK 17+**。后端基于 **Quarkus**（默认 Maven 构建，无需 profile），原 Spring Boot 后端已移除，最后版本保留在 tag `spring-final-1.1.0`。Maven 版本号为 1.1.1。
+**运行时要求（1.2.0 后端）**：构建与运行需 **JDK 17+**。后端基于 **Quarkus**（默认 Maven 构建，无需 profile），原 Spring Boot 后端已移除，最后版本保留在 tag `spring-final-1.1.0`。Maven 版本号为 1.2.0。
 
-* 项目落地页改为可定制「工作台」：角色预设、组件显隐与行排版、私有/共享自定义页签、组件库搜索与分组预览等
-* 用例类型、评审纪要模板、缺陷属性改由团队设置统一维护，仅团队创建人/管理员可配
-* 缺陷列表支持批量指派 / 修复 / 驳回 / 通过 / 关闭 / 重开 / 删除
-* （1.1.0 已具备）项目源码管理（Git 自托管）、用例可选评审与 Markdown 纪要；详见上文「内置功能」
+* 版本线切换至 1.2.0（承接 1.1.1 能力，后续新特性在本版本上开发）
+* （1.1.1 已具备）可定制工作台、团队级用例/缺陷属性、缺陷批量流转等；详见 [[docs/08-版本记录/1.1.1.md]] 与上文「内置功能」
+* （1.1.0 已具备）项目源码管理（Git 自托管）、用例可选评审与 Markdown 纪要
 
 ## 特色
 

@@ -173,6 +173,11 @@
             </div>
           </template>
           <el-collapse accordion>
+            <el-collapse-item title="v1.2.0 - 2026-10-29">
+              <ol>
+                <li>平台版本升级至 1.2.0，作为后续新版本开发基线</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v1.1.1 - 2026-10-21">
               <ol>
                 <li>项目落地页改为可定制「工作台」：角色预设、组件显隐与行排版、私有/共享自定义页签、组件库搜索与分组预览等</li>
