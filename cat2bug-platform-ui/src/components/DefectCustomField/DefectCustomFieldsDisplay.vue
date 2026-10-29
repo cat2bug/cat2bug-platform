@@ -40,9 +40,8 @@ import { formatDeliverablePath, looksLikeDeliverablePath } from '@/utils/deliver
 import { parseTime } from '@/utils/ruoyi'
 import { lifeTime } from '@/utils/defect'
 
-/** 基础信息内以风箱展示的类型及排序：图片 → 对象 → 附件 */
+/** 基础信息内以独立风箱展示的类型（顺序仍跟字段管理，不按类型重排） */
 const ACCORDION_FIELD_TYPES = Object.freeze(['image', 'object', 'file'])
-const ACCORDION_TYPE_ORDER = Object.freeze({ image: 0, object: 1, file: 2 })
 
 export default {
   name: 'DefectCustomFieldsDisplay',
@@ -85,16 +84,8 @@ export default {
       return this.rows.filter((row) => !ACCORDION_FIELD_TYPES.includes(row.fieldType))
     },
     accordionRows() {
-      const indexed = this.rows
-        .map((row, index) => ({ row, index }))
-        .filter(({ row }) => ACCORDION_FIELD_TYPES.includes(row.fieldType))
-      indexed.sort((a, b) => {
-        const typeDiff =
-          (ACCORDION_TYPE_ORDER[a.row.fieldType] ?? 99) -
-          (ACCORDION_TYPE_ORDER[b.row.fieldType] ?? 99)
-        return typeDiff !== 0 ? typeDiff : a.index - b.index
-      })
-      return indexed.map(({ row }) => row)
+      // 保持字段管理顺序（与基础信息网格一致），不再按 image/object/file 类型重排
+      return this.rows.filter((row) => ACCORDION_FIELD_TYPES.includes(row.fieldType))
     }
   },
   watch: {

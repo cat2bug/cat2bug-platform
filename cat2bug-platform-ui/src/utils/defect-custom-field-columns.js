@@ -191,8 +191,8 @@ function readFieldListCache(localCache, storageKey = DEFECT_TABLE_COLUMN_CACHE_K
 }
 
 /**
- * 合并缺陷表列配置：visible / fixed / width 来自本地缓存；
- * 缓存为对象数组时，列顺序与缓存一致（表格/Excel 拖列与「显示字段」列表同步）。
+ * 合并缺陷表列配置：顺序以 defaults 为准（字段管理 orderedEnabledFieldKeys）；
+ * 本地缓存只覆盖 visible / fixed / width（个人拖列顺序不持久覆盖团队属性顺序）。
  */
 export function mergeDefectTableColumnPrefs(localCache, defaults, storageKey = DEFECT_TABLE_COLUMN_CACHE_KEY) {
   const list = (defaults || []).map(d => ({ ...d }))
@@ -217,25 +217,7 @@ export function mergeDefectTableColumnPrefs(localCache, defaults, storageKey = D
   cached.forEach(c => {
     if (c && c.key) prefByKey[c.key] = c
   })
-  const defaultByKey = {}
-  list.forEach(d => {
-    if (d && d.key) defaultByKey[d.key] = d
-  })
-  const ordered = []
-  const seen = new Set()
-  cached.forEach(c => {
-    if (!c || !c.key) return
-    const base = defaultByKey[c.key]
-    if (!base) return
-    ordered.push(mergeColumnWithCachedPrefs(base, c))
-    seen.add(c.key)
-  })
-  list.forEach(d => {
-    if (!d || !d.key || seen.has(d.key)) return
-    const pref = prefByKey[d.key]
-    ordered.push(mergeColumnWithCachedPrefs(d, pref))
-  })
-  return ordered
+  return list.map(d => mergeColumnWithCachedPrefs(d, d && d.key ? prefByKey[d.key] : null))
 }
 
 /**
