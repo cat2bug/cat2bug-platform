@@ -26,9 +26,15 @@ export const GANTT_CACHE = Object.freeze({
   UNSCHEDULED_HEIGHT: 'defect.gantt.unscheduledHeight',
   /** 未排期池是否折叠 */
   UNSCHEDULED_COLLAPSED: 'defect.gantt.unscheduledCollapsed',
-  /** 图层开关 { deps, critical, load, baseline } */
-  LAYERS: 'defect.gantt.layers'
+  /** 图层开关 { deps, critical, load, baseline, minimap }；minimap 缺省 true */
+  LAYERS: 'defect.gantt.layers',
+  /** 缩略图面板位置 { x, y }（相对已排期主区左上） */
+  MINIMAP_POS: 'defect.gantt.minimapPos'
 })
+
+/** 缩略图固定尺寸（px） */
+export const GANTT_MINIMAP_WIDTH = 200
+export const GANTT_MINIMAP_HEIGHT = 120
 
 export const GANTT_LEFT_WIDTH_DEFAULT = 280
 export const GANTT_LEFT_WIDTH_MIN = 180

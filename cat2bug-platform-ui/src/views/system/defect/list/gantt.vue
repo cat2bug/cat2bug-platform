@@ -40,6 +40,11 @@
                   {{ $t('defect.gantt.layer-baseline') }}
                 </el-checkbox>
               </el-dropdown-item>
+              <el-dropdown-item divided class="defect-gantt-layers-item" @click.stop.prevent>
+                <el-checkbox v-model="showMinimap" size="small" @click.stop>
+                  {{ $t('defect.gantt.layer-minimap') }}
+                </el-checkbox>
+              </el-dropdown-item>
               <el-dropdown-item
                 divided
                 :disabled="!canEdit"
@@ -635,6 +640,66 @@
               </div>
             </div>
           </div>
+
+          <!-- 时间轴缩略导航 -->
+          <div
+            v-if="showMinimap"
+            ref="minimapPanel"
+            class="defect-gantt-minimap"
+            :class="{ 'is-docked': !minimapPos }"
+            :style="minimapPanelStyle"
+            @mousedown.stop
+            @pointerdown.stop
+          >
+            <div
+              class="defect-gantt-minimap-title"
+              @mousedown.prevent="startMinimapPanelDrag"
+            >
+              <span class="defect-gantt-minimap-drag-icon" aria-hidden="true">
+                <svg viewBox="0 0 16 16" width="12" height="12" focusable="false">
+                  <circle cx="5" cy="3" r="1.35" fill="currentColor" />
+                  <circle cx="11" cy="3" r="1.35" fill="currentColor" />
+                  <circle cx="5" cy="8" r="1.35" fill="currentColor" />
+                  <circle cx="11" cy="8" r="1.35" fill="currentColor" />
+                  <circle cx="5" cy="13" r="1.35" fill="currentColor" />
+                  <circle cx="11" cy="13" r="1.35" fill="currentColor" />
+                </svg>
+              </span>
+              <span class="defect-gantt-minimap-title-text">{{ $t('defect.gantt.minimap-title') }}</span>
+              <button
+                type="button"
+                class="defect-gantt-minimap-close"
+                :title="$t('defect.gantt.minimap-close')"
+                :aria-label="$t('defect.gantt.minimap-close')"
+                @mousedown.stop
+                @click.stop.prevent="closeMinimap"
+              >
+                <el-icon><CloseIcon /></el-icon>
+              </button>
+            </div>
+            <div
+              ref="minimapBody"
+              class="defect-gantt-minimap-body"
+              @mousedown.prevent="startMinimapNav"
+            >
+              <div
+                v-for="m in minimapBarMarks"
+                :key="m.key"
+                class="defect-gantt-minimap-bar"
+                :class="'state-' + m.state"
+                :style="{
+                  left: m.left + 'px',
+                  top: m.top + 'px',
+                  width: m.width + 'px',
+                  height: m.height + 'px'
+                }"
+              />
+              <div
+                ref="minimapViewportEl"
+                class="defect-gantt-minimap-viewport"
+              />
+            </div>
+          </div>
         </div>
 
         <div
@@ -735,7 +800,7 @@
 </template>
 
 <script>
-import { ArrowDown, ArrowRight, Link, Operation, RefreshRight, Search, User } from '@element-plus/icons-vue'
+import { ArrowDown, ArrowRight, Close as CloseIcon, Link, Operation, RefreshRight, Search, User } from '@element-plus/icons-vue'
 import {
   listDefect,
   updateDefect,
@@ -752,6 +817,8 @@ import {
   GANTT_GROUP_BY,
   GANTT_SCALE,
   GANTT_CACHE,
+  GANTT_MINIMAP_WIDTH,
+  GANTT_MINIMAP_HEIGHT,
   GANTT_LEFT_WIDTH_DEFAULT,
   GANTT_LEFT_WIDTH_MIN,
   GANTT_LEFT_WIDTH_MAX,
@@ -789,7 +856,7 @@ import {
 
 export default {
   name: 'DefectGantt',
-  components: { ArrowDown, ArrowRight, Link, Operation, RefreshRight, Search, User, Cat2BugAvatar },
+  components: { ArrowDown, ArrowRight, CloseIcon, Link, Operation, RefreshRight, Search, User, Cat2BugAvatar },
   setup() {
     return { Search }
   },
@@ -857,6 +924,8 @@ export default {
     let showCritical = false
     let showLoad = false
     let showBaseline = false
+    /** 缩略图默认开；仅当本地显式存了 minimap 键时才覆盖 */
+    let showMinimap = true
     try {
       const rawLayers = cache && cache.get(GANTT_CACHE.LAYERS)
       if (rawLayers) {
@@ -866,6 +935,24 @@ export default {
           showCritical = !!parsed.critical
           showLoad = !!parsed.load
           showBaseline = !!parsed.baseline
+          if (Object.prototype.hasOwnProperty.call(parsed, 'minimap')) {
+            showMinimap = !!parsed.minimap
+          }
+        }
+      }
+    } catch (_) { /* ignore */ }
+    let minimapPos = null
+    try {
+      const rawPos = cache && cache.get(GANTT_CACHE.MINIMAP_POS)
+      if (rawPos) {
+        const parsed = typeof rawPos === 'string' ? JSON.parse(rawPos) : rawPos
+        if (
+          parsed &&
+          typeof parsed === 'object' &&
+          Number.isFinite(Number(parsed.x)) &&
+          Number.isFinite(Number(parsed.y))
+        ) {
+          minimapPos = { x: Number(parsed.x), y: Number(parsed.y) }
         }
       }
     } catch (_) { /* ignore */ }
@@ -939,6 +1026,16 @@ export default {
       showCritical,
       showLoad,
       showBaseline,
+      /** 缩略图（默认开） */
+      showMinimap,
+      /** 缩略图面板位置；null 表示右下角停靠 */
+      minimapPos,
+      minimapWidth: GANTT_MINIMAP_WIDTH,
+      minimapHeight: GANTT_MINIMAP_HEIGHT,
+      /** 轴视口在缩略图中的映射（随 scroll/resize 更新） */
+      minimapViewport: { left: 0, top: 0, width: 1, height: 1 },
+      minimapPanelDrag: null,
+      minimapNavDrag: null,
       /** 计划依赖边 */
       planLinks: [],
       /** 活跃基线 { baselineId, items: [{ defectId, planStartTime, planEndTime }] } */
@@ -959,6 +1056,12 @@ export default {
   mounted() {
     this.bindAxisViewportObserver()
     this.ensureModulePathMap()
+    this.$nextTick(() => {
+      if (this.minimapPos) {
+        this.minimapPos = this.clampMinimapPos(this.minimapPos.x, this.minimapPos.y)
+      }
+      this.updateMinimapViewport()
+    })
     this._onLinkKeyDown = (e) => this.onLinkKeyDown(e)
     window.addEventListener('keydown', this._onLinkKeyDown)
   },
@@ -1230,6 +1333,60 @@ export default {
         width: r.width + 'px',
         height: r.height + 'px'
       }
+    },
+    minimapPanelStyle() {
+      const pos = this.minimapPos
+      if (!pos) return null
+      return {
+        left: pos.x + 'px',
+        top: pos.y + 'px',
+        right: 'auto',
+        bottom: 'auto'
+      }
+    },
+    /**
+     * 缩略图色块：与主轴相同的组/行遍历（含处理人镜像每行），
+     * 按 axis 内容尺寸比例映射到固定 mini 尺寸。
+     */
+    minimapBarMarks() {
+      if (!this.showMinimap) return []
+      const contentW = Math.max(1, this.axisWidthPx || 0)
+      const contentH = Math.max(1, this.axisContentHeight || 0)
+      const mw = this.minimapWidth
+      const mh = this.minimapHeight
+      const rowH = this.rowHeight
+      const marks = []
+      let y = 0
+      const groups = this.groups || []
+      for (let gi = 0; gi < groups.length; gi++) {
+        const g = groups[gi]
+        y += this.groupHeaderHeight
+        if (this.isGroupCollapsed(g.key)) continue
+        const rows = g.rows || []
+        for (let ri = 0; ri < rows.length; ri++) {
+          const row = rows[ri]
+          const defect = row && row.defect
+          const geo = defect ? barGeometry(defect, this.axisRange.start, this.scale) : null
+          if (geo && geo.width > 0) {
+            const left = (geo.x / contentW) * mw
+            const width = Math.max(2, (geo.width / contentW) * mw)
+            const bandH = Math.max(1, (rowH / contentH) * mh)
+            const barH = Math.max(1, Math.min(bandH, bandH * 0.55))
+            const top = (y / contentH) * mh + (bandH - barH) / 2
+            marks.push({
+              key: row.rowKey || `mm-${gi}-${ri}`,
+              left: Math.max(0, Math.min(mw - 2, left)),
+              top: Math.max(0, Math.min(mh - 1, top)),
+              width: Math.min(width, mw - Math.max(0, left)),
+              height: barH,
+              state: this.stateClass(defect)
+            })
+          }
+          y += rowH
+        }
+        if (this.shouldShowLoadTrack(g)) y += this.loadTrackHeight
+      }
+      return marks
     }
   },
   watch: {
@@ -1249,6 +1406,15 @@ export default {
     },
     showBaseline() {
       this.persistGanttLayers()
+    },
+    showMinimap(val) {
+      this.persistGanttLayers()
+      if (val) {
+        this.$nextTick(() => this.updateMinimapViewport())
+      } else {
+        this.teardownMinimapPanelDrag()
+        this.teardownMinimapNav()
+      }
     }
   },
   beforeUnmount() {
@@ -1256,6 +1422,8 @@ export default {
     this.teardownResizeLeft()
     this.teardownResizeUnscheduled()
     this.teardownAxisViewportObserver()
+    this.teardownMinimapPanelDrag()
+    this.teardownMinimapNav()
     this.clearDragGhost()
     this.teardownUnscheduledDragListeners()
     this.teardownMarqueeListeners()
@@ -1483,6 +1651,7 @@ export default {
       if (!el) return
       const h = el.clientHeight || 0
       if (h !== this.axisViewportHeight) this.axisViewportHeight = h
+      this.updateMinimapViewport()
     },
     stateClass(defect) {
       return defectStateClass(defect)
@@ -1884,10 +2053,230 @@ export default {
             deps: !!this.showDeps,
             critical: !!this.showCritical,
             load: !!this.showLoad,
-            baseline: !!this.showBaseline
+            baseline: !!this.showBaseline,
+            minimap: !!this.showMinimap
           })
         )
       } catch (_) { /* ignore */ }
+    },
+    persistMinimapPos() {
+      if (!(this.$cache && this.$cache.local)) return
+      if (!this.minimapPos) return
+      try {
+        this.$cache.local.set(
+          GANTT_CACHE.MINIMAP_POS,
+          JSON.stringify({ x: this.minimapPos.x, y: this.minimapPos.y })
+        )
+      } catch (_) { /* ignore */ }
+    },
+    closeMinimap() {
+      this.showMinimap = false
+    },
+    updateMinimapViewport() {
+      if (!this.showMinimap) return
+      const body = this.$refs.axisBodyScroll
+      if (!body) return
+      /* 缩略图拖导航中由 applyMinimapNavToScroll 直接写红框，避免每帧触发 Vue 重绘色块 */
+      if (this.minimapNavDrag) return
+      const contentW = Math.max(1, body.scrollWidth || 0)
+      const contentH = Math.max(1, body.scrollHeight || 0)
+      const clientW = Math.max(1, body.clientWidth || 0)
+      const clientH = Math.max(1, body.clientHeight || 0)
+      const mw = this.minimapWidth
+      const mh = this.minimapHeight
+      const width = Math.min(mw, (clientW / contentW) * mw)
+      const height = Math.min(mh, (clientH / contentH) * mh)
+      const left = Math.max(0, Math.min(mw - width, (body.scrollLeft / contentW) * mw))
+      const top = Math.max(0, Math.min(mh - height, (body.scrollTop / contentH) * mh))
+      this.applyMinimapViewportDom(left, top, width, height)
+    },
+    applyMinimapViewportDom(left, top, width, height) {
+      /* 内缩 1px，避免贴边时 overflow 裁掉红框描边 */
+      const edge = 1
+      const mw = this.minimapWidth
+      const mh = this.minimapHeight
+      let w = Math.max(4, Math.min(width, mw - edge * 2))
+      let h = Math.max(4, Math.min(height, mh - edge * 2))
+      let l = Math.max(edge, Math.min(mw - edge - w, left))
+      let t = Math.max(edge, Math.min(mh - edge - h, top))
+      const v = this.minimapViewport
+      v.left = l
+      v.top = t
+      v.width = w
+      v.height = h
+      const el = this.$refs.minimapViewportEl
+      if (el) {
+        el.style.left = l + 'px'
+        el.style.top = t + 'px'
+        el.style.width = w + 'px'
+        el.style.height = h + 'px'
+      }
+    },
+    clampMinimapPos(x, y) {
+      const pane = this.$refs.scheduledPane
+      const panel = this.$refs.minimapPanel
+      const pad = 8
+      const pw = (panel && panel.offsetWidth) || this.minimapWidth + 2
+      const ph = (panel && panel.offsetHeight) || this.minimapHeight + 28
+      const maxX = pane ? Math.max(pad, pane.clientWidth - pw - pad) : x
+      const maxY = pane ? Math.max(pad, pane.clientHeight - ph - pad) : y
+      return {
+        x: Math.max(pad, Math.min(maxX, x)),
+        y: Math.max(pad, Math.min(maxY, y))
+      }
+    },
+    startMinimapPanelDrag(e) {
+      if (e.button != null && e.button !== 0) return
+      const pane = this.$refs.scheduledPane
+      const panel = this.$refs.minimapPanel
+      if (!pane || !panel) return
+      const paneRect = pane.getBoundingClientRect()
+      const panelRect = panel.getBoundingClientRect()
+      const startLeft = panelRect.left - paneRect.left
+      const startTop = panelRect.top - paneRect.top
+      const clamped = this.clampMinimapPos(startLeft, startTop)
+      this.minimapPanelDrag = {
+        startX: e.clientX,
+        startY: e.clientY,
+        originX: clamped.x,
+        originY: clamped.y,
+        lastX: clamped.x,
+        lastY: clamped.y
+      }
+      /* 拖动中用 DOM 定位，避免每帧写 reactive 触发整树重绘 */
+      panel.classList.remove('is-docked')
+      panel.style.left = clamped.x + 'px'
+      panel.style.top = clamped.y + 'px'
+      panel.style.right = 'auto'
+      panel.style.bottom = 'auto'
+      document.addEventListener('mousemove', this.onMinimapPanelDragMove)
+      document.addEventListener('mouseup', this.onMinimapPanelDragUp)
+    },
+    onMinimapPanelDragMove(e) {
+      const drag = this.minimapPanelDrag
+      if (!drag) return
+      drag._clientX = e.clientX
+      drag._clientY = e.clientY
+      if (this._minimapPanelRaf) return
+      this._minimapPanelRaf = requestAnimationFrame(() => {
+        this._minimapPanelRaf = 0
+        const d = this.minimapPanelDrag
+        const panel = this.$refs.minimapPanel
+        if (!d || !panel) return
+        const next = this.clampMinimapPos(
+          d.originX + (d._clientX - d.startX),
+          d.originY + (d._clientY - d.startY)
+        )
+        d.lastX = next.x
+        d.lastY = next.y
+        panel.style.left = next.x + 'px'
+        panel.style.top = next.y + 'px'
+      })
+    },
+    onMinimapPanelDragUp() {
+      const drag = this.minimapPanelDrag
+      if (drag) {
+        this.minimapPos = { x: drag.lastX, y: drag.lastY }
+        this.persistMinimapPos()
+      }
+      this.teardownMinimapPanelDrag()
+    },
+    teardownMinimapPanelDrag() {
+      this.minimapPanelDrag = null
+      if (this._minimapPanelRaf) {
+        cancelAnimationFrame(this._minimapPanelRaf)
+        this._minimapPanelRaf = 0
+      }
+      document.removeEventListener('mousemove', this.onMinimapPanelDragMove)
+      document.removeEventListener('mouseup', this.onMinimapPanelDragUp)
+    },
+    startMinimapNav(e) {
+      if (e.button != null && e.button !== 0) return
+      const bodyEl = this.$refs.minimapBody
+      const axis = this.$refs.axisBodyScroll
+      if (!bodyEl || !axis) return
+      const rect = bodyEl.getBoundingClientRect()
+      const mx = e.clientX - rect.left
+      const my = e.clientY - rect.top
+      const v = this.minimapViewport
+      let grabX = v.width / 2
+      let grabY = v.height / 2
+      const metrics = {
+        contentW: Math.max(1, axis.scrollWidth || 0),
+        contentH: Math.max(1, axis.scrollHeight || 0),
+        mw: this.minimapWidth,
+        mh: this.minimapHeight,
+        viewW: v.width,
+        viewH: v.height,
+        bodyLeft: rect.left,
+        bodyTop: rect.top
+      }
+      this.minimapNavDrag = { grabX, grabY, metrics }
+      if (mx >= v.left && mx <= v.left + v.width && my >= v.top && my <= v.top + v.height) {
+        grabX = mx - v.left
+        grabY = my - v.top
+        this.minimapNavDrag.grabX = grabX
+        this.minimapNavDrag.grabY = grabY
+      } else {
+        this.applyMinimapNavToScroll(mx - v.width / 2, my - v.height / 2, metrics)
+        this.minimapNavDrag.grabX = this.minimapViewport.width / 2
+        this.minimapNavDrag.grabY = this.minimapViewport.height / 2
+      }
+      document.addEventListener('mousemove', this.onMinimapNavMove)
+      document.addEventListener('mouseup', this.onMinimapNavUp)
+    },
+    onMinimapNavMove(e) {
+      const drag = this.minimapNavDrag
+      if (!drag) return
+      drag._clientX = e.clientX
+      drag._clientY = e.clientY
+      if (this._minimapNavRaf) return
+      this._minimapNavRaf = requestAnimationFrame(() => {
+        this._minimapNavRaf = 0
+        const d = this.minimapNavDrag
+        if (!d || d._clientX == null) return
+        const mx = d._clientX - d.metrics.bodyLeft
+        const my = d._clientY - d.metrics.bodyTop
+        this.applyMinimapNavToScroll(mx - d.grabX, my - d.grabY, d.metrics)
+      })
+    },
+    onMinimapNavUp() {
+      this.teardownMinimapNav()
+      this.updateMinimapViewport()
+    },
+    teardownMinimapNav() {
+      this.minimapNavDrag = null
+      if (this._minimapNavRaf) {
+        cancelAnimationFrame(this._minimapNavRaf)
+        this._minimapNavRaf = 0
+      }
+      document.removeEventListener('mousemove', this.onMinimapNavMove)
+      document.removeEventListener('mouseup', this.onMinimapNavUp)
+    },
+    applyMinimapNavToScroll(viewLeft, viewTop, metrics) {
+      const axis = this.$refs.axisBodyScroll
+      if (!axis) return
+      const m = metrics || {
+        contentW: Math.max(1, axis.scrollWidth || 0),
+        contentH: Math.max(1, axis.scrollHeight || 0),
+        mw: this.minimapWidth,
+        mh: this.minimapHeight,
+        viewW: this.minimapViewport.width,
+        viewH: this.minimapViewport.height
+      }
+      const maxLeft = Math.max(0, m.mw - m.viewW)
+      const maxTop = Math.max(0, m.mh - m.viewH)
+      const left = Math.max(0, Math.min(maxLeft, viewLeft))
+      const top = Math.max(0, Math.min(maxTop, viewTop))
+      this.syncingScroll = true
+      axis.scrollLeft = (left / m.mw) * m.contentW
+      axis.scrollTop = (top / m.mh) * m.contentH
+      const leftList = this.$refs.leftScroll
+      const header = this.$refs.axisHeaderScroll
+      if (leftList) leftList.scrollTop = axis.scrollTop
+      if (header) header.scrollLeft = axis.scrollLeft
+      this.syncingScroll = false
+      this.applyMinimapViewportDom(left, top, m.viewW, m.viewH)
     },
     onGroupByChange(val) {
       this.groupBy = val
@@ -1924,7 +2313,10 @@ export default {
       this.syncingScroll = false
     },
     onAxisBodyScroll() {
-      if (this.syncingScroll) return
+      if (this.syncingScroll) {
+        this.updateMinimapViewport()
+        return
+      }
       this.syncingScroll = true
       const left = this.$refs.leftScroll
       const axis = this.$refs.axisBodyScroll
@@ -1932,6 +2324,7 @@ export default {
       if (left && axis) left.scrollTop = axis.scrollTop
       if (header && axis) header.scrollLeft = axis.scrollLeft
       this.syncingScroll = false
+      this.updateMinimapViewport()
     },
     onAxisHeaderScroll() {
       if (this.syncingScroll) return
@@ -3401,11 +3794,122 @@ export default {
 }
 
 .defect-gantt-scheduled {
+  position: relative;
   display: flex;
   flex-direction: row;
   flex: 1;
   min-height: 0;
   min-width: 0;
+}
+
+.defect-gantt-minimap {
+  position: absolute;
+  z-index: 20;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--el-border-color, #dcdfe6);
+  border-radius: 4px;
+  background: var(--el-bg-color, #fff);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  user-select: none;
+  &.is-docked {
+    right: 12px;
+    bottom: 12px;
+  }
+}
+.defect-gantt-minimap-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 6px 0 6px;
+  font-size: 12px;
+  color: var(--el-text-color-regular, #606266);
+  background: var(--el-fill-color-light, #f5f7fa);
+  border-bottom: 1px solid var(--el-border-color-lighter, #ebeef5);
+  cursor: move;
+}
+.defect-gantt-minimap-drag-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--el-text-color-secondary, #909399);
+  opacity: 0.85;
+}
+.defect-gantt-minimap-title-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.defect-gantt-minimap-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--el-text-color-secondary, #909399);
+  cursor: pointer;
+  flex: 0 0 auto;
+  &:hover {
+    background: var(--el-fill-color, #e9e9eb);
+    color: var(--el-text-color-primary, #303133);
+  }
+}
+.defect-gantt-minimap-body {
+  position: relative;
+  width: 200px;
+  height: 120px;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px) 0 0 / 20px 100%,
+    linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px) 0 0 / 100% 16px,
+    var(--el-fill-color-lighter, #fafafa);
+  cursor: crosshair;
+  overflow: hidden;
+}
+.defect-gantt-minimap-bar {
+  position: absolute;
+  border-radius: 1px;
+  pointer-events: none;
+  opacity: 0.9;
+  &.state-processing {
+    background: var(--defect-state-processing-bg, #e04e4e);
+  }
+  &.state-audit {
+    background: var(--defect-state-audit-bg, #337ecc);
+  }
+  &.state-resolved {
+    background: var(--defect-state-resolved-bg, #5daf34);
+  }
+  &.state-rejected {
+    background: var(--defect-state-rejected-bg, #cf9236);
+  }
+  &.state-closed {
+    background: var(--defect-state-closed-bg, #909399);
+  }
+  &.state-unknown {
+    background: var(--defect-state-unknown-bg, #909399);
+  }
+}
+.defect-gantt-minimap-viewport {
+  position: absolute;
+  box-sizing: border-box;
+  border: none;
+  /* inset 描边画在框内，贴边时也不被 overflow 裁掉 */
+  box-shadow: inset 0 0 0 2px #e74c3c;
+  background: rgba(231, 76, 60, 0.12);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .defect-gantt-left {
