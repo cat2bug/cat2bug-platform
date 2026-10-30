@@ -41,6 +41,21 @@
                 </el-checkbox>
               </el-dropdown-item>
               <el-dropdown-item divided class="defect-gantt-layers-item" @click.stop.prevent>
+                <el-checkbox v-model="showBarHandler" size="small" @click.stop>
+                  {{ $t('defect.gantt.layer-handler') }}
+                </el-checkbox>
+              </el-dropdown-item>
+              <el-dropdown-item class="defect-gantt-layers-item" @click.stop.prevent>
+                <el-checkbox v-model="showBarDays" size="small" @click.stop>
+                  {{ $t('defect.gantt.layer-days') }}
+                </el-checkbox>
+              </el-dropdown-item>
+              <el-dropdown-item class="defect-gantt-layers-item" @click.stop.prevent>
+                <el-checkbox v-model="showBarDefectTitle" size="small" @click.stop>
+                  {{ $t('defect.gantt.layer-defect-title') }}
+                </el-checkbox>
+              </el-dropdown-item>
+              <el-dropdown-item divided class="defect-gantt-layers-item" @click.stop.prevent>
                 <el-checkbox v-model="showMinimap" size="small" @click.stop>
                   {{ $t('defect.gantt.layer-minimap') }}
                 </el-checkbox>
@@ -283,7 +298,7 @@
                 </div>
                 <div class="defect-gantt-axis-minor" :style="{ height: headerMinorHeight + 'px' }">
                   <div
-                    v-for="u in axisUnits"
+                    v-for="(u, ui) in axisUnits"
                     :key="u.key"
                     class="defect-gantt-axis-unit"
                     :class="{ weekend: !!u.weekend, 'is-day-scale': scale === 'day', 'is-week-scale': scale === 'week' }"
@@ -301,6 +316,11 @@
                     <template v-else>
                       {{ formatUnitLabel(u) }}
                     </template>
+                    <span
+                      class="defect-gantt-col-resize"
+                      :title="$t('defect.gantt.resize-col')"
+                      @mousedown.stop.prevent="startColResize($event, ui)"
+                    />
                   </div>
                 </div>
               </div>
@@ -415,13 +435,16 @@
                           :style="barStyle(row)"
                           :data-defect-id="row.defect.defectId"
                           data-gantt-bar="1"
-                          :title="isBarModuleForbidden(row) ? $t('defect.gantt.module-drop-forbidden') : undefined"
+                          :title="isBarModuleForbidden(row)
+                            ? $t('defect.gantt.module-drop-forbidden')
+                            : ('#' + row.defect.projectNum + ' ' + (row.defect.defectName || '')).trim()"
                           @dragstart.prevent.stop
                           @mousedown.stop="onBarMouseDown($event, row, g, 'move')"
                           @click.stop="onBarClick($event, row.defect)"
                         >
+                          <!-- 拉宽手柄始终可用；关联线开启时端口在条外，互不顶替；条内不显示文字 -->
                           <span
-                            v-if="!showDeps"
+                            v-if="canEdit"
                             class="defect-gantt-bar-handle left"
                             @mousedown.stop="onBarMouseDown($event, row, g, 'start')"
                           />
@@ -438,16 +461,6 @@
                             @mousedown.stop.prevent="onLinkPortDown($event, row.defect, 'head')"
                           />
                           <span
-                            class="defect-gantt-bar-label"
-                            :title="'#' + row.defect.projectNum + ' ' + (row.defect.defectName || '')"
-                          >
-                            <span class="defect-gantt-bar-num">#{{ row.defect.projectNum }}</span>
-                            <span
-                              v-if="row.defect.defectName"
-                              class="defect-gantt-bar-name"
-                            >{{ row.defect.defectName }}</span>
-                          </span>
-                          <span
                             v-if="showDeps && canEdit"
                             class="defect-gantt-bar-port right"
                             :class="{
@@ -460,10 +473,42 @@
                             @mousedown.stop.prevent="onLinkPortDown($event, row.defect, 'tail')"
                           />
                           <span
-                            v-if="!showDeps"
+                            v-if="canEdit"
                             class="defect-gantt-bar-handle right"
                             @mousedown.stop="onBarMouseDown($event, row, g, 'end')"
                           />
+                        </div>
+                        <div
+                          v-if="showBarMeta && barMetaVisible(row, g)"
+                          class="defect-gantt-bar-meta"
+                          :style="barMetaStyle(row)"
+                          @mousedown.stop
+                          @click.stop
+                        >
+                          <template v-if="showBarHandler">
+                            <span
+                              v-for="h in barHandlersOf(row, g)"
+                              :key="'bh-' + row.rowKey + '-' + h.userId"
+                              class="defect-gantt-bar-handler"
+                              :title="h.nickName"
+                            >
+                              <cat2-bug-avatar
+                                class="defect-gantt-bar-handler-avatar"
+                                :member="h"
+                                :size="18"
+                              />
+                            </span>
+                          </template>
+                          <span
+                            v-if="showBarDays && barDaysText(row)"
+                            class="defect-gantt-bar-days"
+                            :title="barDaysText(row)"
+                          >{{ barDaysText(row) }}</span>
+                          <span
+                            v-if="showBarDefectTitle && row.defect"
+                            class="defect-gantt-bar-defect-title"
+                            :title="barDefectTitleText(row)"
+                          >{{ barDefectTitleText(row) }}</span>
                         </div>
                       </div>
                     </template>
@@ -732,7 +777,7 @@
               </span>
               <span class="defect-gantt-unscheduled-title">
                 {{ $t('defect.gantt.unscheduled') }}
-                <span class="defect-gantt-unscheduled-count">({{ filteredUnscheduled.length }}{{ unscheduledKeywordTrimmed ? '/' + unscheduled.length : '' }})</span>
+                <span class="defect-gantt-unscheduled-count">({{ filteredUnscheduled.length }}{{ unscheduledFilterActive ? '/' + unscheduled.length : '' }})</span>
               </span>
             </div>
             <el-input
@@ -743,6 +788,18 @@
               clearable
               :prefix-icon="Search"
               :placeholder="$t('defect.gantt.unscheduled-search-placeholder')"
+            />
+            <select-project-member
+              v-if="!unscheduledCollapsed"
+              v-model:memberId="unscheduledHandlerIds"
+              class="defect-gantt-unscheduled-handler"
+              :project-id="projectId"
+              placeholder="defect.gantt.unscheduled-handler-placeholder"
+              :is-head="false"
+              :multiple="true"
+              :role-group="false"
+              size="small"
+              icon="el-icon-user"
             />
           </div>
           <div v-show="!unscheduledCollapsed" class="defect-gantt-unscheduled-pool">
@@ -777,8 +834,15 @@
           </div>
         </div>
       </div>
-      <div v-if="total > pageSize" class="defect-gantt-cap-hint">
-        {{ $t('defect.gantt.cap-hint', { n: pageSize, total }) }}
+      <div
+        v-if="hasMoreDefects || loadingMore"
+        class="defect-gantt-cap-hint"
+        :class="{ 'is-loading': loadingMore }"
+      >
+        <span v-if="loadingMore">{{ $t('defect.gantt.loading-more') }}</span>
+        <span v-else>
+          {{ $t('defect.gantt.load-progress', { loaded: defectList.length, total }) }}
+        </span>
       </div>
     </div>
 
@@ -812,8 +876,11 @@ import {
 import { listModulePath } from '@/api/system/module'
 import { checkPermi } from '@/utils/permission'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
+import SelectProjectMember from '@/components/Project/SelectProjectMember'
 import {
   GANTT_PAGE_SIZE,
+  GANTT_LOAD_MORE_THRESHOLD_PX,
+  GANTT_VIEWPORT_AUTO_FETCH_MAX,
   GANTT_GROUP_BY,
   GANTT_SCALE,
   GANTT_CACHE,
@@ -832,6 +899,13 @@ import {
   GANTT_GROUP_HEADER_HEIGHT,
   GANTT_LOAD_TRACK_HEIGHT,
   GANTT_COL_WIDTH,
+  GANTT_COL_WIDTH_LIMITS,
+  defaultColWidths,
+  parseStoredColWidths,
+  resolveColWidth,
+  coarserScale,
+  finerScale,
+  wideThreshold,
   projectGanttRows,
   splitModulePath,
   defectStateClass,
@@ -840,10 +914,14 @@ import {
   shiftPlanRange,
   resizePlanRange,
   computeAxisRange,
+  shiftAxisBound,
+  axisExtendChunkUnits,
   buildAxisUnits,
   buildAxisMajorBands,
   dateToOffsetPx,
   offsetPxToDate,
+  pxPerDay,
+  snapDurationDays,
   barGeometry,
   parsePlanDate,
   isoWeekNumber,
@@ -856,7 +934,18 @@ import {
 
 export default {
   name: 'DefectGantt',
-  components: { ArrowDown, ArrowRight, CloseIcon, Link, Operation, RefreshRight, Search, User, Cat2BugAvatar },
+  components: {
+    ArrowDown,
+    ArrowRight,
+    CloseIcon,
+    Link,
+    Operation,
+    RefreshRight,
+    Search,
+    User,
+    Cat2BugAvatar,
+    SelectProjectMember
+  },
   setup() {
     return { Search }
   },
@@ -880,6 +969,11 @@ export default {
     if (![GANTT_SCALE.DAY, GANTT_SCALE.WEEK, GANTT_SCALE.MONTH].includes(scale)) {
       scale = GANTT_SCALE.DAY
     }
+    let colWidths = defaultColWidths()
+    try {
+      const rawCol = cache && cache.get(GANTT_CACHE.COL_WIDTHS)
+      if (rawCol) colWidths = parseStoredColWidths(rawCol)
+    } catch (_) { /* ignore */ }
     let leftWidth = Number(cache && cache.get(GANTT_CACHE.LEFT_WIDTH))
     if (!Number.isFinite(leftWidth) || leftWidth < GANTT_LEFT_WIDTH_MIN) {
       leftWidth = GANTT_LEFT_WIDTH_DEFAULT
@@ -924,6 +1018,10 @@ export default {
     let showCritical = false
     let showLoad = false
     let showBaseline = false
+    /** 条后处理人头像 / 天数 / 缺陷标题（默认关） */
+    let showBarHandler = false
+    let showBarDays = false
+    let showBarDefectTitle = false
     /** 缩略图默认开；仅当本地显式存了 minimap 键时才覆盖 */
     let showMinimap = true
     try {
@@ -935,6 +1033,10 @@ export default {
           showCritical = !!parsed.critical
           showLoad = !!parsed.load
           showBaseline = !!parsed.baseline
+          // handler：新键；兼容曾写入的 handlerAvatar
+          showBarHandler = !!(parsed.handler != null ? parsed.handler : parsed.handlerAvatar)
+          showBarDays = !!parsed.days
+          showBarDefectTitle = !!parsed.defectTitle
           if (Object.prototype.hasOwnProperty.call(parsed, 'minimap')) {
             showMinimap = !!parsed.minimap
           }
@@ -958,13 +1060,29 @@ export default {
     } catch (_) { /* ignore */ }
     return {
       loading: false,
+      /** 触底 / 首屏补高追加中（与首屏 loading 分开，避免整页遮罩） */
+      loadingMore: false,
       defectList: [],
       total: 0,
       queryParams: this.query || {},
       requestGen: 0,
+      /** 已成功拉到的页码（search 重置为 1） */
+      listPageNum: 1,
       pageSize: GANTT_PAGE_SIZE,
+      /** 首屏高度不足时自动续拉计数 */
+      viewportAutoFetchCount: 0,
       groupBy,
       scale,
+      /** 每档列宽记忆 { day, week, month } */
+      colWidths,
+      /** 格缝拖拽态 */
+      colResize: null,
+      /** 切档后短暂忽略反向阈值（ms 时间戳） */
+      _colResizeHysteresisUntil: 0,
+      /** 无限滚动：可向两侧延展的活动轴范围（null 时回退 computeAxisRange） */
+      axisLiveStart: null,
+      axisLiveEnd: null,
+      _axisExtending: false,
       leftWidth,
       unscheduledHeight,
       /** 未排期池是否折叠 */
@@ -975,6 +1093,8 @@ export default {
       collapsedGroups,
       /** 未排期池本地过滤关键字（编号 / 名称） */
       unscheduledKeyword: '',
+      /** 未排期池本地处理人过滤（空数组=全部；与 SelectProjectMember 一致为 id[]） */
+      unscheduledHandlerIds: [],
       rowHeight: GANTT_ROW_HEIGHT,
       headerHeight: GANTT_HEADER_HEIGHT,
       headerMajorHeight: GANTT_HEADER_MAJOR_HEIGHT,
@@ -1026,6 +1146,9 @@ export default {
       showCritical,
       showLoad,
       showBaseline,
+      showBarHandler,
+      showBarDays,
+      showBarDefectTitle,
       /** 缩略图（默认开） */
       showMinimap,
       /** 缩略图面板位置；null 表示右下角停靠 */
@@ -1054,6 +1177,7 @@ export default {
     }
   },
   mounted() {
+    this.expandAxisLiveToCoverBase()
     this.bindAxisViewportObserver()
     this.ensureModulePathMap()
     this.$nextTick(() => {
@@ -1061,6 +1185,7 @@ export default {
         this.minimapPos = this.clampMinimapPos(this.minimapPos.x, this.minimapPos.y)
       }
       this.updateMinimapViewport()
+      this.maybeExtendAxisOnScroll()
     })
     this._onLinkKeyDown = (e) => this.onLinkKeyDown(e)
     window.addEventListener('keydown', this._onLinkKeyDown)
@@ -1096,7 +1221,18 @@ export default {
       return checkPermi(['system:defect:edit'])
     },
     projected() {
-      return projectGanttRows(this.defectList, this.groupBy, this.modulePathById)
+      const qp = this.queryParams || this.query || {}
+      return projectGanttRows(this.defectList, this.groupBy, this.modulePathById, {
+        handlerIds: qp.handleBy
+      })
+    },
+    hasMoreDefects() {
+      const loaded = Array.isArray(this.defectList) ? this.defectList.length : 0
+      const total = Number(this.total)
+      return Number.isFinite(total) && total > loaded
+    },
+    showBarMeta() {
+      return !!(this.showBarHandler || this.showBarDays || this.showBarDefectTitle)
     },
     groups() {
       const list = this.projected.groups || []
@@ -1113,13 +1249,32 @@ export default {
     unscheduledKeywordTrimmed() {
       return String(this.unscheduledKeyword || '').trim()
     },
+    unscheduledHandlerIdSet() {
+      const raw = this.unscheduledHandlerIds
+      if (!Array.isArray(raw) || !raw.length) return null
+      const set = new Set()
+      raw.forEach((id) => {
+        const n = Number(id)
+        if (Number.isFinite(n)) set.add(n)
+      })
+      return set.size ? set : null
+    },
+    unscheduledFilterActive() {
+      return !!(this.unscheduledKeywordTrimmed || this.unscheduledHandlerIdSet)
+    },
     filteredUnscheduled() {
       const list = this.unscheduled || []
       const q = this.unscheduledKeywordTrimmed.toLowerCase()
-      if (!q) return list
+      const handlerSet = this.unscheduledHandlerIdSet
+      if (!q && !handlerSet) return list
       const qNum = q.replace(/^#/, '')
       return list.filter((d) => {
         if (!d) return false
+        if (handlerSet) {
+          const handlers = resolveHandlers(d)
+          if (!handlers.some((h) => handlerSet.has(Number(h.userId)))) return false
+        }
+        if (!q) return true
         const num = d.projectNum != null ? String(d.projectNum) : ''
         const name = d.defectName != null ? String(d.defectName) : ''
         return (
@@ -1133,6 +1288,9 @@ export default {
       return this.defectList.filter((d) => d && parsePlanDate(d.planStartTime) && parsePlanDate(d.planEndTime))
     },
     axisRange() {
+      if (this.axisLiveStart && this.axisLiveEnd) {
+        return { start: this.axisLiveStart, end: this.axisLiveEnd }
+      }
       return computeAxisRange(this.scheduledDefects, this.scale)
     },
     axisUnits() {
@@ -1142,7 +1300,7 @@ export default {
       return buildAxisMajorBands(this.axisUnits, this.scale)
     },
     colWidth() {
-      return GANTT_COL_WIDTH[this.scale] || GANTT_COL_WIDTH.day
+      return resolveColWidth(this.scale, this.colWidths)
     },
     axisWidthPx() {
       return Math.max(this.colWidth, this.axisUnits.length * this.colWidth)
@@ -1184,7 +1342,10 @@ export default {
         if (!g || g.type !== 'handler' || g.handlerId == null) continue
         const id = Number(g.handlerId)
         if (!Number.isFinite(id) || map.has(id)) continue
-        map.set(id, buildHandlerLoadTrackSegments(id, defects, rangeStart, scale, 1, axisW))
+        map.set(
+          id,
+          buildHandlerLoadTrackSegments(id, defects, rangeStart, scale, 1, axisW, this.colWidth)
+        )
       }
       return map
     },
@@ -1207,7 +1368,7 @@ export default {
       return style
     },
     todayLineLeft() {
-      const x = dateToOffsetPx(new Date(), this.axisRange.start, this.scale)
+      const x = dateToOffsetPx(new Date(), this.axisRange.start, this.scale, this.colWidth)
       if (x < 0 || x > this.axisWidthPx) return null
       return x
     },
@@ -1250,7 +1411,7 @@ export default {
           const defect = row && row.defect
           const id = defect && defect.defectId != null ? Number(defect.defectId) : null
           if (id != null && Number.isFinite(id) && !map.has(id)) {
-            let geo = barGeometry(defect, this.axisRange.start, this.scale)
+            let geo = barGeometry(defect, this.axisRange.start, this.scale, this.colWidth)
             if (
               geo &&
               this.dragState &&
@@ -1366,7 +1527,7 @@ export default {
         for (let ri = 0; ri < rows.length; ri++) {
           const row = rows[ri]
           const defect = row && row.defect
-          const geo = defect ? barGeometry(defect, this.axisRange.start, this.scale) : null
+          const geo = defect ? barGeometry(defect, this.axisRange.start, this.scale, this.colWidth) : null
           if (geo && geo.width > 0) {
             const left = (geo.x / contentW) * mw
             const width = Math.max(2, (geo.width / contentW) * mw)
@@ -1407,6 +1568,15 @@ export default {
     showBaseline() {
       this.persistGanttLayers()
     },
+    showBarHandler() {
+      this.persistGanttLayers()
+    },
+    showBarDays() {
+      this.persistGanttLayers()
+    },
+    showBarDefectTitle() {
+      this.persistGanttLayers()
+    },
     showMinimap(val) {
       this.persistGanttLayers()
       if (val) {
@@ -1415,12 +1585,23 @@ export default {
         this.teardownMinimapPanelDrag()
         this.teardownMinimapNav()
       }
+    },
+    defectList() {
+      this.expandAxisLiveToCoverBase()
+    },
+    scale() {
+      this.resetAxisLiveRange()
     }
   },
   beforeUnmount() {
+    if (this._ganttLoadMoreTimer) {
+      clearTimeout(this._ganttLoadMoreTimer)
+      this._ganttLoadMoreTimer = null
+    }
     this.teardownDragListeners()
     this.teardownResizeLeft()
     this.teardownResizeUnscheduled()
+    this.teardownColResize()
     this.teardownAxisViewportObserver()
     this.teardownMinimapPanelDrag()
     this.teardownMinimapNav()
@@ -1441,6 +1622,89 @@ export default {
   methods: {
     init() {
       /* 数据由父组件 search(queryParams) 拉取 */
+      this.expandAxisLiveToCoverBase()
+    },
+    /** 按缺陷基线重置活动轴（切尺度时） */
+    resetAxisLiveRange() {
+      const base = computeAxisRange(this.scheduledDefects, this.scale)
+      this.axisLiveStart = base.start
+      this.axisLiveEnd = base.end
+    },
+    /** 缺陷变化时只外扩、不收缩，保留用户已滚过的空白轴 */
+    expandAxisLiveToCoverBase() {
+      const base = computeAxisRange(this.scheduledDefects, this.scale)
+      if (!this.axisLiveStart || !this.axisLiveEnd) {
+        this.axisLiveStart = base.start
+        this.axisLiveEnd = base.end
+        return
+      }
+      if (base.start.getTime() < this.axisLiveStart.getTime()) {
+        this.axisLiveStart = base.start
+      }
+      if (base.end.getTime() > this.axisLiveEnd.getTime()) {
+        this.axisLiveEnd = base.end
+      }
+    },
+    /**
+     * 滚近左右边缘时向过去/未来延展；向前延展后补偿 scrollLeft，视口不跳。
+     * @param {number} [depth] 递归深度上限，避免窄内容死循环
+     */
+    maybeExtendAxisOnScroll(depth = 0) {
+      if (depth > 4) return
+      if (this._axisExtending || this.colResize || this.syncingScroll) return
+      const body = this.$refs.axisBodyScroll
+      if (!body || body.clientWidth <= 0) return
+      const threshold = Math.max(body.clientWidth * 0.8, this.colWidth * 4)
+      const maxScroll = Math.max(0, body.scrollWidth - body.clientWidth)
+      const chunk = axisExtendChunkUnits(this.scale, this.colWidth, body.clientWidth)
+      /*
+       * 整轴尚不足一屏：左右都会「贴边」。只向未来扩出可滚空间，
+       * 避免 before+after 递归把轴无限拉长卡死。
+       */
+      if (maxScroll <= 2) {
+        this.extendAxisAfter(chunk, depth)
+        return
+      }
+      const nearLeft = body.scrollLeft <= threshold
+      const nearRight = body.scrollLeft >= maxScroll - threshold
+      if (nearLeft) this.extendAxisBefore(chunk, depth)
+      else if (nearRight) this.extendAxisAfter(chunk, depth)
+    },
+    extendAxisBefore(unitCount, depth = 0) {
+      const n = Math.max(1, Math.floor(Number(unitCount) || 0))
+      if (!this.axisLiveStart || !this.axisLiveEnd) this.expandAxisLiveToCoverBase()
+      const oldStart = this.axisLiveStart
+      const newStart = shiftAxisBound(oldStart, this.scale, -n)
+      if (!newStart || newStart.getTime() >= oldStart.getTime()) return
+      const prependPx = dateToOffsetPx(oldStart, newStart, this.scale, this.colWidth)
+      if (!(prependPx > 0)) return
+      this._axisExtending = true
+      this.axisLiveStart = newStart
+      this.$nextTick(() => {
+        const body = this.$refs.axisBodyScroll
+        const header = this.$refs.axisHeaderScroll
+        this.syncingScroll = true
+        if (body) body.scrollLeft += prependPx
+        if (header && body) header.scrollLeft = body.scrollLeft
+        this.syncingScroll = false
+        this._axisExtending = false
+        this.updateMinimapViewport()
+        this.$nextTick(() => this.maybeExtendAxisOnScroll(depth + 1))
+      })
+    },
+    extendAxisAfter(unitCount, depth = 0) {
+      const n = Math.max(1, Math.floor(Number(unitCount) || 0))
+      if (!this.axisLiveStart || !this.axisLiveEnd) this.expandAxisLiveToCoverBase()
+      const oldEnd = this.axisLiveEnd
+      const newEnd = shiftAxisBound(oldEnd, this.scale, n)
+      if (!newEnd || newEnd.getTime() <= oldEnd.getTime()) return
+      this._axisExtending = true
+      this.axisLiveEnd = newEnd
+      this.$nextTick(() => {
+        this._axisExtending = false
+        this.updateMinimapViewport()
+        this.$nextTick(() => this.maybeExtendAxisOnScroll(depth + 1))
+      })
     },
     /**
      * 柔和 S 曲线：出端/入端留短 stub，箭头前再缩一点，避免直角折线与实心三角贴死条边。
@@ -1496,14 +1760,27 @@ export default {
       if (!collapsed && this.shouldShowLoadTrack(group)) h += this.loadTrackHeight
       return h
     },
+    /**
+     * 与表格/Excel 同一套通用查询；首屏只拉一段，其余触底 / 首屏补高续拉。
+     * @param {Object} [params] 父页 queryParams；缺省时用当前 prop/本地副本
+     */
     search(params) {
       const gen = ++this.requestGen
       this.loading = true
-      const base = params && typeof params === 'object' ? { ...params } : { ...(this.queryParams || {}) }
+      this.loadingMore = false
+      this.listPageNum = 1
+      this.viewportAutoFetchCount = 0
+      const base =
+        params && typeof params === 'object'
+          ? params
+          : (this.query && typeof this.query === 'object' ? this.query : (this.queryParams || {}))
       this.queryParams = base
       this.ensureModulePathMap()
+      const nested =
+        base.params && typeof base.params === 'object' ? { ...base.params } : {}
       const req = {
         ...base,
+        params: nested,
         pageNum: 1,
         pageSize: this.pageSize
       }
@@ -1512,10 +1789,12 @@ export default {
           if (gen !== this.requestGen) return
           this.defectList = Array.isArray(response.rows) ? response.rows : []
           this.total = Number(response.total) || 0
+          this.listPageNum = 1
           this.fetchPlanGanttMeta(gen)
           this.$nextTick(() => {
             this.measureAxisViewport()
             this.scrollToToday(false)
+            this.maybeFillGanttViewportUntilScrollable()
           })
         })
         .catch(() => {
@@ -1524,6 +1803,95 @@ export default {
         .finally(() => {
           if (gen === this.requestGen) this.loading = false
         })
+    },
+    /** 首屏内容高度不足一屏时自动续拉（受 GANTT_VIEWPORT_AUTO_FETCH_MAX 限制） */
+    maybeFillGanttViewportUntilScrollable() {
+      if (this.loading || this.loadingMore || !this.hasMoreDefects) return
+      if (this.viewportAutoFetchCount >= GANTT_VIEWPORT_AUTO_FETCH_MAX) return
+      const axis = this.$refs.axisBodyScroll
+      if (!axis || axis.clientHeight <= 0) return
+      /* 内容已超过视口则不必预拉 */
+      if (axis.scrollHeight > axis.clientHeight + 40) return
+      this.tryLoadMoreDefects({ fromViewportFill: true })
+    },
+    /**
+     * 纵滚接近底部时追加下一段。
+     * @param {{ fromViewportFill?: boolean }} [opts]
+     */
+    tryLoadMoreDefects(opts) {
+      if (this.loading || this.loadingMore || !this.hasMoreDefects) return
+      const fromViewportFill = !!(opts && opts.fromViewportFill)
+      if (fromViewportFill && this.viewportAutoFetchCount >= GANTT_VIEWPORT_AUTO_FETCH_MAX) return
+      const axis = this.$refs.axisBodyScroll
+      const left = this.$refs.leftScroll
+      const scroller = axis || left
+      if (!fromViewportFill) {
+        if (!scroller) return
+        const remain =
+          scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight
+        if (remain > GANTT_LOAD_MORE_THRESHOLD_PX) return
+      }
+      const gen = this.requestGen
+      const nextPage = this.listPageNum + 1
+      const base = this.queryParams || this.query || {}
+      const nested =
+        base.params && typeof base.params === 'object' ? { ...base.params } : {}
+      if (fromViewportFill) this.viewportAutoFetchCount += 1
+      this.loadingMore = true
+      listDefect({
+        ...base,
+        params: nested,
+        pageNum: nextPage,
+        pageSize: this.pageSize
+      })
+        .then((response) => {
+          if (gen !== this.requestGen) return
+          const rows = Array.isArray(response.rows) ? response.rows : []
+          if (response.total != null && response.total !== '') {
+            this.total = Number(response.total) || this.total
+          }
+          if (!rows.length) {
+            this.total = this.defectList.length
+            return
+          }
+          const seen = new Set(
+            (this.defectList || [])
+              .map((d) => (d && d.defectId != null ? Number(d.defectId) : null))
+              .filter((id) => id != null && Number.isFinite(id))
+          )
+          const appended = rows.filter((d) => {
+            const id = d && d.defectId != null ? Number(d.defectId) : null
+            if (id == null || !Number.isFinite(id) || seen.has(id)) return false
+            seen.add(id)
+            return true
+          })
+          if (appended.length) {
+            this.defectList = this.defectList.concat(appended)
+            this.listPageNum = nextPage
+            this.fetchPlanGanttMeta(gen)
+          } else if (rows.length < this.pageSize) {
+            this.total = this.defectList.length
+          } else {
+            /* 本页全重复（排序抖动等）：仍推进页码避免死循环 */
+            this.listPageNum = nextPage
+          }
+          this.$nextTick(() => {
+            this.maybeFillGanttViewportUntilScrollable()
+          })
+        })
+        .catch(() => {
+          if (gen !== this.requestGen) return
+        })
+        .finally(() => {
+          if (gen === this.requestGen) this.loadingMore = false
+        })
+    },
+    scheduleGanttLoadMoreCheck() {
+      if (this._ganttLoadMoreTimer) clearTimeout(this._ganttLoadMoreTimer)
+      this._ganttLoadMoreTimer = setTimeout(() => {
+        this._ganttLoadMoreTimer = null
+        this.tryLoadMoreDefects()
+      }, 120)
     },
     /** search 成功后拉取依赖边与活跃基线 */
     fetchPlanGanttMeta(requestGen) {
@@ -1912,7 +2280,7 @@ export default {
       return formatDurationDays(this.groupTotalDays(group))
     },
     barStyle(row) {
-      const geo = barGeometry(row.defect, this.axisRange.start, this.scale)
+      const geo = barGeometry(row.defect, this.axisRange.start, this.scale, this.colWidth)
       if (!geo) return null
       let x = geo.x
       let width = geo.width
@@ -1959,7 +2327,7 @@ export default {
         planStartTime: item.planStartTime,
         planEndTime: item.planEndTime
       }
-      const geo = barGeometry(pseudo, this.axisRange.start, this.scale)
+      const geo = barGeometry(pseudo, this.axisRange.start, this.scale, this.colWidth)
       if (!geo) return null
       return {
         left: geo.x + 'px',
@@ -1991,7 +2359,7 @@ export default {
       const d = u.start
       if (!(d instanceof Date)) return ''
       if (this.scale === GANTT_SCALE.MONTH) {
-        return String(d.getMonth() + 1)
+        return this.$t('defect.gantt.axis-month', { m: d.getMonth() + 1 })
       }
       if (this.scale === GANTT_SCALE.WEEK) {
         return this.formatWeekUnitLabel(u)
@@ -2054,10 +2422,75 @@ export default {
             critical: !!this.showCritical,
             load: !!this.showLoad,
             baseline: !!this.showBaseline,
+            handler: !!this.showBarHandler,
+            days: !!this.showBarDays,
+            defectTitle: !!this.showBarDefectTitle,
             minimap: !!this.showMinimap
           })
         )
       } catch (_) { /* ignore */ }
+    },
+    /**
+     * 条后展示的处理人：按处理人分组时只显示本组处理人；按交付物时显示全部处理人。
+     * @param {object} row
+     * @param {object} [group]
+     */
+    barHandlersOf(row, group) {
+      if (!row || !row.defect) return []
+      const all = resolveHandlers(row.defect)
+      if (!all.length) return []
+      if (group && group.type === 'handler' && group.handlerId != null) {
+        const gid = Number(group.handlerId)
+        const hit = all.find((h) => Number(h.userId) === gid)
+        if (hit) return [hit]
+        if (group.handlerMember) {
+          return [{
+            userId: gid,
+            nickName: group.handlerMember.nickName || group.label || String(gid),
+            userName: group.handlerMember.userName,
+            avatar: group.handlerMember.avatar,
+            avatarUrl: group.handlerMember.avatarUrl
+          }]
+        }
+        return [{ userId: gid, nickName: group.label || String(gid), userName: String(gid) }]
+      }
+      return all
+    },
+    /** 条右缘外侧放置处理人/标题元信息 */
+    barMetaStyle(row) {
+      const st = this.barStyle(row)
+      if (!st || st.left == null || st.width == null) return null
+      const left = parseFloat(st.left)
+      const width = parseFloat(st.width)
+      if (!Number.isFinite(left) || !Number.isFinite(width)) return null
+      return {
+        left: left + width + 6 + 'px'
+      }
+    },
+    /** 条后「天数」文案：计划工期 + 天 */
+    barDaysText(row) {
+      if (!row || !row.defect) return ''
+      const days = planDurationDays(row.defect)
+      const formatted = formatDurationDays(days)
+      if (!formatted) return ''
+      return this.$t('defect.gantt.bar-days', { n: formatted })
+    },
+    /** 条后「缺陷标题」文案：#编号 + 标题 */
+    barDefectTitleText(row) {
+      if (!row || !row.defect) return ''
+      const num = row.defect.projectNum != null ? String(row.defect.projectNum) : ''
+      const name = (row.defect.defectName || '').trim()
+      if (num && name) return `#${num} ${name}`
+      if (num) return `#${num}`
+      return name
+    },
+    /** 条后元信息是否有可展示内容 */
+    barMetaVisible(row, group) {
+      if (!this.barMetaStyle(row)) return false
+      if (this.showBarHandler && this.barHandlersOf(row, group).length) return true
+      if (this.showBarDays && this.barDaysText(row)) return true
+      if (this.showBarDefectTitle && this.barDefectTitleText(row)) return true
+      return false
     },
     persistMinimapPos() {
       if (!(this.$cache && this.$cache.local)) return
@@ -2292,13 +2725,197 @@ export default {
       if (this.$cache && this.$cache.local) {
         this.$cache.local.set(GANTT_CACHE.SCALE, val)
       }
-      this.$nextTick(() => this.scrollToToday(false))
+      /* colWidth 由 colWidths[scale] 记忆；无记忆则默认 */
+      this.$nextTick(() => {
+        this.scrollToToday(false)
+        this.updateMinimapViewport()
+      })
+    },
+    persistColWidths() {
+      if (!(this.$cache && this.$cache.local)) return
+      try {
+        this.$cache.local.set(GANTT_CACHE.COL_WIDTHS, JSON.stringify(this.colWidths))
+      } catch (_) { /* ignore */ }
+    },
+    setColWidthForScale(scale, width) {
+      const n = Number(width)
+      if (!Number.isFinite(n) || n <= 0) return
+      if (Math.abs((this.colWidths[scale] || 0) - n) < 0.01) return
+      /* 换新对象，确保 computed colWidth 一定刷新 */
+      this.colWidths = { ...this.colWidths, [scale]: n }
+    },
+    /**
+     * 列宽 1:1 跟鼠标；用「缝」内容坐标做滚动锚定，
+     * 避免全局同宽时整轴狂奔、指针下日期漂移。
+     */
+    startColResize(e, unitIndex) {
+      if (e.button != null && e.button !== 0) return
+      const header = this.$refs.axisHeaderScroll
+      const rect = header ? header.getBoundingClientRect() : null
+      const axisLeft = rect ? rect.left : 0
+      const col = Math.max(1, this.colWidth)
+      const ui = Number.isFinite(Number(unitIndex)) ? Math.max(0, Math.floor(Number(unitIndex))) : 0
+      const colsBeforeSeam = ui + 1
+      /* 锚在被拖格缝（第 ui 列右缘），不是点击抖动点 */
+      const anchorContentX = colsBeforeSeam * col
+      this.colResize = {
+        startX: e.clientX,
+        startWidth: col,
+        scale: this.scale,
+        colsBeforeSeam,
+        anchorContentX,
+        axisLeft,
+        _clientX: e.clientX,
+        _raf: 0
+      }
+      if (typeof document !== 'undefined' && document.body) {
+        document.body.classList.add('defect-gantt-col-resizing')
+      }
+      document.addEventListener('mousemove', this.onColResizeMove)
+      document.addEventListener('mouseup', this.onColResizeUp)
+    },
+    onColResizeMove(e) {
+      const drag = this.colResize
+      if (!drag) return
+      drag._clientX = e.clientX
+      if (drag._raf) return
+      drag._raf = requestAnimationFrame(() => {
+        drag._raf = 0
+        if (!this.colResize) return
+        this.applyColResizeDelta(this.colResize._clientX - this.colResize.startX)
+      })
+    },
+    onColResizeUp() {
+      const drag = this.colResize
+      if (drag) {
+        if (drag._raf) {
+          cancelAnimationFrame(drag._raf)
+          drag._raf = 0
+        }
+        this.applyColResizeDelta(drag._clientX - drag.startX)
+      }
+      this.teardownColResize()
+      this.persistColWidths()
+      this.$nextTick(() => this.updateMinimapViewport())
+    },
+    teardownColResize() {
+      const drag = this.colResize
+      if (drag && drag._raf) cancelAnimationFrame(drag._raf)
+      this.colResize = null
+      if (typeof document !== 'undefined' && document.body) {
+        document.body.classList.remove('defect-gantt-col-resizing')
+      }
+      document.removeEventListener('mousemove', this.onColResizeMove)
+      document.removeEventListener('mouseup', this.onColResizeUp)
+    },
+    applyColResizeDelta(deltaPx) {
+      const drag = this.colResize
+      if (!drag) return
+      const scale = this.scale
+      const lim = GANTT_COL_WIDTH_LIMITS[scale]
+      if (!lim) return
+      /*
+       * 列宽与鼠标 1:1（否则靠右拖 Δ/N 几乎不动）。
+       * 用 scroll 把被拖格缝钉在指针下，避免全局同宽时整轴狂奔。
+       */
+      let next = drag.startWidth + deltaPx
+      const hyst = this._colResizeHysteresisUntil && Date.now() < this._colResizeHysteresisUntil
+      if (!hyst) {
+        const coarser = coarserScale(scale)
+        const finer = finerScale(scale)
+        if (coarser && next < lim.min) {
+          this.switchScaleFromColResize(coarser)
+          return
+        }
+        if (finer && next > wideThreshold(scale)) {
+          this.switchScaleFromColResize(finer)
+          return
+        }
+      }
+      next = Math.min(lim.max, Math.max(lim.min, next))
+      if (Math.abs(next - this.colWidth) < 0.05) {
+        this.syncColResizeScroll(drag, next)
+        return
+      }
+      this.setColWidthForScale(scale, next)
+      this.syncColResizeScroll(drag, next)
+      this.updateMinimapViewport()
+    },
+    /** 被拖格缝留在指针下：scrollLeft = N*width - (clientX - axisLeft) */
+    syncColResizeScroll(drag, widthOverride) {
+      if (!drag) return
+      const header = this.$refs.axisHeaderScroll
+      const body = this.$refs.axisBodyScroll
+      if (!header) return
+      const rect = header.getBoundingClientRect()
+      const axisLeft = rect.left
+      const clientX = drag._clientX != null ? drag._clientX : drag.startX
+      const w = widthOverride != null ? widthOverride : this.colWidth
+      const n = Math.max(1, drag.colsBeforeSeam || 1)
+      const seamContentX = n * w
+      const target = Math.max(0, seamContentX - (clientX - axisLeft))
+      this.syncingScroll = true
+      header.scrollLeft = target
+      if (body) body.scrollLeft = target
+      this.syncingScroll = false
+    },
+    switchScaleFromColResize(newScale) {
+      const drag = this.colResize
+      const body = this.$refs.axisBodyScroll
+      const header = this.$refs.axisHeaderScroll
+      let centerDate = null
+      if (body) {
+        const centerOffset = body.scrollLeft + body.clientWidth / 2
+        centerDate = offsetPxToDate(centerOffset, this.axisRange.start, this.scale, this.colWidth)
+      }
+      const defaultW = GANTT_COL_WIDTH[newScale] || GANTT_COL_WIDTH.day
+      this.scale = newScale
+      this.setColWidthForScale(newScale, defaultW)
+      if (this.$cache && this.$cache.local) {
+        this.$cache.local.set(GANTT_CACHE.SCALE, newScale)
+      }
+      this.persistColWidths()
+      this._colResizeHysteresisUntil = Date.now() + 420
+      const scaleLabel = this.$t(`defect.gantt.scale-${newScale}`)
+      this.$modal.msg(this.$t('defect.gantt.scale-switched', { scale: scaleLabel }))
+      this.$nextTick(() => {
+        if (centerDate && body) {
+          const newX = dateToOffsetPx(centerDate, this.axisRange.start, this.scale, this.colWidth)
+          const target = Math.max(0, newX - body.clientWidth / 2)
+          this.syncingScroll = true
+          body.scrollLeft = target
+          if (header) header.scrollLeft = target
+          this.syncingScroll = false
+        }
+        /* 切档后按当前指针下的列重定基准，继续拖仍跟手 */
+        if (drag) {
+          const el = header || body
+          const rect = el ? el.getBoundingClientRect() : null
+          const axisLeft = rect ? rect.left : 0
+          const scrollLeft = el ? el.scrollLeft : 0
+          const clientX = drag._clientX != null ? drag._clientX : drag.startX
+          const contentX = Math.max(0, scrollLeft + (clientX - axisLeft))
+          const col = Math.max(1, this.colWidth)
+          const unitIndex = Math.min(
+            Math.max(0, Math.floor(contentX / col)),
+            Math.max(0, (this.axisUnits || []).length - 1)
+          )
+          const colsBeforeSeam = unitIndex + 1
+          drag.startX = clientX
+          drag.startWidth = col
+          drag.scale = newScale
+          drag.colsBeforeSeam = colsBeforeSeam
+          drag.anchorContentX = colsBeforeSeam * col
+          drag.axisLeft = axisLeft
+        }
+        this.updateMinimapViewport()
+      })
     },
     scrollToToday(smooth = true) {
       const body = this.$refs.axisBodyScroll
       const header = this.$refs.axisHeaderScroll
       if (!body) return
-      const x = dateToOffsetPx(new Date(), this.axisRange.start, this.scale)
+      const x = dateToOffsetPx(new Date(), this.axisRange.start, this.scale, this.colWidth)
       const target = Math.max(0, x - body.clientWidth / 3)
       const behavior = smooth ? 'smooth' : 'auto'
       body.scrollTo({ left: target, behavior })
@@ -2311,6 +2928,7 @@ export default {
       const axis = this.$refs.axisBodyScroll
       if (left && axis) axis.scrollTop = left.scrollTop
       this.syncingScroll = false
+      this.scheduleGanttLoadMoreCheck()
     },
     onAxisBodyScroll() {
       if (this.syncingScroll) {
@@ -2325,6 +2943,8 @@ export default {
       if (header && axis) header.scrollLeft = axis.scrollLeft
       this.syncingScroll = false
       this.updateMinimapViewport()
+      this.maybeExtendAxisOnScroll()
+      this.scheduleGanttLoadMoreCheck()
     },
     onAxisHeaderScroll() {
       if (this.syncingScroll) return
@@ -2333,6 +2953,7 @@ export default {
       const header = this.$refs.axisHeaderScroll
       if (header && axis) axis.scrollLeft = header.scrollLeft
       this.syncingScroll = false
+      this.maybeExtendAxisOnScroll()
     },
     startResizeLeft(e) {
       this.resizeLeft = { startX: e.clientX, startWidth: this.leftWidth }
@@ -2434,7 +3055,7 @@ export default {
       const body = this.$refs.axisBodyScroll
       const header = this.$refs.axisHeaderScroll
       const left = this.$refs.leftScroll
-      const geo = barGeometry(row.defect, this.axisRange.start, this.scale)
+      const geo = barGeometry(row.defect, this.axisRange.start, this.scale, this.colWidth)
       if (body && geo) {
         const viewLeft = body.scrollLeft
         const viewRight = viewLeft + body.clientWidth
@@ -2612,18 +3233,19 @@ export default {
         planStartTime = this.dragState.defect.planStartTime
         planEndTime = this.dragState.defect.planEndTime
         const edge = this.dragState.mode
-        if (edge === 'start') {
-          const resized = resizePlanRange(planStartTime, planEndTime, 'start', day)
-          if (resized) {
-            planStartTime = resized.planStartTime
-            planEndTime = resized.planEndTime
-          }
-        } else {
-          const resized = resizePlanRange(planStartTime, planEndTime, 'end', day)
-          if (resized) {
-            planStartTime = resized.planStartTime
-            planEndTime = resized.planEndTime
-          }
+        const preview = this.dragState.preview
+        const ppd = pxPerDay(this.scale, this.colWidth)
+        const widthDays =
+          preview && ppd > 0
+            ? snapDurationDays(preview.width / ppd, { min: 0.1, magnet: 0.12 })
+            : null
+        const resized =
+          widthDays != null
+            ? resizePlanRange(planStartTime, planEndTime, edge, null, { durationDays: widthDays })
+            : resizePlanRange(planStartTime, planEndTime, edge, day)
+        if (resized) {
+          planStartTime = resized.planStartTime
+          planEndTime = resized.planEndTime
         }
       } else {
         const range = defaultPlanRangeFromDropDay(day)
@@ -2639,7 +3261,7 @@ export default {
         planStartTime,
         planEndTime
       }
-      const geo = barGeometry(previewDefect, this.axisRange.start, this.scale)
+      const geo = barGeometry(previewDefect, this.axisRange.start, this.scale, this.colWidth)
       if (!geo) {
         this.setDropInsertPreview(null)
         return
@@ -2840,7 +3462,7 @@ export default {
       if (!body) return null
       const rect = body.getBoundingClientRect()
       const offset = clientX - rect.left + body.scrollLeft
-      return offsetPxToDate(offset, this.axisRange.start, this.scale)
+      return offsetPxToDate(offset, this.axisRange.start, this.scale, this.colWidth)
     },
     findGroupAtPoint(clientY) {
       const slot = this.findDropSlot(clientY)
@@ -3022,7 +3644,7 @@ export default {
       }
       if (!this.canEdit) return
       e.preventDefault()
-      const geo = barGeometry(row.defect, this.axisRange.start, this.scale)
+      const geo = barGeometry(row.defect, this.axisRange.start, this.scale, this.colWidth)
       if (!geo) return
       const batchIds =
         mode === 'move' &&
@@ -3101,23 +3723,23 @@ export default {
         }
       }
       const col = this.colWidth
+      const ppd = pxPerDay(this.scale, col)
+      /* 拉边：0.1 天步进 + 整天磁吸；平移仍按列吸附 */
+      const minBarW = Math.max(4, ppd * 0.1)
       let nextPreview = ds.preview
       if (ds.mode === 'move') {
-        const snapped = Math.round(dx / col) * col
-        nextPreview = { x: ds.originX + snapped, width: ds.originWidth }
+        const moveSnap = Math.round(dx / col) * col
+        nextPreview = { x: ds.originX + moveSnap, width: ds.originWidth }
       } else if (ds.mode === 'start') {
-        const snapped = Math.round(dx / col) * col
-        let x = ds.originX + snapped
-        let width = ds.originWidth - snapped
-        if (width < col) {
-          x = ds.originX + ds.originWidth - col
-          width = col
-        }
+        const rawDays = (ds.originWidth - dx) / ppd
+        const widthDays = snapDurationDays(rawDays, { min: 0.1, magnet: 0.12 })
+        const width = Math.max(minBarW, widthDays * ppd)
+        const x = ds.originX + ds.originWidth - width
         nextPreview = { x, width }
       } else if (ds.mode === 'end') {
-        const snapped = Math.round(dx / col) * col
-        let width = ds.originWidth + snapped
-        if (width < col) width = col
+        const rawDays = (ds.originWidth + dx) / ppd
+        const widthDays = snapDurationDays(rawDays, { min: 0.1, magnet: 0.12 })
+        const width = Math.max(minBarW, widthDays * ppd)
         nextPreview = { x: ds.originX, width }
       }
       const previewChanged =
@@ -3173,13 +3795,12 @@ export default {
       let range = null
       if (ds.mode === 'move') {
         range = shiftPlanRange(ds.planStartTime, ds.planEndTime, this.scaleDayDelta(dayDelta))
-      } else if (ds.mode === 'start') {
-        const day = offsetPxToDate(ds.preview.x, this.axisRange.start, this.scale)
-        range = resizePlanRange(ds.planStartTime, ds.planEndTime, 'start', day)
-      } else if (ds.mode === 'end') {
-        const endOffset = ds.preview.x + ds.preview.width - this.colWidth
-        const day = offsetPxToDate(endOffset, this.axisRange.start, this.scale)
-        range = resizePlanRange(ds.planStartTime, ds.planEndTime, 'end', day)
+      } else if (ds.mode === 'start' || ds.mode === 'end') {
+        const ppd = pxPerDay(this.scale, this.colWidth)
+        const widthDays = snapDurationDays(ds.preview.width / ppd, { min: 0.1, magnet: 0.12 })
+        range = resizePlanRange(ds.planStartTime, ds.planEndTime, ds.mode, null, {
+          durationDays: widthDays
+        })
       }
       if (!range) {
         endDragUi()
@@ -4223,6 +4844,7 @@ export default {
 }
 
 .defect-gantt-axis-unit {
+  position: relative;
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
@@ -4240,6 +4862,22 @@ export default {
   &.is-week-scale {
     padding: 2px 0;
   }
+}
+
+.defect-gantt-col-resize {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  bottom: 0;
+  width: 8px;
+  z-index: 5;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+body.defect-gantt-col-resizing {
+  cursor: col-resize !important;
+  user-select: none !important;
 }
 
 .defect-gantt-axis-day-num {
@@ -4507,11 +5145,14 @@ export default {
   line-height: 1.2;
   padding: 0 4px;
   pointer-events: none;
+  /* 继承条上状态色字色，不要描边/光晕边框 */
+  color: inherit;
 }
 .defect-gantt-bar-num {
   flex: 0 0 auto;
   font-weight: 600;
   white-space: nowrap;
+  color: inherit;
 }
 .defect-gantt-bar-name {
   flex: 1 1 auto;
@@ -4520,16 +5161,65 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: inherit;
+}
+
+/* 条右外侧：处理人头像 / 缺陷标题（图层开关控制） */
+.defect-gantt-bar-meta {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  max-width: 280px;
+  pointer-events: none;
+  user-select: none;
+}
+.defect-gantt-bar-handler {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  line-height: 0;
+}
+.defect-gantt-bar-handler-avatar {
+  flex: 0 0 auto;
+  line-height: 0;
+  :deep(.el-avatar) {
+    border: none !important;
+  }
+}
+.defect-gantt-bar-days {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  color: var(--el-text-color-secondary, #909399);
+}
+.defect-gantt-bar-defect-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--el-text-color-regular, #606266);
 }
 
 .defect-gantt-bar-handle {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 6px;
-  z-index: 2;
+  width: 8px;
+  z-index: 6;
   cursor: ew-resize;
   opacity: 0;
+  pointer-events: auto;
   &.left {
     left: 0;
   }
@@ -4542,7 +5232,7 @@ export default {
   }
 }
 .defect-gantt-bar:hover .defect-gantt-bar-handle {
-  opacity: 0.35;
+  opacity: 0.45;
 }
 .defect-gantt-bar-port {
   position: absolute;
@@ -4559,11 +5249,16 @@ export default {
   cursor: crosshair;
   z-index: 8;
   transition: opacity 0.12s ease, transform 0.12s ease, background 0.12s ease;
+  /* 整圆在条外，与内侧 8px 拉宽手柄错开 */
   &.left {
-    left: -6px;
+    left: auto;
+    right: 100%;
+    margin-right: 2px;
   }
   &.right {
-    right: -6px;
+    right: auto;
+    left: 100%;
+    margin-left: 2px;
   }
   &.is-active,
   &.is-valid-drop {
@@ -4670,8 +5365,43 @@ export default {
 
 .defect-gantt-unscheduled-search {
   flex: 1 1 auto;
-  max-width: 320px;
-  min-width: 140px;
+  max-width: 240px;
+  min-width: 120px;
+  /* 与处理人选择器统一小号高度 */
+  :deep(.el-input__wrapper) {
+    height: var(--cat2bug-toolbar-control-height, var(--el-component-size-small, 32px));
+    min-height: var(--cat2bug-toolbar-control-height, var(--el-component-size-small, 32px));
+  }
+}
+
+.defect-gantt-unscheduled-handler {
+  flex: 0 1 180px;
+  min-width: 128px;
+  max-width: 200px;
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  height: var(--cat2bug-toolbar-control-height, var(--el-component-size-small, 32px));
+  /* 未排期不在工具栏作用域，需本地压成与左侧 small input 同高 */
+  :deep(.select-project-member-input) {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: var(--cat2bug-toolbar-control-height, var(--el-component-size-small, 32px)) !important;
+    min-height: var(--cat2bug-toolbar-control-height, var(--el-component-size-small, 32px)) !important;
+    max-height: var(--cat2bug-toolbar-control-height, var(--el-component-size-small, 32px)) !important;
+    line-height: 1 !important;
+    font-size: 12px;
+    box-sizing: border-box;
+  }
+  :deep(.select-project-member-input__prefix-icon),
+  :deep(.select-project-member-input__icon) {
+    font-size: 12px;
+  }
+  :deep(.select-project-member-tag.el-tag) {
+    height: 20px;
+    line-height: 20px;
+    font-size: 12px;
+  }
 }
 
 .defect-gantt-unscheduled-pool {
@@ -4757,6 +5487,9 @@ export default {
 .defect-gantt-cap-hint {
   padding: 4px 10px;
   border-top: 1px solid var(--el-border-color-extra-light, #f2f2f2);
+  &.is-loading {
+    color: var(--el-color-primary, #409eff);
+  }
 }
 
 .defect-gantt-empty {
@@ -4936,8 +5669,9 @@ html.dark .defect-gantt-load-seg.is-overload {
 
 /* —— 甘特二期：工具条 / 依赖 / 关键路径 / 负荷 / 基线 / 框选 —— */
 .defect-gantt-tools-divider {
-  margin: 0 4px;
-  height: 1.2em;
+  margin: 0 8px;
+  align-self: center;
+  height: calc(var(--cat2bug-toolbar-control-height, 32px) - 8px);
 }
 .defect-gantt-tools-right {
   :deep(.el-checkbox) {

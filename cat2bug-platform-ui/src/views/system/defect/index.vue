@@ -2915,10 +2915,13 @@ export default {
       this.endSuppressDefectQueryFetch(400)
       this.scheduleTabDataLoad()
     },
-    /** 搜索操作 */
+    /** 搜索操作（表格 / Excel / 甘特共用 queryParams 通用查询条件） */
     handleRefreshQuery() {
       this.queryParams.projectId = this.projectId
-      this.$refs.defectContentComponent.search(this.queryParams)
+      const content = this.$refs.defectContentComponent
+      if (content && typeof content.search === 'function') {
+        content.search(this.queryParams)
+      }
       const statistic = this.$refs.defectStatistic
       if (statistic && typeof statistic.refreshData === 'function') {
         statistic.refreshData()

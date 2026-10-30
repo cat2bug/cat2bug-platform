@@ -1,6 +1,11 @@
 /** 缺陷甘特：常量与投影（处理人镜像 / 交付物树序缩进） */
 
-export const GANTT_PAGE_SIZE = 200
+/** 每段 listDefect 条数（首屏与触底追加共用） */
+export const GANTT_PAGE_SIZE = 50
+/** 纵滚距底小于该值（px）时请求下一段 */
+export const GANTT_LOAD_MORE_THRESHOLD_PX = 160
+/** 首屏高度不足时自动续拉的段数上限，避免死循环 */
+export const GANTT_VIEWPORT_AUTO_FETCH_MAX = 20
 export const GANTT_DEFAULT_DURATION_DAYS = 1
 
 export const GANTT_GROUP_BY = Object.freeze({
@@ -18,6 +23,8 @@ export const GANTT_CACHE = Object.freeze({
   LEFT_WIDTH: 'defect.gantt.leftWidth',
   GROUP_BY: 'defect.gantt.groupBy',
   SCALE: 'defect.gantt.scale',
+  /** 每档列宽 { day, week, month }（px） */
+  COL_WIDTHS: 'defect.gantt.colWidths',
   /** 分组内缺陷行序 { [groupKey]: defectId[] } */
   ROW_ORDER: 'defect.gantt.rowOrder',
   /** 已折叠分组 key 列表 */
@@ -55,12 +62,81 @@ export const GANTT_GROUP_HEADER_HEIGHT = 40
 /** 按处理人分组时，组底资源负荷轨高度（参考图：导轨 + 矮蓝条/高粉块） */
 export const GANTT_LOAD_TRACK_HEIGHT = 26
 
-/** 日/周/月列宽（px） */
+/** 日/周/月列宽默认值（px） */
 export const GANTT_COL_WIDTH = Object.freeze({
   day: 36,
   week: 72,
   month: 96
 })
+
+/**
+ * 档内列宽可调范围；越过 min/max（月宽阈值为 wideSwitch）触发升/降档。
+ * day 已是最细：超过 max 仅钳制；month 已是最粗：低于 min 仅钳制。
+ */
+export const GANTT_COL_WIDTH_LIMITS = Object.freeze({
+  day: Object.freeze({ min: 22, max: 64 }),
+  week: Object.freeze({ min: 44, max: 110 }),
+  month: Object.freeze({ min: 56, max: 160, wideSwitch: 140 })
+})
+
+/** @returns {{ day:number, week:number, month:number }} */
+export function defaultColWidths() {
+  return {
+    day: GANTT_COL_WIDTH.day,
+    week: GANTT_COL_WIDTH.week,
+    month: GANTT_COL_WIDTH.month
+  }
+}
+
+/**
+ * 解析本地记忆的每档列宽；非法/缺省回退默认。
+ * @param {unknown} raw
+ * @returns {{ day:number, week:number, month:number }}
+ */
+export function parseStoredColWidths(raw) {
+  const out = defaultColWidths()
+  let parsed = raw
+  if (typeof raw === 'string') {
+    try {
+      parsed = JSON.parse(raw)
+    } catch (_) {
+      return out
+    }
+  }
+  if (!parsed || typeof parsed !== 'object') return out
+  ;[GANTT_SCALE.DAY, GANTT_SCALE.WEEK, GANTT_SCALE.MONTH].forEach((k) => {
+    const n = Number(parsed[k])
+    if (Number.isFinite(n) && n > 0) out[k] = n
+  })
+  return out
+}
+
+/** 当前档宽阈：缩小过 min → 更粗尺度 */
+export function coarserScale(scale) {
+  if (scale === GANTT_SCALE.DAY) return GANTT_SCALE.WEEK
+  if (scale === GANTT_SCALE.WEEK) return GANTT_SCALE.MONTH
+  return null
+}
+
+/** 当前档宽阈：拉大过 max/wideSwitch → 更细尺度 */
+export function finerScale(scale) {
+  if (scale === GANTT_SCALE.MONTH) return GANTT_SCALE.WEEK
+  if (scale === GANTT_SCALE.WEEK) return GANTT_SCALE.DAY
+  return null
+}
+
+export function wideThreshold(scale) {
+  const lim = GANTT_COL_WIDTH_LIMITS[scale]
+  if (!lim) return GANTT_COL_WIDTH.day
+  return lim.wideSwitch != null ? lim.wideSwitch : lim.max
+}
+
+export function resolveColWidth(scale, colWidths) {
+  const map = colWidths && typeof colWidths === 'object' ? colWidths : null
+  const n = map ? Number(map[scale]) : NaN
+  if (Number.isFinite(n) && n > 0) return n
+  return GANTT_COL_WIDTH[scale] || GANTT_COL_WIDTH.day
+}
 
 const STATE_CLASS = Object.freeze({
   PROCESSING: 'processing',
@@ -181,19 +257,64 @@ export function shiftPlanRange(startValue, endValue, deltaDays) {
   }
 }
 
-/** 拉边改期；保证至少 1 个自然日（startOfDay(start) <= startOfDay(end)） */
-export function resizePlanRange(startValue, endValue, edge, dayDate) {
+/**
+ * 拉边改期。
+ * - 传入整日（无时分）时保持「至少 1 个自然日」旧语义；
+ * - 传入带时分或 durationDays 时支持 0.1 天小数工期。
+ * @param {Date|string|number} startValue
+ * @param {Date|string|number} endValue
+ * @param {'start'|'end'} edge
+ * @param {Date|string|number} dayDate 边沿对应日期/时间
+ * @param {{ durationDays?: number }} [opts] 若给出则优先按工期重算该边
+ */
+export function resizePlanRange(startValue, endValue, edge, dayDate, opts = {}) {
   const start = parsePlanDate(startValue)
   const end = parsePlanDate(endValue)
-  const day = startOfDay(dayDate)
-  if (!start || !end || !day) return null
+  if (!start || !end) return null
+
+  if (opts.durationDays != null && Number.isFinite(Number(opts.durationDays))) {
+    const dur = snapDurationDays(Number(opts.durationDays), { min: 0.1, magnet: 0 })
+    if (edge === 'end') {
+      const ne = endFromDurationDays(start, dur)
+      if (!ne) return null
+      return {
+        planStartTime: formatPlanDateTime(start),
+        planEndTime: formatPlanDateTime(ne)
+      }
+    }
+    if (edge === 'start') {
+      const ns = startFromDurationDays(end, dur)
+      if (!ns) return null
+      return {
+        planStartTime: formatPlanDateTime(ns),
+        planEndTime: formatPlanDateTime(end)
+      }
+    }
+  }
+
+  const edgeAt = parsePlanDate(dayDate)
+  if (!edgeAt) return null
+  const fractional = planHasClockTime(edgeAt)
+
   if (edge === 'start') {
-    let ns = new Date(day)
-    ns.setHours(start.getHours(), start.getMinutes(), start.getSeconds(), 0)
-    const endDay = startOfDay(end)
-    if (ns.getTime() > endDay.getTime()) {
-      ns = new Date(endDay)
-      ns.setHours(start.getHours(), start.getMinutes(), start.getSeconds(), 0)
+    let ns = fractional
+      ? new Date(edgeAt.getTime())
+      : (() => {
+          const d = startOfDay(edgeAt)
+          const t = new Date(d)
+          t.setHours(start.getHours(), start.getMinutes(), start.getSeconds(), 0)
+          return t
+        })()
+    const minEndGap = fractional ? 0.1 * DAY_MS : 0
+    if (ns.getTime() > end.getTime() - minEndGap) {
+      ns = fractional
+        ? new Date(end.getTime() - 0.1 * DAY_MS)
+        : (() => {
+            const d = startOfDay(end)
+            const t = new Date(d)
+            t.setHours(start.getHours(), start.getMinutes(), start.getSeconds(), 0)
+            return t
+          })()
     }
     return {
       planStartTime: formatPlanDateTime(ns),
@@ -201,10 +322,18 @@ export function resizePlanRange(startValue, endValue, edge, dayDate) {
     }
   }
   if (edge === 'end') {
-    let ne = endOfDay(day)
-    const startDay = startOfDay(start)
-    if (ne.getTime() < startDay.getTime()) {
-      ne = endOfDay(startDay)
+    let ne
+    if (fractional) {
+      ne = new Date(edgeAt.getTime())
+      if (ne.getTime() < start.getTime() + 0.1 * DAY_MS) {
+        ne = new Date(start.getTime() + 0.1 * DAY_MS)
+      }
+    } else {
+      ne = endOfDay(edgeAt)
+      const startDay = startOfDay(start)
+      if (ne.getTime() < startDay.getTime()) {
+        ne = endOfDay(startDay)
+      }
     }
     return {
       planStartTime: formatPlanDateTime(start),
@@ -259,7 +388,14 @@ export function splitModulePath(path) {
  * @param {Record<string|number, string>} [modulePathById] moduleId → 全路径
  * @returns {{ groups: GanttGroup[], unscheduled: object[] }}
  */
-export function projectGanttRows(defects, groupBy, modulePathById) {
+/**
+ * @param {object[]} defects
+ * @param {string} groupBy
+ * @param {Record<string|number, string>} [modulePathById]
+ * @param {{ handlerIds?: Array<number|string>|number|string|null }} [opts]
+ *   handlerIds：通用查询里的处理人过滤；有值时按处理人分组只投影这些处理人行，避免镜像到未筛选成员
+ */
+export function projectGanttRows(defects, groupBy, modulePathById, opts = {}) {
   const list = Array.isArray(defects) ? defects : []
   const scheduled = []
   const unscheduled = []
@@ -273,10 +409,26 @@ export function projectGanttRows(defects, groupBy, modulePathById) {
   if (groupBy === GANTT_GROUP_BY.MODULE) {
     return { groups: projectByModule(scheduled, modulePathById), unscheduled }
   }
-  return { groups: projectByHandler(scheduled), unscheduled }
+  return { groups: projectByHandler(scheduled, normalizeHandlerFilterIds(opts.handlerIds)), unscheduled }
 }
 
-function projectByHandler(defects) {
+/** @param {Array<number|string>|number|string|null|undefined} handleBy */
+export function normalizeHandlerFilterIds(handleBy) {
+  if (handleBy == null || handleBy === '') return null
+  const arr = Array.isArray(handleBy) ? handleBy : [handleBy]
+  const ids = []
+  for (let i = 0; i < arr.length; i++) {
+    const n = Number(arr[i])
+    if (Number.isFinite(n) && !ids.includes(n)) ids.push(n)
+  }
+  return ids.length ? ids : null
+}
+
+function projectByHandler(defects, handlerFilterIds) {
+  const filterSet =
+    Array.isArray(handlerFilterIds) && handlerFilterIds.length
+      ? new Set(handlerFilterIds.map(Number))
+      : null
   /** @type {Map<string, GanttGroup>} */
   const map = new Map()
   for (let i = 0; i < defects.length; i++) {
@@ -286,6 +438,7 @@ function projectByHandler(defects) {
     const mirrored = handlers.length > 1
     for (let h = 0; h < handlers.length; h++) {
       const handler = handlers[h]
+      if (filterSet && !filterSet.has(Number(handler.userId))) continue
       const key = `h:${handler.userId}`
       let group = map.get(key)
       if (!group) {
@@ -568,30 +721,141 @@ export function computeAxisRange(defects, scale, now = new Date()) {
   }
 }
 
-export function dateToOffsetPx(date, rangeStart, scale) {
+/**
+ * 按尺度平移轴边界（unitDelta&lt;0 往过去，&gt;0 往未来）。
+ * @returns {Date|null}
+ */
+export function shiftAxisBound(date, scale, unitDelta) {
+  const n = Number(unitDelta)
+  if (!Number.isFinite(n) || n === 0) return startOfDay(date)
+  if (scale === GANTT_SCALE.WEEK) {
+    const w = startOfWeek(date)
+    return w ? addDays(w, Math.round(n) * 7) : null
+  }
+  if (scale === GANTT_SCALE.MONTH) {
+    const m = startOfMonth(date)
+    if (!m) return null
+    return new Date(m.getFullYear(), m.getMonth() + Math.round(n), 1)
+  }
+  return addDays(date, Math.round(n))
+}
+
+/** 无限滚动一次延展的列数（约覆盖 1.5～2 屏） */
+export function axisExtendChunkUnits(scale, colWidth, viewportPx) {
+  const col = Number(colWidth) > 0 ? Number(colWidth) : GANTT_COL_WIDTH[scale] || 36
+  const view = Number(viewportPx) > 0 ? Number(viewportPx) : 800
+  const need = Math.ceil(view / col) + 4
+  if (scale === GANTT_SCALE.MONTH) return Math.max(6, Math.min(36, need))
+  if (scale === GANTT_SCALE.WEEK) return Math.max(12, Math.min(52, need))
+  return Math.max(30, Math.min(120, need))
+}
+
+function resolveAxisCol(scale, colWidth) {
+  const n = Number(colWidth)
+  if (Number.isFinite(n) && n > 0) return n
+  return GANTT_COL_WIDTH[scale] || GANTT_COL_WIDTH.day
+}
+
+/** 每「自然日」对应的轴像素（日=列宽；周/月按格内天数均分） */
+export function pxPerDay(scale, colWidth) {
+  const col = resolveAxisCol(scale, colWidth)
+  if (scale === GANTT_SCALE.WEEK) return col / 7
+  if (scale === GANTT_SCALE.MONTH) return col / 31
+  return col
+}
+
+/**
+ * 工期天数吸附：步进 0.1；靠近整数天时磁吸到整天。
+ * @param {number} days
+ * @param {{ min?: number, magnet?: number }} [opts]
+ */
+export function snapDurationDays(days, opts = {}) {
+  const min = opts.min != null ? opts.min : 0.1
+  const magnet = opts.magnet != null ? opts.magnet : 0.12
+  if (!Number.isFinite(days)) return min
+  let d = Math.round(days * 10) / 10
+  if (d < min) d = min
+  const nearest = Math.round(d)
+  if (nearest >= 1 && Math.abs(d - nearest) <= magnet) {
+    return nearest
+  }
+  return d
+}
+
+function planHasClockTime(d) {
+  if (!d) return false
+  return !!(d.getHours() || d.getMinutes() || d.getSeconds() || d.getMilliseconds())
+}
+
+/** 条几何用的结束瞬时：23:59:59 视为次日 0 点（整日条铺满格） */
+function barExclusiveEnd(end) {
+  const e = parsePlanDate(end)
+  if (!e) return null
+  if (e.getHours() === 23 && e.getMinutes() === 59) {
+    return addDays(startOfDay(e), 1)
+  }
+  return e
+}
+
+/**
+ * 由开始 + 工期天数得到结束时间（整天 → 末日 23:59:59；小数 → start+duration）。
+ * @param {Date|string|number} startValue
+ * @param {number} durationDays
+ */
+export function endFromDurationDays(startValue, durationDays) {
+  const start = parsePlanDate(startValue)
+  if (!start) return null
+  const w = snapDurationDays(durationDays, { min: 0.1, magnet: 0 })
+  if (Math.abs(w - Math.round(w)) < 1e-9) {
+    const n = Math.max(1, Math.round(w))
+    return endOfDay(addDays(startOfDay(start), n - 1))
+  }
+  return new Date(start.getTime() + w * DAY_MS)
+}
+
+/**
+ * 由结束 + 工期天数得到开始时间。
+ * @param {Date|string|number} endValue
+ * @param {number} durationDays
+ */
+export function startFromDurationDays(endValue, durationDays) {
+  const end = parsePlanDate(endValue)
+  if (!end) return null
+  const w = snapDurationDays(durationDays, { min: 0.1, magnet: 0 })
+  if (Math.abs(w - Math.round(w)) < 1e-9) {
+    const n = Math.max(1, Math.round(w))
+    const endDay = end.getHours() === 23 && end.getMinutes() === 59 ? startOfDay(end) : startOfDay(end)
+    return startOfDay(addDays(endDay, -(n - 1)))
+  }
+  return new Date(end.getTime() - w * DAY_MS)
+}
+
+export function dateToOffsetPx(date, rangeStart, scale, colWidth) {
   const d = parsePlanDate(date)
   const start = startOfDay(rangeStart)
   if (!d || !start) return 0
-  const col = GANTT_COL_WIDTH[scale] || GANTT_COL_WIDTH.day
+  const col = resolveAxisCol(scale, colWidth)
   if (scale === GANTT_SCALE.WEEK) {
-    const days = (startOfDay(d).getTime() - start.getTime()) / DAY_MS
+    const days = (d.getTime() - start.getTime()) / DAY_MS
     return (days / 7) * col
   }
   if (scale === GANTT_SCALE.MONTH) {
     const months =
       (d.getFullYear() - start.getFullYear()) * 12 +
       (d.getMonth() - start.getMonth()) +
-      (d.getDate() - 1) / 31
+      (d.getDate() - 1) / 31 +
+      (d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds()) / (31 * 86400)
     return months * col
   }
-  const days = (startOfDay(d).getTime() - start.getTime()) / DAY_MS
+  /* 日尺度含日内小数，支持 0.1 天条宽 */
+  const days = (d.getTime() - start.getTime()) / DAY_MS
   return days * col
 }
 
-export function offsetPxToDate(offsetPx, rangeStart, scale) {
+export function offsetPxToDate(offsetPx, rangeStart, scale, colWidth) {
   const start = startOfDay(rangeStart)
   if (!start) return null
-  const col = GANTT_COL_WIDTH[scale] || GANTT_COL_WIDTH.day
+  const col = resolveAxisCol(scale, colWidth)
   if (scale === GANTT_SCALE.WEEK) {
     const weeks = offsetPx / col
     return addDays(start, Math.floor(weeks * 7))
@@ -608,18 +872,43 @@ export function offsetPxToDate(offsetPx, rangeStart, scale) {
   return addDays(start, days)
 }
 
-export function barGeometry(defect, rangeStart, scale) {
+/**
+ * 轴偏移 → 日期时间（可含日内小数；可选 0.1 天步进 + 整天磁吸）。
+ * @param {number} offsetPx
+ * @param {Date|string|number} rangeStart
+ * @param {string} scale
+ * @param {number} [colWidth]
+ * @param {{ snapTenths?: boolean, magnet?: number }} [opts]
+ */
+export function offsetPxToDateTime(offsetPx, rangeStart, scale, colWidth, opts = {}) {
+  const start = startOfDay(rangeStart)
+  if (!start) return null
+  const ppd = pxPerDay(scale, colWidth)
+  if (!(ppd > 0)) return offsetPxToDate(offsetPx, rangeStart, scale, colWidth)
+  let days = offsetPx / ppd
+  if (opts.snapTenths) {
+    days = snapDurationDays(days, { min: 0, magnet: opts.magnet != null ? opts.magnet : 0.12 })
+  }
+  return new Date(start.getTime() + days * DAY_MS)
+}
+
+export function barGeometry(defect, rangeStart, scale, colWidth) {
   const s = parsePlanDate(defect.planStartTime)
   const e = parsePlanDate(defect.planEndTime)
   if (!s || !e) return null
-  const x = dateToOffsetPx(s, rangeStart, scale)
-  const x2 = dateToOffsetPx(addDays(startOfDay(e), 1), rangeStart, scale)
+  const col = resolveAxisCol(scale, colWidth)
+  const x = dateToOffsetPx(s, rangeStart, scale, colWidth)
+  const eEx = barExclusiveEnd(e)
+  const x2 = dateToOffsetPx(eEx || e, rangeStart, scale, colWidth)
   const raw = x2 - x
   /*
-   * 日尺度：1 天 ≈ 1 列，保底一列便于点选。
-   * 周/月：按真实日期比例（1 天 ≈ 列宽/7 或 /31），勿再保底整列，否则短任务会占半格/整格。
+   * 日尺度：保底 0.1 天宽便于点选/拉边；整日无时分时仍至少一列。
+   * 周/月：按真实比例，勿保底整列。
    */
-  const minPx = scale === GANTT_SCALE.DAY ? GANTT_COL_WIDTH.day || 36 : 4
+  let minPx = 4
+  if (scale === GANTT_SCALE.DAY) {
+    minPx = planHasClockTime(s) || planHasClockTime(e) ? col * 0.1 : col
+  }
   const width = Math.max(minPx, raw)
   return { x, width }
 }
@@ -802,6 +1091,7 @@ export function computeCriticalPathIds(defects, links) {
  * @param {string} scale
  * @param {number} [threshold=1] 超过则视为过载
  * @param {number} [axisWidthPx] 裁剪到可视轴宽
+ * @param {number} [colWidth] 当前档列宽（可变）
  * @returns {{ left:number, width:number, level:1|2, count:number }[]}
  */
 export function buildHandlerLoadTrackSegments(
@@ -810,7 +1100,8 @@ export function buildHandlerLoadTrackSegments(
   rangeStart,
   scale,
   threshold = 1,
-  axisWidthPx = Infinity
+  axisWidthPx = Infinity,
+  colWidth
 ) {
   const uid = Number(handlerId)
   if (!Number.isFinite(uid) || !rangeStart) return []
@@ -853,8 +1144,8 @@ export function buildHandlerLoadTrackSegments(
   for (let i = 0; i < raw.length; i++) {
     const r = raw[i]
     const level = r.count > threshold ? 2 : 1
-    let left = dateToOffsetPx(new Date(r.startMs), rangeStart, scale)
-    let right = dateToOffsetPx(new Date(r.endMs), rangeStart, scale)
+    let left = dateToOffsetPx(new Date(r.startMs), rangeStart, scale, colWidth)
+    let right = dateToOffsetPx(new Date(r.endMs), rangeStart, scale, colWidth)
     if (right <= 0 || left >= maxW) continue
     left = Math.max(0, left)
     right = Math.min(maxW, right)
