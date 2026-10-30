@@ -169,6 +169,91 @@ export function addDays(input, days) {
   return d
 }
 
+/** @typedef {{ workWeek?: number[], exceptions?: Record<string, string> }} WorkCalendar */
+
+function dateKeyLocal(d) {
+  const x = startOfDay(d)
+  if (!x) return null
+  const y = x.getFullYear()
+  const m = String(x.getMonth() + 1).padStart(2, '0')
+  const day = String(x.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/** JS 周日=0 → ISO 周一=1…周日=7 */
+function isoWeekdayOf(d) {
+  const js = d.getDay()
+  return js === 0 ? 7 : js
+}
+
+export function defaultGanttWorkCalendar() {
+  return { workWeek: [1, 2, 3, 4, 5], exceptions: {} }
+}
+
+/** 忽略日历：每日皆可工作（等价自然日推进） */
+export function naturalDayWorkCalendar() {
+  return { workWeek: [1, 2, 3, 4, 5, 6, 7], exceptions: {} }
+}
+
+/**
+ * @param {Date|string|number} input
+ * @param {WorkCalendar|null|undefined} calendar
+ */
+export function isWorkday(input, calendar) {
+  const d = startOfDay(input)
+  if (!d) return false
+  const cal = calendar || defaultGanttWorkCalendar()
+  const key = dateKeyLocal(d)
+  const ex = cal.exceptions && key ? cal.exceptions[key] : null
+  if (ex === 'workday') return true
+  if (ex === 'holiday') return false
+  const week = Array.isArray(cal.workWeek) && cal.workWeek.length ? cal.workWeek : [1, 2, 3, 4, 5]
+  return week.includes(isoWeekdayOf(d))
+}
+
+/** 从 input 起（含当日若是工作日）找下一个工作日 */
+export function nextWorkday(input, calendar) {
+  let d = startOfDay(input)
+  if (!d) return null
+  for (let i = 0; i < 3660; i++) {
+    if (isWorkday(d, calendar)) return d
+    d = addDays(d, 1)
+    if (!d) return null
+  }
+  return null
+}
+
+/**
+ * 从 start 起计入 n 个工作日的结束日（n=1 → start 当日若为工作日）。
+ * @returns {Date|null} 第 n 个工作日的日初
+ */
+export function addWorkdays(start, n, calendar) {
+  const s0 = startOfDay(start)
+  if (!s0 || !Number.isFinite(n) || n <= 0) return null
+  let d = nextWorkday(s0, calendar)
+  if (!d) return null
+  const steps = Math.max(1, Math.round(n))
+  for (let i = 1; i < steps; i++) {
+    d = nextWorkday(addDays(d, 1), calendar)
+    if (!d) return null
+  }
+  return d
+}
+
+/** 含首尾的工作日个数 */
+export function countWorkdays(start, end, calendar) {
+  let a = startOfDay(start)
+  const b = startOfDay(end)
+  if (!a || !b || b.getTime() < a.getTime()) return null
+  let n = 0
+  while (a.getTime() <= b.getTime()) {
+    if (isWorkday(a, calendar)) n += 1
+    a = addDays(a, 1)
+    if (!a) break
+  }
+  return n
+}
+
 export function parsePlanDate(value) {
   if (value == null || value === '') return null
   if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
@@ -194,33 +279,32 @@ export function defectStateClass(defect) {
  */
 export function resolveHandlers(defect) {
   if (!defect) return []
+  const byId = new Map()
   const list = defect.handleByList
   if (Array.isArray(list) && list.length) {
-    return list
-      .map((m) => {
-        if (!m) return null
-        const userId = Number(m.userId != null ? m.userId : m.id)
-        if (!Number.isFinite(userId)) return null
-        const nickName = m.nickName || m.userName || String(userId)
-        return {
-          userId,
-          nickName,
-          userName: m.userName || nickName,
-          avatar: m.avatar,
-          avatarUrl: m.avatarUrl
-        }
+    list.forEach((m) => {
+      if (!m) return
+      const userId = Number(m.userId != null ? m.userId : m.id)
+      if (!Number.isFinite(userId)) return
+      const nickName = m.nickName || m.userName || String(userId)
+      byId.set(userId, {
+        userId,
+        nickName,
+        userName: m.userName || nickName,
+        avatar: m.avatar,
+        avatarUrl: m.avatarUrl
       })
-      .filter(Boolean)
+    })
   }
   const ids = defect.handleBy
-  if (!Array.isArray(ids) || !ids.length) return []
-  return ids
-    .map((id) => {
+  if (Array.isArray(ids) && ids.length) {
+    ids.forEach((id) => {
       const userId = Number(id)
-      if (!Number.isFinite(userId)) return null
-      return { userId, nickName: String(userId), userName: String(userId) }
+      if (!Number.isFinite(userId) || byId.has(userId)) return
+      byId.set(userId, { userId, nickName: String(userId), userName: String(userId) })
     })
-    .filter(Boolean)
+  }
+  return Array.from(byId.values())
 }
 
 export function formatPlanDateTime(date) {
@@ -235,22 +319,48 @@ export function formatPlanDateTime(date) {
   return `${y}-${m}-${day} ${h}:${i}:${s}`
 }
 
-/** 落点日为开始，默认时长 1 个自然日（当日 00:00 ~ 23:59:59） */
-export function defaultPlanRangeFromDropDay(dayDate) {
-  const start = startOfDay(dayDate)
-  if (!start) return null
+/** 落点日对齐下一工作日，默认工期 1 个工作日 */
+export function defaultPlanRangeFromDropDay(dayDate, calendar) {
+  const cal = calendar || defaultGanttWorkCalendar()
+  const aligned = nextWorkday(startOfDay(dayDate), cal)
+  if (!aligned) return null
+  const end = endFromDurationDays(aligned, GANTT_DEFAULT_DURATION_DAYS, cal)
+  if (!end) return null
   return {
-    planStartTime: formatPlanDateTime(start),
-    planEndTime: formatPlanDateTime(endOfDay(start))
+    planStartTime: formatPlanDateTime(aligned),
+    planEndTime: formatPlanDateTime(end)
   }
 }
 
-export function shiftPlanRange(startValue, endValue, deltaDays) {
+/**
+ * 平移计划区间。有日历时保持工作日工期：新起点对齐工作日后再按工期算终点。
+ * @param {WorkCalendar|null} [calendar]
+ */
+export function shiftPlanRange(startValue, endValue, deltaDays, calendar) {
   const start = parsePlanDate(startValue)
   const end = parsePlanDate(endValue)
   if (!start || !end) return null
-  const ns = new Date(start.getTime() + deltaDays * DAY_MS)
-  const ne = new Date(end.getTime() + deltaDays * DAY_MS)
+  if (!calendar) {
+    const ns = new Date(start.getTime() + deltaDays * DAY_MS)
+    const ne = new Date(end.getTime() + deltaDays * DAY_MS)
+    return {
+      planStartTime: formatPlanDateTime(ns),
+      planEndTime: formatPlanDateTime(ne)
+    }
+  }
+  const dur = planDurationDays(
+    { planStartTime: startValue, planEndTime: endValue },
+    calendar
+  )
+  const shifted = new Date(start.getTime() + deltaDays * DAY_MS)
+  let ns = nextWorkday(startOfDay(shifted), calendar)
+  if (!ns) return null
+  if (planHasClockTime(start)) {
+    ns = new Date(ns)
+    ns.setHours(start.getHours(), start.getMinutes(), start.getSeconds(), 0)
+  }
+  const ne = endFromDurationDays(ns, dur != null && dur > 0 ? dur : 1, calendar)
+  if (!ne) return null
   return {
     planStartTime: formatPlanDateTime(ns),
     planEndTime: formatPlanDateTime(ne)
@@ -274,8 +384,9 @@ export function resizePlanRange(startValue, endValue, edge, dayDate, opts = {}) 
 
   if (opts.durationDays != null && Number.isFinite(Number(opts.durationDays))) {
     const dur = snapDurationDays(Number(opts.durationDays), { min: 0.1, magnet: 0 })
+    const cal = opts.calendar || defaultGanttWorkCalendar()
     if (edge === 'end') {
-      const ne = endFromDurationDays(start, dur)
+      const ne = endFromDurationDays(start, dur, cal)
       if (!ne) return null
       return {
         planStartTime: formatPlanDateTime(start),
@@ -283,7 +394,7 @@ export function resizePlanRange(startValue, endValue, edge, dayDate, opts = {}) 
       }
     }
     if (edge === 'start') {
-      const ns = startFromDurationDays(end, dur)
+      const ns = startFromDurationDays(end, dur, cal)
       if (!ns) return null
       return {
         planStartTime: formatPlanDateTime(ns),
@@ -634,10 +745,17 @@ export function buildAxisMajorBands(units, scale) {
   return bands
 }
 
-export function buildAxisUnits(rangeStart, rangeEnd, scale) {
+/**
+ * @param {Date|string|number} rangeStart
+ * @param {Date|string|number} rangeEnd
+ * @param {string} scale
+ * @param {WorkCalendar|null} [calendar]
+ */
+export function buildAxisUnits(rangeStart, rangeEnd, scale, calendar) {
   const start = startOfDay(rangeStart)
   const end = startOfDay(rangeEnd)
   if (!start || !end || end.getTime() < start.getTime()) return []
+  const cal = calendar || defaultGanttWorkCalendar()
   const units = []
   if (scale === GANTT_SCALE.WEEK) {
     const cur = startOfWeek(start)
@@ -661,11 +779,21 @@ export function buildAxisUnits(rangeStart, rangeEnd, scale) {
   const cur = new Date(start)
   while (cur.getTime() <= end.getTime()) {
     const day = new Date(cur)
+    const key = dateKeyLocal(day)
+    const ex = cal.exceptions && key ? cal.exceptions[key] : null
+    const working = isWorkday(day, cal)
+    const weekOff = !(Array.isArray(cal.workWeek) ? cal.workWeek : [1, 2, 3, 4, 5]).includes(
+      isoWeekdayOf(day)
+    )
     units.push({
       start: day,
       end: addDays(day, 1),
       key: `d:${day.toISOString()}`,
-      weekend: day.getDay() === 0 || day.getDay() === 6
+      /** 非工作底纹：假日或工作周外且非调休 */
+      weekend: !working,
+      holiday: ex === 'holiday',
+      makeup: ex === 'workday',
+      weekOff: weekOff && ex !== 'workday'
     })
     cur.setDate(cur.getDate() + 1)
   }
@@ -798,34 +926,54 @@ function barExclusiveEnd(end) {
 }
 
 /**
- * 由开始 + 工期天数得到结束时间（整天 → 末日 23:59:59；小数 → start+duration）。
+ * 由开始 + 工期天数得到结束时间（整天按工作日；小数仍按自然毫秒）。
  * @param {Date|string|number} startValue
  * @param {number} durationDays
+ * @param {WorkCalendar|null} [calendar]
  */
-export function endFromDurationDays(startValue, durationDays) {
+export function endFromDurationDays(startValue, durationDays, calendar) {
   const start = parsePlanDate(startValue)
   if (!start) return null
   const w = snapDurationDays(durationDays, { min: 0.1, magnet: 0 })
   if (Math.abs(w - Math.round(w)) < 1e-9) {
     const n = Math.max(1, Math.round(w))
-    return endOfDay(addDays(startOfDay(start), n - 1))
+    const cal = calendar || defaultGanttWorkCalendar()
+    const aligned = nextWorkday(startOfDay(start), cal)
+    const last = addWorkdays(aligned, n, cal)
+    return last ? endOfDay(last) : null
   }
   return new Date(start.getTime() + w * DAY_MS)
 }
 
 /**
- * 由结束 + 工期天数得到开始时间。
+ * 由结束 + 工期天数得到开始时间（整天按工作日回溯）。
  * @param {Date|string|number} endValue
  * @param {number} durationDays
+ * @param {WorkCalendar|null} [calendar]
  */
-export function startFromDurationDays(endValue, durationDays) {
+export function startFromDurationDays(endValue, durationDays, calendar) {
   const end = parsePlanDate(endValue)
   if (!end) return null
   const w = snapDurationDays(durationDays, { min: 0.1, magnet: 0 })
   if (Math.abs(w - Math.round(w)) < 1e-9) {
     const n = Math.max(1, Math.round(w))
-    const endDay = end.getHours() === 23 && end.getMinutes() === 59 ? startOfDay(end) : startOfDay(end)
-    return startOfDay(addDays(endDay, -(n - 1)))
+    const cal = calendar || defaultGanttWorkCalendar()
+    let endDay = end.getHours() === 23 && end.getMinutes() === 59 ? startOfDay(end) : startOfDay(end)
+    if (!isWorkday(endDay, cal)) {
+      /* 回溯到最近工作日作为工期末日 */
+      for (let i = 0; i < 3660 && endDay; i++) {
+        if (isWorkday(endDay, cal)) break
+        endDay = addDays(endDay, -1)
+      }
+    }
+    if (!endDay || !isWorkday(endDay, cal)) return null
+    let d = endDay
+    for (let i = 1; i < n; i++) {
+      d = addDays(d, -1)
+      while (d && !isWorkday(d, cal)) d = addDays(d, -1)
+      if (!d) return null
+    }
+    return startOfDay(d)
   }
   return new Date(end.getTime() - w * DAY_MS)
 }
@@ -914,27 +1062,74 @@ export function barGeometry(defect, rangeStart, scale, colWidth) {
 }
 
 /**
- * 计划跨度天数（与条块一致：起止自然日含首尾）。
- * 若起止带时分秒，按毫秒差换算，可出现小数。
+ * 缺陷条内「跨休息日」区间（相对条左缘的 left/width），相邻休息日合并。
+ * 工作日段不返回；调休上班不算休息。
+ * @returns {{ left:number, width:number }[]}
+ */
+export function barRestOverlays(defect, rangeStart, scale, colWidth, calendar) {
+  const s = startOfDay(parsePlanDate(defect && defect.planStartTime))
+  const e = startOfDay(parsePlanDate(defect && defect.planEndTime))
+  if (!s || !e || e.getTime() < s.getTime()) return []
+  const geo = barGeometry(defect, rangeStart, scale, colWidth)
+  if (!geo || !(geo.width > 0)) return []
+  const cal = calendar || defaultGanttWorkCalendar()
+  /** @type {{ left:number, width:number }[]} */
+  const segs = []
+  let runStart = null
+  let cur = new Date(s)
+  const flush = (endInclusive) => {
+    if (!runStart || !endInclusive) return
+    const leftAbs = dateToOffsetPx(runStart, rangeStart, scale, colWidth)
+    const rightAbs = dateToOffsetPx(addDays(endInclusive, 1), rangeStart, scale, colWidth)
+    let left = leftAbs - geo.x
+    let width = rightAbs - leftAbs
+    if (left < 0) {
+      width += left
+      left = 0
+    }
+    if (left + width > geo.width) width = geo.width - left
+    if (width > 0.5) segs.push({ left, width })
+    runStart = null
+  }
+  while (cur && cur.getTime() <= e.getTime()) {
+    if (!isWorkday(cur, cal)) {
+      if (!runStart) runStart = new Date(cur)
+    } else if (runStart) {
+      flush(addDays(cur, -1))
+    }
+    cur = addDays(cur, 1)
+  }
+  if (runStart) flush(e)
+  return segs
+}
+
+/**
+ * 计划跨度天数。默认按**工作日**含首尾计数；传入 ignoreCalendar / 自然日历时等同自然日。
+ * 若起止带时分秒，按毫秒差换算（小数工期不跳假日）。
+ * @param {object} defect
+ * @param {WorkCalendar|null} [calendar]
  * @returns {number|null}
  */
-export function planDurationDays(defect) {
+export function planDurationDays(defect, calendar) {
   const s = parsePlanDate(defect && defect.planStartTime)
   const e = parsePlanDate(defect && defect.planEndTime)
   if (!s || !e) return null
   const a = startOfDay(s)
   const b = startOfDay(e)
   if (!a || !b || b.getTime() < a.getTime()) return null
-  const startMs = s.getTime()
-  const endMs = e.getTime()
-  const hasTime =
-    s.getHours() || s.getMinutes() || s.getSeconds() || s.getMilliseconds() ||
-    e.getHours() || e.getMinutes() || e.getSeconds() || e.getMilliseconds()
-  if (hasTime) {
-    const raw = (endMs - startMs) / DAY_MS
+  /* 日粒度（含 23:59:59 末日）按工作日计；真正带日内时分才用毫秒差 */
+  const startDayAligned =
+    !s.getHours() && !s.getMinutes() && !s.getSeconds() && !s.getMilliseconds()
+  const endDayAligned =
+    (e.getHours() === 23 && e.getMinutes() === 59) ||
+    (!e.getHours() && !e.getMinutes() && !e.getSeconds() && !e.getMilliseconds())
+  if (!(startDayAligned && endDayAligned)) {
+    const raw = (e.getTime() - s.getTime()) / DAY_MS
     return raw > 0 ? raw : null
   }
-  return (b.getTime() - a.getTime()) / DAY_MS + 1
+  const cal = calendar || defaultGanttWorkCalendar()
+  const n = countWorkdays(a, b, cal)
+  return n != null && n > 0 ? n : null
 }
 
 /** 最多保留 1 位小数；整数不带小数点 */
@@ -1101,10 +1296,12 @@ export function buildHandlerLoadTrackSegments(
   scale,
   threshold = 1,
   axisWidthPx = Infinity,
-  colWidth
+  colWidth,
+  calendar
 ) {
   const uid = Number(handlerId)
   if (!Number.isFinite(uid) || !rangeStart) return []
+  const cal = calendar || defaultGanttWorkCalendar()
 
   /** @type {{ t:number, d:number }[]} */
   const events = []
@@ -1117,9 +1314,16 @@ export function buildHandlerLoadTrackSegments(
     const s = startOfDay(parsePlanDate(d.planStartTime))
     const e = startOfDay(parsePlanDate(d.planEndTime))
     if (!s || !e) continue
-    /* 计划含首尾：与条块一致，覆盖到 end 日结束 */
-    events.push({ t: s.getTime(), d: 1 })
-    events.push({ t: addDays(e, 1).getTime(), d: -1 })
+    /* 仅工作日计占用（假日/周末不贡献负荷） */
+    let cur = new Date(s)
+    while (cur.getTime() <= e.getTime()) {
+      if (isWorkday(cur, cal)) {
+        events.push({ t: cur.getTime(), d: 1 })
+        events.push({ t: addDays(cur, 1).getTime(), d: -1 })
+      }
+      cur = addDays(cur, 1)
+      if (!cur) break
+    }
   }
   if (!events.length) return []
 
@@ -1234,4 +1438,430 @@ export function findFsScheduleConflicts(defects, links) {
     }
   })
   return out
+}
+
+/** 已关闭（不参与自动排列候选） */
+export function isDefectClosed(defect) {
+  return defectStateClass(defect) === STATE_CLASS.CLOSED
+}
+
+/** 主处理人 id（多人取 handleBy[0] / 列表首个） */
+export function primaryHandlerId(defect) {
+  const handlers = resolveHandlers(defect)
+  if (!handlers.length) return null
+  const id = Number(handlers[0].userId)
+  return Number.isFinite(id) ? id : null
+}
+
+/**
+ * 甘特计划节点可写：项目管理员全部；否则当前用户须在处理人中。
+ * 自动排列 / 拖避让 / 拖条 / 批量平移共用。
+ * @param {object} defect
+ * @param {{ userId: number|string, isProjectAdmin?: boolean }} ctx
+ */
+export function canEditGanttPlanDefect(defect, ctx) {
+  if (!defect || !ctx) return false
+  if (ctx.isProjectAdmin) return true
+  const uid = Number(ctx.userId)
+  if (!Number.isFinite(uid) || uid <= 0) return false
+  if (Array.isArray(defect.handleBy) && defect.handleBy.some((id) => Number(id) === uid)) {
+    return true
+  }
+  return resolveHandlers(defect).some((h) => Number(h.userId) === uid)
+}
+
+/** @deprecated 使用 canEditGanttPlanDefect；保留别名避免旧调用漂移 */
+export function canAutoLevelEditDefect(defect, ctx) {
+  return canEditGanttPlanDefect(defect, ctx)
+}
+
+/**
+ * 候选：未关闭 ∧ 已排期 ∧ 可改。
+ * @returns {object[]}
+ */
+export function filterAutoLevelCandidates(defects, ctx) {
+  const list = Array.isArray(defects) ? defects : []
+  return list.filter(
+    (d) => d && !isDefectClosed(d) && isScheduled(d) && canAutoLevelEditDefect(d, ctx)
+  )
+}
+
+/**
+ * FS：后继最早开始日 = 前置结束日次日对齐到下一工作日。
+ * @param {Date|string|number} endValue
+ * @param {WorkCalendar|null} [calendar]
+ */
+export function fsEarliestStartAfterEnd(endValue, calendar) {
+  const fe = startOfDay(parsePlanDate(endValue))
+  if (!fe) return null
+  const cal = calendar || defaultGanttWorkCalendar()
+  return nextWorkday(addDays(fe, 1), cal)
+}
+
+/** 同人条首尾相接时，下一条最早开始 */
+function laneCursorAfterEnd(endValue, calendar) {
+  return fsEarliestStartAfterEnd(endValue, calendar)
+}
+
+function topoSortDefectIds(ids, predMap) {
+  const idSet = new Set(ids.map((x) => Number(x)))
+  const indeg = new Map()
+  idSet.forEach((id) => indeg.set(id, 0))
+  idSet.forEach((id) => {
+    const preds = predMap.get(id) || []
+    preds.forEach((p) => {
+      if (idSet.has(Number(p))) {
+        indeg.set(id, (indeg.get(id) || 0) + 1)
+      }
+    })
+  })
+  const byIdOrder = new Map(ids.map((id, i) => [Number(id), i]))
+  const ready = []
+  indeg.forEach((n, id) => {
+    if (n === 0) ready.push(id)
+  })
+  ready.sort((a, b) => (byIdOrder.get(a) || 0) - (byIdOrder.get(b) || 0))
+  const out = []
+  while (ready.length) {
+    const id = ready.shift()
+    out.push(id)
+    idSet.forEach((succ) => {
+      if (succ === id) return
+      const preds = predMap.get(succ) || []
+      if (!preds.some((p) => Number(p) === id)) return
+      const next = (indeg.get(succ) || 0) - 1
+      indeg.set(succ, next)
+      if (next === 0) {
+        ready.push(succ)
+        ready.sort((a, b) => (byIdOrder.get(a) || 0) - (byIdOrder.get(b) || 0))
+      }
+    })
+  }
+  /* 环：把剩余按原序追加，避免丢任务 */
+  if (out.length < idSet.size) {
+    ids.forEach((id) => {
+      const n = Number(id)
+      if (!out.includes(n)) out.push(n)
+    })
+  }
+  return out
+}
+
+/**
+ * 资源平整：可改候选按主处理人泳道 ASAP 挤紧；不可改/已关闭不占资源，仅作 FS 约束源。
+ *
+ * @param {object[]} defects 全量参考（含不可改，用于 FS 前置结束日）
+ * @param {object[]} links FS 边 { fromDefectId, toDefectId, linkType? }
+ * @param {{
+ *   movableIds: Iterable<number|string>,
+ *   visualOrder?: Iterable<number|string>,
+ *   calendar?: WorkCalendar|null,
+ *   ignoreCalendar?: boolean
+ * }} opts visualOrder：甘特列表自上而下的 defectId（同行更早；缺省回退原计划开始日）
+ * @returns {{
+ *   proposals: Map<number, { planStartTime: string, planEndTime: string }>,
+ *   summary: { changed: number, earlier: number, later: number, unchanged: number }
+ * }}
+ */
+export function levelDefectPlans(defects, links, opts = {}) {
+  const empty = {
+    proposals: new Map(),
+    summary: { changed: 0, earlier: 0, later: 0, unchanged: 0 }
+  }
+  const movable = new Set()
+  ;(opts.movableIds != null
+    ? Array.from(opts.movableIds)
+    : []
+  ).forEach((id) => {
+    const n = Number(id)
+    if (Number.isFinite(n)) movable.add(n)
+  })
+  if (!movable.size) return empty
+
+  const cal = opts.ignoreCalendar
+    ? naturalDayWorkCalendar()
+    : opts.calendar || defaultGanttWorkCalendar()
+
+  /** 列表序：越小越靠上 → 越早排 */
+  const visualRank = new Map()
+  let visualSeq = 0
+  ;(opts.visualOrder != null ? Array.from(opts.visualOrder) : []).forEach((id) => {
+    const n = Number(id)
+    if (!Number.isFinite(n) || visualRank.has(n)) return
+    visualRank.set(n, visualSeq++)
+  })
+
+  const byId = new Map()
+  ;(Array.isArray(defects) ? defects : []).forEach((d) => {
+    if (d && d.defectId != null) byId.set(Number(d.defectId), d)
+  })
+
+  /** succ -> pred ids（仅 FS） */
+  const predMap = new Map()
+  ;(Array.isArray(links) ? links : []).forEach((e) => {
+    if (!e) return
+    if (String(e.linkType || 'FS').toUpperCase() !== 'FS') return
+    const from = Number(e.fromDefectId)
+    const to = Number(e.toDefectId)
+    if (!Number.isFinite(from) || !Number.isFinite(to)) return
+    if (!predMap.has(to)) predMap.set(to, [])
+    predMap.get(to).push(from)
+  })
+
+  const proposed = new Map() /* id -> { start: Date, end: Date } */
+
+  function effectiveEnd(defectId) {
+    const id = Number(defectId)
+    if (proposed.has(id)) return proposed.get(id).end
+    const d = byId.get(id)
+    return d ? parsePlanDate(d.planEndTime) : null
+  }
+
+  function fsConstraintStart(defectId) {
+    const preds = predMap.get(Number(defectId)) || []
+    let latest = null
+    preds.forEach((pid) => {
+      const end = effectiveEnd(pid)
+      const earliest = fsEarliestStartAfterEnd(end, cal)
+      if (!earliest) return
+      if (!latest || earliest.getTime() > latest.getTime()) latest = earliest
+    })
+    return latest
+  }
+
+  function compareLaneOrder(a, b) {
+    const aid = Number(a.defectId)
+    const bid = Number(b.defectId)
+    const ar = visualRank.has(aid) ? visualRank.get(aid) : Number.POSITIVE_INFINITY
+    const br = visualRank.has(bid) ? visualRank.get(bid) : Number.POSITIVE_INFINITY
+    if (ar !== br) return ar - br
+    const as = parsePlanDate(a.planStartTime)
+    const bs = parsePlanDate(b.planStartTime)
+    const at = as ? as.getTime() : 0
+    const bt = bs ? bs.getTime() : 0
+    if (at !== bt) return at - bt
+    return aid - bid
+  }
+
+  /* 按泳道分组可改候选 */
+  const lanes = new Map() /* handlerId -> defect[] */
+  movable.forEach((id) => {
+    const d = byId.get(id)
+    if (!d || !isScheduled(d) || isDefectClosed(d)) return
+    const hid = primaryHandlerId(d)
+    const key = hid != null ? hid : '__none__'
+    if (!lanes.has(key)) lanes.set(key, [])
+    lanes.get(key).push(d)
+  })
+
+  lanes.forEach((laneDefects) => {
+    laneDefects.sort(compareLaneOrder)
+    const orderedIds = topoSortDefectIds(
+      laneDefects.map((d) => Number(d.defectId)),
+      predMap
+    )
+    let laneMinStart = null
+    laneDefects.forEach((d) => {
+      const s = parsePlanDate(d.planStartTime)
+      if (!s) return
+      if (!laneMinStart || s.getTime() < laneMinStart.getTime()) laneMinStart = s
+    })
+    let cursor = laneMinStart ? nextWorkday(startOfDay(laneMinStart), cal) : null
+
+    orderedIds.forEach((id) => {
+      const d = byId.get(id)
+      if (!d) return
+      const dur = planDurationDays(d, cal)
+      if (dur == null || !(dur > 0)) return
+      const origStart = parsePlanDate(d.planStartTime)
+      const fsStart = fsConstraintStart(id)
+      let start = cursor
+      if (fsStart && (!start || fsStart.getTime() > start.getTime())) {
+        start = fsStart
+      }
+      if (!start && origStart) start = nextWorkday(startOfDay(origStart), cal)
+      if (!start) return
+      /* 整天任务对齐工作日初；小数工期保留日内起点若原有时分且无强制对齐 */
+      const origHasTime = planHasClockTime(origStart)
+      if (!origHasTime || (fsStart && start.getTime() === fsStart.getTime()) || (cursor && start.getTime() === cursor.getTime())) {
+        start = nextWorkday(startOfDay(start), cal) || start
+      }
+      const end = endFromDurationDays(start, dur, cal)
+      if (!end) return
+      proposed.set(id, { start, end })
+      const next = laneCursorAfterEnd(end, cal)
+      if (next) cursor = next
+    })
+  })
+
+  const proposals = new Map()
+  let earlier = 0
+  let later = 0
+  let unchanged = 0
+  movable.forEach((id) => {
+    const d = byId.get(id)
+    const p = proposed.get(id)
+    if (!d || !p) {
+      unchanged += 1
+      return
+    }
+    const planStartTime = formatPlanDateTime(p.start)
+    const planEndTime = formatPlanDateTime(p.end)
+    const os = parsePlanDate(d.planStartTime)
+    const oe = parsePlanDate(d.planEndTime)
+    const same =
+      os &&
+      oe &&
+      os.getTime() === p.start.getTime() &&
+      oe.getTime() === p.end.getTime()
+    if (same) {
+      unchanged += 1
+      return
+    }
+    if (os && p.start.getTime() < os.getTime()) earlier += 1
+    else if (os && p.start.getTime() > os.getTime()) later += 1
+    else later += 1
+    proposals.set(id, { planStartTime, planEndTime })
+  })
+
+  return {
+    proposals,
+    summary: {
+      changed: proposals.size,
+      earlier,
+      later,
+      unchanged
+    }
+  }
+}
+
+/** 计划区间是否按自然日重叠（含首尾） */
+export function planRangesOverlap(a, b) {
+  const as = startOfDay(parsePlanDate(a && a.planStartTime))
+  const ae = startOfDay(parsePlanDate(a && a.planEndTime))
+  const bs = startOfDay(parsePlanDate(b && b.planStartTime))
+  const be = startOfDay(parsePlanDate(b && b.planEndTime))
+  if (!as || !ae || !bs || !be) return false
+  return as.getTime() <= be.getTime() && bs.getTime() <= ae.getTime()
+}
+
+/**
+ * 拖动锚定条后：同泳道可改同伴若与锚定或已后移条重叠，则只往后挤（工期不变）。
+ * @param {{
+ *   pinnedId: number,
+ *   pinnedRange: { planStartTime: string, planEndTime: string },
+ *   peers: object[],
+ *   visualOrder?: Iterable<number|string>,
+ *   calendar?: WorkCalendar|null
+ * }} opts
+ * @returns {Map<number, { planStartTime: string, planEndTime: string }>}
+ */
+export function pushOverlapsAfterPinned(opts = {}) {
+  const out = new Map()
+  const pinnedId = Number(opts.pinnedId)
+  const pinned = opts.pinnedRange
+  if (!Number.isFinite(pinnedId) || !pinned) return out
+  const cal = opts.calendar || defaultGanttWorkCalendar()
+  const pinnedStart = startOfDay(parsePlanDate(pinned.planStartTime))
+  const pinnedEnd = startOfDay(parsePlanDate(pinned.planEndTime))
+  if (!pinnedStart || !pinnedEnd) return out
+
+  const visualRank = new Map()
+  let seq = 0
+  ;(opts.visualOrder != null ? Array.from(opts.visualOrder) : []).forEach((id) => {
+    const n = Number(id)
+    if (!Number.isFinite(n) || visualRank.has(n)) return
+    visualRank.set(n, seq++)
+  })
+
+  const peers = (Array.isArray(opts.peers) ? opts.peers : [])
+    .filter((d) => d && Number(d.defectId) !== pinnedId && isScheduled(d) && !isDefectClosed(d))
+    .slice()
+  peers.sort((a, b) => {
+    const aid = Number(a.defectId)
+    const bid = Number(b.defectId)
+    const ar = visualRank.has(aid) ? visualRank.get(aid) : Number.POSITIVE_INFINITY
+    const br = visualRank.has(bid) ? visualRank.get(bid) : Number.POSITIVE_INFINITY
+    if (ar !== br) return ar - br
+    const as = parsePlanDate(a.planStartTime)
+    const bs = parsePlanDate(b.planStartTime)
+    const at = as ? as.getTime() : 0
+    const bt = bs ? bs.getTime() : 0
+    if (at !== bt) return at - bt
+    return aid - bid
+  })
+
+  /** @type {{ planStartTime: string, planEndTime: string }[]} */
+  const obstacles = [
+    {
+      planStartTime: formatPlanDateTime(pinnedStart),
+      planEndTime: formatPlanDateTime(endOfDay(pinnedEnd))
+    }
+  ]
+
+  peers.forEach((d) => {
+    const dur = planDurationDays(d, cal)
+    if (dur == null || !(dur > 0)) return
+    let start = startOfDay(parsePlanDate(d.planStartTime))
+    let end = startOfDay(parsePlanDate(d.planEndTime))
+    if (!start || !end) return
+    let guard = 0
+    while (
+      guard++ < 64 &&
+      obstacles.some((ob) =>
+        planRangesOverlap(
+          { planStartTime: formatPlanDateTime(start), planEndTime: formatPlanDateTime(endOfDay(end)) },
+          ob
+        )
+      )
+    ) {
+      let maxEnd = null
+      obstacles.forEach((ob) => {
+        const oe = startOfDay(parsePlanDate(ob.planEndTime))
+        if (!oe) return
+        if (!maxEnd || oe.getTime() > maxEnd.getTime()) maxEnd = oe
+      })
+      const next = fsEarliestStartAfterEnd(maxEnd, cal)
+      if (!next) break
+      start = next
+      const ne = endFromDurationDays(start, dur, cal)
+      if (!ne) break
+      end = startOfDay(ne) || ne
+    }
+    const planStartTime = formatPlanDateTime(start)
+    const planEndTime = formatPlanDateTime(endOfDay(end))
+    const origS = parsePlanDate(d.planStartTime)
+    const origE = parsePlanDate(d.planEndTime)
+    const changed =
+      !origS ||
+      !origE ||
+      startOfDay(origS).getTime() !== start.getTime() ||
+      startOfDay(origE).getTime() !== (startOfDay(end) || end).getTime()
+    if (changed) {
+      out.set(Number(d.defectId), { planStartTime, planEndTime })
+    }
+    obstacles.push({ planStartTime, planEndTime })
+  })
+  return out
+}
+
+/**
+ * 当前用户是否项目创建人/项目管理员（角色键或 createBy）。
+ * @param {object|null} project getProject 返回体
+ * @param {number|string} userId
+ */
+export function isProjectPlanAdmin(project, userId) {
+  const uid = Number(userId)
+  if (!Number.isFinite(uid) || !project) return false
+  if (project.createBy != null && Number(project.createBy) === uid) return true
+  const members = Array.isArray(project.members) ? project.members : []
+  const me = members.find((m) => m && Number(m.userId) === uid)
+  if (!me) return false
+  const roles = Array.isArray(me.roles) ? me.roles : []
+  return roles.some((r) => {
+    if (!r) return false
+    if (r.projectCreateBy) return true
+    const key = String(r.roleKey || '')
+    return key === 'project.create-by' || key === 'project.admin'
+  })
 }

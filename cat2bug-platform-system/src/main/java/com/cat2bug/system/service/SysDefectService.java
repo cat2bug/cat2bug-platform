@@ -78,6 +78,9 @@ public class SysDefectService {
     @Inject
     SysDefectCommitService sysDefectCommitService;
 
+    @Inject
+    ProjectPlanAuth projectPlanAuth;
+
     public Map<String, Object> getDefectConfig() {
         Map<String, Object> config = new HashMap<>();
         config.put("types", DefectConstants.getDefectTypeList());
@@ -314,13 +317,97 @@ public class SysDefectService {
         if (defect.getDefectId() == null) {
             throw new ApiException("缺陷ID不能为空");
         }
-        selectSysDefectByDefectId(defect.getDefectId());
+        SysDefect existing = selectSysDefectByDefectId(defect.getDefectId());
         LoginUser loginUser = requireLoginUser();
+        assertPlanNodeWriteAllowed(existing, defect, loginUser.getUserId());
         DefectDefaults.applyDefectDefaults(defect);
         defect.setUpdateTime(new Date());
         defect.setUpdateBy(loginUser.getUsername());
         defect.setUpdateById(loginUser.getUserId());
         return sysDefectMapper.updateSysDefect(defect);
+    }
+
+    /**
+     * 甘特计划节点写：仅更新计划起止 / 处理人 / 交付物；须项目管理员或原处理人。
+     * 由 {@code system:defect:gantt:plan} 鉴权，不要求 {@code system:defect:edit}。
+     */
+    public int updateDefectPlanNode(SysDefect patch) {
+        if (patch == null || patch.getDefectId() == null) {
+            throw new ApiException("缺陷ID不能为空");
+        }
+        SysDefect existing = selectSysDefectByDefectId(patch.getDefectId());
+        LoginUser loginUser = requireLoginUser();
+        projectPlanAuth.requireCanEditPlanNode(
+                existing.getProjectId(), loginUser.getUserId(), existing.getHandleBy());
+        SysDefect update = new SysDefect();
+        update.setDefectId(existing.getDefectId());
+        if (patch.getPlanStartTime() != null) {
+            update.setPlanStartTime(patch.getPlanStartTime());
+        }
+        if (patch.getPlanEndTime() != null) {
+            update.setPlanEndTime(patch.getPlanEndTime());
+        }
+        if (patch.getHandleBy() != null) {
+            update.setHandleBy(patch.getHandleBy());
+        }
+        if (patch.getModuleId() != null) {
+            update.setModuleId(patch.getModuleId());
+        }
+        update.setUpdateTime(new Date());
+        update.setUpdateBy(loginUser.getUsername());
+        update.setUpdateById(loginUser.getUserId());
+        return sysDefectMapper.updateSysDefect(update);
+    }
+
+    /**
+     * 计划起止 / 处理人 / 交付物变更时：项目管理员或原处理人之一才可写。
+     */
+    private void assertPlanNodeWriteAllowed(SysDefect existing, SysDefect patch, Long userId) {
+        if (existing == null || patch == null || !touchesPlanNodeFields(existing, patch)) {
+            return;
+        }
+        projectPlanAuth.requireCanEditPlanNode(existing.getProjectId(), userId, existing.getHandleBy());
+    }
+
+    private static boolean touchesPlanNodeFields(SysDefect existing, SysDefect patch) {
+        if (patch.getPlanStartTime() != null
+                && !sameInstant(existing.getPlanStartTime(), patch.getPlanStartTime())) {
+            return true;
+        }
+        if (patch.getPlanEndTime() != null
+                && !sameInstant(existing.getPlanEndTime(), patch.getPlanEndTime())) {
+            return true;
+        }
+        if (patch.getModuleId() != null
+                && !java.util.Objects.equals(existing.getModuleId(), patch.getModuleId())) {
+            return true;
+        }
+        if (patch.getHandleBy() != null && !sameLongList(existing.getHandleBy(), patch.getHandleBy())) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean sameInstant(Date a, Date b) {
+        if (a == null || b == null) {
+            return a == b;
+        }
+        return a.getTime() == b.getTime();
+    }
+
+    private static boolean sameLongList(List<Long> a, List<Long> b) {
+        if (a == null && b == null) {
+            return true;
+        }
+        if (a == null || b == null || a.size() != b.size()) {
+            return false;
+        }
+        for (int i = 0; i < a.size(); i++) {
+            if (!java.util.Objects.equals(a.get(i), b.get(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public int deleteSysDefectByDefectId(Long defectId) {

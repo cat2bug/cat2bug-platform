@@ -41,6 +41,17 @@
                 </el-checkbox>
               </el-dropdown-item>
               <el-dropdown-item divided class="defect-gantt-layers-item" @click.stop.prevent>
+                <el-checkbox
+                  v-model="autoLevelOnDrag"
+                  size="small"
+                  :disabled="!canEdit"
+                  :title="$t('defect.gantt.drag-yield-tip')"
+                  @click.stop
+                >
+                  {{ $t('defect.gantt.drag-yield') }}
+                </el-checkbox>
+              </el-dropdown-item>
+              <el-dropdown-item divided class="defect-gantt-layers-item" @click.stop.prevent>
                 <el-checkbox v-model="showBarHandler" size="small" @click.stop>
                   {{ $t('defect.gantt.layer-handler') }}
                 </el-checkbox>
@@ -62,13 +73,33 @@
               </el-dropdown-item>
               <el-dropdown-item
                 divided
-                :disabled="!canEdit"
+                :disabled="!canFreezeBaseline"
                 class="defect-gantt-layers-action"
                 @click="confirmFreezeBaseline"
               >
                 <span class="defect-gantt-layers-action-label">
                   <el-icon><RefreshRight /></el-icon>
                   <span>{{ $t('defect.gantt.freeze-baseline') }}</span>
+                </span>
+              </el-dropdown-item>
+              <el-dropdown-item
+                :disabled="!canEdit || autoLevelLoading || autoLevelApplying"
+                class="defect-gantt-layers-action"
+                :title="$t('defect.gantt.auto-level-tip')"
+                @click="startAutoLevel"
+              >
+                <span class="defect-gantt-layers-action-label">
+                  <el-icon><Sort /></el-icon>
+                  <span>{{ $t('defect.gantt.auto-level') }}</span>
+                </span>
+              </el-dropdown-item>
+              <el-dropdown-item
+                class="defect-gantt-layers-action"
+                @click="openWorkCalendar"
+              >
+                <span class="defect-gantt-layers-action-label">
+                  <el-icon><Calendar /></el-icon>
+                  <span>{{ $t('defect.gantt.work-calendar') }}</span>
                 </span>
               </el-dropdown-item>
             </el-dropdown-menu>
@@ -88,6 +119,42 @@
 
     <div v-if="showDeps && selectedLinkId != null" class="defect-gantt-load-banner">
       {{ $t('defect.gantt.link-selected-hint') }}
+    </div>
+
+    <div v-if="autoLevelPreview" class="defect-gantt-auto-level-banner">
+      <div class="defect-gantt-auto-level-banner-text">
+        {{
+          $t('defect.gantt.auto-level-preview', {
+            n: autoLevelPreview.summary.changed,
+            earlier: autoLevelPreview.summary.earlier,
+            later: autoLevelPreview.summary.later
+          })
+        }}
+        <span class="defect-gantt-auto-level-banner-note">{{ $t('defect.gantt.auto-level-air-note') }}</span>
+        <el-checkbox
+          v-model="autoLevelIgnoreCalendar"
+          size="small"
+          class="defect-gantt-auto-level-ignore-cal"
+          :title="$t('defect.gantt.ignore-calendar-tip')"
+          :disabled="autoLevelApplying"
+          @change="rebuildAutoLevelPreview"
+        >
+          {{ $t('defect.gantt.ignore-calendar') }}
+        </el-checkbox>
+      </div>
+      <div class="defect-gantt-auto-level-banner-actions">
+        <el-button size="small" :disabled="autoLevelApplying" @click="cancelAutoLevel">
+          {{ $t('defect.gantt.auto-level-cancel') }}
+        </el-button>
+        <el-button
+          type="primary"
+          size="small"
+          :loading="autoLevelApplying"
+          @click="confirmAutoLevel"
+        >
+          {{ $t('defect.gantt.auto-level-apply') }}
+        </el-button>
+      </div>
     </div>
 
     <div v-loading="loading" class="defect-gantt-body" :element-loading-text="$t('loading')">
@@ -193,16 +260,19 @@
                       :style="{ height: rowHeight + 'px' }"
                       :data-row-key="row.rowKey"
                       :data-group-key="g.key"
-                      @click="focusGanttRow(row, g)"
+                      @click="onScheduledRowClick($event, row, g)"
                     >
                       <span class="defect-gantt-row-num">#{{ row.defect.projectNum }}</span>
                       <span class="defect-gantt-row-name" :title="row.defect.defectName">{{ row.defect.defectName }}</span>
                       <el-tooltip
-                        v-if="row.mirrored"
+                        v-if="isMultiHandlerRow(row)"
                         placement="top"
-                        :content="mirrorTip(row)"
+                        :content="multiHandlerTip(row)"
                       >
-                        <el-icon class="defect-gantt-mirror-icon"><Link /></el-icon>
+                        <svg-icon
+                          icon-class="peoples"
+                          class-name="defect-gantt-multi-icon"
+                        />
                       </el-tooltip>
                       <span
                         v-if="formatDefectDays(row.defect)"
@@ -301,7 +371,13 @@
                     v-for="(u, ui) in axisUnits"
                     :key="u.key"
                     class="defect-gantt-axis-unit"
-                    :class="{ weekend: !!u.weekend, 'is-day-scale': scale === 'day', 'is-week-scale': scale === 'week' }"
+                    :class="{
+                      'is-rest': (!!u.weekOff || !!u.holiday) && !u.makeup,
+                      holiday: !!u.holiday,
+                      makeup: !!u.makeup,
+                      'is-day-scale': scale === 'day',
+                      'is-week-scale': scale === 'week'
+                    }"
                     :style="{ width: colWidth + 'px' }"
                     :title="formatUnitTitle(u)"
                   >
@@ -346,7 +422,11 @@
                   v-for="(u, ui) in axisUnits"
                   :key="'bg-' + u.key"
                   class="defect-gantt-axis-col-bg"
-                  :class="{ weekend: !!u.weekend }"
+                  :class="{
+                    'is-rest': (!!u.weekOff || !!u.holiday) && !u.makeup,
+                    holiday: !!u.holiday,
+                    makeup: !!u.makeup
+                  }"
                   :style="{ left: (ui * colWidth) + 'px', width: colWidth + 'px' }"
                 />
                 <div
@@ -407,7 +487,7 @@
                         :style="{ height: rowHeight + 'px' }"
                         :data-row-key="row.rowKey"
                         :data-group-key="g.key"
-                        @click="selectDefect(row.defect)"
+                        @click="onAxisRowClick($event, row)"
                         @dragover.prevent.stop="onGroupDragOver($event, g)"
                         @drop.prevent.stop="onGroupDrop($event, g)"
                       >
@@ -415,6 +495,13 @@
                           v-if="showBaseline && baselineBarStyle(row)"
                           class="defect-gantt-bar is-baseline"
                           :style="baselineBarStyle(row)"
+                          aria-hidden="true"
+                        />
+                        <div
+                          v-if="autoLevelGhostStyle(row)"
+                          class="defect-gantt-bar is-auto-level-ghost"
+                          :class="'state-' + stateClass(row.defect)"
+                          :style="autoLevelGhostStyle(row)"
                           aria-hidden="true"
                         />
                         <div
@@ -427,29 +514,48 @@
                               'is-dragging': dragState && dragState.rowKey === row.rowKey,
                               'is-selected': isSelectedDefect(row.defect),
                               'is-forbidden': isBarModuleForbidden(row),
+                              'is-plan-readonly': !canEditPlanDefect(row.defect),
                               'is-critical': showCritical && isCriticalDefect(row.defect),
                               'is-link-target': isLinkDragTarget(row.defect),
-                              'is-link-target-invalid': isLinkDragTargetInvalid(row.defect)
+                              'is-link-target-invalid': isLinkDragTargetInvalid(row.defect),
+                              'is-auto-level-push': isAutoLevelPushBar(row.defect),
+                              'is-auto-level-proposal': isAutoLevelProposalBar(row.defect),
+                              'is-multi-handler': isMultiHandlerRow(row)
                             }
                           ]"
                           :style="barStyle(row)"
                           :data-defect-id="row.defect.defectId"
                           data-gantt-bar="1"
-                          :title="isBarModuleForbidden(row)
-                            ? $t('defect.gantt.module-drop-forbidden')
-                            : ('#' + row.defect.projectNum + ' ' + (row.defect.defectName || '')).trim()"
+                          :title="barHoverTitle(row)"
                           @dragstart.prevent.stop
                           @mousedown.stop="onBarMouseDown($event, row, g, 'move')"
                           @click.stop="onBarClick($event, row.defect)"
                         >
+                          <div class="defect-gantt-bar-rest-mask" aria-hidden="true">
+                            <i
+                              v-for="(seg, si) in barRestSegments(row)"
+                              :key="'rest-' + row.rowKey + '-' + si"
+                              class="defect-gantt-bar-rest"
+                              :style="{ left: seg.left + 'px', width: seg.width + 'px' }"
+                            />
+                          </div>
+                          <el-tooltip
+                            v-if="isMultiHandlerRow(row)"
+                            placement="top"
+                            :content="multiHandlerTip(row)"
+                          >
+                            <span class="defect-gantt-bar-multi" @mousedown.stop @click.stop>
+                              <svg-icon icon-class="peoples" class-name="defect-gantt-bar-multi-svg" />
+                            </span>
+                          </el-tooltip>
                           <!-- 拉宽手柄始终可用；关联线开启时端口在条外，互不顶替；条内不显示文字 -->
                           <span
-                            v-if="canEdit"
+                            v-if="canEditPlanDefect(row.defect)"
                             class="defect-gantt-bar-handle left"
                             @mousedown.stop="onBarMouseDown($event, row, g, 'start')"
                           />
                           <span
-                            v-if="showDeps && canEdit"
+                            v-if="showDeps && canEditDefect"
                             class="defect-gantt-bar-port left"
                             :class="{
                               'is-active': isLinkPortActive(row.defect, 'head'),
@@ -461,7 +567,7 @@
                             @mousedown.stop.prevent="onLinkPortDown($event, row.defect, 'head')"
                           />
                           <span
-                            v-if="showDeps && canEdit"
+                            v-if="showDeps && canEditDefect"
                             class="defect-gantt-bar-port right"
                             :class="{
                               'is-active': isLinkPortActive(row.defect, 'tail'),
@@ -473,7 +579,7 @@
                             @mousedown.stop.prevent="onLinkPortDown($event, row.defect, 'tail')"
                           />
                           <span
-                            v-if="canEdit"
+                            v-if="canEditPlanDefect(row.defect)"
                             class="defect-gantt-bar-handle right"
                             @mousedown.stop="onBarMouseDown($event, row, g, 'end')"
                           />
@@ -586,7 +692,7 @@
                 <svg
                   v-if="showDeps && (depLinkPaths.length || linkDragPreviewPath)"
                   class="defect-gantt-dep-layer"
-                  :class="{ 'is-interactive': canEdit && !linkDrag }"
+                  :class="{ 'is-interactive': canEditDefect && !linkDrag }"
                   :width="axisWidthPx"
                   :height="axisBodyHeight"
                 >
@@ -811,11 +917,13 @@
                 'state-' + stateClass(d),
                 {
                   'is-selected': isSelectedDefect(d),
-                  'is-dragging': pendingUnscheduled && pendingUnscheduled.defectId === d.defectId
+                  'is-dragging': pendingUnscheduled && pendingUnscheduled.defectId === d.defectId,
+                  'is-plan-readonly': !canEditPlanDefect(d)
                 }
               ]"
-              :draggable="canEdit"
-              @click="selectDefect(d)"
+              :draggable="canEditPlanDefect(d)"
+              :title="chipHoverTitle(d)"
+              @click="selectUnscheduledDefect(d)"
               @dragstart="onUnscheduledDragStart($event, d)"
               @dragend="onUnscheduledDragEnd"
             >
@@ -860,21 +968,27 @@
         <span class="defect-gantt-drag-ghost-name">{{ dragGhost.name }}</span>
       </div>
     </teleport>
+    <project-work-calendar-dialog ref="workCalendarDialog" @saved="onWorkCalendarSaved" />
   </div>
 </template>
 
 <script>
-import { ArrowDown, ArrowRight, Close as CloseIcon, Link, Operation, RefreshRight, Search, User } from '@element-plus/icons-vue'
+import { ArrowDown, ArrowRight, Calendar, Close as CloseIcon, Operation, RefreshRight, Search, Sort, User } from '@element-plus/icons-vue'
 import {
   listDefect,
-  updateDefect,
+  updateDefectPlanNode,
   getDefectPlanGanttMeta,
   createDefectPlanLink,
   deleteDefectPlanLink,
   freezeDefectPlanBaseline
 } from '@/api/system/defect'
+import { getProjectWorkCalendar } from '@/api/system/project-work-calendar'
+import { normalizeWorkCalendar } from '@/utils/work-calendar'
+import ProjectWorkCalendarDialog from '@/views/system/project/work-calendar/index.vue'
+import { getProject } from '@/api/system/project'
 import { listModulePath } from '@/api/system/module'
 import { checkPermi } from '@/utils/permission'
+import { useUserStore } from '@/stores/user'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import SelectProjectMember from '@/components/Project/SelectProjectMember'
 import {
@@ -923,31 +1037,46 @@ import {
   pxPerDay,
   snapDurationDays,
   barGeometry,
+  barRestOverlays,
   parsePlanDate,
   isoWeekNumber,
   planDurationDays,
   formatDurationDays,
   computeCriticalPathIds,
   buildHandlerLoadTrackSegments,
-  findFsScheduleConflicts
+  findFsScheduleConflicts,
+  canAutoLevelEditDefect,
+  canEditGanttPlanDefect,
+  filterAutoLevelCandidates,
+  levelDefectPlans,
+  primaryHandlerId,
+  pushOverlapsAfterPinned,
+  isProjectPlanAdmin,
+  defaultGanttWorkCalendar
 } from './defect-gantt'
+
+const AUTO_LEVEL_PAGE_SIZE = 100
+const AUTO_LEVEL_UPDATE_CONCURRENCY = 6
 
 export default {
   name: 'DefectGantt',
   components: {
     ArrowDown,
     ArrowRight,
+    Calendar,
     CloseIcon,
-    Link,
     Operation,
     RefreshRight,
     Search,
+    Sort,
     User,
     Cat2BugAvatar,
-    SelectProjectMember
+    SelectProjectMember,
+    ProjectWorkCalendarDialog
   },
   setup() {
-    return { Search }
+    const userStore = useUserStore()
+    return { Search, userStore }
   },
   props: {
     query: {
@@ -1022,6 +1151,8 @@ export default {
     let showBarHandler = false
     let showBarDays = false
     let showBarDefectTitle = false
+    /** 拖动时自动把同人重叠条往后挤（默认关） */
+    let autoLevelOnDrag = false
     /** 缩略图默认开；仅当本地显式存了 minimap 键时才覆盖 */
     let showMinimap = true
     try {
@@ -1037,6 +1168,7 @@ export default {
           showBarHandler = !!(parsed.handler != null ? parsed.handler : parsed.handlerAvatar)
           showBarDays = !!parsed.days
           showBarDefectTitle = !!parsed.defectTitle
+          autoLevelOnDrag = !!parsed.autoLevel
           if (Object.prototype.hasOwnProperty.call(parsed, 'minimap')) {
             showMinimap = !!parsed.minimap
           }
@@ -1149,6 +1281,18 @@ export default {
       showBarHandler,
       showBarDays,
       showBarDefectTitle,
+      autoLevelOnDrag,
+      /** 拖动挤让时缓存是否项目管理员（懒加载） */
+      autoLevelIsAdmin: null,
+      /** 一键自动排列预览 { proposals, summary, universe } */
+      autoLevelPreview: null,
+      autoLevelLoading: false,
+      autoLevelApplying: false,
+      /** 本次自动排列是否忽略工作日历 */
+      autoLevelIgnoreCalendar: false,
+      /** 项目工作日历快照 */
+      workCalendar: defaultGanttWorkCalendar(),
+      workCalendarEditable: false,
       /** 缩略图（默认开） */
       showMinimap,
       /** 缩略图面板位置；null 表示右下角停靠 */
@@ -1169,6 +1313,8 @@ export default {
       selectedLinkId: null,
       /** 多选 defectId 列表（框选 / Ctrl·⌘·Shift 点选） */
       marqueeSelectedIds: [],
+      /** Shift 区间选锚点 defectId */
+      selectionAnchorId: null,
       /** 框选拖拽状态 */
       marqueeDrag: null,
       marqueeRect: null,
@@ -1180,6 +1326,8 @@ export default {
     this.expandAxisLiveToCoverBase()
     this.bindAxisViewportObserver()
     this.ensureModulePathMap()
+    this.loadWorkCalendar()
+    this.ensureAutoLevelAdmin()
     this.$nextTick(() => {
       if (this.minimapPos) {
         this.minimapPos = this.clampMinimapPos(this.minimapPos.x, this.minimapPos.y)
@@ -1217,8 +1365,23 @@ export default {
     isHandlerGroupBy() {
       return this.groupBy === GANTT_GROUP_BY.HANDLER
     },
+    /** 甘特计划节点拖改（独立权限，不复用 defect:edit） */
     canEdit() {
+      return checkPermi(['system:defect:gantt:plan'])
+    },
+    /** 依赖线建删、冻基线入口仍走缺陷修改权 */
+    canEditDefect() {
       return checkPermi(['system:defect:edit'])
+    },
+    /** 冻基线：需缺陷编辑权 + 项目创建人/管理员 */
+    canFreezeBaseline() {
+      return this.canEditDefect && !!this.autoLevelIsAdmin
+    },
+    planEditCtx() {
+      return {
+        userId: this.currentUserId(),
+        isProjectAdmin: !!this.autoLevelIsAdmin
+      }
     },
     projected() {
       const qp = this.queryParams || this.query || {}
@@ -1294,7 +1457,10 @@ export default {
       return computeAxisRange(this.scheduledDefects, this.scale)
     },
     axisUnits() {
-      return buildAxisUnits(this.axisRange.start, this.axisRange.end, this.scale)
+      return buildAxisUnits(this.axisRange.start, this.axisRange.end, this.scale, this.workCalendar)
+    },
+    activeWorkCalendar() {
+      return this.workCalendar || defaultGanttWorkCalendar()
     },
     axisMajorBands() {
       return buildAxisMajorBands(this.axisUnits, this.scale)
@@ -1344,7 +1510,16 @@ export default {
         if (!Number.isFinite(id) || map.has(id)) continue
         map.set(
           id,
-          buildHandlerLoadTrackSegments(id, defects, rangeStart, scale, 1, axisW, this.colWidth)
+          buildHandlerLoadTrackSegments(
+            id,
+            defects,
+            rangeStart,
+            scale,
+            1,
+            axisW,
+            this.colWidth,
+            this.activeWorkCalendar
+          )
         )
       }
       return map
@@ -1576,6 +1751,10 @@ export default {
     },
     showBarDefectTitle() {
       this.persistGanttLayers()
+    },
+    autoLevelOnDrag() {
+      this.persistGanttLayers()
+      if (this.autoLevelOnDrag) this.ensureAutoLevelAdmin()
     },
     showMinimap(val) {
       this.persistGanttLayers()
@@ -2257,19 +2436,30 @@ export default {
       this.groupRowOrder = updated
       this.persistGroupRowOrder()
     },
-    mirrorTip(row) {
-      const names = (row.otherHandlers || []).map((h) => h.nickName).filter(Boolean)
-      return this.$t('defect.gantt.mirror-tip', { names: names.join(', ') })
+    isMultiHandlerRow(row) {
+      if (!row || !row.defect) return false
+      if (row.mirrored) return true
+      return resolveHandlers(row.defect).length > 1
+    },
+    multiHandlerTip(row) {
+      if (!row || !row.defect) return ''
+      const others = Array.isArray(row.otherHandlers) ? row.otherHandlers : []
+      if (others.length) {
+        const names = others.map((h) => h.nickName).filter(Boolean)
+        return this.$t('defect.gantt.mirror-tip', { names: names.join(', ') })
+      }
+      const names = resolveHandlers(row.defect).map((h) => h.nickName).filter(Boolean)
+      return this.$t('defect.gantt.multi-handler-tip', { names: names.join(', ') })
     },
     formatDefectDays(defect) {
-      return formatDurationDays(planDurationDays(defect))
+      return formatDurationDays(planDurationDays(defect, this.activeWorkCalendar))
     },
     groupTotalDays(group) {
       const rows = (group && group.rows) || []
       let sum = 0
       let any = false
       for (let i = 0; i < rows.length; i++) {
-        const d = planDurationDays(rows[i] && rows[i].defect)
+        const d = planDurationDays(rows[i] && rows[i].defect, this.activeWorkCalendar)
         if (d == null || !Number.isFinite(d)) continue
         sum += d
         any = true
@@ -2279,14 +2469,82 @@ export default {
     formatGroupDays(group) {
       return formatDurationDays(this.groupTotalDays(group))
     },
+    /** 当前条用于几何/网纹的计划起止（含拖动预览、自动排列推挤） */
+    barPlanSource(row) {
+      if (!row || !row.defect) return null
+      const defectId = row.defect.defectId != null ? Number(row.defect.defectId) : null
+      const ds = this.dragState
+      /* 正在拖的条：跟手改期，网纹按预览计划实时重算 */
+      if (
+        ds &&
+        ds.activated &&
+        ds.preview &&
+        ds.rowKey === row.rowKey &&
+        !(this.dropInsertPreview && this.dropInsertPreview.kind !== 'forbidden')
+      ) {
+        const live = this.planRangeFromDragPreview(ds)
+        if (live) return live
+      }
+      /* 多选平移中的同伴条 */
+      if (
+        ds &&
+        ds.activated &&
+        ds.mode === 'move' &&
+        ds.preview &&
+        defectId != null &&
+        Array.isArray(ds.batchIds) &&
+        ds.batchIds.some((id) => Number(id) === defectId) &&
+        ds.rowKey !== row.rowKey
+      ) {
+        const dayDelta = Math.round((ds.preview.x - ds.originX) / this.colWidth)
+        const shifted = shiftPlanRange(
+          row.defect.planStartTime,
+          row.defect.planEndTime,
+          this.scaleDayDelta(dayDelta),
+          this.activeWorkCalendar
+        )
+        if (shifted) return shifted
+      }
+      const push =
+        ds &&
+        ds.autoLevelPushes &&
+        defectId != null &&
+        ds.autoLevelPushes[defectId]
+      if (push) {
+        return { planStartTime: push.planStartTime, planEndTime: push.planEndTime }
+      }
+      const proposal =
+        this.autoLevelPreview &&
+        defectId != null &&
+        this.autoLevelPreview.proposals &&
+        this.autoLevelPreview.proposals[defectId]
+      if (proposal) {
+        return { planStartTime: proposal.planStartTime, planEndTime: proposal.planEndTime }
+      }
+      return row.defect
+    },
+    /** 条内跨休息日网纹段（相对条左缘；拖动中随预览更新） */
+    barRestSegments(row) {
+      const source = this.barPlanSource(row)
+      if (!source || !this.axisRange || !this.axisRange.start) return []
+      return barRestOverlays(
+        source,
+        this.axisRange.start,
+        this.scale,
+        this.colWidth,
+        this.activeWorkCalendar
+      )
+    },
     barStyle(row) {
-      const geo = barGeometry(row.defect, this.axisRange.start, this.scale, this.colWidth)
+      const defectId = row.defect && row.defect.defectId != null ? Number(row.defect.defectId) : null
+      const ds = this.dragState
+      const geoSource = this.barPlanSource(row)
+      if (!geoSource) return null
+      const geo = barGeometry(geoSource, this.axisRange.start, this.scale, this.colWidth)
       if (!geo) return null
       let x = geo.x
       let width = geo.width
-      const ds = this.dragState
       const dragging = ds && ds.rowKey === row.rowKey
-      const defectId = row.defect && row.defect.defectId != null ? Number(row.defect.defectId) : null
       const batchPeer =
         !dragging &&
         ds &&
@@ -2318,6 +2576,23 @@ export default {
         left: x + 'px',
         width: width + 'px'
       }
+    },
+    isAutoLevelPushBar(defect) {
+      const ds = this.dragState
+      if (!ds || !ds.autoLevelPushes || !defect || defect.defectId == null) return false
+      return !!ds.autoLevelPushes[Number(defect.defectId)]
+    },
+    isAutoLevelProposalBar(defect) {
+      if (!this.autoLevelPreview || !defect || defect.defectId == null) return false
+      return !!(this.autoLevelPreview.proposals && this.autoLevelPreview.proposals[Number(defect.defectId)])
+    },
+    autoLevelGhostStyle(row) {
+      if (!this.autoLevelPreview || !row || !row.defect || row.defect.defectId == null) return null
+      const id = Number(row.defect.defectId)
+      if (!(this.autoLevelPreview.proposals && this.autoLevelPreview.proposals[id])) return null
+      const geo = barGeometry(row.defect, this.axisRange.start, this.scale, this.colWidth)
+      if (!geo) return null
+      return { left: geo.x + 'px', width: geo.width + 'px' }
     },
     baselineBarStyle(row) {
       if (!row || !row.defect || row.defect.defectId == null) return null
@@ -2425,6 +2700,7 @@ export default {
             handler: !!this.showBarHandler,
             days: !!this.showBarDays,
             defectTitle: !!this.showBarDefectTitle,
+            autoLevel: !!this.autoLevelOnDrag,
             minimap: !!this.showMinimap
           })
         )
@@ -2470,10 +2746,10 @@ export default {
     /** 条后「天数」文案：计划工期 + 天 */
     barDaysText(row) {
       if (!row || !row.defect) return ''
-      const days = planDurationDays(row.defect)
+      const days = planDurationDays(row.defect, this.activeWorkCalendar)
       const formatted = formatDurationDays(days)
       if (!formatted) return ''
-      return this.$t('defect.gantt.bar-days', { n: formatted })
+      return this.$t('defect.gantt.bar-workdays', { n: formatted })
     },
     /** 条后「缺陷标题」文案：#编号 + 标题 */
     barDefectTitleText(row) {
@@ -3009,29 +3285,119 @@ export default {
       if ((this.marqueeSelectedIds || []).some((x) => Number(x) === id)) return true
       return this.selectedDefectId != null && Number(this.selectedDefectId) === id
     },
+    /** 点选修饰键：Ctrl/⌘ 加减；Shift 区间；Ctrl/⌘+Shift 并入区间 */
+    selectionModifiersFromEvent(e) {
+      if (!e) return {}
+      const ctrl = !!(e.ctrlKey || e.metaKey)
+      const shift = !!e.shiftKey
+      if (ctrl && shift) return { mergeRange: true }
+      if (shift) return { range: true }
+      if (ctrl) return { additive: true }
+      return {}
+    },
+    /** 可见已排期扁平行序（跳过折叠组，defectId 去重） */
+    visibleScheduledDefectIds() {
+      const ids = []
+      const seen = new Set()
+      const groups = this.groups || []
+      for (let i = 0; i < groups.length; i++) {
+        const g = groups[i]
+        if (!g || this.isGroupCollapsed(g.key)) continue
+        const rows = g.rows || []
+        for (let j = 0; j < rows.length; j++) {
+          const d = rows[j] && rows[j].defect
+          if (!d || d.defectId == null) continue
+          const id = Number(d.defectId)
+          if (!Number.isFinite(id) || seen.has(id)) continue
+          seen.add(id)
+          ids.push(id)
+        }
+      }
+      return ids
+    },
     selectDefect(defect, opts = {}) {
       if (!defect || defect.defectId == null) return
       const id = Number(defect.defectId)
+      if (!Number.isFinite(id)) return
+
+      if (opts.range || opts.mergeRange) {
+        const order = this.visibleScheduledDefectIds()
+        const anchor =
+          this.selectionAnchorId != null ? Number(this.selectionAnchorId) : null
+        const ai = anchor != null ? order.indexOf(anchor) : -1
+        const bi = order.indexOf(id)
+        if (ai < 0 || bi < 0) {
+          this.selectedDefectId = defect.defectId
+          this.marqueeSelectedIds = [id]
+          this.selectionAnchorId = id
+          return
+        }
+        const lo = Math.min(ai, bi)
+        const hi = Math.max(ai, bi)
+        const rangeIds = order.slice(lo, hi + 1)
+        if (opts.mergeRange) {
+          const set = new Set((this.marqueeSelectedIds || []).map(Number))
+          rangeIds.forEach((x) => set.add(x))
+          this.marqueeSelectedIds = Array.from(set)
+        } else {
+          this.marqueeSelectedIds = rangeIds
+        }
+        this.selectedDefectId = id
+        return
+      }
+
       if (opts.additive) {
         const set = new Set((this.marqueeSelectedIds || []).map(Number))
         if (set.has(id)) set.delete(id)
         else set.add(id)
         this.marqueeSelectedIds = Array.from(set)
-        this.selectedDefectId = set.has(id) ? id : (set.size ? Array.from(set)[set.size - 1] : null)
+        this.selectedDefectId = set.has(id)
+          ? id
+          : set.size
+            ? Array.from(set)[set.size - 1]
+            : null
+        this.selectionAnchorId = id
         return
       }
+
       this.selectedDefectId = defect.defectId
       this.marqueeSelectedIds = [id]
+      this.selectionAnchorId = id
     },
     clearDefectSelection() {
       this.selectedDefectId = null
       this.marqueeSelectedIds = []
+      this.selectionAnchorId = null
+    },
+    /** 未排期池：始终单选，忽略修饰键多选/区间 */
+    selectUnscheduledDefect(defect) {
+      this.selectDefect(defect)
     },
     openDefect(defect) {
       if (defect && defect.defectId) {
         this.selectDefect(defect)
         this.$emit('defect-click', defect)
       }
+    },
+    /** 左侧已排期行：无修饰 focus+滚轴；有修饰只改选中 */
+    onScheduledRowClick(e, row, group) {
+      if (!row || !row.defect) return
+      const mods = this.selectionModifiersFromEvent(e)
+      if (mods.additive || mods.range || mods.mergeRange) {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault()
+        this.selectDefect(row.defect, mods)
+        return
+      }
+      this.focusGanttRow(row, group)
+    },
+    /** 轴行空白点击：与左侧同一套修饰键语义，不滚轴 */
+    onAxisRowClick(e, row) {
+      if (!row || !row.defect) return
+      const mods = this.selectionModifiersFromEvent(e)
+      this.selectDefect(
+        row.defect,
+        mods.additive || mods.range || mods.mergeRange ? mods : {}
+      )
     },
     /**
      * 左侧行：选中并滚动定位到时间轴上的条；不打开详情。
@@ -3089,13 +3455,45 @@ export default {
      * 条点击开详情；可编辑时 mousedown 会 preventDefault，改由 mouseup 未拖动时打开。
      */
     onBarClick(e, defect) {
-      if (this.canEdit) return
+      /* 可计划拖的条由 mouseup 开详情；无计划写权限时走 click */
+      if (this.canEdit && this.canEditPlanDefect(defect)) return
       this.openDefect(defect)
     },
     ensureCanEdit() {
       if (this.canEdit) return true
       this.$modal.msgWarning(this.$t('defect.gantt.no-edit-perm'))
       return false
+    },
+    ensureCanEditDefect() {
+      if (this.canEditDefect) return true
+      this.$modal.msgWarning(this.$t('defect.gantt.no-defect-edit-perm'))
+      return false
+    },
+    canEditPlanDefect(defect) {
+      if (!this.canEdit) return false
+      return canEditGanttPlanDefect(defect, this.planEditCtx)
+    },
+    ensureCanEditPlanDefect(defect) {
+      if (!this.ensureCanEdit()) return false
+      if (this.canEditPlanDefect(defect)) return true
+      this.$modal.msgWarning(this.$t('defect.gantt.no-plan-edit-perm'))
+      return false
+    },
+    /** 不可计划拖时 title 提示原因；可拖时显示编号+标题 */
+    planReadonlyTip() {
+      if (!this.canEdit) return this.$t('defect.gantt.no-edit-perm')
+      return this.$t('defect.gantt.no-plan-edit-perm')
+    },
+    barHoverTitle(row) {
+      if (!row || !row.defect) return ''
+      if (this.isBarModuleForbidden(row)) return this.$t('defect.gantt.module-drop-forbidden')
+      if (!this.canEditPlanDefect(row.defect)) return this.planReadonlyTip()
+      return ('#' + row.defect.projectNum + ' ' + (row.defect.defectName || '')).trim()
+    },
+    chipHoverTitle(defect) {
+      if (!defect) return ''
+      if (!this.canEditPlanDefect(defect)) return this.planReadonlyTip()
+      return ('#' + defect.projectNum + ' ' + (defect.defectName || '')).trim()
     },
     /**
      * @param {number} [grabOffsetX] 指针相对元素左上角 X；缺省则锚在指针下
@@ -3223,8 +3621,7 @@ export default {
         const shifted = shiftPlanRange(
           this.dragState.planStartTime,
           this.dragState.planEndTime,
-          this.scaleDayDelta(Math.round((this.dragState.preview.x - this.dragState.originX) / this.colWidth))
-        )
+          this.scaleDayDelta(Math.round((this.dragState.preview.x - this.dragState.originX) / this.colWidth)), this.activeWorkCalendar)
         if (shifted) {
           planStartTime = shifted.planStartTime
           planEndTime = shifted.planEndTime
@@ -3241,14 +3638,14 @@ export default {
             : null
         const resized =
           widthDays != null
-            ? resizePlanRange(planStartTime, planEndTime, edge, null, { durationDays: widthDays })
+            ? resizePlanRange(planStartTime, planEndTime, edge, null, { durationDays: widthDays, calendar: this.activeWorkCalendar })
             : resizePlanRange(planStartTime, planEndTime, edge, day)
         if (resized) {
           planStartTime = resized.planStartTime
           planEndTime = resized.planEndTime
         }
       } else {
-        const range = defaultPlanRangeFromDropDay(day)
+        const range = defaultPlanRangeFromDropDay(day, this.activeWorkCalendar)
         if (!range) {
           this.setDropInsertPreview(null)
           return
@@ -3380,7 +3777,7 @@ export default {
       return img
     },
     onUnscheduledDragStart(e, defect) {
-      if (!this.ensureCanEdit()) {
+      if (!this.ensureCanEditPlanDefect(defect)) {
         e.preventDefault()
         return
       }
@@ -3560,10 +3957,10 @@ export default {
       this.teardownUnscheduledDragListeners()
       this.clearDragGhost()
       if (!defect) return
-      if (!this.ensureCanEdit()) return
+      if (!this.ensureCanEditPlanDefect(defect)) return
       const day = this.clientXToDate(e.clientX)
       if (!day) return
-      const range = defaultPlanRangeFromDropDay(day)
+      const range = defaultPlanRangeFromDropDay(day, this.activeWorkCalendar)
       if (!range) return
       if (this.isModuleGroupBy) {
         if (insertSnap && insertSnap.kind === 'forbidden') {
@@ -3634,24 +4031,35 @@ export default {
     onBarMouseDown(e, row, group, mode) {
       if (e.button !== 0) return
       this.selectedLinkId = null
-      const additive = !!(e.ctrlKey || e.metaKey || e.shiftKey)
-      if (additive) {
-        this.selectDefect(row && row.defect, { additive: true })
+      const mods = this.selectionModifiersFromEvent(e)
+      if (mods.additive || mods.range || mods.mergeRange) {
+        this.selectDefect(row && row.defect, mods)
       } else if (!this.isSelectedDefect(row && row.defect)) {
         this.selectDefect(row && row.defect)
       } else if ((this.marqueeSelectedIds || []).length <= 1) {
         this.selectDefect(row && row.defect)
       }
-      if (!this.canEdit) return
+      if (!this.canEditPlanDefect(row.defect)) return
+      if (this.autoLevelPreview) {
+        this.$modal.msgWarning(this.$t('defect.gantt.auto-level-busy'))
+        return
+      }
       e.preventDefault()
       const geo = barGeometry(row.defect, this.axisRange.start, this.scale, this.colWidth)
       if (!geo) return
-      const batchIds =
+      let batchIds =
         mode === 'move' &&
         (this.marqueeSelectedIds || []).length > 1 &&
         this.isSelectedDefect(row.defect)
           ? (this.marqueeSelectedIds || []).map(Number).filter((id) => Number.isFinite(id))
           : null
+      if (batchIds && batchIds.length > 1) {
+        batchIds = batchIds.filter((id) => {
+          const d = (this.defectList || []).find((x) => x && Number(x.defectId) === id)
+          return d && this.canEditPlanDefect(d)
+        })
+        if (batchIds.length <= 1) batchIds = null
+      }
       this.dragState = {
         mode,
         rowKey: row.rowKey,
@@ -3671,7 +4079,7 @@ export default {
         grabOffsetY: 0,
         ghostWidth: Math.max(120, Math.min(geo.width, 280)),
         batchIds,
-        additiveSelect: additive
+        additiveSelect: !!(mods && mods.additive)
       }
       {
         const el =
@@ -3684,6 +4092,7 @@ export default {
           this.dragState.grabOffsetY = e.clientY - rect.top
         }
       }
+      if (this.autoLevelOnDrag) this.ensureAutoLevelAdmin()
       document.addEventListener('mousemove', this.onBarMouseMove)
       document.addEventListener('mouseup', this.onBarMouseUp)
     },
@@ -3747,6 +4156,7 @@ export default {
         ds.preview.x !== nextPreview.x ||
         ds.preview.width !== nextPreview.width
       ds.preview = nextPreview
+      this.refreshDragAutoLevelPushes(ds)
       if (resizing) {
         this.setDropInsertPreview(null)
         if (previewChanged) this.dragState = { ...ds }
@@ -3755,6 +4165,7 @@ export default {
       /* 批量平移只改水平日期，不做跨组插入预览 */
       if (Array.isArray(ds.batchIds) && ds.batchIds.length > 1) {
         this.setDropInsertPreview(null)
+        ds.autoLevelPushes = null
         if (previewChanged) this.dragState = { ...ds }
         this.moveDragGhost(e.clientX, e.clientY)
         return
@@ -3770,6 +4181,81 @@ export default {
       if (previewChanged || hoverChanged) this.dragState = { ...ds }
       this.moveDragGhost(e.clientX, e.clientY)
       this.scheduleDropInsertPreview(e.clientX, e.clientY)
+    },
+    /** 拖动预览位 → 同人可改重叠条往后挤的临时提案 */
+    refreshDragAutoLevelPushes(ds) {
+      if (!ds || !this.autoLevelOnDrag || !ds.preview || !ds.defect) {
+        if (ds) ds.autoLevelPushes = null
+        return
+      }
+      if (Array.isArray(ds.batchIds) && ds.batchIds.length > 1) {
+        ds.autoLevelPushes = null
+        return
+      }
+      const pinnedRange = this.planRangeFromDragPreview(ds)
+      if (!pinnedRange) {
+        ds.autoLevelPushes = null
+        return
+      }
+      const laneId = this.resolveDragLaneHandlerId(ds)
+      const ctx = {
+        userId: this.currentUserId(),
+        isProjectAdmin: !!this.autoLevelIsAdmin
+      }
+      const peers = (this.defectList || []).filter((d) => {
+        if (!d || Number(d.defectId) === Number(ds.defect.defectId)) return false
+        if (!canAutoLevelEditDefect(d, ctx)) return false
+        const hid = primaryHandlerId(d)
+        if (laneId == null) return hid == null
+        return Number(hid) === Number(laneId)
+      })
+      const visualOrder = []
+      const seen = new Set()
+      ;(this.groups || []).forEach((g) => {
+        ;(g.rows || []).forEach((row) => {
+          const id = row && row.defect && row.defect.defectId != null
+            ? Number(row.defect.defectId)
+            : null
+          if (!Number.isFinite(id) || seen.has(id)) return
+          seen.add(id)
+          visualOrder.push(id)
+        })
+      })
+      const map = pushOverlapsAfterPinned({
+        pinnedId: Number(ds.defect.defectId),
+        pinnedRange,
+        peers,
+        visualOrder,
+        calendar: this.activeWorkCalendar
+      })
+      const obj = {}
+      map.forEach((v, k) => {
+        obj[k] = v
+      })
+      ds.autoLevelPushes = Object.keys(obj).length ? obj : null
+    },
+    resolveDragLaneHandlerId(ds) {
+      if (!ds) return null
+      if (ds.hoverGroup && ds.hoverGroup.type === 'handler' && ds.hoverGroup.handlerId != null) {
+        return Number(ds.hoverGroup.handlerId)
+      }
+      if (ds.group && ds.group.type === 'handler' && ds.group.handlerId != null) {
+        return Number(ds.group.handlerId)
+      }
+      return primaryHandlerId(ds.defect)
+    },
+    planRangeFromDragPreview(ds) {
+      if (!ds || !ds.preview) return null
+      if (ds.mode === 'move') {
+        const dayDelta = Math.round((ds.preview.x - ds.originX) / this.colWidth)
+        return shiftPlanRange(ds.planStartTime, ds.planEndTime, this.scaleDayDelta(dayDelta), this.activeWorkCalendar)
+      }
+      if (ds.mode === 'start' || ds.mode === 'end') {
+        const ppd = pxPerDay(this.scale, this.colWidth)
+        const widthDays = snapDurationDays(ds.preview.width / ppd, { min: 0.1, magnet: 0.12 })
+        return resizePlanRange(ds.planStartTime, ds.planEndTime, ds.mode, null, { durationDays: widthDays, calendar: this.activeWorkCalendar })
+      }
+      return null
     },
     async onBarMouseUp(e) {
       const ds = this.dragState
@@ -3794,13 +4280,11 @@ export default {
       const dayDelta = Math.round((ds.preview.x - ds.originX) / this.colWidth)
       let range = null
       if (ds.mode === 'move') {
-        range = shiftPlanRange(ds.planStartTime, ds.planEndTime, this.scaleDayDelta(dayDelta))
+        range = shiftPlanRange(ds.planStartTime, ds.planEndTime, this.scaleDayDelta(dayDelta), this.activeWorkCalendar)
       } else if (ds.mode === 'start' || ds.mode === 'end') {
         const ppd = pxPerDay(this.scale, this.colWidth)
         const widthDays = snapDurationDays(ds.preview.width / ppd, { min: 0.1, magnet: 0.12 })
-        range = resizePlanRange(ds.planStartTime, ds.planEndTime, ds.mode, null, {
-          durationDays: widthDays
-        })
+        range = resizePlanRange(ds.planStartTime, ds.planEndTime, ds.mode, null, { durationDays: widthDays, calendar: this.activeWorkCalendar })
       }
       if (!range) {
         endDragUi()
@@ -3892,15 +4376,26 @@ export default {
             optimistic.moduleId = targetGroup.moduleId
           }
         }
+        const pushEntries = Object.entries(ds.autoLevelPushes || {})
         this.patchLocalDefect(ds.defect.defectId, optimistic, targetGroup)
+        pushEntries.forEach(([idStr, pr]) => {
+          this.patchLocalDefect(Number(idStr), {
+            planStartTime: pr.planStartTime,
+            planEndTime: pr.planEndTime
+          })
+        })
         if (ds.mode === 'move' && orderTargetKey && insertIndex != null) {
           this.applyGroupRowOrder(orderTargetKey, ds.defect.defectId, insertIndex)
         }
+        const dragged = ds.defect
         endDragUi()
-        await this.persistDefectUpdate(ds.defect, range, targetGroup, {
+        await this.persistDefectUpdate(dragged, range, targetGroup, {
           skipLocalPatch: true,
           rollback
         })
+        if (pushEntries.length) {
+          await this.persistAutoLevelPushes(pushEntries)
+        }
         return
       }
       if (ds.mode === 'move' && orderTargetKey && insertIndex != null) {
@@ -3950,7 +4445,7 @@ export default {
       }
       this.saving = true
       try {
-        await updateDefect(payload)
+        await updateDefectPlanNode(payload)
         if (!opts.skipLocalPatch) {
           this.patchLocalDefect(defect.defectId, payload, group)
         }
@@ -4047,7 +4542,7 @@ export default {
       return Number(drag.targetDefectId) === Number(defect.defectId) && !drag.valid
     },
     onLinkPortDown(e, defect, side) {
-      if (!this.ensureCanEdit()) return
+      if (!this.ensureCanEditDefect()) return
       if (!defect || defect.defectId == null) return
       if (e.button != null && e.button !== 0) return
       const local = this.clientToAxisLocal(e.clientX, e.clientY)
@@ -4146,7 +4641,7 @@ export default {
       }
     },
     async createPlanLinkFs(fromDefectId, toDefectId) {
-      if (!this.ensureCanEdit()) return
+      if (!this.ensureCanEditDefect()) return
       const from = Number(fromDefectId)
       const to = Number(toDefectId)
       if (!Number.isFinite(from) || !Number.isFinite(to)) return
@@ -4187,7 +4682,7 @@ export default {
     async deleteSelectedPlanLink() {
       const linkId = this.selectedLinkId
       if (linkId == null) return
-      if (!this.ensureCanEdit()) return
+      if (!this.ensureCanEditDefect()) return
       try {
         await deleteDefectPlanLink(linkId)
         this.selectedLinkId = null
@@ -4203,7 +4698,10 @@ export default {
       await this.deleteSelectedPlanLink()
     },
     async confirmFreezeBaseline() {
-      if (!this.ensureCanEdit()) return
+      if (!this.canFreezeBaseline) {
+        this.$modal.msgWarning(this.$t('defect.gantt.no-baseline-admin'))
+        return
+      }
       const projectId = this.resolveProjectId()
       if (!projectId) return
       try {
@@ -4217,6 +4715,264 @@ export default {
         this.fetchPlanGanttMeta()
       } catch (err) {
         console.warn('[DefectGantt] freeze baseline failed', err)
+      }
+    },
+    currentUserId() {
+      const raw = this.userStore && this.userStore.id
+      const uid = Number(raw)
+      return Number.isFinite(uid) && uid > 0 ? uid : NaN
+    },
+    async ensureAutoLevelAdmin() {
+      if (this.autoLevelIsAdmin != null) return !!this.autoLevelIsAdmin
+      const projectId = this.resolveProjectId()
+      if (!projectId) {
+        this.autoLevelIsAdmin = false
+        return false
+      }
+      try {
+        const res = await getProject(projectId)
+        const project = res && (res.data != null ? res.data : res)
+        this.autoLevelIsAdmin = isProjectPlanAdmin(project, this.currentUserId())
+      } catch (err) {
+        console.warn('[DefectGantt] getProject for auto-level failed', err)
+        this.autoLevelIsAdmin = false
+      }
+      return !!this.autoLevelIsAdmin
+    },
+    async persistAutoLevelPushes(entries) {
+      const projectId = this.resolveProjectId()
+      const queue = entries.slice()
+      let fail = 0
+      const runOne = async () => {
+        while (queue.length) {
+          const [idStr, range] = queue.shift()
+          const defectId = Number(idStr)
+          const local = (this.defectList || []).find((d) => Number(d.defectId) === defectId)
+          try {
+            await updateDefectPlanNode({
+              defectId,
+              projectId: local && local.projectId != null ? local.projectId : projectId,
+              planStartTime: range.planStartTime,
+              planEndTime: range.planEndTime
+            })
+          } catch (err) {
+            fail += 1
+            console.warn('[DefectGantt] auto-level push update failed', defectId, err)
+          }
+        }
+      }
+      const workers = []
+      const n = Math.min(AUTO_LEVEL_UPDATE_CONCURRENCY, entries.length)
+      for (let i = 0; i < n; i++) workers.push(runOne())
+      await Promise.all(workers)
+      this.fetchPlanGanttMeta()
+      if (fail > 0) {
+        this.$modal.msgWarning(
+          this.$t('defect.gantt.drag-yield-partial', {
+            ok: entries.length - fail,
+            fail
+          })
+        )
+      }
+    },
+    /** 拉取项目未关闭已排期全集（分页），不依赖甘特当前已加载段 */
+    async fetchAutoLevelDefectUniverse(projectId) {
+      const all = []
+      let pageNum = 1
+      let total = Infinity
+      while (all.length < total) {
+        const res = await listDefect({
+          projectId,
+          pageNum,
+          pageSize: AUTO_LEVEL_PAGE_SIZE,
+          params: { delFlag: '0' }
+        })
+        const rows = Array.isArray(res.rows) ? res.rows : []
+        total = Number(res.total)
+        if (!Number.isFinite(total)) total = all.length + rows.length
+        all.push(...rows)
+        if (!rows.length || rows.length < AUTO_LEVEL_PAGE_SIZE) break
+        pageNum += 1
+        if (pageNum > 500) break
+      }
+      return all
+    },
+    async startAutoLevel() {
+      if (!this.ensureCanEdit()) return
+      if (this.autoLevelPreview) {
+        this.$modal.msgWarning(this.$t('defect.gantt.auto-level-busy'))
+        return
+      }
+      const projectId = this.resolveProjectId()
+      if (!projectId) return
+      this.autoLevelLoading = true
+      try {
+        const isAdmin = await this.ensureAutoLevelAdmin()
+        const universe = await this.fetchAutoLevelDefectUniverse(projectId)
+        const ctx = { userId: this.currentUserId(), isProjectAdmin: !!isAdmin }
+        const candidates = filterAutoLevelCandidates(universe, ctx)
+        if (!candidates.length) {
+          this.$modal.msgWarning(this.$t('defect.gantt.auto-level-empty'))
+          return
+        }
+        const meta = await getDefectPlanGanttMeta(projectId)
+        const data = meta && (meta.data != null ? meta.data : meta)
+        const links = data && Array.isArray(data.links) ? data.links : []
+        const movableIds = candidates.map((d) => Number(d.defectId))
+        const visualOrder = []
+        const seenVisual = new Set()
+        ;(this.groups || []).forEach((g) => {
+          ;(g.rows || []).forEach((row) => {
+            const id = row && row.defect && row.defect.defectId != null
+              ? Number(row.defect.defectId)
+              : null
+            if (!Number.isFinite(id) || seenVisual.has(id)) return
+            seenVisual.add(id)
+            visualOrder.push(id)
+          })
+        })
+        const { proposals, summary } = levelDefectPlans(universe, links, {
+          movableIds,
+          visualOrder,
+          calendar: this.activeWorkCalendar,
+          ignoreCalendar: !!this.autoLevelIgnoreCalendar
+        })
+        if (!summary.changed) {
+          this.$modal.msgSuccess(this.$t('defect.gantt.auto-level-no-change'))
+          return
+        }
+        const proposalObj = {}
+        proposals.forEach((v, k) => {
+          proposalObj[k] = v
+        })
+        this.autoLevelPreview = {
+          proposals: proposalObj,
+          summary,
+          universe,
+          links,
+          movableIds,
+          visualOrder
+        }
+      } catch (err) {
+        console.warn('[DefectGantt] auto-level preview failed', err)
+        this.$modal.msgError(this.$t('defect.gantt.auto-level-fail'))
+      } finally {
+        this.autoLevelLoading = false
+      }
+    },
+    cancelAutoLevel() {
+      if (this.autoLevelApplying) return
+      this.autoLevelPreview = null
+      this.autoLevelIgnoreCalendar = false
+    },
+    async loadWorkCalendar() {
+      const projectId = this.resolveProjectId()
+      if (!projectId) {
+        this.workCalendar = defaultGanttWorkCalendar()
+        return
+      }
+      try {
+        const res = await getProjectWorkCalendar(projectId)
+        const cal = normalizeWorkCalendar(res.data)
+        this.workCalendar = {
+          workWeek: cal.workWeek,
+          exceptions: cal.exceptions
+        }
+        this.workCalendarEditable = !!cal.editable
+      } catch (e) {
+        this.workCalendar = defaultGanttWorkCalendar()
+        this.workCalendarEditable = false
+      }
+    },
+    openWorkCalendar() {
+      this.$refs.workCalendarDialog && this.$refs.workCalendarDialog.open()
+    },
+    onWorkCalendarSaved(cal) {
+      if (cal) {
+        this.workCalendar = {
+          workWeek: cal.workWeek,
+          exceptions: cal.exceptions
+        }
+        this.workCalendarEditable = !!cal.editable
+      } else {
+        this.loadWorkCalendar()
+      }
+      if (this.autoLevelPreview) {
+        this.rebuildAutoLevelPreview()
+      }
+    },
+    rebuildAutoLevelPreview() {
+      const preview = this.autoLevelPreview
+      if (!preview || !preview.universe) return
+      const { proposals, summary } = levelDefectPlans(preview.universe, preview.links || [], {
+        movableIds: preview.movableIds || [],
+        visualOrder: preview.visualOrder || [],
+        calendar: this.activeWorkCalendar,
+        ignoreCalendar: !!this.autoLevelIgnoreCalendar
+      })
+      if (!summary.changed) {
+        this.$modal.msgSuccess(this.$t('defect.gantt.auto-level-no-change'))
+        return
+      }
+      const proposalObj = {}
+      proposals.forEach((v, k) => {
+        proposalObj[k] = v
+      })
+      this.autoLevelPreview = {
+        ...preview,
+        proposals: proposalObj,
+        summary
+      }
+    },
+    async confirmAutoLevel() {
+      if (!this.autoLevelPreview || this.autoLevelApplying) return
+      const entries = Object.entries(this.autoLevelPreview.proposals || {})
+      if (!entries.length) {
+        this.autoLevelPreview = null
+        return
+      }
+      this.autoLevelApplying = true
+      const projectId = this.resolveProjectId()
+      let ok = 0
+      let fail = 0
+      const queue = entries.slice()
+      const runOne = async () => {
+        while (queue.length) {
+          const [idStr, range] = queue.shift()
+          const defectId = Number(idStr)
+          const fromUniverse =
+            (this.autoLevelPreview.universe || []).find((d) => Number(d.defectId) === defectId) ||
+            (this.defectList || []).find((d) => Number(d.defectId) === defectId)
+          try {
+            await updateDefectPlanNode({
+              defectId,
+              projectId: fromUniverse && fromUniverse.projectId != null ? fromUniverse.projectId : projectId,
+              planStartTime: range.planStartTime,
+              planEndTime: range.planEndTime
+            })
+            ok += 1
+            const local = (this.defectList || []).find((d) => Number(d.defectId) === defectId)
+            if (local) {
+              local.planStartTime = range.planStartTime
+              local.planEndTime = range.planEndTime
+            }
+          } catch (err) {
+            fail += 1
+            console.warn('[DefectGantt] auto-level update failed', defectId, err)
+          }
+        }
+      }
+      const workers = []
+      const n = Math.min(AUTO_LEVEL_UPDATE_CONCURRENCY, entries.length)
+      for (let i = 0; i < n; i++) workers.push(runOne())
+      await Promise.all(workers)
+      this.autoLevelApplying = false
+      this.autoLevelPreview = null
+      this.fetchPlanGanttMeta()
+      if (fail === 0) {
+        this.$modal.msgSuccess(this.$t('defect.gantt.auto-level-ok', { n: ok }))
+      } else {
+        this.$modal.msgWarning(this.$t('defect.gantt.auto-level-partial', { ok, fail }))
       }
     },
     /** 指针坐标 → axis-body 内本地坐标 */
@@ -4282,6 +5038,7 @@ export default {
       this.selectedDefectId = this.marqueeSelectedIds.length
         ? this.marqueeSelectedIds[this.marqueeSelectedIds.length - 1]
         : null
+      this.selectionAnchorId = this.selectedDefectId != null ? Number(this.selectedDefectId) : null
     },
     teardownMarqueeListeners() {
       document.removeEventListener('mousemove', this.onMarqueeMove)
@@ -4306,7 +5063,7 @@ export default {
       })
       return ids
     },
-    /** 批量按自然日平移已排期缺陷 */
+    /** 批量按自然日平移已排期缺陷（跳过不可写节点） */
     async shiftDefectsByDays(idsInput, days) {
       if (!this.ensureCanEdit()) return
       const delta = Number(days)
@@ -4315,6 +5072,7 @@ export default {
       if (!ids.length) return
       let ok = 0
       let fail = 0
+      let skipped = 0
       for (let i = 0; i < ids.length; i++) {
         const id = ids[i]
         const defect = (this.defectList || []).find((d) => d && Number(d.defectId) === id)
@@ -4322,7 +5080,11 @@ export default {
           fail += 1
           continue
         }
-        const range = shiftPlanRange(defect.planStartTime, defect.planEndTime, delta)
+        if (!this.canEditPlanDefect(defect)) {
+          skipped += 1
+          continue
+        }
+        const range = shiftPlanRange(defect.planStartTime, defect.planEndTime, delta, this.activeWorkCalendar)
         if (!range) {
           fail += 1
           continue
@@ -4330,7 +5092,7 @@ export default {
         const rollback = this.snapshotDefectForRollback(defect)
         this.patchLocalDefect(id, range, null)
         try {
-          await updateDefect({
+          await updateDefectPlanNode({
             defectId: id,
             projectId: defect.projectId != null ? defect.projectId : this.resolveProjectId(),
             planStartTime: range.planStartTime,
@@ -4348,6 +5110,11 @@ export default {
       }
       if (fail) {
         this.$modal.msgWarning(this.$t('defect.gantt.marquee-shift-partial', { ok, fail }))
+      }
+      if (skipped && !ok && !fail) {
+        this.$modal.msgWarning(this.$t('defect.gantt.no-plan-edit-perm'))
+      } else if (skipped) {
+        this.$modal.msgWarning(this.$t('defect.gantt.marquee-shift-skipped', { n: skipped }))
       }
       const conflicts = findFsScheduleConflicts(this.scheduledDefects, this.planLinks)
       const idSet = new Set(ids)
@@ -4763,10 +5530,13 @@ export default {
   }
 }
 
-.defect-gantt-mirror-icon {
+.defect-gantt-multi-icon {
   flex: 0 0 auto;
-  font-size: 14px;
-  color: var(--el-color-warning, #e6a23c);
+  width: 14px;
+  height: 14px;
+  margin-left: 6px;
+  color: var(--el-text-color-secondary, #909399);
+  vertical-align: middle;
 }
 
 /* 与缺陷表格同款细轨道 + 手柄；占位更窄，避免整条灰带过粗 */
@@ -4855,8 +5625,31 @@ export default {
   line-height: 1.15;
   border-right: 1px solid var(--el-border-color-extra-light, #f2f2f2);
   box-sizing: border-box;
-  &.weekend {
-    background: var(--el-fill-color, #f0f2f5);
+  /* 休息日只弱化刻度文字；假日偏红；调休偏蓝浅底（网纹画在条上，不画在轴背景） */
+  &.is-rest {
+    .defect-gantt-axis-day-num,
+    .defect-gantt-axis-weekday,
+    .defect-gantt-axis-week-num,
+    .defect-gantt-axis-week-range {
+      color: var(--el-text-color-placeholder, #a8abb2);
+    }
+  }
+  &.holiday {
+    .defect-gantt-axis-day-num,
+    .defect-gantt-axis-weekday,
+    .defect-gantt-axis-week-num,
+    .defect-gantt-axis-week-range {
+      color: var(--el-color-danger, #f56c6c);
+    }
+  }
+  &.makeup {
+    background-color: color-mix(in srgb, var(--el-color-primary, #409eff) 14%, transparent);
+    .defect-gantt-axis-day-num,
+    .defect-gantt-axis-weekday,
+    .defect-gantt-axis-week-num,
+    .defect-gantt-axis-week-range {
+      color: var(--el-color-primary, #409eff);
+    }
   }
   &.is-day-scale,
   &.is-week-scale {
@@ -4932,8 +5725,14 @@ body.defect-gantt-col-resizing {
   border-right: 1px solid var(--el-border-color-extra-light, #f2f2f2);
   pointer-events: none;
   box-sizing: border-box;
-  &.weekend {
-    background: rgba(144, 147, 153, 0.08);
+  &.is-rest {
+    background: color-mix(in srgb, var(--el-text-color-secondary, #909399) 5%, transparent);
+  }
+  &.holiday {
+    background: color-mix(in srgb, var(--el-color-danger, #f56c6c) 8%, transparent);
+  }
+  &.makeup {
+    background: color-mix(in srgb, var(--el-color-primary, #409eff) 10%, transparent);
   }
 }
 
@@ -5043,6 +5842,44 @@ body.defect-gantt-col-resizing {
   pointer-events: none;
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.55);
   /* 不再上下脉冲，避免看起来和鼠标位有「跳动距离」 */
+  /* 标题放到条外深色字：避免白字溢出到浅蓝插入行上看不清（明/暗主题同理） */
+  .defect-gantt-bar-label {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 6px;
+    max-width: 280px;
+    padding: 0;
+    color: var(--el-text-color-regular, #606266);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.defect-gantt-bar-rest-mask {
+  position: absolute;
+  /* 外扩 1px 盖住条边框，休息段内外一起被网纹打断 */
+  inset: -1px;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+.defect-gantt-bar-rest {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: block;
+  /* 半透明底压住边框色 + 斜线网纹贯穿上下边 */
+  background-color: rgba(255, 255, 255, 0.42);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 0, 0, 0.38) 0,
+    rgba(0, 0, 0, 0.38) 1.5px,
+    transparent 1.5px,
+    transparent 5px
+  );
 }
 
 .defect-gantt-bar {
@@ -5066,8 +5903,12 @@ body.defect-gantt-col-resizing {
     opacity: 0.85;
     cursor: grabbing;
   }
+  &.is-plan-readonly {
+    cursor: not-allowed;
+  }
   &.is-forbidden {
     --gantt-forbid-mark: rgba(255, 255, 255, 0.92);
+    cursor: not-allowed;
     overflow: hidden;
     outline: none;
     border-color: var(--gantt-forbid-mark);
@@ -5101,6 +5942,9 @@ body.defect-gantt-col-resizing {
     box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
     z-index: 5;
   }
+  &.is-multi-handler {
+    padding-left: 18px;
+  }
   &.state-processing {
     background: var(--defect-state-processing-bg, #e04e4e);
     border-color: var(--defect-state-processing-border, #e04e4e);
@@ -5133,6 +5977,25 @@ body.defect-gantt-col-resizing {
   }
 }
 
+.defect-gantt-bar-multi {
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  pointer-events: auto;
+  color: rgba(255, 255, 255, 0.95);
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.35));
+}
+.defect-gantt-bar-multi-svg {
+  width: 12px;
+  height: 12px;
+}
 .defect-gantt-bar-label {
   flex: 1;
   min-width: 0;
@@ -5466,6 +6329,9 @@ body.defect-gantt-col-resizing {
   &.is-dragging {
     opacity: 0.35;
   }
+  &.is-plan-readonly {
+    cursor: not-allowed;
+  }
 }
 
 .defect-gantt-chip-num {
@@ -5651,6 +6517,9 @@ html.dark .defect-gantt-row-label.is-drop-insert .defect-gantt-row-name {
 html.dark .defect-gantt-axis-row.is-drop-insert {
   background: rgba(64, 158, 255, 0.22);
 }
+html.dark .defect-gantt-bar.is-drop-preview .defect-gantt-bar-label {
+  color: var(--el-text-color-regular, #cfd3dc);
+}
 html.dark .defect-gantt-load-guide.is-top {
   background: rgba(240, 149, 165, 0.65);
 }
@@ -5665,6 +6534,58 @@ html.dark .defect-gantt-load-seg.is-normal {
 }
 html.dark .defect-gantt-load-seg.is-overload {
   background: #f0a0ae;
+}
+
+.defect-gantt-auto-level-banner {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--el-color-primary, #409eff);
+  background: var(--el-color-primary-light-9, #ecf5ff);
+  border-bottom: 1px solid var(--el-color-primary-light-7, #d9ecff);
+  box-sizing: border-box;
+}
+.defect-gantt-auto-level-banner-text {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.defect-gantt-auto-level-banner-note {
+  display: inline;
+  margin-left: 6px;
+  color: var(--el-text-color-secondary, #909399);
+  font-size: 12px;
+}
+.defect-gantt-auto-level-banner-actions {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 10px;
+  flex: 0 0 auto;
+  :deep(.el-button + .el-button) {
+    margin-left: 0;
+  }
+}
+.defect-gantt-bar.is-auto-level-ghost {
+  z-index: 3;
+  opacity: 0.28;
+  pointer-events: none;
+  filter: grayscale(0.2);
+}
+.defect-gantt-bar.is-auto-level-proposal {
+  outline: 2px dashed var(--el-color-primary, #409eff);
+  outline-offset: 1px;
+  z-index: 5;
+}
+.defect-gantt-bar.is-auto-level-push {
+  outline: 2px dashed var(--el-color-primary, #409eff);
+  outline-offset: 1px;
+  z-index: 5;
+  opacity: 0.92;
 }
 
 /* —— 甘特二期：工具条 / 依赖 / 关键路径 / 负荷 / 基线 / 框选 —— */

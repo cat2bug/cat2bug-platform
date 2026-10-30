@@ -1,17 +1,23 @@
 package com.cat2bug.admin.resource;
 
 import com.cat2bug.common.api.AjaxResult;
+import com.cat2bug.common.domain.LoginUser;
+import com.cat2bug.common.domain.SysDefect;
 import com.cat2bug.common.domain.SysDefectPlanBaseline;
 import com.cat2bug.common.domain.SysDefectPlanLink;
 import com.cat2bug.common.exception.ApiException;
+import com.cat2bug.framework.security.AuthContext;
 import com.cat2bug.framework.security.RequiresPermissions;
+import com.cat2bug.system.service.ProjectPlanAuth;
 import com.cat2bug.system.service.SysDefectPlanBaselineService;
 import com.cat2bug.system.service.SysDefectPlanLinkService;
+import com.cat2bug.system.service.SysDefectService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -37,6 +43,26 @@ public class DefectPlanGanttResource {
 
     @Inject
     SysDefectPlanBaselineService planBaselineService;
+
+    @Inject
+    AuthContext authContext;
+
+    @Inject
+    ProjectPlanAuth projectPlanAuth;
+
+    @Inject
+    SysDefectService sysDefectService;
+
+    /**
+     * 甘特拖条 / 批量平移 / 自动排列：仅计划字段，独立权限。
+     */
+    @PUT
+    @Path("/plan-node")
+    @RequiresPermissions("system:defect:gantt:plan")
+    public AjaxResult updatePlanNode(SysDefect body) {
+        int rows = sysDefectService.updateDefectPlanNode(body);
+        return rows > 0 ? AjaxResult.success() : AjaxResult.error("更新失败");
+    }
 
     @GET
     @Path("/plan-link")
@@ -85,6 +111,8 @@ public class DefectPlanGanttResource {
         if (projectId == null) {
             throw new ApiException(400, "项目ID不能为空");
         }
+        LoginUser loginUser = requireLoginUser();
+        projectPlanAuth.requireProjectPlanAdmin(projectId, loginUser.getUserId());
         return AjaxResult.success(planBaselineService.freeze(projectId));
     }
 
@@ -92,8 +120,21 @@ public class DefectPlanGanttResource {
     @Path("/plan-baseline")
     @RequiresPermissions("system:defect:edit")
     public AjaxResult clearBaseline(@QueryParam("projectId") Long projectId) {
+        if (projectId == null) {
+            throw new ApiException(400, "项目ID不能为空");
+        }
+        LoginUser loginUser = requireLoginUser();
+        projectPlanAuth.requireProjectPlanAdmin(projectId, loginUser.getUserId());
         planBaselineService.clear(projectId);
         return AjaxResult.success();
+    }
+
+    private LoginUser requireLoginUser() {
+        LoginUser loginUser = authContext.getLoginUser();
+        if (loginUser == null) {
+            throw new ApiException(401, "未登录或会话已失效");
+        }
+        return loginUser;
     }
 
     /** 甘特配套：一次取依赖边 + 基线（按缺陷 ID 过滤）。 */

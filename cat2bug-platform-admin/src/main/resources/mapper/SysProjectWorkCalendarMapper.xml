@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysProjectWorkCalendarMapper">
+
+    <resultMap type="com.cat2bug.common.domain.SysProjectWorkCalendar" id="SysProjectWorkCalendarResult">
+        <result property="projectId"  column="project_id" />
+        <result property="workWeek"   column="work_week" typeHandler="com.cat2bug.system.mybatis.IntegerListJsonTypeHandler" />
+        <result property="exceptions" column="exceptions" typeHandler="com.cat2bug.system.mybatis.StringStringMapJsonTypeHandler" />
+        <result property="updateBy"   column="update_by" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <select id="selectByProjectId" resultMap="SysProjectWorkCalendarResult">
+        select project_id, work_week, exceptions, update_by, update_time
+        from sys_project_work_calendar
+        where project_id = #{projectId}
+    </select>
+
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysProjectWorkCalendar">
+        insert into sys_project_work_calendar (project_id, work_week, exceptions, update_by, update_time)
+        values (
+            #{projectId},
+            #{workWeek,typeHandler=com.cat2bug.system.mybatis.IntegerListJsonTypeHandler},
+            #{exceptions,typeHandler=com.cat2bug.system.mybatis.StringStringMapJsonTypeHandler},
+            #{updateBy},
+            #{updateTime}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.cat2bug.common.domain.SysProjectWorkCalendar">
+        update sys_project_work_calendar
+        set work_week = #{workWeek,typeHandler=com.cat2bug.system.mybatis.IntegerListJsonTypeHandler},
+            exceptions = #{exceptions,typeHandler=com.cat2bug.system.mybatis.StringStringMapJsonTypeHandler},
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        where project_id = #{projectId}
+    </update>
+
+    <delete id="deleteByProjectId">
+        delete from sys_project_work_calendar where project_id = #{projectId}
+    </delete>
+</mapper>

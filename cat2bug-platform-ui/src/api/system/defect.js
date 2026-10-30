@@ -158,6 +158,15 @@ export function getDefectPlanGanttMeta(projectId, defectIds) {
   })
 }
 
+/** 甘特计划节点写（起止/处理人/交付物），权限 system:defect:gantt:plan */
+export function updateDefectPlanNode(data) {
+  return request({
+    url: '/system/defect/plan-node',
+    method: 'put',
+    data
+  })
+}
+
 export function createDefectPlanLink(data) {
   return request({
     url: '/system/defect/plan-link',

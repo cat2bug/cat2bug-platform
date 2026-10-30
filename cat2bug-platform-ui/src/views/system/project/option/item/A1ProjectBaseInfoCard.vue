@@ -11,10 +11,12 @@
         </div>
       </template>
       <router-link v-if="canEditProject" :to="href('project-base-info')"><el-link>{{$t('project.base-info')}}</el-link></router-link>
+      <el-link v-if="canOpenWorkCalendar" @click="openWorkCalendar">{{$t('project-work-calendar.entry')}}</el-link>
       <router-link v-if="canManageApi" :to="href('project-api')"><el-link>{{$t('project.api-key')}}</el-link></router-link>
       <router-link v-if="canPushProject" :to="href('push')"><el-link>{{$t('project.push')}}</el-link></router-link>
       <el-link v-if="canRemoveProject" data-cat2bug-kbd-key="delete-project" @click="handleDelete" type="danger">{{$t('project.delete')}}</el-link>
     </el-card>
+    <project-work-calendar-dialog ref="workCalendarDialog" />
   </el-col>
 </template>
 
@@ -24,9 +26,11 @@ import {delProject} from "@/api/system/project";
 import i18n from "@/utils/i18n/i18n";
 import { useUserStore } from '@/stores/user'
 import { hasAnyPermi, projectOptionHref } from '@/utils/project-option-card'
+import ProjectWorkCalendarDialog from '@/views/system/project/work-calendar/index.vue'
 
 export default {
   name: "ProjectBaseInfoCard",
+  components: { ProjectWorkCalendarDialog },
   props: {
     project: {
       type: Object,
@@ -36,6 +40,9 @@ export default {
   computed: {
     canEditProject() {
       return hasAnyPermi(['system:project:edit'])
+    },
+    canOpenWorkCalendar() {
+      return hasAnyPermi(['system:project:query', 'system:project:edit', 'system:defect:list'])
     },
     canManageApi() {
       return hasAnyPermi(['system:api:list'])
@@ -49,6 +56,8 @@ export default {
     cardVisible() {
       return hasAnyPermi([
         'system:project:edit',
+        'system:project:query',
+        'system:defect:list',
         'system:api:list',
         'system:project:push',
         'system:project:remove'
@@ -57,6 +66,9 @@ export default {
   },
   methods: {
     href: projectOptionHref,
+    openWorkCalendar() {
+      this.$refs.workCalendarDialog && this.$refs.workCalendarDialog.open()
+    },
     /** 删除按钮操作 */
     handleDelete() {
       let msg = this.$i18n.t('project.is-delete-project');
