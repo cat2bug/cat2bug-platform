@@ -144,3 +144,47 @@ export function updateUserDefect(defectId, data) {
     data: data
   })
 }
+
+/** 甘特二期：依赖边 + 基线（可按缺陷 ID 过滤） */
+export function getDefectPlanGanttMeta(projectId, defectIds) {
+  const params = { projectId }
+  if (Array.isArray(defectIds) && defectIds.length) {
+    params.defectIds = defectIds.join(',')
+  }
+  return request({
+    url: '/system/defect/plan-gantt-meta',
+    method: 'get',
+    params
+  })
+}
+
+export function createDefectPlanLink(data) {
+  return request({
+    url: '/system/defect/plan-link',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteDefectPlanLink(linkId) {
+  return request({
+    url: '/system/defect/plan-link/' + linkId,
+    method: 'delete'
+  })
+}
+
+export function freezeDefectPlanBaseline(projectId) {
+  return request({
+    url: '/system/defect/plan-baseline/freeze',
+    method: 'post',
+    data: { projectId }
+  })
+}
+
+export function clearDefectPlanBaseline(projectId) {
+  return request({
+    url: '/system/defect/plan-baseline',
+    method: 'delete',
+    params: { projectId }
+  })
+}

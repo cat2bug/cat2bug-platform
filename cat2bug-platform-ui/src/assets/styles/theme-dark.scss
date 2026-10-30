@@ -2917,6 +2917,52 @@ html.dark {
     }
   }
 
+  /* 甘特分隔条：不要整条 background-image 铺灰，只留 1px 轨道 + 小手柄 */
+  .defect-gantt-resizer,
+  .defect-gantt-unscheduled-resizer {
+    background: transparent !important;
+    background-image: none !important;
+
+    &:before {
+      background-color: var(--border-color-light) !important;
+    }
+
+    &:after {
+      border: 1px solid var(--border-color-base) !important;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.5),
+        0 1px 4px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    &:hover:before {
+      background-color: var(--cat2bug-primary) !important;
+    }
+
+    &:hover:after {
+      border-color: var(--cat2bug-primary) !important;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.6),
+        0 2px 8px rgba(24, 144, 255, 0.4),
+        0 4px 14px rgba(24, 144, 255, 0.2) !important;
+    }
+  }
+
+  .defect-gantt-resizer:after {
+    background: linear-gradient(180deg, #2b2b2c 0%, #252529 48%, #252529 52%, #2b2b2c 100%) !important;
+  }
+
+  .defect-gantt-resizer:hover:after {
+    background: linear-gradient(180deg, #363637 0%, #2b2b2c 50%, #363637 100%) !important;
+  }
+
+  .defect-gantt-unscheduled-resizer:after {
+    background: linear-gradient(90deg, #2b2b2c 0%, #252529 48%, #252529 52%, #2b2b2c 100%) !important;
+  }
+
+  .defect-gantt-unscheduled-resizer:hover:after {
+    background: linear-gradient(90deg, #363637 0%, #2b2b2c 50%, #363637 100%) !important;
+  }
+
   // 表格右上角 gutter 补丁底色适配（与浅色一致，无分割线）
   .el-table:not(.el-table--border) {
     .el-table__header-wrapper thead th.gutter,

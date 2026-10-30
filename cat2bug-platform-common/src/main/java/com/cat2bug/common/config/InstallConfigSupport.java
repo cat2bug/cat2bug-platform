@@ -218,7 +218,11 @@ public final class InstallConfigSupport {
     }
 
     public static void writeInstallConfig(Path target, Map<String, Object> root) throws IOException {
-        Files.createDirectories(target.getParent());
+        Path parent = target.getParent();
+        // 符号链接目录（如 worktree 指向主仓 config/install）已存在时，createDirectories 会抛 FileAlreadyExistsException
+        if (parent != null && !Files.isDirectory(parent)) {
+            Files.createDirectories(parent);
+        }
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setPrettyFlow(true);

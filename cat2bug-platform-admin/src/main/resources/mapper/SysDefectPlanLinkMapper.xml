@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysDefectPlanLinkMapper">
+
+    <resultMap type="com.cat2bug.common.domain.SysDefectPlanLink" id="SysDefectPlanLinkResult">
+        <result property="linkId" column="link_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="fromDefectId" column="from_defect_id"/>
+        <result property="toDefectId" column="to_defect_id"/>
+        <result property="linkType" column="link_type"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="selectVo">
+        select link_id, project_id, from_defect_id, to_defect_id, link_type, create_by, create_time
+        from sys_defect_plan_link
+    </sql>
+
+    <insert id="insert" parameterType="com.cat2bug.common.domain.SysDefectPlanLink"
+            useGeneratedKeys="true" keyProperty="linkId" keyColumn="link_id">
+        insert into sys_defect_plan_link (project_id, from_defect_id, to_defect_id, link_type, create_by, create_time)
+        values (#{projectId}, #{fromDefectId}, #{toDefectId}, #{linkType}, #{createBy}, #{createTime})
+    </insert>
+
+    <delete id="deleteByLinkId">
+        delete from sys_defect_plan_link where link_id = #{linkId}
+    </delete>
+
+    <select id="selectByLinkId" resultMap="SysDefectPlanLinkResult">
+        <include refid="selectVo"/>
+        where link_id = #{linkId}
+    </select>
+
+    <select id="selectByProjectId" resultMap="SysDefectPlanLinkResult">
+        <include refid="selectVo"/>
+        where project_id = #{projectId}
+        order by link_id
+    </select>
+
+    <select id="selectByProjectAndDefectIds" resultMap="SysDefectPlanLinkResult">
+        <include refid="selectVo"/>
+        where project_id = #{projectId}
+        <if test="defectIds != null and defectIds.size() &gt; 0">
+            and (
+              from_defect_id in
+              <foreach collection="defectIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+              or to_defect_id in
+              <foreach collection="defectIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+            )
+        </if>
+        <if test="defectIds == null or defectIds.size() == 0">
+            and 1 = 0
+        </if>
+        order by link_id
+    </select>
+</mapper>

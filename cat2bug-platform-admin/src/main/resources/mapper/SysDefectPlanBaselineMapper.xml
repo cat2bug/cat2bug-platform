@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysDefectPlanBaselineMapper">
+
+    <resultMap type="com.cat2bug.common.domain.SysDefectPlanBaseline" id="SysDefectPlanBaselineResult">
+        <result property="baselineId" column="baseline_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="frozenBy" column="frozen_by"/>
+        <result property="frozenTime" column="frozen_time"/>
+    </resultMap>
+
+    <resultMap type="com.cat2bug.common.domain.SysDefectPlanBaselineItem" id="SysDefectPlanBaselineItemResult">
+        <result property="itemId" column="item_id"/>
+        <result property="baselineId" column="baseline_id"/>
+        <result property="defectId" column="defect_id"/>
+        <result property="planStartTime" column="plan_start_time"/>
+        <result property="planEndTime" column="plan_end_time"/>
+    </resultMap>
+
+    <select id="selectByProjectId" resultMap="SysDefectPlanBaselineResult">
+        select baseline_id, project_id, frozen_by, frozen_time
+        from sys_defect_plan_baseline
+        where project_id = #{projectId}
+    </select>
+
+    <insert id="insertBaseline" parameterType="com.cat2bug.common.domain.SysDefectPlanBaseline"
+            useGeneratedKeys="true" keyProperty="baselineId" keyColumn="baseline_id">
+        insert into sys_defect_plan_baseline (project_id, frozen_by, frozen_time)
+        values (#{projectId}, #{frozenBy}, #{frozenTime})
+    </insert>
+
+    <update id="updateBaseline" parameterType="com.cat2bug.common.domain.SysDefectPlanBaseline">
+        update sys_defect_plan_baseline
+        set frozen_by = #{frozenBy}, frozen_time = #{frozenTime}
+        where baseline_id = #{baselineId}
+    </update>
+
+    <delete id="deleteItemsByBaselineId">
+        delete from sys_defect_plan_baseline_item where baseline_id = #{baselineId}
+    </delete>
+
+    <delete id="deleteBaselineByProjectId">
+        delete from sys_defect_plan_baseline where project_id = #{projectId}
+    </delete>
+
+    <insert id="insertItem" parameterType="com.cat2bug.common.domain.SysDefectPlanBaselineItem"
+            useGeneratedKeys="true" keyProperty="itemId" keyColumn="item_id">
+        insert into sys_defect_plan_baseline_item (baseline_id, defect_id, plan_start_time, plan_end_time)
+        values (#{baselineId}, #{defectId}, #{planStartTime}, #{planEndTime})
+    </insert>
+
+    <select id="selectItemsByBaselineId" resultMap="SysDefectPlanBaselineItemResult">
+        select item_id, baseline_id, defect_id, plan_start_time, plan_end_time
+        from sys_defect_plan_baseline_item
+        where baseline_id = #{baselineId}
+        order by defect_id
+    </select>
+
+    <select id="selectItemsByBaselineAndDefectIds" resultMap="SysDefectPlanBaselineItemResult">
+        select item_id, baseline_id, defect_id, plan_start_time, plan_end_time
+        from sys_defect_plan_baseline_item
+        where baseline_id = #{baselineId}
+        <if test="defectIds != null and defectIds.size() &gt; 0">
+            and defect_id in
+            <foreach collection="defectIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+        </if>
+        <if test="defectIds == null or defectIds.size() == 0">
+            and 1 = 0
+        </if>
+        order by defect_id
+    </select>
+
+    <select id="selectScheduledPlansByProjectId" resultMap="SysDefectPlanBaselineItemResult">
+        select null as item_id, null as baseline_id, defect_id, plan_start_time, plan_end_time
+        from sys_defect
+        where project_id = #{projectId}
+          and del_flag = '0'
+          and plan_start_time is not null
+          and plan_end_time is not null
+        order by defect_id
+    </select>
+</mapper>

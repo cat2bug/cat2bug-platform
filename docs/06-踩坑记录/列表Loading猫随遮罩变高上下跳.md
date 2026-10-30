@@ -16,8 +16,8 @@
 
 - `v-loading` 改挂 `.cat2-bug-table-wrap`，并让 wrap 在列表宿主定高时 `height: 100%`，遮罩从一开始就覆盖整块列表区。
 - loading 且已有 `tableMaxHeight` 时给 wrap 写 `minHeight`（计划/用例等 `.xxx-table-x-scroll` 故意不 `flex:1`，否则空表时 wrap 仍随表很矮）。
-- enhance：遮罩高度连续稳定两帧后再显示并锁定视口纵坐标；EP leave 时立刻拆浮动层。
+- enhance：遮罩高度连续稳定两帧后再显示；浮动层用 flex **始终**按当前遮罩矩形上下左右居中（不要锁死首次稳定时的纵坐标——甘特等区域后撑高时锁死会停在偏上）。EP leave 时立刻拆浮动层。
 
 ## 以后怎么避免
 
-列表类 Loading 挂在「已定高的列表容器」上，不要挂在内容高度随数据变化的 `el-table` 根上；有分页、x-scroll 不能撑满时，loading 期间用 `tableMaxHeight` 撑开遮罩。
+列表类 Loading 挂在「已定高的列表容器」上，不要挂在内容高度随数据变化的 `el-table` 根上；有分页、x-scroll 不能撑满时，loading 期间用 `tableMaxHeight` 撑开遮罩。奔跑猫定位跟 live 遮罩中心，不要为防跳而永久锁定 Y。

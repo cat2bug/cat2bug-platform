@@ -155,6 +155,12 @@
                       <svg-icon icon-class="excel2" />
                     </span>
                   </el-radio-button>
+                  <!-- 甘特图模式 -->
+                  <el-radio-button value="DefectGantt">
+                    <span class="defect-content-view-switch-inner" :title="$t('gantt')">
+                      <svg-icon icon-class="gantt" />
+                    </span>
+                  </el-radio-button>
                 </el-radio-group>
               </el-form-item>
               <el-form-item prop="defectType" class="defect-list-query-nav-item" data-query-key="defectType">
@@ -352,6 +358,7 @@ import {
 import { useUserStore } from '@/stores/user'
 import DefectTable from './list/table'
 import DefectExcel from './list/excel'
+import DefectGantt from './list/gantt'
 import { clearExtensionParams, hasParticipationExtension } from './query-extension'
 import pageActionHints from '@/mixins/page-action-hints'
 import splitDropdownKbd from '@/mixins/split-dropdown-kbd'
@@ -381,9 +388,9 @@ import { findTopFormDrawerVm } from '@/utils/defect-drawer-shortcuts'
 
 /** 记录Tab标签选项 */
 const DEFECT_TAB_CACHE_KEY = 'defect-tab'
-/** 缺陷列表/日历/Excel 视图组件名，与 el-radio-button label 一致；默认 DefectTable */
+/** 缺陷列表/Excel/甘特 视图组件名，与 el-radio-button value 一致；默认 DefectTable */
 const DEFECT_CONTENT_VIEW_CACHE_KEY = 'defect.contentViewComponent'
-const DEFECT_CONTENT_VIEW_ALLOWED = ['DefectTable', 'DefectExcel']
+const DEFECT_CONTENT_VIEW_ALLOWED = ['DefectTable', 'DefectExcel', 'DefectGantt']
 /** 名称等于所有选项的name */
 const ALL_TAB_NAME = 'all-tab'
 const DELETED_TAB_NAME = 'deleted-tab'
@@ -479,6 +486,7 @@ export default {
     DefectTabDialog,
     DefectTable,
     DefectExcel,
+    DefectGantt,
     DefectImport,
     MoreFilledIcon: markRaw(MoreFilled),
   },
@@ -2346,9 +2354,11 @@ export default {
         content.toggleModuleTreeVisible()
       }
     },
-    /** Cmd/Ctrl+O：在表格 / Excel 显示模式间切换 */
+    /** Cmd/Ctrl+O：在表格 / Excel / 甘特显示模式间循环切换 */
     shortcutSwitchView() {
-      const next = this.defectContentComponent === 'DefectExcel' ? 'DefectTable' : 'DefectExcel'
+      const order = DEFECT_CONTENT_VIEW_ALLOWED
+      const idx = order.indexOf(this.defectContentComponent)
+      const next = order[(idx < 0 ? 0 : idx + 1) % order.length]
       this.defectContentComponent = next
     },
     getDefectTabNavItems() {

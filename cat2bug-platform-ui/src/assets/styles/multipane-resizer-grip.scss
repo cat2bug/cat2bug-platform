@@ -62,3 +62,63 @@
     background: linear-gradient(180deg, #ffffff 0%, #ecf5ff 50%, #ffffff 100%);
   }
 }
+
+/**
+ * 横向分隔条（上下拖改高度）：轨道横线 + 圆角手柄，交互色与竖向一致。
+ */
+@mixin multipane-resizer-horizontal-appearance {
+  display: block;
+  position: relative;
+  width: 100%;
+  &:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 1px;
+    border-radius: 0;
+    pointer-events: none;
+    background-color: #dfe6ec;
+    box-shadow: none;
+    transition: background-color 0.22s ease, box-shadow 0.22s ease;
+  }
+
+  &:after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box;
+    width: 40px;
+    height: 7px;
+    border-radius: 999px;
+    border: 1px solid #c0c4cc;
+    background: linear-gradient(90deg, #fafbfc 0%, #ebeef5 48%, #ebeef5 52%, #fafbfc 100%);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.9),
+      0 1px 4px rgba(0, 0, 0, 0.1);
+    transition:
+      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.2s ease,
+      background 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  &:hover:before {
+    background-color: #a0cfff;
+    box-shadow: none;
+  }
+
+  &:hover:after {
+    transform: translate(-50%, -50%) scale(1.06);
+    border-color: var(--cat2bug-primary, #1890ff);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.95),
+      0 2px 8px rgba(64, 158, 255, 0.22),
+      0 4px 14px rgba(64, 158, 255, 0.12);
+    background: linear-gradient(90deg, #ffffff 0%, #ecf5ff 50%, #ffffff 100%);
+  }
+}

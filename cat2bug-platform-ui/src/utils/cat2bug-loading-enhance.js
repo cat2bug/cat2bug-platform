@@ -137,15 +137,15 @@ function mountCatLoading(mask) {
   app.mount(host)
 
   /**
-   * 高度未稳定前不显示猫；稳定后再锁定视口纵坐标。
-   * 避免空表矮遮罩「居中贴顶」→ 列表区 / max-height 撑开后再跳到中间。
+   * 始终按当前遮罩矩形上下左右居中（flex center）。
+   * 高度未达阈值或仍在跳变时先隐藏，避免矮遮罩「假居中贴顶」闪一下；
+   * 遮罩随后变高时继续跟 live 中心，不再锁死早先的纵坐标（否则会停在偏上）。
    * 统计卡较矮，阈值用更小值。
    */
-  let lockedCatCenterY = null
   let closedEarly = false
   let lastHeight = -1
   let stableFrames = 0
-  const MIN_LOCK_HEIGHT = isStatisticMask(mask) ? 48 : 120
+  const MIN_READY_HEIGHT = isStatisticMask(mask) ? 48 : 120
   const STABLE_FRAMES = 2
   const syncPos = () => {
     if (closedEarly || !host.isConnected) return
@@ -165,24 +165,12 @@ function mountCatLoading(mask) {
     } else {
       stableFrames = 0
       lastHeight = h
-      lockedCatCenterY = null
       // 高度刚变化时再采两帧，避免只触发一次 RO 时 stableFrames 永远到不了阈值
       requestAnimationFrame(() => {
         requestAnimationFrame(syncPos)
       })
     }
-    const ready = h >= MIN_LOCK_HEIGHT && stableFrames >= STABLE_FRAMES
-    const liveCenter = r.top + h / 2
-    if (ready && lockedCatCenterY == null) {
-      lockedCatCenterY = liveCenter
-    }
-    const catApprox = Math.max(host.offsetHeight || 0, size || 72)
-    const half = catApprox / 2
-    const targetY =
-      lockedCatCenterY != null
-        ? Math.min(Math.max(lockedCatCenterY, r.top + half), r.bottom - half)
-        : liveCenter
-    const padTop = lockedCatCenterY != null ? Math.max(0, targetY - r.top - half) : 0
+    const ready = h >= MIN_READY_HEIGHT && stableFrames >= STABLE_FRAMES
     Object.assign(host.style, {
       position: 'fixed',
       left: `${r.left}px`,
@@ -191,10 +179,10 @@ function mountCatLoading(mask) {
       height: `${h}px`,
       zIndex: Number.isFinite(zNum) ? String(zNum + 1) : '2010',
       display: 'flex',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       justifyContent: 'center',
-      paddingTop: `${padTop}px`,
-      visibility: lockedCatCenterY != null ? 'visible' : 'hidden',
+      paddingTop: '0',
+      visibility: ready ? 'visible' : 'hidden',
       pointerEvents: 'none',
       boxSizing: 'border-box'
     })
