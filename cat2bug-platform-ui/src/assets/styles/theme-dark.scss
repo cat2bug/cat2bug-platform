@@ -130,10 +130,10 @@ $cat2bug-ep-default-button: ':not(.el-button--primary):not(.el-button--success):
   --sidebar-bg: #ffffff;
   --sidebar-text: rgba(0, 0, 0, 0.7);
   --sidebar-active-text: #1890ff;
-  --sidebar-divider-color: #f0f2f5;
-  /* 浅色主题分割线：比 input 边框更淡，避免白底上过重 */
-  --divider-color: #f0f2f5;
-  --split-button-divider-color: var(--divider-color, #f0f2f5);
+  --sidebar-divider-color: #e4e7ed;
+  /* 浅色主题分割线：与 border-color-base 同级可见（原 #f0f2f5 在白底上几乎不可辨） */
+  --divider-color: #e4e7ed;
+  --split-button-divider-color: var(--divider-color, #e4e7ed);
   --split-button-divider-on-solid: rgba(255, 255, 255, 0.45);
   --sidebar-tile-bg: #f5f7fa;
   --sidebar-item-hover-bg: rgba(0, 0, 0, 0.04);

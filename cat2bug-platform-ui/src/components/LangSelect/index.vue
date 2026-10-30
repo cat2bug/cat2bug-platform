@@ -1,6 +1,12 @@
 <template>
-  <el-dropdown class="lang avatar-container right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="lang" popper-class="navbar-lang-dropdown" @command="handleLanguageCommand">
-        <span class="dropdown-title">
+  <el-dropdown
+    class="lang avatar-container right-menu-item hover-effect layout-nav-hint-anchor"
+    data-layout-nav="lang"
+    popper-class="navbar-lang-dropdown"
+    @command="handleLanguageCommand"
+    @visible-change="onLangDropdownVisible"
+  >
+        <span class="dropdown-title" tabindex="-1">
           <svg-icon :icon-class="langIcon" />{{ langName }}
           <legacy-icon icon="el-icon-caret-bottom"></legacy-icon>
         </span>
@@ -34,6 +40,17 @@ export default {
     this.handleLanguageCommand(lang||'zh_CN');
   },
   methods: {
+    blurLangTrigger() {
+      this.$nextTick(() => {
+        const ae = document.activeElement
+        if (ae && this.$el && this.$el.contains(ae) && typeof ae.blur === 'function') {
+          ae.blur()
+        }
+      })
+    },
+    onLangDropdownVisible(visible) {
+      if (!visible) this.blurLangTrigger()
+    },
     handleLanguageCommand(lang) {
       this.$i18n.locale = lang;
       this.$cache.local.set(I18N_LOCALE_KEY,lang);
@@ -61,6 +78,7 @@ export default {
           this.langName = 'Русский';
           break;
       }
+      this.blurLangTrigger()
     }
   }
 }
@@ -80,12 +98,24 @@ export default {
   flex-direction: row;
   gap: 5px;
   align-items: center;
+  outline: none;
+  box-shadow: none;
+  border: none;
   .svg-icon {
     font-size: 22px;
   }
   i {
     font-size: 12px;
   }
+}
+.lang:focus,
+.lang:focus-visible,
+.lang :deep(.el-tooltip__trigger:focus),
+.lang :deep(.el-tooltip__trigger:focus-visible),
+.dropdown-title:focus,
+.dropdown-title:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 .dropdown-menu {
   display: flex;

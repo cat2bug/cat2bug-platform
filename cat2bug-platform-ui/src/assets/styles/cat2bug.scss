@@ -162,17 +162,22 @@
   border-left: var(--cat2bug-drawer-accent-width) solid var(--cat2bug-drawer-accent-cloud-case) !important;
 }
 
-/* 浅色主题分割线：使用 --divider-color（比 input 边框更淡） */
+/* 分割线颜色走 --divider-color（浅色默认 #e4e7ed，白底可读） */
 .el-divider {
-  --el-border-color: var(--divider-color, var(--border-color-lighter, #f0f2f5));
+  --el-border-color: var(--divider-color, var(--border-color-light, #e4e7ed));
 }
 
 .el-divider--horizontal {
-  border-top-color: var(--divider-color, var(--border-color-lighter, #f0f2f5));
+  border-top-color: var(--divider-color, var(--border-color-light, #e4e7ed));
 }
 
 .el-divider--vertical {
-  border-left-color: var(--divider-color, var(--border-color-lighter, #f0f2f5));
+  border-left-color: var(--divider-color, var(--border-color-light, #e4e7ed));
+  /* 工具栏等 flex 行内：相对同排控件垂直居中 */
+  align-self: center;
+  height: calc(var(--cat2bug-toolbar-control-height, 32px) - 8px);
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 /* 右侧抽屉标题栏：统一高度（EP 默认 padding 偏大；teleport 到 body，须全局） */
@@ -842,6 +847,19 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
 .tree-sidebar-collapse-toggle:focus,
 .tree-sidebar-collapse-toggle:focus-visible {
   outline: none !important;
+}
+
+/* 顶栏语言/头像下拉：焦点在内层 trigger / title，根节点灭环盖不到 */
+.navbar .right-menu .el-dropdown:focus,
+.navbar .right-menu .el-dropdown:focus-visible,
+.navbar .right-menu .el-tooltip__trigger:focus,
+.navbar .right-menu .el-tooltip__trigger:focus-visible,
+.navbar .right-menu .dropdown-title:focus,
+.navbar .right-menu .dropdown-title:focus-visible,
+.navbar .right-menu .el-dropdown [tabindex]:focus,
+.navbar .right-menu .el-dropdown [tabindex]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* EP tabs：focus-visible 用 inset box-shadow 当焦点框，一并去掉 */
