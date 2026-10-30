@@ -48,18 +48,23 @@ function resolveTeamIdFromConfigOrContext(userStore) {
   return resolveTeamIdFromMyList()
 }
 
-/** 当 user.config.currentTeamId 为空或与当前项目不一致时，优先用当前项目所属团队 */
+/**
+ * 解析当前有效团队：优先 config/context 中的 teamId（项目列表页常见无 currentProject）。
+ * 仅当尚无团队且仍有 currentProjectId 时，再按项目反查团队（避免无谓项目 getProject 403 干扰列表）。
+ */
 export function resolveEffectiveTeamId() {
   const userStore = useUserStore(pinia)
-  const projectId = Number((userStore.config || {}).currentProjectId)
-  if (Number.isFinite(projectId) && projectId > 0) {
+  return resolveTeamIdFromConfigOrContext(userStore).then((fromConfig) => {
+    if (fromConfig) {
+      return fromConfig
+    }
+    const projectId = Number((userStore.config || {}).currentProjectId)
+    if (!(Number.isFinite(projectId) && projectId > 0)) {
+      return null
+    }
     return getProject(projectId).then((res) => {
       const tid = res && res.data && Number(res.data.teamId)
-      if (Number.isFinite(tid) && tid > 0) {
-        return tid
-      }
-      return resolveTeamIdFromConfigOrContext(userStore)
-    }).catch(() => resolveTeamIdFromConfigOrContext(userStore))
-  }
-  return resolveTeamIdFromConfigOrContext(userStore)
+      return (Number.isFinite(tid) && tid > 0) ? tid : null
+    }).catch(() => null)
+  })
 }

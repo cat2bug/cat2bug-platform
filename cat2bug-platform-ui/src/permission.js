@@ -57,11 +57,48 @@ function paintNProgressBar() {
 
 const whiteList = ['/login', '/register', '/tools/browser', '/shard/defect', '/setup', '/upgrade']
 
+/** 无有效当前项目时仍可停留的路径（项目列表、团队/管理、错误页等） */
+const NO_PROJECT_ALLOW_PREFIXES = [
+  '/team/project-list',
+  '/team/',
+  '/admin/',
+  '/system/',
+  '/user/',
+  '/error/',
+  '/401',
+  '/404',
+  '/profile'
+]
+
 function isPublicPath(path) {
   if (whiteList.indexOf(path) !== -1) {
     return true
   }
   return /^\/invite\/[^/]+$/.test(path)
+}
+
+function hasValidCurrentProjectId() {
+  const id = Number((useUserStore(pinia).config || {}).currentProjectId || 0)
+  return Number.isFinite(id) && id > 0
+}
+
+function isNoProjectAllowPath(path) {
+  if (!path) return false
+  if (isPublicPath(path)) return true
+  if (path === '/team/project-list') return true
+  return NO_PROJECT_ALLOW_PREFIXES.some(prefix => path === prefix || path.startsWith(prefix))
+}
+
+/**
+ * 无有效 currentProjectId 时落到项目列表（白名单页除外）。
+ * @returns {boolean} true 表示已调用 next 重定向
+ */
+function redirectToProjectListIfNoProject(to, next) {
+  if (hasValidCurrentProjectId() || isNoProjectAllowPath(to.path)) {
+    return false
+  }
+  next({ path: '/team/project-list', replace: true })
+  return true
 }
 
 function startRouteProgress() {
@@ -116,8 +153,14 @@ function proceedAfterProjectContext(to, next) {
     next()
     return
   }
+  if (redirectToProjectListIfNoProject(to, next)) {
+    return
+  }
   ensureProjectScopedContext(to).then(result => {
     if (result === 'skip' || result === 'ok') {
+      if (result === 'skip' && redirectToProjectListIfNoProject(to, next)) {
+        return
+      }
       proceedAfterGitRepoId(to, next)
       return
     }
@@ -133,7 +176,7 @@ function proceedAfterProjectContext(to, next) {
       return
     }
     if (result === 'forbidden') {
-      next({ path: '/401', replace: true })
+      next({ path: '/team/project-list', replace: true })
       return
     }
     next({ path: '/404', replace: true })
@@ -162,6 +205,9 @@ function proceedWithAuth(to, from, next) {
       userStore.GetInfo().then(() => {
         isRelogin.show = false
         permissionStore.GenerateRoutes().then(() => {
+          if (redirectToProjectListIfNoProject(to, next)) {
+            return
+          }
           next({ ...to, replace: true })
         }).catch(() => {
           // 路由生成失败：清本地会话后去登录，勿再弹「重新登录」/错误条

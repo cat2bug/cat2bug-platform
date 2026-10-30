@@ -1,6 +1,7 @@
 <template>
   <div class="app-container project-manage-page" ref="projectManageMain">
-    <el-tabs v-model="activeProjectTabName" @tab-click="selectProjectTabHandle">
+    <!-- tab-change：仅在页签真正切换时触发；tab-click 对已选中页签也会再点一次导致重复拉空列表 -->
+    <el-tabs v-model="activeProjectTabName" @tab-change="selectProjectTabHandle">
       <el-tab-pane :label="$t('project.my-participated-in')" :name="$t('project.my-participated-in')"></el-tab-pane>
 <!--      <el-tab-pane :label="$t('project.my-manage')" :name="$t('project.my-manage')"></el-tab-pane>-->
       <el-tab-pane :label="$t('project.all-project')" name=""></el-tab-pane>
@@ -327,7 +328,7 @@ export default {
     }
   },
   created() {
-    this.selectProjectTabHandle();
+    this.selectProjectTabHandle(this.activeProjectTabName);
     this.getCollectList();
   },
   mounted() {
@@ -435,12 +436,19 @@ export default {
       this.handleAdd()
     },
     switchTabParticipated() {
-      this.activeProjectTabName = this.$i18n.t('project.my-participated-in')
-      this.selectProjectTabHandle()
+      const name = this.$i18n.t('project.my-participated-in')
+      if (this.activeProjectTabName === name) {
+        this.selectProjectTabHandle(name)
+        return
+      }
+      this.activeProjectTabName = name
     },
     switchTabAll() {
+      if (this.activeProjectTabName === '') {
+        this.selectProjectTabHandle('')
+        return
+      }
       this.activeProjectTabName = ''
-      this.selectProjectTabHandle()
     },
     shortcutChangePage(delta) {
       const root = this.getPageActionHintContainer()
@@ -452,17 +460,16 @@ export default {
         btn.click()
       }
     },
-    /** 选择项目分组 */
-    selectProjectTabHandle(){
+    /** 选择项目分组；name 来自 tab-change（切换后的页签名）或快捷键显式传入 */
+    selectProjectTabHandle(name){
+      const tabName = name !== undefined && name !== null ? name : this.activeProjectTabName
       this.reset();
-      switch (this.activeProjectTabName) {
-        case this.$i18n.t('project.my-participated-in'):
-          this.queryParams.params.userId = getCurrentUserId();
-          this.queryParams.memberOnly = true;
-          break;
-        default:
-          this.queryParams.params.userId = null;
-          this.queryParams.memberOnly = false;
+      if (tabName === this.$i18n.t('project.my-participated-in')) {
+        this.queryParams.params.userId = getCurrentUserId();
+        this.queryParams.memberOnly = true;
+      } else {
+        this.queryParams.params.userId = null;
+        this.queryParams.memberOnly = false;
       }
       this.getList();
     },

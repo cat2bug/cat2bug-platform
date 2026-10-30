@@ -131,7 +131,11 @@ public class ProjectResource {
     @RequiresPermissions("system:project:query")
     public AjaxResult getInfo(@PathParam("projectId") Long projectId) {
         LoginUser loginUser = requireLoginUser();
-        return AjaxResult.success(sysProjectService.selectSysProjectByProjectId(projectId, loginUser.getUserId()));
+        var project = sysProjectService.selectSysProjectByProjectId(projectId, loginUser.getUserId());
+        if (project == null) {
+            throw new ApiException(403, "无权限访问该项目");
+        }
+        return AjaxResult.success(project);
     }
 
     @GET

@@ -42,6 +42,10 @@ public class SysProjectService {
 
     @Inject
     SysCaseTypeService sysCaseTypeService;
+
+    @Inject
+    ProjectMembershipAuth projectMembershipAuth;
+
     public TableDataInfo selectProjectPage(Long userId, SysProject query, Integer pageNum, Integer pageSize) {
         if (query.getTeamId() == null) {
             throw new ApiException("团队不能为空");
@@ -72,7 +76,15 @@ public class SysProjectService {
     }
 
     public SysProject selectSysProjectByProjectId(Long projectId, Long userId) {
-        return sysProjectMapper.selectSysProjectByProjectId(projectId, userId);
+        SysProject project = sysProjectMapper.selectSysProjectByProjectId(projectId, userId);
+        if (project == null) {
+            return null;
+        }
+        // userId 非空表示「进入项目」语义：非成员不得假成功（LEFT JOIN 仍会查出项目行）
+        if (userId != null && !projectMembershipAuth.canAccessProject(userId, projectId)) {
+            return null;
+        }
+        return project;
     }
 
     /**
@@ -86,7 +98,7 @@ public class SysProjectService {
         if (resolved == null || resolved.getProjectId() == null) {
             throw new ApiException(404, MessageUtils.message("git.repo.project-not-found"));
         }
-        SysProject accessible = sysProjectMapper.selectSysProjectByProjectId(resolved.getProjectId(), userId);
+        SysProject accessible = selectSysProjectByProjectId(resolved.getProjectId(), userId);
         if (accessible == null) {
             throw new ApiException(403, MessageUtils.message("no-permission"));
         }

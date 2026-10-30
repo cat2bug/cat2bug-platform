@@ -34,6 +34,9 @@ public class SysPermissionService {
     @Inject
     TokenService tokenService;
 
+    @Inject
+    ProjectMembershipAuth projectMembershipAuth;
+
     public void updateRoleAndPermissionOfCurrentUser(LoginUser loginUser) {
         if (loginUser == null || loginUser.getUser() == null) {
             return;
@@ -110,7 +113,8 @@ public class SysPermissionService {
     }
 
     public SysUserConfig getUserConfig(Long userId) {
-        return userConfigMapper.selectSysUserConfigByUserId(userId);
+        SysUserConfig config = userConfigMapper.selectSysUserConfigByUserId(userId);
+        return projectMembershipAuth.sanitizeCurrentProject(userId, config);
     }
 
     private void addPermsFromRole(Long roleId, Set<String> perms) {

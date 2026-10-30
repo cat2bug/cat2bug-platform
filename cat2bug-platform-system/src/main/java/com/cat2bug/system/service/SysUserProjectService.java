@@ -34,6 +34,9 @@ public class SysUserProjectService {
     @Inject
     SysProjectDefectTabsService sysProjectDefectTabsService;
 
+    @Inject
+    ProjectMembershipAuth projectMembershipAuth;
+
     public TableDataInfo selectMemberPage(Long projectId, String search, Integer pageNum, Integer pageSize) {
         PageDomain page = PageDomain.of(pageNum, pageSize);
         long total = sysUserProjectMapper.countSysUserListByProjectId(projectId, search);
@@ -109,7 +112,11 @@ public class SysUserProjectService {
         if (memberId.equals(currentUserId)) {
             throw new ApiException("不能删除当前登录用户");
         }
-        return sysUserProjectMapper.deleteSysUserProjectByProjectIdAndUserId(projectId, memberId);
+        int rows = sysUserProjectMapper.deleteSysUserProjectByProjectIdAndUserId(projectId, memberId);
+        if (rows > 0) {
+            projectMembershipAuth.clearCurrentProjectIfMatches(memberId, projectId);
+        }
+        return rows;
     }
 
     public List<SysUser> selectSysUserListByProjectId(Long projectId) {

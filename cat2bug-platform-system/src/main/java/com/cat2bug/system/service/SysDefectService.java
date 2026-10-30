@@ -81,6 +81,9 @@ public class SysDefectService {
     @Inject
     ProjectPlanAuth projectPlanAuth;
 
+    @Inject
+    ProjectMembershipAuth projectMembershipAuth;
+
     public Map<String, Object> getDefectConfig() {
         Map<String, Object> config = new HashMap<>();
         config.put("types", DefectConstants.getDefectTypeList());
@@ -113,6 +116,7 @@ public class SysDefectService {
     }
 
     public TableDataInfo selectDefectPage(SysDefect query, Integer pageNum, Integer pageSize) {
+        requireDefectProjectAccess(query != null ? query.getProjectId() : null);
         PageDomain page = PageDomain.of(pageNum, pageSize);
         long total = sysDefectMapper.countSysDefectList(query);
         var rows = sysDefectMapper.selectSysDefectList(query, page.getOffset(), page.getPageSize());
@@ -274,6 +278,7 @@ public class SysDefectService {
         if (defect == null) {
             throw new ApiException("缺陷不存在");
         }
+        requireDefectProjectAccess(defect.getProjectId());
         return defect;
     }
 
@@ -284,6 +289,17 @@ public class SysDefectService {
         SysDefect defect = sysDefectMapper.selectSysDefectByDefectId(defectId);
         defectMemberEnricher.enrich(defect);
         return defect;
+    }
+
+    private void requireDefectProjectAccess(Long projectId) {
+        if (projectId == null || projectId <= 0) {
+            return;
+        }
+        LoginUser loginUser = authContext.getLoginUser();
+        if (loginUser == null || loginUser.getUserId() == null) {
+            throw new ApiException(401, "未登录或会话已失效");
+        }
+        projectMembershipAuth.requireProjectAccess(loginUser.getUserId(), projectId);
     }
 
     @Transactional

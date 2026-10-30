@@ -185,7 +185,9 @@ export default {
         return this.userConfig && this.userConfig.currentTeamLock
       },
       projectId() {
-        return this.userConfig && this.userConfig.currentProjectId
+        const raw = this.userConfig && this.userConfig.currentProjectId
+        const id = Number(raw)
+        return Number.isFinite(id) && id > 0 ? id : null
       },
       projectLock() {
         return this.userConfig && this.userConfig.currentProjectLock

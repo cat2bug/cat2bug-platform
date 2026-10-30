@@ -2,6 +2,7 @@ package com.cat2bug.system.service;
 
 import com.cat2bug.common.domain.SysProject;
 import com.cat2bug.common.domain.SysUserConfig;
+import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysUserConfigMapper;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -16,6 +17,9 @@ public class SysUserConfigService {
     @Inject
     SysProjectMapper sysProjectMapper;
 
+    @Inject
+    ProjectMembershipAuth projectMembershipAuth;
+
     public SysUserConfig selectSysUserConfigByUserConfigId(Long userConfigId) {
         return sysUserConfigMapper.selectSysUserConfigByUserConfigId(userConfigId);
     }
@@ -25,6 +29,7 @@ public class SysUserConfigService {
     }
 
     public int updateSysUserConfig(Long userId, SysUserConfig sysUserConfig) {
+        requireAccessibleCurrentProject(userId, sysUserConfig);
         // 只改 currentProjectId 时同步所属团队，避免侧栏 teamId 与项目不一致、菜单命名空间重写失败
         syncTeamIdFromProject(userId, sysUserConfig);
         SysUserConfig existing = sysUserConfigMapper.selectSysUserConfigByUserId(userId);
@@ -37,6 +42,19 @@ public class SysUserConfigService {
         return sysUserConfigMapper.updateSysUserConfig(sysUserConfig);
     }
 
+    private void requireAccessibleCurrentProject(Long userId, SysUserConfig sysUserConfig) {
+        if (sysUserConfig == null) {
+            return;
+        }
+        Long projectId = sysUserConfig.getCurrentProjectId();
+        if (projectId == null || projectId <= 0) {
+            return;
+        }
+        if (!projectMembershipAuth.canAccessProject(userId, projectId)) {
+            throw new ApiException(403, "无权限访问该项目");
+        }
+    }
+
     private void syncTeamIdFromProject(Long userId, SysUserConfig sysUserConfig) {
         if (sysUserConfig == null) {
             return;
@@ -45,7 +63,7 @@ public class SysUserConfigService {
         if (projectId == null || projectId <= 0 || sysUserConfig.getCurrentTeamId() != null) {
             return;
         }
-        SysProject project = sysProjectMapper.selectSysProjectByProjectId(projectId, userId);
+        SysProject project = sysProjectMapper.selectSysProjectByProjectId(projectId, null);
         if (project != null && project.getTeamId() != null) {
             sysUserConfig.setCurrentTeamId(project.getTeamId());
         }
