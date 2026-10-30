@@ -5379,6 +5379,12 @@ export default {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  /* 左右同步滚动时只保留轴侧（最右）滚动条，左侧隐藏以免双条 */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
   &.is-empty {
     overflow-x: hidden;
     overflow-y: hidden;
