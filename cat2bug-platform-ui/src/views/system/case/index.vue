@@ -56,8 +56,8 @@
           trigger="click"
           popper-class="defect-column-picker-popover"
           v-model:visible="caseColumnPickerVisible"
-          @show="onColumnPickerPopoverShow"
-          @hide="onColumnPickerPopoverHide"
+          @show="onCaseColumnPickerShow"
+          @hide="onCaseColumnPickerHide"
         >
           <div class="defect-column-picker-head">
             <legacy-icon icon="el-icon-s-fold" />
@@ -70,7 +70,19 @@
             class="defect-column-picker"
             @change="onCaseColumnPickerChange"
           >
-            <el-checkbox v-for="c in caseColumnPickerOptions" :key="c.key" :value="c.key">{{ $t(c.key) }}</el-checkbox>
+            <div ref="columnPickerSortRoot" class="defect-column-picker-sort-root">
+              <div
+                v-for="c in caseColumnPickerOptions"
+                :key="c.key"
+                class="defect-column-picker-row"
+                :data-field-key="c.key"
+              >
+                <span class="defect-column-picker-drag" @click.stop.prevent>
+                  <span class="defect-column-picker-drag__grip" aria-hidden="true" />
+                </span>
+                <el-checkbox :value="c.key">{{ $t(c.key) }}</el-checkbox>
+              </div>
+            </div>
           </el-checkbox-group>
           <template #reference>
             <el-button class="case-field-picker-btn case-list-hint-columns" style="padding: 9px;" plain :icon="$legacyIcon('el-icon-s-fold')" size="small" />
@@ -372,6 +384,7 @@ import multipaneTreeTableHeightSync from '@/mixins/multipaneTreeTableHeightSync'
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
 import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
+import columnPickerSortable from '@/mixins/column-picker-sortable'
 import splitDropdownKbd from '@/mixins/split-dropdown-kbd'
 import caseImportDialogKbd from '@/mixins/case-import-dialog-kbd'
 import { shortcutOpenSplitDropdown } from '@/utils/split-dropdown-kbd'
@@ -393,7 +406,7 @@ const CASE_TREE_MODULE_VISIBLE_CACHE_KEY = 'case_tree_module_visible'
 
 export default {
   name: 'Case',
-  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd, splitDropdownKbd, caseImportDialogKbd],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd, columnPickerSortable, splitDropdownKbd, caseImportDialogKbd],
   components: { ProjectLabel, AddCase, CaseReviewDialog, Cat2BugLevel, Step, TreeModule, Multipane, MultipaneResizer, AddDefect, CloudCase, CloudCase2, FocusMemberList, Cat2BugPreviewImage, Cat2BugSelectLevel, Cat2BugText, Cat2BugTable },
   setup() {
     return {
@@ -1011,12 +1024,37 @@ export default {
       this.mouseFlag = false
     },
     /** 处理鼠标在表格移动事件 */
+    getColumnPickerSortableContext() {
+      return {
+        tableRef: 'cat2BugTable',
+        liveListKey: 'casePickerColumnList',
+        checkedKeysKey: 'columnPickerCheckedKeys',
+        visibleKey: 'caseColumnPickerVisible',
+        fallbackColumns: CaseTableColumnDefaults.filter(c => c.showInColumnPicker !== false)
+      }
+    },
+    /** 勿覆盖 mixin 的 onColumnPickerPopoverShow（setup 注入，无 .methods） */
+    onCaseColumnPickerShow() {
+      this.onColumnPickerPopoverShow()
+      this.bindColumnPickerSortableOnShow()
+    },
+    onCaseColumnPickerHide() {
+      this.destroyColumnPickerSortable()
+      this.onColumnPickerPopoverHide()
+    },
     onCaseTableColumnsChange(columns) {
-      this.caseColumnPickerRev += 1
+      if (!this.caseColumnPickerVisible) {
+        this.caseColumnPickerRev += 1
+      }
       const picker = columns.filter(c => c.showInColumnPicker !== false).map(c => ({ ...c }))
       this.$set(this, 'casePickerColumnList', picker)
       this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key)
-      this.$nextTick(() => this.syncTreeToolbarWithTableHeader())
+      this.$nextTick(() => {
+        this.syncTreeToolbarWithTableHeader()
+        if (this.caseColumnPickerVisible) {
+          requestAnimationFrame(() => this.bindColumnPickerSortable())
+        }
+      })
     },
     onCaseColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys)

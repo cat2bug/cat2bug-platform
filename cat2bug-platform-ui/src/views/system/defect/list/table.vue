@@ -566,17 +566,14 @@ export default {
       current.forEach((c) => {
         if (!seen.has(String(c.key))) next.push(c)
       })
-      const same =
-        next.length === current.length &&
-        next.every((c, i) => String(c.key) === String(current[i].key))
-      this.defectColumnPickerLiveColumns = next.map((c) => ({ ...c }))
-      this.columnPickerCheckedKeys = defectDisplayFieldCheckedKeys(next)
+      /* setColumns 内 normalizeFixedPrefix，避免 fixed 钉左与面板序不一致 */
+      table.setColumns(next)
+      const normalized = (table.tableFieldList || next).map((c) => ({ ...c }))
+      this.defectColumnPickerLiveColumns = normalized
+      this.columnPickerCheckedKeys = defectDisplayFieldCheckedKeys(normalized)
       /* 显式落盘个人序（不依赖 Cat2BugTable 内部 save，避免只改内存刷新丢序） */
-      persistDefectTableColumnPrefs(this.$cache.local, next)
+      persistDefectTableColumnPrefs(this.$cache.local, normalized)
       this.columnPrefsEpoch += 1
-      if (!same) {
-        table.setColumns(next)
-      }
       /* 不 bump Rev：避免重挂载打断 Sortable；下一帧按新序重绑即可 */
       this.$nextTick(() => {
         requestAnimationFrame(() => this.bindColumnPickerSortable())

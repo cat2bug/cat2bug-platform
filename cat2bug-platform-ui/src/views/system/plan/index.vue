@@ -31,8 +31,8 @@
           trigger="click"
           popper-class="defect-column-picker-popover"
           v-model:visible="planColumnPickerVisible"
-          @show="onColumnPickerPopoverShow"
-          @hide="onColumnPickerPopoverHide"
+          @show="onPlanColumnPickerShow"
+          @hide="onPlanColumnPickerHide"
         >
           <div class="defect-column-picker-head">
             <el-icon class="legacy-icon-inline"><component :is="$legacyIcon('el-icon-s-fold')" /></el-icon>
@@ -45,7 +45,19 @@
             class="defect-column-picker"
             @change="onPlanColumnPickerChange"
           >
-            <el-checkbox v-for="c in planColumnPickerOptions" :key="c.key" :value="c.key">{{ c.key ? $t(c.key) : (c.label || c.prop) }}</el-checkbox>
+            <div ref="columnPickerSortRoot" class="defect-column-picker-sort-root">
+              <div
+                v-for="c in planColumnPickerOptions"
+                :key="c.key"
+                class="defect-column-picker-row"
+                :data-field-key="c.key"
+              >
+                <span class="defect-column-picker-drag" @click.stop.prevent>
+                  <span class="defect-column-picker-drag__grip" aria-hidden="true" />
+                </span>
+                <el-checkbox :value="c.key">{{ c.key ? $t(c.key) : (c.label || c.prop) }}</el-checkbox>
+              </div>
+            </div>
           </el-checkbox-group>
           <template #reference>
             <el-button
@@ -181,6 +193,7 @@ import {checkPermi} from "@/utils/permission";
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
 import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
+import columnPickerSortable from '@/mixins/column-picker-sortable'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { useUserStore } from '@/stores/user'
 import {
@@ -200,7 +213,7 @@ const PLAN_KBD_SCOPE = 'plan'
 
 export default {
   name: "Plan",
-  mixins: [pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd],
+  mixins: [pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd, columnPickerSortable],
   dicts: ['plan_item_state'],
   components:{ ProjectLabel, AddPlanDialog, HandlePlanDialog, DictOptionDialog, RowListMember, Cat2BugTable },
   setup() {
@@ -506,14 +519,37 @@ export default {
     },
     checkPermi,
     strFormat,
+    getColumnPickerSortableContext() {
+      return {
+        tableRef: 'cat2BugTable',
+        liveListKey: 'planPickerColumnList',
+        checkedKeysKey: 'columnPickerCheckedKeys',
+        visibleKey: 'planColumnPickerVisible',
+        fallbackColumns: PlanTableColumnDefaults.filter(c => c.showInColumnPicker !== false)
+      }
+    },
+    /** 勿覆盖 mixin 的 onColumnPickerPopoverShow（setup 注入，无 .methods） */
+    onPlanColumnPickerShow() {
+      this.onColumnPickerPopoverShow()
+      this.bindColumnPickerSortableOnShow()
+    },
+    onPlanColumnPickerHide() {
+      this.destroyColumnPickerSortable()
+      this.onColumnPickerPopoverHide()
+    },
     onPlanTableColumnsChange(columns) {
-      this.planColumnPickerRev += 1;
+      if (!this.planColumnPickerVisible) {
+        this.planColumnPickerRev += 1;
+      }
       const picker = columns.filter(c => c.showInColumnPicker !== false).map(c => ({ ...c }));
       this.$set(this, 'planPickerColumnList', picker);
       this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
         this.syncPlanTableBodyMaxHeight();
+        if (this.planColumnPickerVisible) {
+          requestAnimationFrame(() => this.bindColumnPickerSortable())
+        }
       });
     },
     syncPlanToolsWrapped() {

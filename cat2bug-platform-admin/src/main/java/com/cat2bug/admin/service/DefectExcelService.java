@@ -116,6 +116,7 @@ public class DefectExcelService {
                     if (value == null || value.isEmpty()) {
                         continue;
                     }
+                    /* embedInCell：不支持的图片格式会跳过并回退写路径，勿让嵌图异常中断导出 */
                     if (DefectExcelColumnSupport.isImageColumn(column)
                             && ExcelImageEmbedSupport.embedInCell(sheet, excelRow, colIndex, value, assetHost)) {
                         continue;

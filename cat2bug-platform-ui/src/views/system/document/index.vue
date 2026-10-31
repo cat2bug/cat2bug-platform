@@ -22,8 +22,8 @@
             trigger="click"
             popper-class="defect-column-picker-popover"
             v-model:visible="docColumnPickerVisible"
-            @show="onColumnPickerPopoverShow"
-            @hide="onColumnPickerPopoverHide"
+            @show="onDocColumnPickerShow"
+            @hide="onDocColumnPickerHide"
           >
             <div class="defect-column-picker-head">
               <el-icon class="legacy-icon-inline"><component :is="$legacyIcon('el-icon-s-fold')" /></el-icon>
@@ -36,7 +36,19 @@
               class="defect-column-picker"
               @change="onDocColumnPickerChange"
             >
-              <el-checkbox v-for="c in documentColumnPickerOptions" :key="c.key" :value="c.key">{{ $t(c.key) }}</el-checkbox>
+              <div ref="columnPickerSortRoot" class="defect-column-picker-sort-root">
+                <div
+                  v-for="c in documentColumnPickerOptions"
+                  :key="c.key"
+                  class="defect-column-picker-row"
+                  :data-field-key="c.key"
+                >
+                  <span class="defect-column-picker-drag" @click.stop.prevent>
+                    <span class="defect-column-picker-drag__grip" aria-hidden="true" />
+                  </span>
+                  <el-checkbox :value="c.key">{{ $t(c.key) }}</el-checkbox>
+                </div>
+              </div>
             </el-checkbox-group>
             <template #reference>
               <el-button class="document-list-hint-columns" style="padding: 9px;" plain :icon="$legacyIcon('el-icon-s-fold')" size="small"></el-button>
@@ -122,6 +134,7 @@
             <cat2-bug-table
               ref="cat2BugTable"
               cache-key="document-table"
+              field-list-cache-key="document-table-field-list"
               sort-column-cache-key="document_table_sort_column_key"
               sort-type-cache-key="document_table_sort_type_key"
               row-key="docId"
@@ -318,6 +331,7 @@ import {checkPermi} from "@/utils/permission";
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
 import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
+import columnPickerSortable from '@/mixins/column-picker-sortable'
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport'
 import multipaneTreeTableHeightSync from '@/mixins/multipaneTreeTableHeightSync'
@@ -337,6 +351,7 @@ export default {
     pageActionHints,
     listQueryKeyboardNav,
     columnPickerPopoverKbd,
+    columnPickerSortable,
     defectToolDialogKbd,
     paneResizerHandleViewport,
     multipaneTreeTableHeightSync
@@ -482,6 +497,7 @@ export default {
     }
   },
   created() {
+    this.migrateDocumentFieldListCache()
     this.queryParams.orderByColumn = this.$cache.local.get('document_table_sort_column_key') || null
     this.queryParams.isAsc = this.$cache.local.get('document_table_sort_type_key') || null
     const cachedSize = this.$cache.local.get(DOCUMENT_PAGE_SIZE_CACHE_KEY)
@@ -685,8 +701,28 @@ export default {
     hasDeletePermi(doc) {
       return doc.createById == getCurrentUserId() || checkPermi(['system:document:remove']);
     },
+    getColumnPickerSortableContext() {
+      return {
+        tableRef: 'cat2BugTable',
+        liveListKey: 'docPickerColumnList',
+        checkedKeysKey: 'columnPickerCheckedKeys',
+        visibleKey: 'docColumnPickerVisible',
+        fallbackColumns: DocumentTableColumnDefaults.filter(c => c.showInColumnPicker !== false)
+      }
+    },
+    /** 勿覆盖 mixin 的 onColumnPickerPopoverShow（setup 注入，无 .methods） */
+    onDocColumnPickerShow() {
+      this.onColumnPickerPopoverShow()
+      this.bindColumnPickerSortableOnShow()
+    },
+    onDocColumnPickerHide() {
+      this.destroyColumnPickerSortable()
+      this.onColumnPickerPopoverHide()
+    },
     onDocTableColumnsChange(columns) {
-      this.docColumnPickerRev += 1;
+      if (!this.docColumnPickerVisible) {
+        this.docColumnPickerRev += 1;
+      }
       const picker = columns.filter(c => c.showInColumnPicker !== false).map(c => ({ ...c }));
       this.$set(this, 'docPickerColumnList', picker);
       this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
@@ -694,10 +730,27 @@ export default {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
         this.syncDocumentTableBodyMaxHeight();
         this.syncDocumentTreeToolbarWithTableHeader();
+        if (this.docColumnPickerVisible) {
+          requestAnimationFrame(() => this.bindColumnPickerSortable())
+        }
       });
     },
     onDocColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
+    },
+    /** 旧 cache-key 拼接误写成 document-tabledefect-table-field-list，迁到显式键 */
+    migrateDocumentFieldListCache() {
+      const NEW_KEY = 'document-table-field-list'
+      const OLD_KEY = 'document-tabledefect-table-field-list'
+      try {
+        const hasNew = this.$cache.local.getJSON(NEW_KEY)
+        if (hasNew != null) return
+        const old = this.$cache.local.getJSON(OLD_KEY)
+        if (old == null) return
+        this.$cache.local.setJSON(NEW_KEY, old)
+      } catch (_e) {
+        /* ignore */
+      }
     },
     /**
      * 仅从 MD 编辑「一次性返回标记」或本次路由 query.docPid 恢复文件夹；

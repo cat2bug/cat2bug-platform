@@ -46,6 +46,48 @@ class ExcelImageEmbedSupportTest {
         assertTrue(ExcelImageEmbedSupport.loadBytes("/profile/upload/no-such.png", null) == null);
     }
 
+    @Test
+    void unsupportedBinaryDoesNotFailWorkbook() throws Exception {
+        Path profile = Files.createTempDirectory("cat2bug-excel-badimg-");
+        Path image = profile.resolve("upload").resolve("doc.bin");
+        Files.createDirectories(image.getParent());
+        Files.write(image, new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07});
+        Cat2BugConfig.configure(profile.toString(), "git", 120);
+
+        byte[] bytes = FastExcelSupport.writeWorkbook(workbook -> {
+            Worksheet sheet = workbook.newWorksheet("t");
+            boolean ok = ExcelImageEmbedSupport.embedInCell(
+                    sheet, 1, 0, "/profile/upload/doc.bin", null);
+            assertFalse(ok);
+            sheet.value(1, 0, "/profile/upload/doc.bin");
+        }, "嵌图失败");
+
+        assertTrue(bytes.length > 0);
+        try (XSSFWorkbook poi = new XSSFWorkbook(new ByteArrayInputStream(bytes))) {
+            assertTrue(poi.getAllPictures().isEmpty());
+        }
+    }
+
+    @Test
+    void convertsBmpToPngForEmbed() {
+        byte[] bmp = minimalBmp();
+        assertFalse(ExcelImageEmbedSupport.isFastexcelNativeFormat(bmp));
+        byte[] png = ExcelImageEmbedSupport.toEmbeddableImageBytes(bmp);
+        assertNotNull(png);
+        assertTrue(ExcelImageEmbedSupport.isFastexcelNativeFormat(png));
+    }
+
+    private static byte[] minimalBmp() {
+        // 1x1 24-bit BMP
+        return new byte[]{
+                0x42, 0x4D, 0x3A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x36, 0x00, 0x00, 0x00,
+                0x28, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00,
+                0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x13, 0x0B, 0x00, 0x00,
+                0x13, 0x0B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                (byte) 0xFF, 0x00, 0x00, 0x00
+        };
+    }
+
     private static byte[] minimalPng() {
         // 1x1 RGB PNG
         return new byte[]{

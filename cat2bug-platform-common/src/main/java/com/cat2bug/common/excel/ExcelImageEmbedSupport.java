@@ -5,10 +5,15 @@ import com.cat2bug.common.util.StringUtils;
 import org.dhatim.fastexcel.PictureAnchor;
 import org.dhatim.fastexcel.Worksheet;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,6 +22,7 @@ import java.util.List;
 
 /**
  * 将 {@code /profile/...} 或 http(s) 图片嵌入 FastExcel 单元格（对齐旧 POI {@code IMAGE_LIST}）。
+ * FastExcel 仅支持 PNG / JPEG / GIF / SVG；其它格式尽量转 PNG，仍失败则跳过（导出回退写路径文本）。
  */
 public final class ExcelImageEmbedSupport {
 
@@ -64,16 +70,77 @@ public final class ExcelImageEmbedSupport {
             if (data == null || data.length == 0) {
                 continue;
             }
+            byte[] embeddable = toEmbeddableImageBytes(data);
+            if (embeddable == null || embeddable.length == 0) {
+                continue;
+            }
             int colOffPx = i * THUMB_PX;
             PictureAnchor anchor = PictureAnchor.oneCellAnchor(row, col, colOffPx, 0, THUMB_PX, THUMB_PX);
-            sheet.addImage(anchor, data);
-            embedded++;
+            try {
+                sheet.addImage(anchor, embeddable);
+                embedded++;
+            } catch (IllegalArgumentException ignored) {
+                /* FastExcel ImageType.fromBytes：非 PNG/JPEG/GIF/SVG 会抛，不得拖垮整次导出 */
+            }
         }
         if (embedded == 0) {
             return false;
         }
         sheet.rowHeight(row, IMAGE_ROW_HEIGHT_POINTS);
         return true;
+    }
+
+    /**
+     * FastExcel 可直接嵌入则原样返回；否则尝试 ImageIO 转 PNG；仍不可用返回 {@code null}。
+     */
+    public static byte[] toEmbeddableImageBytes(byte[] data) {
+        if (data == null || data.length == 0) {
+            return null;
+        }
+        if (isFastexcelNativeFormat(data)) {
+            return data;
+        }
+        try {
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(data));
+            if (image == null) {
+                return null;
+            }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            if (!ImageIO.write(image, "png", out)) {
+                return null;
+            }
+            byte[] png = out.toByteArray();
+            return png.length > 0 ? png : null;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    /** 与 {@code org.dhatim.fastexcel.ImageType#fromBytes} 可识别的魔数对齐。 */
+    public static boolean isFastexcelNativeFormat(byte[] data) {
+        if (data == null || data.length < 3) {
+            return false;
+        }
+        // PNG
+        if (data.length >= 8
+                && (data[0] & 0xFF) == 0x89
+                && data[1] == 0x50
+                && data[2] == 0x4E
+                && data[3] == 0x47) {
+            return true;
+        }
+        // JPEG
+        if ((data[0] & 0xFF) == 0xFF && (data[1] & 0xFF) == 0xD8) {
+            return true;
+        }
+        // GIF
+        if (data[0] == 'G' && data[1] == 'I' && data[2] == 'F') {
+            return true;
+        }
+        // SVG（文本）
+        int probeLen = Math.min(data.length, 512);
+        String head = new String(data, 0, probeLen, StandardCharsets.UTF_8).trim().toLowerCase();
+        return head.contains("<svg") || (head.startsWith("<?xml") && head.contains("<svg"));
     }
 
     public static byte[] loadBytes(String imagePath, String assetHost) {

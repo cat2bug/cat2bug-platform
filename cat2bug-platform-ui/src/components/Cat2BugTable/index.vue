@@ -1224,7 +1224,24 @@ export default {
       list.forEach(d => {
         if (!used.has(d.key)) merged.push({ ...d });
       });
-      return merged;
+      /* 固定列只能出现在最左连续前缀，否则 EP 仍钉左导致与 field-list 序不一致 */
+      return this.normalizeFixedPrefix(merged);
+    },
+    /**
+     * EP 会把 fixed 列抽到最左；若逻辑序中 fixed 落在非固定列之后，表头视觉序会与缓存/显示字段脱节。
+     * 仅保留最左连续 fixed 前缀，其后一律取消固定。
+     */
+    normalizeFixedPrefix(columns) {
+      let seenNonFixed = false;
+      return (columns || []).map((c) => {
+        const col = { ...c };
+        if (seenNonFixed) {
+          col.fixed = false;
+        } else if (!col.fixed) {
+          seenNonFixed = true;
+        }
+        return col;
+      });
     },
     initSort() {
       if (!this.enableHeaderSort) {
@@ -1436,17 +1453,19 @@ export default {
     },
     setColumns(columns) {
       const prevKeys = (this.tableFieldList || []).map((c) => String(c && c.key)).join('\0');
-      const nextList = columns || [];
+      const prevFixed = (this.tableFieldList || []).map((c) => (c && c.fixed ? '1' : '0')).join('');
+      const nextList = this.normalizeFixedPrefix(columns || []);
       const nextKeys = nextList.map((c) => String(c && c.key)).join('\0');
-      const orderChanged = prevKeys !== nextKeys;
+      const nextFixed = nextList.map((c) => (c && c.fixed ? '1' : '0')).join('');
+      const layoutChanged = prevKeys !== nextKeys || prevFixed !== nextFixed;
       this._internalColumnsUpdate = true;
       this.tableFieldList = nextList;
       this.$emit('columns-change', nextList);
       if (this.columnsStorageKey()) this.saveShowColumns(nextList);
       this.$nextTick(() => {
         this._internalColumnsUpdate = false;
-        /* el-table 对动态列序不可靠，key 序变化时重挂载以同步表头 */
-        if (orderChanged) {
+        /* el-table 对动态列序/固定态不可靠，变化时重挂载以同步表头 */
+        if (layoutChanged) {
           this.tableKey = Date.now();
           this.$nextTick(() => {
             if (!this.$refs.elTable) return;

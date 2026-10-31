@@ -32,6 +32,9 @@
         <el-tooltip :content="$t('system-doc')" effect="dark" placement="bottom">
           <cat2-bug-doc class="right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="help" />
         </el-tooltip>
+        <el-tooltip :content="$t('feedback.suggest')" effect="dark" placement="bottom">
+          <cat2-bug-feedback class="right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="feedback" />
+        </el-tooltip>
       </template>
       <lang-select />
       <el-dropdown class="avatar-container right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="user" trigger="click" popper-class="navbar-user-dropdown">
@@ -71,6 +74,7 @@ import Search from '@/components/HeaderSearch'
 import Cat2BugSite from '@/components/Cat2Bug/Site'
 import Cat2BugGit from '@/components/Cat2Bug/Git'
 import Cat2BugDoc from '@/components/Cat2Bug/Doc'
+import Cat2BugFeedback from '@/components/Cat2Bug/Feedback'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import LangSelect from '@/components/LangSelect'
 import { ArrowDown } from '@element-plus/icons-vue'
@@ -98,6 +102,7 @@ export default {
     Cat2BugSite,
     Cat2BugGit,
     Cat2BugDoc,
+    Cat2BugFeedback,
     Cat2BugAvatar,
     LangSelect,
     ArrowDown
