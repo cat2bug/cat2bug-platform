@@ -18,7 +18,7 @@
         <span class="cat2bug-loading__shade" aria-hidden="true" />
       </div>
     </div>
-    <p class="cat2bug-loading__label">{{ displayText }}</p>
+    <p v-if="displayText" class="cat2bug-loading__label">{{ displayText }}</p>
   </div>
 </template>
 
@@ -42,7 +42,8 @@ export const CAT2BUG_LOADING_SIZE = Object.freeze({
 })
 
 /**
- * Cat2Bug 品牌加载：奔跑猫轮廓 + 文案。
+ * Cat2Bug 品牌加载：奔跑猫轮廓。
+ * 默认不展示「加载中」等文案；仅显式传入非空 text 时才显示标签。
  * props: text / size(高度 px) / variant(light|dark|auto)
  */
 export default {
@@ -70,10 +71,9 @@ export default {
   },
   computed: {
     displayText() {
-      if (this.text != null && String(this.text).length) {
-        return this.text
-      }
-      return this.$t('loading')
+      if (this.text == null) return ''
+      const t = String(this.text).trim()
+      return t
     },
     themeMode() {
       try {

@@ -221,7 +221,7 @@ public class SysDashboardService {
             return;
         }
         List<SysUser> projectMembers =
-                sysUserProjectMapper.selectSysUserListByProjectId(projectId, null, 0, Integer.MAX_VALUE);
+                sysUserProjectMapper.selectSysUserListByProjectId(projectId, null, null, 0, Integer.MAX_VALUE);
         Map<Long, SysUser> byId = new HashMap<>();
         if (projectMembers != null) {
             for (SysUser u : projectMembers) {
@@ -263,7 +263,7 @@ public class SysDashboardService {
             return counts;
         }
         List<SysUser> projectMembers =
-                sysUserProjectMapper.selectSysUserListByProjectId(projectId, null, 0, Integer.MAX_VALUE);
+                sysUserProjectMapper.selectSysUserListByProjectId(projectId, null, null, 0, Integer.MAX_VALUE);
         for (SysGitRepository repo : repos) {
             try {
                 accumulateRepoWeeklyCommits(repo, weekStart, weekEnd, projectMembers, counts);

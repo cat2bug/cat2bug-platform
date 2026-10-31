@@ -28,8 +28,10 @@ class ImMessageTemplatesTest {
     void defectStateLabelIsLocalized() {
         assertEquals("处理中", ImMessageTemplates.defectStateLabel(0));
         assertEquals("待验证", ImMessageTemplates.defectStateLabel(1));
+        assertEquals("通过", ImMessageTemplates.defectStateLabel(2));
         assertEquals("已驳回", ImMessageTemplates.defectStateLabel(3));
         assertEquals("已关闭", ImMessageTemplates.defectStateLabel(4));
+        assertEquals("已创建", ImMessageTemplates.defectStateLabel(5));
     }
 
     @Test

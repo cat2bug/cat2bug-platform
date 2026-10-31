@@ -51,7 +51,7 @@ public final class DefectBuiltinFieldRegistry {
         order += 10;
         list.add(def("defectName", "string", 1, 0, 1024, order));
         order += 10;
-        list.add(def("handleBy", "object", 1, 0, null, order));
+        list.add(def("handleBy", "object", 0, 1, null, order));
         order += 10;
         list.add(def("defectLevel", "enum", 0, 1, null, order));
         order += 10;

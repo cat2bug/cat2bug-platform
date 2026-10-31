@@ -507,7 +507,7 @@ class QuarkusMcpServerTest {
 
         String defect = McpTestClient.text(ok(mcp.callTool("get_guide", Map.of("topic", "defect"))));
         for (String s : List.of("repair_defect", "pass_defect", "reject_defect", "assign_defect", "open_defect",
-                "处理中", "待审核", "已驳回", "已关闭", "修复后进入待审核", "退回上一次的处理人", "缺陷自定义字段")) {
+                "已创建", "处理中", "待审核", "已驳回", "通过", "已关闭", "修复后进入待审核", "退回上一次的处理人", "缺陷自定义字段")) {
             assertTrue(defect.contains(s), "缺陷指南缺少「" + s + "」：" + defect);
         }
         String roles = McpTestClient.text(ok(mcp.callTool("get_guide", Map.of("topic", "roles"))));

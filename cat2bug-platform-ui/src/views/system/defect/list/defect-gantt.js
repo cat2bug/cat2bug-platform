@@ -139,6 +139,7 @@ export function resolveColWidth(scale, colWidths) {
 }
 
 const STATE_CLASS = Object.freeze({
+  CREATED: 'created',
   PROCESSING: 'processing',
   AUDIT: 'audit',
   RESOLVED: 'resolved',

@@ -105,6 +105,9 @@ $cat2bug-ep-default-button: ':not(.el-button--primary):not(.el-button--success):
   --share-card-link-color: #1890ff;
 
   /* 缺陷状态标签 DefectStateFlag */
+  --defect-state-created-bg: #909399;
+  --defect-state-created-border: #909399;
+  --defect-state-created-color: #ffffff;
   --defect-state-processing-bg: #e04e4e;
   --defect-state-processing-border: #e04e4e;
   --defect-state-processing-color: #ffffff;
@@ -209,6 +212,9 @@ html.dark {
   --defect-type-default-color: #b1b3b8;
 
   /* 缺陷状态标签 DefectStateFlag：非灰色状态加深；已关闭保持灰描边样式 */
+  --defect-state-created-bg: #6b6d71;
+  --defect-state-created-border: #6b6d71;
+  --defect-state-created-color: #ffffff;
   --defect-state-processing-bg: #c93838;
   --defect-state-processing-border: #c93838;
   --defect-state-processing-color: #ffffff;
@@ -2131,20 +2137,12 @@ html.dark {
     background-color: rgba(20, 20, 20, 0.7) !important;
 
     .el-loading-spinner {
-      .el-loading-text {
-        color: var(--cat2bug-primary) !important;
-      }
-
-      .circular .path {
-        stroke: var(--cat2bug-primary) !important;
-      }
-
-      .el-icon-loading {
-        color: var(--cat2bug-primary) !important;
-      }
-
+      .el-loading-text,
+      .circular,
+      > svg,
+      .el-icon-loading,
       i {
-        color: var(--cat2bug-primary) !important;
+        display: none !important;
       }
     }
   }
@@ -2961,6 +2959,58 @@ html.dark {
 
   .defect-gantt-unscheduled-resizer:hover:after {
     background: linear-gradient(90deg, #363637 0%, #2b2b2c 50%, #363637 100%) !important;
+  }
+
+  /* 看板：未指派「+」与空负责人加号，避免暗色下发白 */
+  .defect-kanban-lane-add-btn {
+    background: var(--el-fill-color-darker, #363637) !important;
+    border-color: var(--border-color-base, #4c4d4f) !important;
+    color: var(--el-text-color-secondary, #a3a6ad) !important;
+
+    &:hover:not(:disabled) {
+      background: var(--el-fill-color-light, #414243) !important;
+      border-color: var(--border-color-light, #636466) !important;
+      color: var(--el-text-color-regular, #cfd3dc) !important;
+    }
+  }
+
+  .defect-kanban-lane-assignee-avatars {
+    &:hover,
+    &.is-empty:hover {
+      background: var(--el-fill-color-darker, #363637) !important;
+      border-color: var(--border-color-base, #4c4d4f) !important;
+    }
+  }
+
+  /* 看板泳道分隔条：与甘特同款暗色手柄，避免白底亮块 */
+  .defect-kanban-lane-resizer {
+    background: transparent !important;
+    background-image: none !important;
+
+    &:before {
+      background-color: var(--border-color-light) !important;
+    }
+
+    &:after {
+      border: 1px solid var(--border-color-base) !important;
+      background: linear-gradient(180deg, #2b2b2c 0%, #252529 48%, #252529 52%, #2b2b2c 100%) !important;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.5),
+        0 1px 4px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    &:hover:before {
+      background-color: var(--cat2bug-primary) !important;
+    }
+
+    &:hover:after {
+      border-color: var(--cat2bug-primary) !important;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.6),
+        0 2px 8px rgba(24, 144, 255, 0.4),
+        0 4px 14px rgba(24, 144, 255, 0.2) !important;
+      background: linear-gradient(180deg, #363637 0%, #2b2b2c 50%, #363637 100%) !important;
+    }
   }
 
   // 表格右上角 gutter 补丁底色适配（与浅色一致，无分割线）

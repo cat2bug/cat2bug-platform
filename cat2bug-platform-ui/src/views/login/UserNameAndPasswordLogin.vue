@@ -14,6 +14,7 @@
             auto-complete="off"
             :placeholder="$t('account')"
             :maxlength="LOGIN_USERNAME_MAX_LENGTH"
+            @keyup.enter="focusLoginPassword"
           />
         </el-form-item>
         <span class="login-kbd-hint login-kbd-hint-username" aria-hidden="true" />

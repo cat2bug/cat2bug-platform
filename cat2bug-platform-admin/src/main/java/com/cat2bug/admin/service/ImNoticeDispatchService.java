@@ -174,6 +174,7 @@ public class ImNoticeDispatchService {
         if (system == null || !system.isConfigSwitch()) {
             return;
         }
+        boolean selfNotice = isSelfNotice(event.senderId(), recipient.memberId());
         SysNotice notice = new SysNotice();
         notice.setNoticeId(sn);
         notice.setNoticeTitle(trimTitle(event.title()));
@@ -183,14 +184,27 @@ public class ImNoticeDispatchService {
         notice.setProjectId(event.projectId());
         notice.setGroupName(event.group() != null ? event.group() : "default");
         notice.setReceiverId(recipient.memberId());
+        /* 自己发给自己：入库即已读，避免角标「有新消息」 */
+        if (selfNotice) {
+            notice.setIsRead(Boolean.TRUE);
+        }
         if (sysNoticeService.insertReceiverNotice(notice) <= 0) {
             throw new ApiException("保存通知失败");
+        }
+        /* 自己发给自己：不推 WebSocket，避免音效/面板弹窗 */
+        if (selfNotice) {
+            return;
         }
         Map<String, Object> payload = buildPayload(notice, system, event.src(), event.senderId());
         imWebSocketNotifier.pushNotice(recipient.memberId(), payload);
         if (system.isPanel()) {
             imWebSocketNotifier.pushPanelNotice(recipient.memberId(), payload);
         }
+    }
+
+    /** 发送人与接收人为同一人时，不提示新消息 */
+    static boolean isSelfNotice(Long senderId, Long receiverId) {
+        return senderId != null && receiverId != null && senderId.equals(receiverId);
     }
 
     private void submitExternal(String sn, ImEvent event, List<Recipient> recipients) {

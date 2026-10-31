@@ -57,6 +57,74 @@
   line-height: 1.4;
 }
 
+/** Sortable 根：与 checkbox-group 同列布局，避免绑在 EP group 上拖不动 */
+.defect-column-picker-popover .defect-column-picker-sort-root,
+.defect-excel-column-picker-popover .defect-column-picker-sort-root {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.defect-column-picker-popover .defect-column-picker-row,
+.defect-excel-column-picker-popover .defect-column-picker-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.defect-column-picker-popover .defect-column-picker-row .el-checkbox,
+.defect-excel-column-picker-popover .defect-column-picker-row .el-checkbox {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.defect-column-picker-popover .defect-column-picker-drag,
+.defect-excel-column-picker-popover .defect-column-picker-drag {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 28px;
+  cursor: grab;
+  color: var(--el-text-color-secondary, #909399);
+  user-select: none;
+}
+
+.defect-column-picker-popover .defect-column-picker-drag:active,
+.defect-excel-column-picker-popover .defect-column-picker-drag:active {
+  cursor: grabbing;
+}
+
+.defect-column-picker-popover .defect-column-picker-drag__grip,
+.defect-excel-column-picker-popover .defect-column-picker-drag__grip {
+  display: block;
+  width: 10px;
+  height: 12px;
+  background:
+    radial-gradient(circle, currentColor 1.1px, transparent 1.2px) 0 0 / 4px 4px,
+    radial-gradient(circle, currentColor 1.1px, transparent 1.2px) 5px 0 / 4px 4px;
+  background-repeat: repeat-y;
+  opacity: 0.75;
+}
+
+.defect-column-picker-popover .defect-column-picker-row--ghost,
+.defect-excel-column-picker-popover .defect-column-picker-row--ghost {
+  opacity: 0.55;
+}
+
+.defect-column-picker-popover .defect-column-picker-row--chosen,
+.defect-excel-column-picker-popover .defect-column-picker-row--chosen {
+  background: var(--el-fill-color-light, #f5f7fa);
+  border-radius: 5px;
+}
+
 /* ConfigProvider 全局 size=small 会把复选框缩为 12px；浮层内恢复 EP 默认（14px） */
 .defect-column-picker-popover .defect-column-picker .el-checkbox.el-checkbox--small,
 .defect-excel-column-picker-popover .defect-column-picker .el-checkbox.el-checkbox--small {

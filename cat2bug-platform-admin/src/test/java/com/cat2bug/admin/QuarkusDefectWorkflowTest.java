@@ -127,4 +127,49 @@ class QuarkusDefectWorkflowTest {
                 .statusCode(200)
                 .body("code", equalTo(200));
     }
+
+    /** 无处理人关闭后再开启 → CREATED（看板未指派），不能落成空人 PROCESSING */
+    @Test
+    void openWithoutHandlerReturnsCreated() {
+        String token = QuarkusTestAuth.loginAsAdmin();
+
+        Number defectId = given()
+                .header("Authorization", token)
+                .contentType(ContentType.JSON)
+                .body("{\"defectName\":\"Quarkus无人开启测试\",\"projectId\":1,\"handleBy\":[]}")
+                .when().post("/system/defect")
+                .then()
+                .statusCode(200)
+                .body("code", equalTo(200))
+                .body("data.defectState", equalTo(5))
+                .extract().path("data.defectId");
+
+        given()
+                .header("Authorization", token)
+                .contentType(ContentType.JSON)
+                .body("{\"defectLogDescribe\":\"先关闭无人单\"}")
+                .when().post("/system/defect/" + defectId + "/close")
+                .then()
+                .statusCode(200)
+                .body("code", equalTo(200));
+
+        given()
+                .header("Authorization", token)
+                .contentType(ContentType.JSON)
+                .body("{\"defectLogDescribe\":\"无人重开应回已创建\"}")
+                .when().post("/system/defect/" + defectId + "/open")
+                .then()
+                .statusCode(200)
+                .body("code", equalTo(200))
+                .body("data.defectLogType", equalTo("OPEN"));
+
+        given()
+                .header("Authorization", token)
+                .when().get("/system/defect/" + defectId)
+                .then()
+                .statusCode(200)
+                .body("code", equalTo(200))
+                .body("data.defectState", equalTo(5))
+                .body("data.defectStateName", equalTo("CREATED"));
+    }
 }

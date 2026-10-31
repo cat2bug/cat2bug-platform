@@ -102,9 +102,6 @@ export default {
         customFields: {}
       },
       rules: {
-        handleBy: [
-          { required: true, message: this.$i18n.t('defect.handle-by-cannot-empty'), trigger: 'input' }
-        ],
         defectName: [
           { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: 'input' }
         ]
@@ -131,11 +128,6 @@ export default {
     },
     applyDefectFormRulesForBuiltinLayout() {
       const rules = {}
-      if (this.isBuiltinDefectFieldVisible('handleBy')) {
-        rules.handleBy = [
-          { required: true, message: this.$i18n.t('defect.handle-by-cannot-empty'), trigger: 'input' }
-        ]
-      }
       if (this.isBuiltinDefectFieldVisible('defectName')) {
         rules.defectName = [
           { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: 'input' }

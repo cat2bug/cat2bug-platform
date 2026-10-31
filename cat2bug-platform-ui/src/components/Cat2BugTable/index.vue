@@ -377,6 +377,17 @@ export default {
       handler(cols) {
         if (!this.preserveColumnOrder || this._internalColumnsUpdate) return;
         const next = (cols || []).map(c => ({ ...c }));
+        const curKeys = (this.tableFieldList || []).map((c) => String(c && c.key)).join('\0');
+        const nextKeys = next.map((c) => String(c && c.key)).join('\0');
+        /* 仅 key 序变化时才整表替换，避免父级用过期 columns 把个人拖序盖回团队序 */
+        if (curKeys === nextKeys && this.tableFieldList && this.tableFieldList.length) {
+          const byKey = new Map(next.map((c) => [String(c.key), c]));
+          this.tableFieldList = this.tableFieldList.map((c) => {
+            const n = byKey.get(String(c.key));
+            return n ? { ...c, visible: n.visible, fixed: n.fixed, width: n.width != null ? n.width : c.width } : c;
+          });
+          return;
+        }
         this.tableFieldList = next;
         this.$emit('columns-change', next);
       }
@@ -1424,12 +1435,30 @@ export default {
       this.reorderColumns();
     },
     setColumns(columns) {
+      const prevKeys = (this.tableFieldList || []).map((c) => String(c && c.key)).join('\0');
+      const nextList = columns || [];
+      const nextKeys = nextList.map((c) => String(c && c.key)).join('\0');
+      const orderChanged = prevKeys !== nextKeys;
       this._internalColumnsUpdate = true;
-      this.tableFieldList = columns;
-      this.$emit('columns-change', columns);
-      if (this.columnsStorageKey()) this.saveShowColumns(columns);
+      this.tableFieldList = nextList;
+      this.$emit('columns-change', nextList);
+      if (this.columnsStorageKey()) this.saveShowColumns(nextList);
       this.$nextTick(() => {
         this._internalColumnsUpdate = false;
+        /* el-table 对动态列序不可靠，key 序变化时重挂载以同步表头 */
+        if (orderChanged) {
+          this.tableKey = Date.now();
+          this.$nextTick(() => {
+            if (!this.$refs.elTable) return;
+            this.initColumnDrag();
+            this.$refs.elTable.doLayout();
+            requestAnimationFrame(() => {
+              this.syncOperateColumnWidths();
+              this.syncFixedDataRowHeights({ force: true });
+              this.updateCustomHorizontalScrollbar();
+            });
+          });
+        }
       });
     },
     /**

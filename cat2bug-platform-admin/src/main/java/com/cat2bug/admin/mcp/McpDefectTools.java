@@ -42,7 +42,7 @@ public class McpDefectTools {
     McpIdempotency idempotency;
 
     @Tool(name = "search_defects",
-            description = "查询项目内的缺陷列表（按创建倒序）。state 取值 PROCESSING(处理中)/AUDIT(待审核)/REJECTED(已驳回)/CLOSED(已关闭)；"
+            description = "查询项目内的缺陷列表（按创建倒序）。state 取值 CREATED(已创建)/PROCESSING(处理中)/AUDIT(待审核)/REJECTED(已驳回)/RESOLVED(通过)/CLOSED(已关闭)；"
                     + "type 取值 BUG/TASK/DEMAND。assigned_to_me=true 只看当前处理人包含我的缺陷。",
             annotations = @Tool.Annotations(title = "Search defects", readOnlyHint = true, openWorldHint = false))
     String searchDefects(McpConnection connection,
@@ -263,7 +263,7 @@ public class McpDefectTools {
     }
 
     @Tool(name = "pass_defect",
-            description = "审核通过，缺陷关闭。要求你是当前处理人且状态为待审核。流转规则见 get_guide(topic=defect)。",
+            description = "审核通过，缺陷进入「通过」(RESOLVED)，不是已关闭。要求你是当前处理人且状态为待审核。流转规则见 get_guide(topic=defect)。",
             annotations = @Tool.Annotations(title = "Pass defect", readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
     String passDefect(McpConnection connection,
                       @ToolArg(name = "defect_id", description = "缺陷 ID") Long defectId,
@@ -275,7 +275,7 @@ public class McpDefectTools {
     }
 
     @Tool(name = "close_defect",
-            description = "直接关闭缺陷（不经审核）。状态须为处理中、待审核或已驳回。",
+            description = "手动关闭缺陷（不经审核）。状态须为已创建、处理中、待审核或已驳回。",
             annotations = @Tool.Annotations(title = "Close defect", readOnlyHint = false, destructiveHint = true, idempotentHint = false, openWorldHint = false))
     String closeDefect(McpConnection connection,
                        @ToolArg(name = "defect_id", description = "缺陷 ID") Long defectId,
@@ -286,7 +286,7 @@ public class McpDefectTools {
     }
 
     @Tool(name = "open_defect",
-            description = "重新开启已关闭的缺陷，并指定处理人。",
+            description = "重新开启已关闭或已通过的缺陷，并指定处理人。",
             annotations = @Tool.Annotations(title = "Open defect", readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
     String openDefect(McpConnection connection,
                       @ToolArg(name = "defect_id", description = "缺陷 ID") Long defectId,

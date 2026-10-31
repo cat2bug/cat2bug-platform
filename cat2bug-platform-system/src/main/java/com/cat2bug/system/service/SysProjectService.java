@@ -55,7 +55,7 @@ public class SysProjectService {
         List<SysProject> rows = sysProjectMapper.selectSysProjectList(userId, query, page.getOffset(), page.getPageSize());
         // 与管理端列表一致：补齐成员，供前端「成员」列与进入项目成员校验（members 为空会误报无权限）
         rows.forEach(project -> project.setMembers(
-                sysUserProjectMapper.selectSysUserListByProjectId(project.getProjectId(), null, 0, Integer.MAX_VALUE)));
+                sysUserProjectMapper.selectSysUserListByProjectId(project.getProjectId(), null, null, 0, Integer.MAX_VALUE)));
         return new TableDataInfo(rows, total);
     }
 
@@ -71,7 +71,7 @@ public class SysProjectService {
         long total = sysProjectMapper.countAdminSysProjectList(query);
         List<SysProject> rows = sysProjectMapper.selectAdminSysProjectList(query, page.getOffset(), page.getPageSize());
         rows.forEach(project -> project.setMembers(
-                sysUserProjectMapper.selectSysUserListByProjectId(project.getProjectId(), null, 0, Integer.MAX_VALUE)));
+                sysUserProjectMapper.selectSysUserListByProjectId(project.getProjectId(), null, null, 0, Integer.MAX_VALUE)));
         return new TableDataInfo(rows, total);
     }
 

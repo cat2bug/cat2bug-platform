@@ -118,8 +118,8 @@
         />
         <span v-if="defectStatisticNavAvailable" class="defect-list-hint-stat-nav" aria-hidden="true" />
       </div>
-      <!-- 动态缺陷显示组件-->
-      <!--    <keep-alive>-->
+      <!-- 动态缺陷显示组件（四种视图异步分包；chunk 等待不挂父级遮罩，避免与子视图猫加载叠两层） -->
+      <div class="defect-content-view-host">
       <component
         :is="defectContentComponent"
         ref="defectContentComponent"
@@ -131,6 +131,7 @@
         @refresh="handleRefreshQuery"
         @column-picker-visible-change="onDefectColumnPickerVisibleChange"
         @selection-change="onDefectTableSelectionChange"
+        @add="handleAdd"
       >
         <template #left-tools>
           <!-- 搜索-->
@@ -159,6 +160,12 @@
                   <el-radio-button value="DefectGantt">
                     <span class="defect-content-view-switch-inner" :title="$t('gantt')">
                       <svg-icon icon-class="gantt" />
+                    </span>
+                  </el-radio-button>
+                  <!-- 看板模式：图标用用户提供的 PNG（CSS mask，跟 currentColor） -->
+                  <el-radio-button value="DefectKanban">
+                    <span class="defect-content-view-switch-inner" :title="$t('kanban')">
+                      <span class="defect-kanban-switch-icon" aria-hidden="true" />
                     </span>
                   </el-radio-button>
                 </el-radio-group>
@@ -307,6 +314,7 @@
           </span>
         </template>
       </component>
+      </div>
       <!-- 添加或修改缺陷对话框 -->
       <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="search(queryParams)" />
       <!-- 浏览缺陷对话框 -->
@@ -332,7 +340,7 @@
 </template>
 
 <script>
-import { markRaw } from 'vue'
+import { defineAsyncComponent, markRaw } from 'vue'
 import { Delete, EditPen, MoreFilled } from '@element-plus/icons-vue'
 import Sortable from 'sortablejs'
 import { checkPermi } from '@/utils/permission'
@@ -356,9 +364,11 @@ import {
   resolveDefectExportColumns
 } from '@/utils/excel-export-columns'
 import { useUserStore } from '@/stores/user'
-import DefectTable from './list/table'
-import DefectExcel from './list/excel'
-import DefectGantt from './list/gantt'
+/** 四种视图按需分包：首屏只拉缓存/默认模式，其余切到时再下载 */
+const DefectTable = defineAsyncComponent(() => import('./list/table.vue'))
+const DefectExcel = defineAsyncComponent(() => import('./list/excel.vue'))
+const DefectGantt = defineAsyncComponent(() => import('./list/gantt.vue'))
+const DefectKanban = defineAsyncComponent(() => import('./list/kanban.vue'))
 import { clearExtensionParams, hasParticipationExtension } from './query-extension'
 import pageActionHints from '@/mixins/page-action-hints'
 import splitDropdownKbd from '@/mixins/split-dropdown-kbd'
@@ -388,9 +398,9 @@ import { findTopFormDrawerVm } from '@/utils/defect-drawer-shortcuts'
 
 /** 记录Tab标签选项 */
 const DEFECT_TAB_CACHE_KEY = 'defect-tab'
-/** 缺陷列表/Excel/甘特 视图组件名，与 el-radio-button value 一致；默认 DefectTable */
+/** 缺陷列表/Excel/甘特/看板 视图组件名，与 el-radio-button value 一致；默认 DefectTable */
 const DEFECT_CONTENT_VIEW_CACHE_KEY = 'defect.contentViewComponent'
-const DEFECT_CONTENT_VIEW_ALLOWED = ['DefectTable', 'DefectExcel', 'DefectGantt']
+const DEFECT_CONTENT_VIEW_ALLOWED = ['DefectTable', 'DefectExcel', 'DefectGantt', 'DefectKanban']
 /** 名称等于所有选项的name */
 const ALL_TAB_NAME = 'all-tab'
 const DELETED_TAB_NAME = 'deleted-tab'
@@ -487,6 +497,7 @@ export default {
     DefectTable,
     DefectExcel,
     DefectGantt,
+    DefectKanban,
     DefectImport,
     MoreFilledIcon: markRaw(MoreFilled),
   },
@@ -502,6 +513,7 @@ export default {
       // 当前缺陷面板的类型
       defectContentId: 'list',
       defectContentComponent: 'DefectTable',
+      _defectContentViewLoadToken: 0,
       // tab相关配置
       // 所有tab的名称
       allTab: ALL_TAB_NAME,
@@ -803,10 +815,35 @@ export default {
       }
       this.queryParams.params.delFlag = '0'
     },
+    /**
+     * 等待当前异步视图组件挂载完成（defineAsyncComponent）。
+     * 不挂父级遮罩：加载态只由子视图自己的奔跑猫负责，避免叠两层。
+     * @param {(child: object) => void} onReady
+     */
+    whenDefectContentReady(onReady) {
+      const token = ++this._defectContentViewLoadToken
+      const tryReady = (attempt) => {
+        if (token !== this._defectContentViewLoadToken) return
+        const child = this.$refs.defectContentComponent
+        if (child && typeof child.search === 'function') {
+          try {
+            onReady(child)
+          } catch (e) {
+            console.warn('[Defect] content ready callback failed', e)
+          }
+          return
+        }
+        if (attempt >= 80) return
+        setTimeout(() => tryReady(attempt + 1), 50)
+      }
+      this.$nextTick(() => tryReady(0))
+    },
     init() {
       this.queryParams.projectId = this.projectId
-      // 初始化对象
-      this.$refs.defectContentComponent.init()
+      /* 异步视图可能尚未就绪：等 chunk 挂载后再 init；列表数据仍由 getDefectConfig → 页签选定后 search */
+      this.whenDefectContentReady((child) => {
+        if (typeof child.init === 'function') child.init()
+      })
       // 获取缺陷配置
       this.getDefectConfig()
       // 显示指定缺陷信息
@@ -2921,6 +2958,11 @@ export default {
       const content = this.$refs.defectContentComponent
       if (content && typeof content.search === 'function') {
         content.search(this.queryParams)
+      } else {
+        /* 首屏 / 切模式时 chunk 未到：等就绪再拉数，避免丢首次 search */
+        this.whenDefectContentReady((child) => {
+          child.search(this.queryParams)
+        })
       }
       const statistic = this.$refs.defectStatistic
       if (statistic && typeof statistic.refreshData === 'function') {
@@ -3039,27 +3081,18 @@ export default {
         }
       }
     },
-    /** 切换缺陷内容组件改变的处理 */
+    /** 切换缺陷内容组件改变的处理（含异步 chunk 就绪等待） */
     handleDefectContentChange() {
       const c = this.defectContentComponent
       if (DEFECT_CONTENT_VIEW_ALLOWED.includes(c)) {
         this.$cache.local.set(DEFECT_CONTENT_VIEW_CACHE_KEY, c)
       }
-      /* 动态组件切换后须等子组件挂载完成再 init/search（单 nextTick 时 ref 可能仍指向上一个视图） */
-      this.$nextTick(() => {
-        this.$nextTick(() => {
-          const child = this.$refs.defectContentComponent
-          if (!child) return
-          if (typeof child.init === 'function') {
-            try { child.init() } catch (e) { console.warn('[Defect] content init failed', e) }
-          }
-          if (typeof child.search === 'function') {
-            try { child.search(this.queryParams) } catch (e) { console.warn('[Defect] content search failed', e) }
-          }
-          if (typeof child.setDragComponentSize === 'function') {
-            child.setDragComponentSize()
-          }
-        })
+      this.whenDefectContentReady((child) => {
+        if (typeof child.init === 'function') child.init()
+        child.search(this.queryParams)
+        if (typeof child.setDragComponentSize === 'function') {
+          child.setDragComponentSize()
+        }
       })
     },
     /** ============================================
@@ -3327,12 +3360,28 @@ export default {
   min-height: 0;
   width: 100%;
 }
-.defect-page .defect-content-slot {
+.defect-page .defect-content-view-host {
   flex: 0 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+}
+.defect-page:not(.defect-page--excel-view) .defect-content-view-host {
+  flex: 1 1 0%;
+}
+.defect-page.defect-page--excel-view .defect-content-view-host {
+  flex: 1 1 0%;
+}
+.defect-page .defect-content-slot {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   padding-top: 0;
   box-sizing: border-box;
+  min-height: 0;
+  min-width: 0;
 }
 .defect-page:not(.defect-page--excel-view) .defect-content-slot:not(.defect-content-slot--excel) {
   flex: 1 1 0%;
@@ -4001,6 +4050,17 @@ export default {
     width: 18px !important;
     height: 18px !important;
     vertical-align: top;
+  }
+  .defect-kanban-switch-icon {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background-color: currentColor;
+    /* 使用 assets/images/kanban-switch.png（用户提供的原图） */
+    -webkit-mask: url('@/assets/images/kanban-switch.png') center / contain no-repeat;
+    mask: url('@/assets/images/kanban-switch.png') center / contain no-repeat;
+    -webkit-mask-source-type: alpha;
+    mask-mode: alpha;
   }
 }
 </style>

@@ -1,17 +1,22 @@
 import {
   DEFECT_TABLE_COLUMN_CACHE_KEY,
+  getDefectTableColumnCacheKey,
   mergeDefectTableColumnPrefs
 } from '@/utils/defect-custom-field-columns'
 
-export { DEFECT_TABLE_COLUMN_CACHE_KEY }
+export { DEFECT_TABLE_COLUMN_CACHE_KEY, getDefectTableColumnCacheKey }
 
-/** 合并字段管理默认列 + 本地显隐/固定偏好（顺序以 defaults 为准） */
+/** 合并字段管理默认列 + 本地显隐/固定/个人列序（对象缓存 key 序权威） */
 export function resolveDefectMergedColumns(
   localCache,
   tableColumnDefaults,
-  storageKey = DEFECT_TABLE_COLUMN_CACHE_KEY
+  storageKey
 ) {
-  return mergeDefectTableColumnPrefs(localCache, tableColumnDefaults || [], storageKey)
+  return mergeDefectTableColumnPrefs(
+    localCache,
+    tableColumnDefaults || [],
+    storageKey || getDefectTableColumnCacheKey()
+  )
 }
 
 /** 「显示字段」勾选列表：与表格列顺序一致，仅含可配置列 */
@@ -29,7 +34,7 @@ export function defectDisplayFieldCheckedKeys(mergedColumns) {
 }
 
 /**
- * 按 merged 表格列顺序映射为 Excel 数据列 key（COLS.key，不含 projectNum）。
+ * 按 merged 表格列顺序映射为 Excel 数据列 key（COLS.key；编号 id → projectNum）。
  * @param {Array} mergedColumns buildDefectTableColumnDefaults + merge 后的列
  * @param {Array} colDefs 通常为 excel.vue 的 COLS
  */
@@ -39,7 +44,13 @@ export function excelDataColumnKeysFromMerged(mergedColumns, colDefs) {
   ;(mergedColumns || []).forEach((m) => {
     if (!m || m.key == null) return
     const tk = String(m.key)
-    if (tk === 'id') return
+    if (tk === 'id') {
+      if (!seen.has('projectNum')) {
+        keys.push('projectNum')
+        seen.add('projectNum')
+      }
+      return
+    }
     if (m.isCustomField || tk.startsWith('custom:')) {
       if (!seen.has(tk)) {
         keys.push(tk)
@@ -50,7 +61,6 @@ export function excelDataColumnKeysFromMerged(mergedColumns, colDefs) {
     const col = (colDefs || []).find(
       (c) =>
         c &&
-        c.key !== 'projectNum' &&
         c.titleKey != null &&
         c.titleKey !== '' &&
         String(c.titleKey) === tk

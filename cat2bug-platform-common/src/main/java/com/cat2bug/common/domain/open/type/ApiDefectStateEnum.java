@@ -8,5 +8,6 @@ public enum ApiDefectStateEnum {
     AUDIT,
     RESOLVED,
     REJECTED,
-    CLOSED
+    CLOSED,
+    CREATED
 }

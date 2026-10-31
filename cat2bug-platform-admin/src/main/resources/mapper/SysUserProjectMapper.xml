@@ -30,6 +30,13 @@
             <if test="search != null and search != ''">
                 AND u.nick_name like concat('%', #{search}, '%')
             </if>
+            <if test="roleId != null and roleId != 0">
+                AND EXISTS (
+                    SELECT 1 FROM sys_user_project_role upr_f
+                    WHERE upr_f.user_project_id = up.user_project_id
+                      AND upr_f.role_id = #{roleId}
+                )
+            </if>
         </where>
     </sql>
 

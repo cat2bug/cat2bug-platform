@@ -33,7 +33,6 @@ export const TableOptions=[{
   prop: 'handleBy',
   fixed: false,
   visible: true,
-  required: true,
   width: 170,
   width_ja_JP: 170,
   width_ar: 170,

@@ -159,9 +159,10 @@ public class ProjectResource {
     @RequiresPermissions(value = {"system:project:list", "system:project:member"}, logical = RequiresPermissions.Logical.OR)
     public TableDataInfo memberList(@PathParam("projectId") Long projectId,
                                       @QueryParam("params[search]") String search,
+                                      @QueryParam("roleId") Long roleId,
                                       @QueryParam("pageNum") Integer pageNum,
                                       @QueryParam("pageSize") Integer pageSize) {
-        return sysUserProjectService.selectMemberPage(projectId, search, pageNum, pageSize);
+        return sysUserProjectService.selectMemberPage(projectId, search, roleId, pageNum, pageSize);
     }
 
     @GET

@@ -13,10 +13,13 @@ import java.util.List;
 @MapperDataSource(QuarkusMapperDataSources.RUNTIME_MYSQL)
 public interface SysUserProjectMapper {
 
-    long countSysUserListByProjectId(@Param("projectId") Long projectId, @Param("search") String search);
+    long countSysUserListByProjectId(@Param("projectId") Long projectId,
+                                     @Param("search") String search,
+                                     @Param("roleId") Long roleId);
 
     List<SysUser> selectSysUserListByProjectId(@Param("projectId") Long projectId,
                                                @Param("search") String search,
+                                               @Param("roleId") Long roleId,
                                                @Param("offset") int offset,
                                                @Param("limit") int limit);
 

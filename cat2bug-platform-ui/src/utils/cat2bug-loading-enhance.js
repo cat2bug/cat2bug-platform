@@ -30,13 +30,6 @@ function isDarkMask(mask) {
   return (r + g + b) / 3 < 80
 }
 
-function readLoadingText(spinner) {
-  const textEl = spinner.querySelector('.el-loading-text')
-  if (!textEl) return undefined
-  const t = (textEl.textContent || '').trim()
-  return t || undefined
-}
-
 /**
  * 加载猫高度：列表/表格等主内容区固定 list 标准尺寸，不随遮罩高度变化；
  * 仅统计卡等矮格用 stat。见 docs/04-UI规范/组件与交互约定.md。
@@ -112,8 +105,10 @@ function mountCatLoading(mask) {
 
   mask.setAttribute(ATTR, ATTR_DONE)
   spinner.classList.add(SPINNER_HIDE_CLASS)
+  /* 全站加载态只展示奔跑猫，不透传 EP loading 文案（含 element-loading-text / Loading.service text） */
+  const textEl = spinner.querySelector('.el-loading-text')
+  if (textEl) textEl.setAttribute('aria-hidden', 'true')
 
-  const text = readLoadingText(spinner)
   const variant = isDarkMask(mask) ? 'dark' : 'light'
   const size = resolveLoadingSize(mask)
 
@@ -126,7 +121,6 @@ function mountCatLoading(mask) {
     name: 'Cat2BugElLoadingHost',
     render() {
       return h(Cat2BugLoading, {
-        text,
         size,
         variant
       })

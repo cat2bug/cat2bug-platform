@@ -5,6 +5,7 @@ import {
   filterTableOptionsByBuiltin,
   orderDefectTableColumnsByFieldManage
 } from '@/utils/defect-field-layout'
+import { getCurrentUserId } from '@/utils/store-context'
 
 /** 表格列 prop / 排序字段是否为自定义字段（非物理列，不可直接 ORDER BY） */
 export function isCustomFieldTableProp(prop) {
@@ -77,8 +78,22 @@ export function buildDefectTableColumnDefaults(tableOptions, layout) {
   )
 }
 
-/** 与 Cat2BugTable cache-key="defect-table" + TABLE_FIELD_LIST_CACHE_KEY 一致 */
+/** 与 Cat2BugTable cache-key="defect-table" + TABLE_FIELD_LIST_CACHE_KEY 一致（基名，实际读写见 getDefectTableColumnCacheKey） */
 export const DEFECT_TABLE_COLUMN_CACHE_KEY = 'defect-tabledefect-table-field-list'
+
+/**
+ * 与 Cat2BugTable：cache-key + 'defect-table-field-list' 对齐。
+ * 按登录用户隔离，避免同浏览器换账号仍用上一人的列显隐。
+ */
+export function getDefectTableCacheKeyPrefix(userId) {
+  const uid = userId != null && userId !== '' ? userId : getCurrentUserId()
+  if (uid == null || uid === '') return 'defect-table'
+  return `defect-table:u${uid}`
+}
+
+export function getDefectTableColumnCacheKey(userId) {
+  return `${getDefectTableCacheKeyPrefix(userId)}defect-table-field-list`
+}
 
 const MIN_DEFECT_TABLE_COLUMN_WIDTH = 60
 
@@ -100,7 +115,8 @@ export function resolveColumnWidthFromPrefs(pref, base, locale) {
   return sanitizeColumnWidth(base && base.width)
 }
 
-function buildDefectTableColumnPrefEntry(col) {
+export function buildDefectTableColumnPrefEntry(col) {
+  if (!col || col.key == null || col.key === '') return null
   const entry = {
     key: col.key,
     prop: col.prop,
@@ -110,6 +126,20 @@ function buildDefectTableColumnPrefEntry(col) {
   const w = sanitizeColumnWidth(col.width)
   if (w !== undefined) entry.width = w
   return entry
+}
+
+/**
+ * 按当前列数组顺序写入个人 field-list 缓存（key 序即个人权威列序）。
+ * 表格拖序 / Excel 拖序 / 显示字段拖序均应走此方法，避免只改内存不落盘。
+ */
+export function persistDefectTableColumnPrefs(localCache, columns, storageKey) {
+  if (!localCache || typeof localCache.setJSON !== 'function') return
+  const key = storageKey || getDefectTableColumnCacheKey()
+  const payload = (columns || [])
+    .map((c) => buildDefectTableColumnPrefEntry(c))
+    .filter(Boolean)
+  if (!payload.length) return
+  localCache.setJSON(key, payload)
 }
 
 function mergeColumnWithCachedPrefs(base, pref) {
@@ -151,10 +181,14 @@ export function loadDefectColumnLayout(projectId, options = {}) {
     _cache.layout = layout
     _cache.promise = null
     return layout
-  }).catch(() => {
-    _cache.layout = { enabledBuiltinFieldKeys: null, customFields: [], orderedEnabledFieldKeys: [] }
+  }).catch(err => {
+    /* 失败不写入「全开默认」缓存，否则同项目后续读会一直看到默认属性 */
     _cache.promise = null
-    return _cache.layout
+    if (_cache.projectId === pid) {
+      _cache.layout = null
+      _cache.projectId = null
+    }
+    return Promise.reject(err)
   })
   return _cache.promise
 }
@@ -169,16 +203,18 @@ export function clearCustomFieldColumnsCache() {
 }
 
 /** 是否已有缺陷列表「显示字段」本地缓存 */
-export function hasDefectTableColumnCache(localCache, storageKey = DEFECT_TABLE_COLUMN_CACHE_KEY) {
-  const cached = readFieldListCache(localCache, storageKey)
+export function hasDefectTableColumnCache(localCache, storageKey) {
+  const key = storageKey || getDefectTableColumnCacheKey()
+  const cached = readFieldListCache(localCache, key)
   return !!(cached && cached.length)
 }
 
-function readFieldListCache(localCache, storageKey = DEFECT_TABLE_COLUMN_CACHE_KEY) {
+function readFieldListCache(localCache, storageKey) {
   if (!localCache) return null
-  let cached = localCache.getJSON(storageKey)
+  const key = storageKey || getDefectTableColumnCacheKey()
+  let cached = localCache.getJSON(key)
   if (cached == null) {
-    const raw = localCache.get(storageKey)
+    const raw = localCache.get(key)
     if (raw) {
       try {
         cached = typeof raw === 'string' ? JSON.parse(raw) : raw
@@ -187,37 +223,87 @@ function readFieldListCache(localCache, storageKey = DEFECT_TABLE_COLUMN_CACHE_K
       }
     }
   }
+  /* 兼容升级前未按用户隔离的旧键，读到后迁到用户键 */
+  if ((!cached || !Array.isArray(cached) || !cached.length) && key !== DEFECT_TABLE_COLUMN_CACHE_KEY) {
+    const legacy = localCache.getJSON(DEFECT_TABLE_COLUMN_CACHE_KEY)
+    if (legacy && Array.isArray(legacy) && legacy.length) {
+      localCache.setJSON(key, legacy)
+      return legacy
+    }
+  }
   return cached && Array.isArray(cached) ? cached : null
 }
 
 /**
- * 合并缺陷表列配置：顺序以 defaults 为准（字段管理 orderedEnabledFieldKeys）；
- * 本地缓存只覆盖 visible / fixed / width（个人拖列顺序不持久覆盖团队属性顺序）。
+ * 将 newKey 插入 orderedKeys：跟在团队序中「仍出现在 orderedKeys 里的最近前驱」之后；
+ * 无前驱则追加末尾。
+ * @param {string[]} orderedKeys
+ * @param {string} newKey
+ * @param {string[]} teamKeys defaults 顺序
  */
-export function mergeDefectTableColumnPrefs(localCache, defaults, storageKey = DEFECT_TABLE_COLUMN_CACHE_KEY) {
+export function insertKeyAfterTeamPredecessor(orderedKeys, newKey, teamKeys) {
+  if (!orderedKeys || newKey == null || newKey === '') return
+  if (orderedKeys.includes(newKey)) return
+  const team = teamKeys || []
+  const teamIdx = team.indexOf(newKey)
+  if (teamIdx > 0) {
+    for (let i = teamIdx - 1; i >= 0; i--) {
+      const pred = team[i]
+      const pos = orderedKeys.indexOf(pred)
+      if (pos >= 0) {
+        orderedKeys.splice(pos + 1, 0, newKey)
+        return
+      }
+    }
+  }
+  orderedKeys.push(newKey)
+}
+
+/**
+ * 合并缺陷表列配置：对象缓存的 key 顺序为个人权威列序；
+ * 团队 defaults 提供列定义、新字段落点（前驱后插入）与旧 string[] 缓存时的列序；
+ * visible / fixed / width 仍按 key 从缓存覆盖。
+ */
+export function mergeDefectTableColumnPrefs(localCache, defaults, storageKey) {
+  const key = storageKey || getDefectTableColumnCacheKey()
   const list = (defaults || []).map(d => ({ ...d }))
-  const cached = readFieldListCache(localCache, storageKey)
+  const cached = readFieldListCache(localCache, key)
   if (!cached || !cached.length) {
     return list
   }
   if (typeof cached[0] === 'string') {
     const visibleKeys = new Set(cached)
     return list.map(d => {
-      const key = d && d.key
-      if (visibleKeys.has(key)) {
+      const colKey = d && d.key
+      if (visibleKeys.has(colKey)) {
         return { ...d, visible: true }
       }
-      if (key && String(key).startsWith('custom:')) {
+      if (colKey && String(colKey).startsWith('custom:')) {
         return { ...d, visible: true }
       }
       return { ...d, visible: false }
     })
   }
+  const byKey = new Map()
+  list.forEach(d => {
+    if (d && d.key) byKey.set(d.key, d)
+  })
+  const teamKeys = list.map(d => d.key).filter(Boolean)
   const prefByKey = {}
   cached.forEach(c => {
     if (c && c.key) prefByKey[c.key] = c
   })
-  return list.map(d => mergeColumnWithCachedPrefs(d, d && d.key ? prefByKey[d.key] : null))
+  const outKeys = []
+  cached.forEach(c => {
+    if (c && c.key && byKey.has(c.key) && !outKeys.includes(c.key)) {
+      outKeys.push(c.key)
+    }
+  })
+  teamKeys.forEach(k => {
+    if (outKeys.includes(k)) return
+    insertKeyAfterTeamPredecessor(outKeys, k, teamKeys)
+  })
+  return outKeys.map(k => mergeColumnWithCachedPrefs(byKey.get(k), prefByKey[k] || null))
 }
 
 /**
@@ -227,43 +313,68 @@ export function mergeDefectTableColumnPrefs(localCache, defaults, storageKey = D
 export function syncNewDefectTableColumnsIntoFieldListCache(
   localCache,
   tableColumns,
-  storageKey = DEFECT_TABLE_COLUMN_CACHE_KEY
+  storageKey
 ) {
   if (!localCache || !tableColumns || !tableColumns.length) return
+  const key = storageKey || getDefectTableColumnCacheKey()
 
-  const cached = readFieldListCache(localCache, storageKey)
+  const cached = readFieldListCache(localCache, key)
   const columns = tableColumns.map(c => ({ ...c }))
 
   if (!cached || !cached.length) {
     localCache.setJSON(
-      storageKey,
+      key,
       columns.map(buildDefectTableColumnPrefEntry)
     )
     return
   }
 
   if (typeof cached[0] === 'string') {
-    const keys = [...cached]
-    let changed = false
-    columns.forEach(col => {
-      if (!col || !col.key || keys.includes(col.key)) return
-      keys.push(col.key)
-      changed = true
-    })
-    if (changed) {
-      localCache.setJSON(storageKey, keys)
+    /* 旧版仅显隐：升级为对象数组，列序暂用团队 defaults（首次拖序后再记个人序） */
+    const visibleKeys = new Set(cached)
+    const upgraded = columns.map((col) => {
+      const entry = buildDefectTableColumnPrefEntry(col)
+      if (!entry) return null
+      entry.visible = visibleKeys.has(col.key) || String(col.key).startsWith('custom:')
+      return entry
+    }).filter(Boolean)
+    if (upgraded.length) {
+      localCache.setJSON(key, upgraded)
     }
     return
   }
 
-  const existing = new Set(cached.map(c => c && c.key).filter(Boolean))
-  const additions = []
+  const teamKeys = columns.map(c => c && c.key).filter(Boolean)
+  const teamKeySet = new Set(teamKeys)
+  const next = cached
+    .filter(c => c && c.key && teamKeySet.has(c.key))
+    .map(c => ({ ...c }))
+  /* 勿在 teamKeys 暂空/错位时把个人缓存写成 []，否则刷新后只剩团队默认序 */
+  if (!next.length && cached.length && teamKeys.length) {
+    return
+  }
+  if (!next.length && !teamKeys.length) {
+    return
+  }
+  const existing = new Set(next.map(c => c.key))
+  let changed = next.length !== cached.length
   columns.forEach(col => {
     if (!col || !col.key || existing.has(col.key)) return
-    additions.push(buildDefectTableColumnPrefEntry(col))
+    const entry = buildDefectTableColumnPrefEntry(col)
+    if (!entry) return
+    const keys = next.map(c => c.key)
+    insertKeyAfterTeamPredecessor(keys, col.key, teamKeys)
+    const at = keys.indexOf(col.key)
+    if (at < 0) {
+      next.push(entry)
+    } else {
+      next.splice(at, 0, entry)
+    }
+    existing.add(col.key)
+    changed = true
   })
-  if (additions.length) {
-    localCache.setJSON(storageKey, [...cached, ...additions])
+  if (changed && next.length) {
+    localCache.setJSON(key, next)
   }
 }
 
@@ -271,24 +382,15 @@ export function syncNewDefectTableColumnsIntoFieldListCache(
 export function pruneDefectTableColumnCache(
   localCache,
   allowedColumnKeys,
-  storageKey = DEFECT_TABLE_COLUMN_CACHE_KEY
+  storageKey
 ) {
   if (!localCache || !allowedColumnKeys) return
+  const key = storageKey || getDefectTableColumnCacheKey()
   const allowed = new Set(allowedColumnKeys)
-  let cached = localCache.getJSON(storageKey)
-  if (cached == null) {
-    const raw = localCache.get(storageKey)
-    if (raw) {
-      try {
-        cached = typeof raw === 'string' ? JSON.parse(raw) : raw
-      } catch (e) {
-        cached = null
-      }
-    }
-  }
+  let cached = readFieldListCache(localCache, key)
   if (!cached || !Array.isArray(cached) || !cached.length) return
 
-  const keep = (key) => allowed.has(key)
+  const keep = (k) => allowed.has(k)
 
   let pruned
   if (typeof cached[0] === 'string') {
@@ -297,18 +399,18 @@ export function pruneDefectTableColumnCache(
     pruned = cached.filter(c => c && c.key && keep(c.key))
   }
   if (pruned.length !== cached.length) {
-    localCache.setJSON(storageKey, pruned)
+    localCache.setJSON(key, pruned)
   }
 }
 
 export function pruneDefectTableColumnCacheFromColumns(
   localCache,
   tableColumns,
-  storageKey = DEFECT_TABLE_COLUMN_CACHE_KEY
+  storageKey
 ) {
   pruneDefectTableColumnCache(
     localCache,
     buildAllowedDefectTableColumnKeys(tableColumns),
-    storageKey
+    storageKey || getDefectTableColumnCacheKey()
   )
 }

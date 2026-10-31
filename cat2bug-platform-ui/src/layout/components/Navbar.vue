@@ -118,13 +118,14 @@ export default {
     const userStore = useUserStore()
     const settingsStore = useSettingsStore()
     const { sidebar, device } = storeToRefs(appStore)
-    const { avatar, name } = storeToRefs(userStore)
+    const { avatar, name, id: userId } = storeToRefs(userStore)
     const { themeMode, topNav, showSettings } = storeToRefs(settingsStore)
     return {
       sidebar,
       device,
       avatar,
       name,
+      userId,
       themeMode,
       topNav,
       showSettings,
@@ -158,11 +159,14 @@ export default {
   mounted() {
     // 订阅WebSocket下载模型消息
     this.topicId = this.$topic.subscribe(this.$topic.NOTICE_TOPIC, (name, data) => {
+      /* 自己发给自己的通知不提示新消息 */
+      if (this.isSelfNoticePayload(data && data.data)) return
       this.guoNoticeCount(data)
     })
     this.panelTopicId = this.$topic.subscribe(this.$topic.PANEL_NOTICE_TOPIC, (name, data) => {
       if (data && data.data) {
         const msg = data.data
+        if (this.isSelfNoticePayload(msg)) return
         const host = `${window.location.protocol}//${window.location.host}`
         if (msg.panel) {
           this.$notify({
@@ -184,6 +188,13 @@ export default {
     this.panelTopicId = null
   },
   methods: {
+    /** 发送人与当前用户相同：不弹面板、不播音效、不刷未读角标 */
+    isSelfNoticePayload(msg) {
+      if (!msg || msg.senderId == null) return false
+      const uid = this.userId
+      if (uid == null || uid === '') return false
+      return Number(msg.senderId) === Number(uid)
+    },
     /** 播放音效 */
     playMusic(soundName) {
       this.noticeSound = resolveNoticeSoundUrl(soundName)
@@ -210,6 +221,7 @@ export default {
         this.noticeCount = count
         if (data && data.data) {
           const msg = data.data
+          if (this.isSelfNoticePayload(msg)) return
           if (msg.backgroundMusic) {
             this.playMusic(msg.backgroundMusicUrl)
           }

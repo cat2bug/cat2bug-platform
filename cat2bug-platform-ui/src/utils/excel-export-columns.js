@@ -2,6 +2,8 @@ import { CaseTableColumnDefaults } from '@/views/system/case/case-table-options'
 import { TableOptions as DefectTableOptions } from '@/views/system/defect/list/table-options'
 import {
   buildDefectTableColumnDefaults,
+  DEFECT_TABLE_COLUMN_CACHE_KEY,
+  getDefectTableColumnCacheKey,
   loadDefectColumnLayout,
   mergeDefectTableColumnPrefs
 } from '@/utils/defect-custom-field-columns'
@@ -11,9 +13,9 @@ export const CASE_FIELD_LIST_KEY = 'case-table-field-list'
 
 /**
  * 与 defect/list/table.vue cache-key="defect-table" 及 Cat2BugTable columnsStorageKey()
- * （cacheKey + 'defect-table-field-list'）一致
+ * （cacheKey + 'defect-table-field-list'）一致；读写请用 getDefectTableColumnCacheKey()
  */
-export const DEFECT_FIELD_LIST_KEY = 'defect-tabledefect-table-field-list'
+export const DEFECT_FIELD_LIST_KEY = DEFECT_TABLE_COLUMN_CACHE_KEY
 
 function readCachedColumns(storageKey, cache) {
   if (!storageKey || !cache) return null
@@ -203,7 +205,7 @@ export async function resolveDefectExportColumns(options = {}) {
     const layout = await loadDefectColumnLayout(pid)
     layoutColumns = buildDefectTableColumnDefaults(base, layout)
   }
-  layoutColumns = mergeDefectTableColumnPrefs(cache, layoutColumns, DEFECT_FIELD_LIST_KEY)
+  layoutColumns = mergeDefectTableColumnPrefs(cache, layoutColumns, getDefectTableColumnCacheKey())
   const refConfig = getRefExportConfig(excelRef, tableRef)
   return mergeDefectExportColumns(layoutColumns, refConfig)
 }

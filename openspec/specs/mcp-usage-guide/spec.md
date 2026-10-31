@@ -4,6 +4,7 @@
 
 MCP 使用指南以 get_guide 与 Prompts 交付业务流程。
 ## Requirements
+
 ### Requirement: 指南工具 get_guide
 
 MCP 服务 SHALL 提供只读工具 `get_guide`，参数 `topic` 可选，取值 `overview`、`roles`、`defect`、`case`、`plan`、`deliverable`、`document`、`code`，缺省为 `overview`。工具 SHALL 声明 `title` 且 `readOnlyHint=true`。返回内容为 Markdown 文本，由「本项目实况」小节和该主题的业务说明组成。`report` MUST NOT 作为合法主题。
@@ -54,11 +55,12 @@ MCP 服务 SHALL 提供只读工具 `get_guide`，参数 `topic` 可选，取值
 
 ### Requirement: 缺陷流转说明与代码规则一致
 
-`defect` 主题 SHALL 包含缺陷状态表：处理中、待审核、已驳回、已关闭每个状态下由谁处理、可用动作与对应工具、执行后的新状态、应提示用户的下一步。内容 SHALL 与现有流转规则一致：修复要求当前处理人且状态为处理中或已驳回；审核通过与驳回要求当前处理人且状态为待审核；驳回退回上一次的处理人；指派要求创建人或当前处理人且未关闭；重开仅限已关闭。
+`defect` 主题 SHALL 包含缺陷状态表：已创建、处理中、待验证、已驳回、通过、已关闭各状态下由谁处理、可用动作与对应工具、执行后的新状态、应提示用户的下一步。内容 SHALL 与现有流转规则一致并反映本变更：无人新建为已创建；有人新建为处理中；修复要求当前处理人且状态为处理中或已驳回；审核通过将状态变为**通过**（`RESOLVED`）而非已关闭；驳回要求当前处理人且状态为待验证并退回上一次的处理人；指派可将已创建转为处理中且须指定处理人，或对创建人/当前处理人在未关闭、未通过终态下改派；关闭为手动不跟进并进入已关闭；重开允许已关闭或通过回到处理中。
 
 #### Scenario: 状态表包含关键规则
+
 - **WHEN** 调用 `get_guide(topic=defect)`
-- **THEN** 返回内容包含 `repair_defect`、`pass_defect`、`reject_defect`、`assign_defect`、`open_defect` 与四个状态名称，并写明修复后进入待审核、驳回退回上一次的处理人
+- **THEN** 返回内容包含 `repair_defect`、`pass_defect`、`reject_defect`、`assign_defect`、`open_defect`，并写明已创建与通过，且通过（`pass_defect`）后进入通过态而非已关闭，修复后进入待验证、驳回退回上一次的处理人
 
 ### Requirement: 全模块覆盖
 

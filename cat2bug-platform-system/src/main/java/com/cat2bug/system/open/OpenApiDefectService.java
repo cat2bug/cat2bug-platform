@@ -207,7 +207,7 @@ public class OpenApiDefectService {
     }
 
     public ApiDefect pass(Long projectId, ApiDefectHandle apiDefectHandle) {
-        return updateDefectHandle(projectId, apiDefectHandle, ApiDefectStateEnum.CLOSED,
+        return updateDefectHandle(projectId, apiDefectHandle, ApiDefectStateEnum.RESOLVED,
                 ApiDefectLogStateEnum.PASS, "通过失败");
     }
 
@@ -223,7 +223,19 @@ public class OpenApiDefectService {
         if (apiDefectHandle.getDescribe() == null) {
             throw new ApiException("缺陷描述不能为空");
         }
-        return updateDefectHandle(projectId, apiDefectHandle, ApiDefectStateEnum.PROCESSING,
+        ApiDefect existing = openApiDefectMapper.selectSysDefectByDefectNumber(
+                projectId, apiDefectHandle.getDefectNum());
+        if (existing == null) {
+            throw new ApiException("缺陷不存在");
+        }
+        boolean assignHandlers = apiDefectHandle.getHandlerAccountList() != null
+                && !apiDefectHandle.getHandlerAccountList().isEmpty();
+        boolean keepHandlers = existing.getHandlerList() != null && !existing.getHandlerList().isEmpty();
+        /* 与网页 open 一致：有人 → 处理中，无人 → 已创建（未指派） */
+        ApiDefectStateEnum nextState = (assignHandlers || keepHandlers)
+                ? ApiDefectStateEnum.PROCESSING
+                : ApiDefectStateEnum.CREATED;
+        return updateDefectHandle(projectId, apiDefectHandle, nextState,
                 ApiDefectLogStateEnum.OPEN, "开启失败");
     }
 

@@ -104,6 +104,7 @@
             <if test="projectId != null">project_id,</if>
             <if test="groupName != null and groupName != ''">group_name,</if>
             <if test="receiverId != null">receiver_id,</if>
+            <if test="isRead != null">is_read,</if>
             create_time
         ) VALUES (
             <if test="noticeId != null and noticeId != ''">#{noticeId},</if>
@@ -114,6 +115,7 @@
             <if test="projectId != null">#{projectId},</if>
             <if test="groupName != null and groupName != ''">#{groupName},</if>
             <if test="receiverId != null">#{receiverId},</if>
+            <if test="isRead != null">#{isRead},</if>
             NOW()
         )
     </insert>

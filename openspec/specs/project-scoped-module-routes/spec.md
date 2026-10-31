@@ -4,6 +4,7 @@
 
 项目业务页使用 /{teamKey}/{projectKey}/{module} 路径。
 ## Requirements
+
 ### Requirement: Project business pages use namespaced module paths
 
 The system SHALL expose project-scoped business UI under `/{teamKey}/{projectKey}/{module}/**`, where `{module}` is a singular segment from a documented whitelist aligned with existing project menus (including at least: `dashboard`, `defect`, `case`, `plan`, `document`, `module`, `notice`, `member`, `option`, `api`, `tools`, `code`). System, auth, and install routes (e.g. `/login`, `/setup`, `/system/**`) MUST remain outside this namespace. The segment `report` MUST NOT be a project module.
@@ -37,7 +38,6 @@ Within the project namespace, the path `/{teamKey}/{projectKey}` and `/{teamKey}
 - **WHEN** a project member views the project module navigation
 - **THEN** the entry that routes to the dashboard module is labeled as workbench (工作台) in the active locale
 
-
 ### Requirement: Switching project changes URL prefix
 
 When the user switches the current project, the UI MUST navigate to the same logical module under the destination project’s `/{teamKey}/{projectKey}` prefix (or a documented default module if the current module does not apply). The system MUST NOT keep the previous project’s path keys in the address bar after a successful switch.
@@ -65,3 +65,18 @@ Repository browse and related UI under the project namespace SHALL use `/{teamKe
 - **WHEN** a user with pull permission opens a repository from the project repository list
 - **THEN** the browser location is `/{teamKey}/{projectKey}/code/{slug}` (or a child path under that prefix for tabs/deep links)
 
+### Requirement: Non-member cannot enter project namespace as current context
+
+Resolving `/{teamKey}/{projectKey}` (or any whitelisted module under that prefix) MUST require that the authenticated user is a member of the resolved project (or a documented system super-admin exemption). On failure the system MUST NOT set that project as `currentProjectId`, MUST NOT render the project business page as if authorized, and MUST send the user to a safe page (project list or an explicit error) instead of silently succeeding.
+
+#### Scenario: Team member opens another project's namespaced URL
+
+- **WHEN** a team member who is not a member of project A opens `/{teamKey}/{projectKeyOfA}/defect` (or `/dashboard`)
+- **THEN** the application does not establish project A as the current project context
+- **THEN** the defect or workbench page for project A is not shown as authorized content
+- **THEN** the user is redirected to the project list or an explicit access error
+
+#### Scenario: Member opens own project namespace
+
+- **WHEN** a project member opens `/{teamKey}/{projectKey}/defect` for a project they belong to
+- **THEN** the current project context matches those keys and the module renders as today

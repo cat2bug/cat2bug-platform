@@ -156,11 +156,8 @@ export default {
       form: {
         defectLevel: 'middle'
       },
-      // 表单校验
+      // 表单校验（处理人可选）
       rules: {
-        handleBy: [
-          { required: true, message: this.$i18n.t('defect.handle-by-cannot-empty'), trigger: "input" }
-        ],
         defectName: [
           { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: "input" }
         ],

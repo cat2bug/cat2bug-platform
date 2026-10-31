@@ -37,11 +37,13 @@ public class SysUserProjectService {
     @Inject
     ProjectMembershipAuth projectMembershipAuth;
 
-    public TableDataInfo selectMemberPage(Long projectId, String search, Integer pageNum, Integer pageSize) {
+    public TableDataInfo selectMemberPage(Long projectId, String search, Long roleId, Integer pageNum, Integer pageSize) {
+        Long filterRoleId = (roleId == null || roleId == 0L) ? null : roleId;
         PageDomain page = PageDomain.of(pageNum, pageSize);
-        long total = sysUserProjectMapper.countSysUserListByProjectId(projectId, search);
+        long total = sysUserProjectMapper.countSysUserListByProjectId(projectId, search, filterRoleId);
         List<SysUser> rows = MemberViewHelper.withRoleIds(
-                sysUserProjectMapper.selectSysUserListByProjectId(projectId, search, page.getOffset(), page.getPageSize()));
+                sysUserProjectMapper.selectSysUserListByProjectId(
+                        projectId, search, filterRoleId, page.getOffset(), page.getPageSize()));
         return new TableDataInfo(rows, total);
     }
 
@@ -120,6 +122,6 @@ public class SysUserProjectService {
     }
 
     public List<SysUser> selectSysUserListByProjectId(Long projectId) {
-        return sysUserProjectMapper.selectSysUserListByProjectId(projectId, null, 0, Integer.MAX_VALUE);
+        return sysUserProjectMapper.selectSysUserListByProjectId(projectId, null, null, 0, Integer.MAX_VALUE);
     }
 }

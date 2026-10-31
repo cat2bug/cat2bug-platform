@@ -38,8 +38,9 @@ export default {
           this.applyDefectFormRulesForBuiltinLayout && this.applyDefectFormRulesForBuiltinLayout()
         })
         .catch(() => {
+          /* 失败勿回退「全部启用」，否则会一直像默认属性 */
           this.defectFieldLayout = null
-          this.defectBuiltinFieldKeys = normalizeEnabledBuiltinKeys(null)
+          this.defectBuiltinFieldKeys = normalizeEnabledBuiltinKeys([])
         })
         .finally(() => {
           this._defectBuiltinLayoutLoading = false
@@ -47,7 +48,8 @@ export default {
     },
     isBuiltinDefectFieldVisible(fieldKey) {
       if (this.defectBuiltinFieldKeys == null) {
-        return true
+        /* 布局尚未返回：先不展示可关掉的内置项，避免闪一下全是默认字段 */
+        return isBuiltinFormFieldVisible(fieldKey, normalizeEnabledBuiltinKeys([]))
       }
       return isBuiltinFormFieldVisible(fieldKey, this.defectBuiltinFieldKeys)
     }

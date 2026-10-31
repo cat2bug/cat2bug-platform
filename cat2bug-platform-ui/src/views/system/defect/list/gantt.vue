@@ -157,7 +157,7 @@
       </div>
     </div>
 
-    <div v-loading="loading" class="defect-gantt-body" :element-loading-text="$t('loading')">
+    <div v-loading="loading" class="defect-gantt-body">
       <div class="defect-gantt-main">
         <div class="defect-gantt-scheduled" ref="scheduledPane">
           <div class="defect-gantt-left" :style="{ width: leftWidth + 'px' }">
@@ -591,20 +591,14 @@
                           @mousedown.stop
                           @click.stop
                         >
-                          <template v-if="showBarHandler">
-                            <span
-                              v-for="h in barHandlersOf(row, g)"
-                              :key="'bh-' + row.rowKey + '-' + h.userId"
-                              class="defect-gantt-bar-handler"
-                              :title="h.nickName"
-                            >
-                              <cat2-bug-avatar
-                                class="defect-gantt-bar-handler-avatar"
-                                :member="h"
-                                :size="18"
-                              />
-                            </span>
-                          </template>
+                          <row-list-member
+                            v-if="showBarHandler && barHandlersOf(row, g).length"
+                            class="defect-gantt-bar-handlers"
+                            :members="barHandlersOf(row, g)"
+                            :size="22"
+                            :max="5"
+                            :title="barHandlersTitle(row, g)"
+                          />
                           <span
                             v-if="showBarDays && barDaysText(row)"
                             class="defect-gantt-bar-days"
@@ -990,6 +984,7 @@ import { listModulePath } from '@/api/system/module'
 import { checkPermi } from '@/utils/permission'
 import { useUserStore } from '@/stores/user'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
+import RowListMember from '@/components/RowListMember'
 import SelectProjectMember from '@/components/Project/SelectProjectMember'
 import {
   GANTT_PAGE_SIZE,
@@ -1071,6 +1066,7 @@ export default {
     Sort,
     User,
     Cat2BugAvatar,
+    RowListMember,
     SelectProjectMember,
     ProjectWorkCalendarDialog
   },
@@ -2731,6 +2727,13 @@ export default {
         return [{ userId: gid, nickName: group.label || String(gid), userName: String(gid) }]
       }
       return all
+    },
+    /** 条后头像 native title：多人姓名逗号拼接 */
+    barHandlersTitle(row, group) {
+      return this.barHandlersOf(row, group)
+        .map((h) => h && (h.nickName || h.userName || h.name))
+        .filter(Boolean)
+        .join(', ')
     },
     /** 条右缘外侧放置处理人/标题元信息 */
     barMetaStyle(row) {
@@ -5270,6 +5273,9 @@ export default {
   border-radius: 1px;
   pointer-events: none;
   opacity: 0.9;
+  &.state-created {
+    background: var(--defect-state-created-bg, #909399);
+  }
   &.state-processing {
     background: var(--defect-state-processing-bg, #e04e4e);
   }
@@ -5951,6 +5957,11 @@ body.defect-gantt-col-resizing {
   &.is-multi-handler {
     padding-left: 18px;
   }
+  &.state-created {
+    background: var(--defect-state-created-bg, #909399);
+    border-color: var(--defect-state-created-border, #909399);
+    color: var(--defect-state-created-color, #fff);
+  }
   &.state-processing {
     background: var(--defect-state-processing-bg, #e04e4e);
     border-color: var(--defect-state-processing-border, #e04e4e);
@@ -6048,17 +6059,14 @@ body.defect-gantt-col-resizing {
   pointer-events: none;
   user-select: none;
 }
-.defect-gantt-bar-handler {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  line-height: 0;
-}
-.defect-gantt-bar-handler-avatar {
+/* 条后处理人：多人负间距叠加（RowListMember） */
+.defect-gantt-bar-handlers {
   flex: 0 0 auto;
   line-height: 0;
+  pointer-events: auto;
   :deep(.el-avatar) {
-    border: none !important;
+    border: 1px solid var(--el-bg-color, #fff) !important;
+    box-sizing: border-box;
   }
 }
 .defect-gantt-bar-days {
@@ -6303,6 +6311,10 @@ body.defect-gantt-col-resizing {
   user-select: none;
   -webkit-user-drag: element;
   border: 1px solid transparent;
+  &.state-created {
+    background: var(--defect-state-created-bg, #909399);
+    color: var(--defect-state-created-color, #fff);
+  }
   &.state-processing {
     background: var(--defect-state-processing-bg, #e04e4e);
     color: var(--defect-state-processing-color, #fff);
@@ -6403,6 +6415,10 @@ body.defect-gantt-col-resizing {
   border: 1px solid transparent;
   &.kind-bar {
     min-height: 24px;
+  }
+  &.state-created {
+    background: var(--defect-state-created-bg, #909399);
+    color: var(--defect-state-created-color, #fff);
   }
   &.state-processing {
     background: var(--defect-state-processing-bg, #e04e4e);

@@ -274,8 +274,36 @@ class ImNoticeDispatchServiceTest {
         assertEquals(3L, notices.get(0).getReceiverId());
     }
 
+    @Test
+    void selfNoticeIsSavedAsReadWithoutWebsocketPrompt() {
+        userConfigs.put(1L, config(true));
+
+        service.dispatch(event(1L, List.of(1L), null));
+
+        assertEquals(1, notices.size());
+        assertEquals(Boolean.TRUE, notices.get(0).getIsRead());
+        assertTrue(sockets.isEmpty(), sockets.toString());
+    }
+
+    @Test
+    void selfAndOtherReceiversOnlyPushToOthers() {
+        userConfigs.put(1L, config(true));
+        userConfigs.put(2L, config(true));
+
+        service.dispatch(event(1L, List.of(1L, 2L), null));
+
+        assertEquals(2, notices.size());
+        assertEquals(Boolean.TRUE, notices.get(0).getIsRead());
+        assertEquals(null, notices.get(1).getIsRead());
+        assertEquals(List.of("notice:2", "panel:2"), sockets);
+    }
+
     private static ImEvent event(List<Long> receivers, String moduleKey) {
-        return new ImEvent(1L, "defect", 9L, receivers, "标题", "http://h/t/p/defect?projectId=1&defectId=2",
+        return event(9L, receivers, moduleKey);
+    }
+
+    private static ImEvent event(Long senderId, List<Long> receivers, String moduleKey) {
+        return new ImEvent(1L, "defect", senderId, receivers, "标题", "http://h/t/p/defect?projectId=1&defectId=2",
                 new ImMessageBody("text", "## md", "<p>html</p>"), moduleKey,
                 ImNoticeDefaults.defaultDefectNoticeOption());
     }

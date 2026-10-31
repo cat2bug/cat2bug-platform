@@ -40,7 +40,26 @@ public final class DefectImportLabelResolver {
                 return i;
             }
         }
-        return null;
+        /* 中文别名（模板/手工表） */
+        switch (trimmed) {
+            case "已创建":
+                return DefectConstants.STATE_CREATED;
+            case "处理中":
+            case "待处理":
+                return DefectConstants.STATE_PROCESSING;
+            case "待验证":
+            case "待审核":
+                return DefectConstants.STATE_AUDIT;
+            case "通过":
+            case "已解决":
+                return DefectConstants.STATE_RESOLVED;
+            case "已驳回":
+                return DefectConstants.STATE_REJECTED;
+            case "已关闭":
+                return DefectConstants.STATE_CLOSED;
+            default:
+                return null;
+        }
     }
 
     public static String resolveLevel(String label, List<SysDictData> dictData) {

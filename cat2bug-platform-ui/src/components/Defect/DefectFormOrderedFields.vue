@@ -261,14 +261,13 @@ export default {
     /**
      * 连续新建 / 重置：丢弃上次填写的自定义字段，只按字段配置的默认值重建。
      * 免填缓存不含自定义字段；整对象替换以免 resetFields / 下拉内部状态残留。
+     * 默认值须同步写入：若再套 $nextTick，关闭基线会抓到空 customFields，随后默认值到位被误判为未保存。
      */
     resetCustomFields() {
       if (!this.form) return
       this.form.customFields = {}
+      this.applyCustomFieldDefaults(this.orderedFormFields)
       this.customFieldsEpoch += 1
-      this.$nextTick(() => {
-        this.applyCustomFieldDefaults(this.orderedFormFields)
-      })
     },
     focusDefectName() {
       const ref = this.$refs.defectNameInput

@@ -28,4 +28,10 @@ describe('serializeDefectFormCloseState', () => {
     const current = serializeDefectFormCloseState(form, ['2026-01-02'])
     expect(current).not.toBe(baseline)
   })
+
+  it('treats empty handleBy null and [] as unchanged', () => {
+    const baseline = serializeDefectFormCloseState({ handleBy: null, defectDescribe: null }, [])
+    const current = serializeDefectFormCloseState({ handleBy: [], defectDescribe: '' }, [])
+    expect(current).toBe(baseline)
+  })
 })

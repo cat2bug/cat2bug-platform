@@ -45,7 +45,7 @@ AI 客户端（Cursor、Claude Code、Codex、OpenCode、Claude Desktop / 网页
   - 用例 / 计划 / 交付物 / 文档 / 统计 `McpWorkTools`：`search_cases`、`get_case`、`create_case`、`update_case`、`list_case_types`、`create_case_type`、`update_case_type`、`delete_case_type`、`start_case_review`、`comment_case_review`、`complete_case_review`、`update_case_review_report`、`list_case_reviews`、`get_case_review`、`list_plans`、`list_plan_items`、`update_plan_item`、`list_modules`、`list_documents`、`get_project_stats`。类型与评审挂在已有 `case` / `project` 模块上，不新增 MCP 模块键。`create_case_type`、`start_case_review` 支持 `idempotency_key`。
   - 代码 `McpCodeTools`：`list_repositories`、`list_code_tree`、`read_code_file`、`search_code`、`list_commits`、`get_commit`。
 - 工具注解标明只读 / 破坏性 / 幂等；`create_defect`、`create_case`、`comment_defect` 支持 `idempotency_key`（表 `sys_mcp_idempotency`，同一用户同一工具同一键 24 小时内返回首次结果，每小时清理）。
-- 缺陷流转在工具层镜像网页按钮的处理人规则；后端 `SysDefectService.requireTransition` 另做状态校验，非法流转 409（与网页一致）。
+- 缺陷流转在工具层镜像网页按钮的处理人规则；后端 `SysDefectService.requireTransition` 另做状态校验，非法流转 409（与网页一致）。状态含 `CREATED`（无人）与 `RESOLVED`（通过；`pass_defect` 进入此态，不是已关闭）；详情见 `get_guide(topic=defect)`。
 - `update_defect` 必须带上当前 `defectState` 与 `customFields` 再提交，见 [[缺陷更新接口缺字段会重置状态并清空自定义字段]]。
 - 每个 `@Tool.Annotations` 与 `@Prompt` 都必须写 `title`，否则输出 `"title": null`，Cursor 会拒收整张表，见 [[MCP工具注解缺title导致Cursor拒收整张工具表]]。
 

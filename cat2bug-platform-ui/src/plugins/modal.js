@@ -65,11 +65,11 @@ export default {
       withMessageBoxI18nDefaults({ type: 'warning', ...(options || {}) })
     )
   },
-  loading(content) {
+  loading(_content) {
+    /* 全站统一奔跑猫，不再展示 loading 文案（参数保留兼容调用方） */
     if (loadingCount === 0) {
       loadingInstance = Loading.service({
         lock: true,
-        text: content,
         background: 'rgba(0, 0, 0, 0.7)'
       })
     }

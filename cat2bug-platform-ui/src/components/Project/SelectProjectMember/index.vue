@@ -46,13 +46,23 @@
       <legacy-icon icon="el-icon-circle-close" class="select-project-member-input__icon" v-show="isClearButtonVisible==true" @mouseleave="showClearButtonHandle(false)" @click="clearSelectMembersHandle"></legacy-icon>
     </div>
     </template>
-    <el-tabs v-if="roleGroup" ref="tabs" class="select-project-member-tabs" v-model="queryMember.roleId" @tab-click="getMemberList">
+    <el-tabs v-if="roleGroup" ref="tabs" class="select-project-member-tabs" v-model="queryMember.roleId" @tab-click="onRoleTabClick">
       <el-tab-pane ref="tabAll" :label="$i18n.t('all')" name="0"></el-tab-pane>
       <el-tab-pane v-for="(role,roleIndex) in roleList" :key="roleIndex" :label="role.roleNameI18nKey?$i18n.t(role.roleNameI18nKey):role.roleName" :name="role.roleId+''"></el-tab-pane>
     </el-tabs>
 
     <el-row ref="memberMenu" v-if="options && options.length>0" class="select-project-member-menu">
-      <el-col :span="24" v-for="(item,itemIndex) in options" :key="itemIndex" @click="clickMenuHandle(item,$event)" :active="optionsChecks.get(item.userId)?'true':'false'" :class="{'is-keyboard-active': itemIndex===activeIndex}">
+      <el-col
+        :span="24"
+        v-for="(item,itemIndex) in options"
+        :key="itemIndex"
+        @click="clickMenuHandle(item,$event)"
+        :active="optionsChecks.get(item.userId)?'true':'false'"
+        :class="{
+          'is-keyboard-active': itemIndex===activeIndex,
+          'is-member-disabled': !isMemberEnabled(item)
+        }"
+      >
         <member-nameplate :member="item" size="small"></member-nameplate>
         <el-tag v-if="isHead" size="small" @click="setMasterHandle($event,item)" :type="tagType(item)">
           {{optionsChecks.get(item.userId)===1?$i18n.t('head'):$i18n.t('assistant')}}
@@ -164,6 +174,14 @@ export default {
     icon: {
       type: [String, Object],
       default: null
+    },
+    /**
+     * 可选成员 ID 白名单；null/undefined 表示不限制。
+     * 不在名单内的成员灰显且不可新选（已选可取消）。
+     */
+    enabledMemberIds: {
+      type: Array,
+      default: null
     }
   },
   computed: {
@@ -174,6 +192,15 @@ export default {
       if (!this.icon) return null
       if (typeof this.icon === 'string') return this.$legacyIcon(this.icon)
       return this.icon
+    },
+    enabledMemberIdSet() {
+      if (!Array.isArray(this.enabledMemberIds)) return null
+      const set = new Set()
+      this.enabledMemberIds.forEach((id) => {
+        const n = Number(id)
+        if (Number.isFinite(n)) set.add(n)
+      })
+      return set
     },
     tagType: function () {
       return function (member) {
@@ -659,9 +686,23 @@ export default {
         this.roleList = res.rows;
       });
     },
+    /** 角色 tab 点击：同步 roleId 后按角色重新拉取成员 */
+    onRoleTabClick(tab) {
+      const name = tab && (tab.paneName ?? tab.props?.name ?? tab.name);
+      if (name != null && name !== '') {
+        this.queryMember.roleId = String(name);
+      }
+      this.queryMember.pageNum = 1;
+      this.activeIndex = 0;
+      this.$nextTick(() => {
+        this.getMemberList();
+        this.updateTabBar();
+      });
+    },
     /** 查询成员集合 */
     getMemberList(memberIds) {
       this.queryMember.projectId = this.projectId;
+      const preselectIds = Array.isArray(memberIds) ? memberIds : null;
       return listMemberOfProject(this.projectId, this.queryMember).then(res => {
         res.rows.forEach(m => {
           if (!this.optionsChecks.get(m.userId)) {
@@ -670,9 +711,9 @@ export default {
         });
         this.options = res.rows;
         this.total = res.total;
-        if (memberIds && memberIds.length > 0) {
+        if (preselectIds && preselectIds.length > 0) {
           this.options.forEach(m => {
-            if (memberIds.includes(m.userId)) {
+            if (preselectIds.includes(m.userId)) {
               this.clickMenuHandle(m);
             }
           });
@@ -784,6 +825,13 @@ export default {
       this.getMemberList();
       this.$nextTick(() => this.updateTabBar());
     },
+    /** 成员是否可选（全局执行人白名单） */
+    isMemberEnabled(member) {
+      const set = this.enabledMemberIdSet
+      if (!set) return true
+      if (!member || member.userId == null) return false
+      return set.has(Number(member.userId))
+    },
     /** 回车选中当前高亮的成员 */
     selectActive() {
       if (this.activeIndex >= 0 && this.activeIndex < this.options.length) {
@@ -822,7 +870,13 @@ export default {
     },
     /** 设置菜单索引顺序 */
     clickMenuHandle(member,event){
-      if(this.optionsChecks.get(member.userId)){
+      const already = !!this.optionsChecks.get(member.userId)
+      /* 未在白名单内：不可新选；已选仍可取消 */
+      if (!already && !this.isMemberEnabled(member)) {
+        if (event && event.stopPropagation) event.stopPropagation()
+        return
+      }
+      if(already){
         for (let [key, value] of this.optionsChecks) {
           if(value>this.optionsChecks.get(member.userId)) {
             this.optionsChecks.set(key,value-1);
@@ -1168,23 +1222,52 @@ export default {
   }
   .select-project-member-menu {
     .el-col {
-      display: inline-flex;
-      flex-shrink: 0;
+      display: flex;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
       justify-content: space-between;
       align-items: center;
+      gap: 6px;
+      overflow: hidden;
       i {
-        margin-right: 15px;
+        margin-right: 8px;
+        flex: 0 0 auto;
       }
       .el-tag {
         margin-right: 5px;
+        flex: 0 0 auto;
+        max-width: 40%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .el-tag, i {
         display: none;
       }
+      :deep(.member-nameplate) {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+      }
+      :deep(.member-nameplate-content) {
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+      }
+      :deep(.member-nameplate-content p),
+      :deep(.member-nameplate-content span) {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
     .el-col[active='true'] {
       .el-tag, i {
-        display: inline-block;
+        display: inline-flex;
+        flex: 0 0 auto;
       }
       :deep(.member-nameplate-content p), i {
         color: var(--cat2bug-primary, #1890ff);
@@ -1205,6 +1288,29 @@ export default {
       cursor: pointer;
       @at-root html.dark & {
         background-color: #3a3a42;
+      }
+    }
+    /* 不在全局执行人白名单内：灰显不可新选 */
+    .el-col.is-member-disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      :deep(.member-nameplate-content p),
+      :deep(.member-nameplate-content span),
+      i {
+        color: #c0c4cc !important;
+      }
+      &:hover {
+        background-color: transparent;
+        cursor: not-allowed;
+        @at-root html.dark & {
+          background-color: transparent;
+        }
+      }
+      &.is-keyboard-active {
+        background-color: transparent;
+        @at-root html.dark & {
+          background-color: transparent;
+        }
       }
     }
   }

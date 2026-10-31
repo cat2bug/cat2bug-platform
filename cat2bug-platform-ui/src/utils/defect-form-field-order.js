@@ -1,9 +1,5 @@
 import { TableOptions } from '@/views/system/defect/list/table-options'
-import {
-  buildDefectTableColumnDefaults,
-  DEFECT_TABLE_COLUMN_CACHE_KEY,
-  mergeDefectTableColumnPrefs
-} from '@/utils/defect-custom-field-columns'
+import { buildDefectTableColumnDefaults } from '@/utils/defect-custom-field-columns'
 import { normalizeFieldRow } from '@/components/DefectCustomField/format'
 import {
   ALL_BUILTIN_FIELD_KEYS,
@@ -102,12 +98,13 @@ function appendMissingCustomFields(out, seen, customFields) {
 }
 
 /**
- * 按「显示字段」列顺序解析新增/编辑表单字段（内置 + 自定义）。
- * @param {object|null} localCache 与缺陷列表相同的 $cache.local
+ * 按团队「缺陷属性」顺序解析新增/编辑表单字段（内置 + 自定义）。
+ * 不以个人「显示字段」本地缓存决定显隐/顺序，避免换账号仍看到默认属性。
+ * @param {object|null} _localCache 保留参数兼容旧调用，表单侧忽略
  * @param {object|null} layout listColumnLayout 数据
  * @param {{ isBuiltinVisible: (fieldKey: string) => boolean }} options
  */
-export function resolveOrderedDefectFormFields(localCache, layout, options = {}) {
+export function resolveOrderedDefectFormFields(_localCache, layout, options = {}) {
   const isBuiltinVisible =
     typeof options.isBuiltinVisible === 'function'
       ? options.isBuiltinVisible
@@ -118,27 +115,8 @@ export function resolveOrderedDefectFormFields(localCache, layout, options = {})
   const out = []
   const seen = new Set()
 
-  const defaults = buildDefectTableColumnDefaults(
-    TableOptions.map(c => ({ ...c })),
-    layout || {}
-  )
-  const merged = mergeDefectTableColumnPrefs(
-    localCache,
-    defaults,
-    DEFECT_TABLE_COLUMN_CACHE_KEY
-  )
-
-  if (merged && merged.length) {
-    merged.forEach(col => {
-      const tableKey = col && col.key
-      if (!tableKey) return
-      if (String(tableKey).startsWith('custom:')) {
-        tryPushCustomFromTableKey(out, seen, tableKey, customByFieldKey)
-      } else {
-        tryPushBuiltinFromTableKey(out, seen, tableKey, isBuiltinVisible)
-      }
-    })
-  } else if (layout && layout.orderedEnabledFieldKeys && layout.orderedEnabledFieldKeys.length) {
+  /* 优先：团队字段管理 orderedEnabledFieldKeys */
+  if (layout && layout.orderedEnabledFieldKeys && layout.orderedEnabledFieldKeys.length) {
     layout.orderedEnabledFieldKeys.forEach(fieldKey => {
       const fk = String(fieldKey)
       if (customByFieldKey.has(fk)) {
@@ -153,10 +131,26 @@ export function resolveOrderedDefectFormFields(localCache, layout, options = {})
       if (!isBuiltinVisible(fk)) return
       pushBuiltinFormField(out, seen, fk, fk)
     })
-  } else {
     appendMissingBuiltinFields(out, seen, isBuiltinVisible)
     appendMissingCustomFields(out, seen, customFields)
     return out
+  }
+
+  /* 回退：由列布局 defaults 推导（仍不读个人显示字段缓存） */
+  const defaults = buildDefectTableColumnDefaults(
+    TableOptions.map(c => ({ ...c })),
+    layout || {}
+  )
+  if (defaults && defaults.length) {
+    defaults.forEach(col => {
+      const tableKey = col && col.key
+      if (!tableKey) return
+      if (String(tableKey).startsWith('custom:')) {
+        tryPushCustomFromTableKey(out, seen, tableKey, customByFieldKey)
+      } else {
+        tryPushBuiltinFromTableKey(out, seen, tableKey, isBuiltinVisible)
+      }
+    })
   }
 
   appendMissingBuiltinFields(out, seen, isBuiltinVisible)

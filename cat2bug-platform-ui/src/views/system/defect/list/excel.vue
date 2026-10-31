@@ -33,17 +33,26 @@
           </div>
           <el-divider class="defect-field-divider" />
           <el-checkbox-group
+            :key="'excel-colpick-' + excelColumnPickerOrderRev"
             v-model="excelColumnPickerCheckedKeys"
             class="defect-column-picker"
             @change="onExcelColumnPickerChange"
           >
-            <el-checkbox
-              v-for="c in excelTableColumnPickerOptions"
-              :key="c.key"
-              :value="c.key"
-            >{{
-              c.isCustomField && c.fieldLabel ? c.fieldLabel : (c.label || $t(c.key))
-            }}</el-checkbox>
+            <div ref="excelColumnPickerSortRoot" class="defect-column-picker-sort-root">
+              <div
+                v-for="c in excelTableColumnPickerOptions"
+                :key="c.key"
+                class="defect-column-picker-row"
+                :data-field-key="c.key"
+              >
+                <span class="defect-column-picker-drag" @click.stop.prevent>
+                  <span class="defect-column-picker-drag__grip" aria-hidden="true" />
+                </span>
+                <el-checkbox :value="c.key">{{
+                  c.isCustomField && c.fieldLabel ? c.fieldLabel : (c.label || $t(c.key))
+                }}</el-checkbox>
+              </div>
+            </div>
           </el-checkbox-group>
           <template #reference>
             <el-button class="defect-list-hint-excel-columns" style="padding: 9px" plain size="small" :icon="$legacyIcon('el-icon-s-fold')" />
@@ -90,36 +99,39 @@
           width="1px"
           :sort="excelColumnNoSortFn"
         />
-        <vue-excel-column
-          field="projectNum"
-          :label="columnLabel(projectNumColumnDef)"
-          :pos="1"
-          :invisible="!excelColumnVisible('projectNum')"
-          type="string"
-          readonly
-          :width="projectNumColumnDef.width + 'px'"
-          :init-style="projectNumCellStyle"
-          :to-text="projectNumToText"
-          :sort="excelColumnNoSortFn"
-        />
         <!-- 列显隐与库内 PanelSetting 一致：始终注册全部列，用 invisible + 原地改 fields[].invisible（见 applyExcelColumnVisibilityToEditorFields） -->
-        <vue-excel-column
-          v-for="c in colsWithoutProjectNum"
-          :key="c.key"
-          v-bind="excelColumnValueBind(c)"
-          :field="c.key"
-          :pos="excelSheetDataColumnPos(c)"
-          :invisible="!excelColumnVisible(c.key)"
-          :label="columnLabel(c)"
-          :type="columnFieldType(c)"
-          :readonly="columnCellReadonly(c)"
-          :allow-keys="columnAllowKeys(c)"
-          :width="c.width + 'px'"
-          :options="columnOptions(c)"
-          :cell-html="excelColumnCellHtml(c)"
-          :to-text="excelColumnToText(c)"
-          :sort="excelColumnNoSortFn"
-        />
+        <!-- 编号参与个人列序（与「显示字段」/表格一致）；仅 defectId 固定前导隐藏 -->
+        <template v-for="c in excelOrderedDataCols" :key="c.key">
+          <vue-excel-column
+            v-if="c.key === 'projectNum'"
+            field="projectNum"
+            :label="columnLabel(projectNumColumnDef)"
+            :pos="excelSheetDataColumnPos(c)"
+            :invisible="!excelColumnVisible('projectNum')"
+            type="string"
+            readonly
+            :width="projectNumColumnDef.width + 'px'"
+            :init-style="projectNumCellStyle"
+            :to-text="projectNumToText"
+            :sort="excelColumnNoSortFn"
+          />
+          <vue-excel-column
+            v-else
+            v-bind="excelColumnValueBind(c)"
+            :field="c.key"
+            :pos="excelSheetDataColumnPos(c)"
+            :invisible="!excelColumnVisible(c.key)"
+            :label="columnLabel(c)"
+            :type="columnFieldType(c)"
+            :readonly="columnCellReadonly(c)"
+            :allow-keys="columnAllowKeys(c)"
+            :width="c.width + 'px'"
+            :options="columnOptions(c)"
+            :cell-html="excelColumnCellHtml(c)"
+            :to-text="excelColumnToText(c)"
+            :sort="excelColumnNoSortFn"
+          />
+        </template>
       </vue-excel-editor>
     </div>
 
@@ -217,9 +229,12 @@ import {
   WEB_IMAGE_UPLOAD_EXTENSIONS
 } from '@/utils/upload-asset'
 import { legacyIconInlineHtml } from '@/utils/element-icon'
+import Sortable from "sortablejs";
 import {
   clearCustomFieldColumnsCache,
+  getDefectTableColumnCacheKey,
   loadDefectColumnLayout,
+  persistDefectTableColumnPrefs,
   pruneDefectTableColumnCacheFromColumns,
   buildDefectTableColumnDefaults,
   syncNewDefectTableColumnsIntoFieldListCache
@@ -245,12 +260,10 @@ import {
 } from '@/utils/native-file-picker';
 
 /**
- * 与 list/table.vue 中 cat2-bug-table 的 cache-key="defect-table" 及 Cat2BugTable columnsStorageKey()
- *（cacheKey + 'defect-table-field-list'）完全一致，列显隐共用一份本地缓存。
+ * 与 list/table.vue / Cat2BugTable 共用用户隔离的 field-list 缓存（显隐 + 个人列序）。
+ * 请用 getDefectTableColumnCacheKey()，勿再写裸 `defect-tabledefect-table-field-list`。
  */
 const DEFECT_LIST_TABLE_CACHE_KEY = "defect-table";
-const DEFECT_TABLE_FIELD_LIST_STORAGE_KEY =
-  DEFECT_LIST_TABLE_CACHE_KEY + "defect-table-field-list";
 /** 缺陷 Excel 视图列宽（field.name -> \"NNNpx\"），与表格列缓存分开存储 */
 const DEFECT_EXCEL_COLUMN_WIDTH_STORAGE_KEY = DEFECT_LIST_TABLE_CACHE_KEY + "-excel-col-widths";
 /**
@@ -313,7 +326,7 @@ const COLS = [
   { key: "defectName", titleKey: "defect.name", width: 260, editable: true, required: true },
   { key: "defectLevel", titleKey: "priority", width: 100, editable: true, fieldType: "map" },
   /** map：成员 userId 字符串 -> 昵称；Excel 中只编辑首位处理人，保存为 handleBy: [id] */
-  { key: "excelHandleByMemberId", titleKey: "handle-by", width: 180, editable: true, fieldType: "map", required: true },
+  { key: "excelHandleByMemberId", titleKey: "handle-by", width: 180, editable: true, fieldType: "map" },
   /** 格内存状态枚举序号字符串 "0".."4"；占位行排队/进行中仍为哨兵串 */
   { key: "defectStateText", titleKey: "state", width: 100, editable: true, fieldType: "map" },
   { key: "moduleName", titleKey: "module", width: 180, editable: true },
@@ -562,9 +575,9 @@ function isExcelPickerTableOption(c) {
   return KEYS_IN_EXCEL_FOR_PICKER.has(String(c.key));
 }
 
-/** 表头拖列只重排数据列，不把「编号」并入可拖动的中间块（避免写缓存时把 id 挤到末尾） */
+/** 表头可拖重排的显示字段（含编号 id ↔ projectNum） */
 function isExcelDragReorderTableOption(c) {
-  return isExcelPickerTableOption(c) && String(c.key) !== "id";
+  return isExcelPickerTableOption(c);
 }
 
 /** 必填列被清空时的提示文案（与 i18n 中 defect.*-cannot-empty 一致；勿误用单一「处理人」文案） */
@@ -714,10 +727,12 @@ export default {
       excelLateClampTimers: [],
       /** 库内 fields 深监听会频繁 @setting，合并后再写缓存与 excelColumnPickerCheckedKeys */
       excelSettingSyncTimer: null,
-      /** 数据列顺序（不含 projectNum）；null 表示与字段管理默认顺序一致 */
+      /** 数据列顺序（含 projectNum）；null 表示与字段管理/个人合并默认顺序一致 */
       excelDataColumnKeyOrder: null,
       /** 与 $cache 列顺序联动：递增后强制重算 excelTableColumnPickerOptions（local 非响应式） */
       excelColumnPickerOrderRev: 0,
+      /** 「显示字段」浮层是否打开（打开期间避免 Rev 重挂载打断拖拽） */
+      excelColumnPickerOpen: false,
       /** 拖列后的列顺序快照，供「显示字段」列表即时排序（不依赖 $cache 响应式） */
       excelColumnPickerLiveColumns: null,
       /** 表头拖列调整顺序：移动中用于光标与样式 */
@@ -792,15 +807,20 @@ export default {
       return m;
     },
     /**
-     * 与 SysDefectStateEnum 序一致：PROCESSING=0 … CLOSED=4。
-     * RESOLVED(2) 已弃用：与 /system/defect/config 中 states 一致，不提供下拉选项；历史行仍用 excelDefectStateToText 展示。
+     * 码 → 文案；码与 DefectConstants 一致（CREATED=5），展示序见配置 states。
      */
     defectStateMap() {
-      const keys = ["PROCESSING", "AUDIT", "RESOLVED", "REJECTED", "CLOSED"];
+      const entries = [
+        [5, "CREATED"],
+        [0, "PROCESSING"],
+        [1, "AUDIT"],
+        [3, "REJECTED"],
+        [2, "RESOLVED"],
+        [4, "CLOSED"],
+      ];
       const m = {};
-      keys.forEach((k, i) => {
-        if (k === "RESOLVED") return;
-        m[String(i)] = String(this.$t(k) || k);
+      entries.forEach(([code, k]) => {
+        m[String(code)] = String(this.$t(k) || k);
       });
       return m;
     },
@@ -816,7 +836,7 @@ export default {
       return resolveDefectMergedColumns(
         this.$cache.local,
         this.tableColumnDefaults,
-        DEFECT_TABLE_FIELD_LIST_STORAGE_KEY
+        getDefectTableColumnCacheKey()
       );
     },
     /** 与表格「显示字段」同一套选项与顺序 */
@@ -833,9 +853,19 @@ export default {
         (c) => c.key
       );
     },
-    colsWithoutProjectNum() {
-      const base = this.effectiveCols.filter((c) => c.key !== "projectNum");
-      const userOrder = this.excelDataColumnKeyOrder;
+    /** 含编号的数据列，顺序与个人「显示字段」一致（不含隐藏的 defectId） */
+    excelOrderedDataCols() {
+      const base = this.effectiveCols.slice();
+      let userOrder = this.excelDataColumnKeyOrder;
+      /* 旧会话列序不含 projectNum：补到首位，避免编号突然掉到末尾 */
+      if (
+        userOrder &&
+        userOrder.length &&
+        !userOrder.includes("projectNum") &&
+        base.some((c) => c.key === "projectNum")
+      ) {
+        userOrder = ["projectNum", ...userOrder];
+      }
       if (userOrder && userOrder.length) {
         return reorderColsByKeyOrder(base, userOrder);
       }
@@ -847,6 +877,10 @@ export default {
         base,
         mergedOrder.length ? mergedOrder : base.map((c) => c.key)
       );
+    },
+    /** @deprecated 兼容旧引用：不含编号的数据列（个人序） */
+    colsWithoutProjectNum() {
+      return this.excelOrderedDataCols.filter((c) => c.key !== "projectNum");
     },
     /** 内置 PanelSetting 标题与按钮文案（与 vue3-excel-editor 默认键一致） */
     excelEditorLocalizedLabel() {
@@ -934,11 +968,6 @@ export default {
         this.scheduleExcelEditorLayoutFix();
       });
     },
-    loading(val) {
-      if (val === false) {
-        this.$nextTick(() => this.scheduleExcelEditorLayoutFix());
-      }
-    },
   },
   created() {
     this.initExcelColumnPickerFromCache();
@@ -950,8 +979,7 @@ export default {
     this.refreshProjectMembers();
     this.$nextTick(() => {
       this.ensureExcelEditorLazyCallbackKeys();
-      this.applyExcelColumnVisibilityToEditorFields();
-      this.applyExcelColumnOrderToEditorFields();
+      this.applyExcelColumnLayoutToEditorFields();
       this.applyPersistedExcelColumnWidthsToEditor();
       this.maybeRunInitialExcelColumnFill();
       this.scheduleExcelEditorLayoutFix();
@@ -959,6 +987,7 @@ export default {
     });
   },
   beforeDestroy() {
+    this.destroyExcelColumnPickerSortable();
     this.closeExcelModulePicker();
     this.unbindPlanTimeTriZoneMouseDown();
     this.teardownExcelEditorCalStickyPatch();
@@ -985,6 +1014,115 @@ export default {
   methods: {
     emitColumnPickerVisible(visible) {
       this.$emit('column-picker-visible-change', visible)
+      this.excelColumnPickerOpen = !!visible
+      if (visible) {
+        this.syncExcelColumnPickerFromMerged()
+        this._excelColumnPickerSortableRetry = 0
+        this.$nextTick(() => {
+          requestAnimationFrame(() => this.bindExcelColumnPickerSortable())
+        })
+      } else {
+        this._excelColumnPickerSortableRetry = 0
+        this.destroyExcelColumnPickerSortable()
+      }
+    },
+    /** 打开面板时按当前合并列序（含个人序）刷新勾选列表 */
+    syncExcelColumnPickerFromMerged() {
+      const merged = this.resolvedDefectMergedColumns
+      this.excelColumnPickerLiveColumns = (merged || []).map((c) => ({ ...c }))
+      this.excelColumnPickerCheckedKeys = defectDisplayFieldCheckedKeys(merged)
+      this.excelDataColumnKeyOrder = excelDataColumnKeysFromMerged(merged, COLS)
+      this.excelColumnPickerOrderRev += 1
+    },
+    destroyExcelColumnPickerSortable() {
+      if (this._excelColumnPickerSortable) {
+        this._excelColumnPickerSortable.destroy()
+        this._excelColumnPickerSortable = null
+      }
+    },
+    resolveExcelColumnPickerSortRoot() {
+      const refRoot = this.$refs.excelColumnPickerSortRoot
+      const fromRef = Array.isArray(refRoot) ? refRoot[0] : refRoot
+      if (fromRef && fromRef.querySelector && fromRef.querySelector('.defect-column-picker-row')) {
+        return fromRef
+      }
+      const poppers = document.querySelectorAll('.defect-excel-column-picker-popover')
+      for (let i = 0; i < poppers.length; i++) {
+        const p = poppers[i]
+        if (!p || p.style.display === 'none' || p.getAttribute('aria-hidden') === 'true') continue
+        const sortRoot = p.querySelector('.defect-column-picker-sort-root')
+        if (sortRoot && sortRoot.querySelector('.defect-column-picker-row')) return sortRoot
+        const candidate = p.querySelector('.defect-column-picker')
+        if (candidate && candidate.querySelector('.defect-column-picker-row')) return candidate
+      }
+      return (
+        document.querySelector(
+          '.defect-excel-column-picker-popover .defect-column-picker-sort-root'
+        ) ||
+        document.querySelector('.defect-excel-column-picker-popover .defect-column-picker')
+      )
+    },
+    bindExcelColumnPickerSortable() {
+      if (!this.excelColumnPickerOpen) return
+      this.destroyExcelColumnPickerSortable()
+      const root = this.resolveExcelColumnPickerSortRoot()
+      if (!root || !root.querySelector('.defect-column-picker-row')) {
+        if ((this._excelColumnPickerSortableRetry || 0) < 12) {
+          this._excelColumnPickerSortableRetry = (this._excelColumnPickerSortableRetry || 0) + 1
+          setTimeout(() => this.bindExcelColumnPickerSortable(), 40)
+        }
+        return
+      }
+      this._excelColumnPickerSortableRetry = 0
+      this._excelColumnPickerSortable = Sortable.create(root, {
+        animation: 150,
+        handle: '.defect-column-picker-drag',
+        draggable: '.defect-column-picker-row',
+        filter: '.el-checkbox, .el-checkbox__input, .el-checkbox__inner, .el-checkbox__original',
+        preventOnFilter: false,
+        ghostClass: 'defect-column-picker-row--ghost',
+        chosenClass: 'defect-column-picker-row--chosen',
+        forceFallback: true,
+        fallbackOnBody: true,
+        fallbackTolerance: 3,
+        onEnd: () => {
+          const keys = Array.from(root.querySelectorAll('.defect-column-picker-row'))
+            .map((n) => n.getAttribute('data-field-key'))
+            .filter(Boolean)
+          this.applyExcelColumnPickerOrder(keys)
+        }
+      })
+    },
+    /** 按显示字段面板顺序写回共享个人缓存并同步 Excel 数据列序 */
+    applyExcelColumnPickerOrder(orderedKeys) {
+      if (!orderedKeys || !orderedKeys.length) return
+      const storageKey = getDefectTableColumnCacheKey()
+      const merged = (
+        this.excelColumnPickerLiveColumns && this.excelColumnPickerLiveColumns.length
+          ? this.excelColumnPickerLiveColumns
+          : this.resolvedDefectMergedColumns
+      ).map((c) => ({ ...c }))
+      const byKey = new Map(merged.map((c) => [String(c.key), c]))
+      const seen = new Set()
+      const next = []
+      orderedKeys.forEach((k) => {
+        const col = byKey.get(String(k))
+        if (col) {
+          next.push({ ...col })
+          seen.add(String(k))
+        }
+      })
+      merged.forEach((c) => {
+        if (!seen.has(String(c.key))) next.push({ ...c })
+      })
+      persistDefectTableColumnPrefs(this.$cache.local, next, storageKey)
+      this.excelColumnPickerLiveColumns = next.map((c) => ({ ...c }))
+      this.excelDataColumnKeyOrder = excelDataColumnKeysFromMerged(next, COLS)
+      this.$nextTick(() => {
+        this.applyExcelColumnLayoutToEditorFields()
+        this.updateExcelEditorHeight()
+        requestAnimationFrame(() => this.bindExcelColumnPickerSortable())
+      })
     },
     /**
      * vue-excel-editor 的 lazy/lazyBuf 用回调 toString 做哈希，匿名函数会碰撞导致 @update 永不触发。
@@ -1608,7 +1746,7 @@ export default {
      * 将 Excel 数据列顺序写回与 Cat2BugTable 共用的 field-list 缓存，使表格视图 / 列选择器 / Excel 勾选列表顺序一致。
      */
     syncMergedTableFieldListOrderFromExcel(excelFieldKeysOrder) {
-      const storageKey = DEFECT_TABLE_FIELD_LIST_STORAGE_KEY;
+      const storageKey = getDefectTableColumnCacheKey();
       const merged = this.resolvedDefectMergedColumns.map((c) => ({ ...c }));
       const pickSet = new Set(
         defectDisplayFieldPickerOptions(merged).map((c) => String(c.key))
@@ -1622,8 +1760,9 @@ export default {
       const excelTableKeyOrder = (excelFieldKeysOrder || [])
         .map((ek) => {
           const k = String(ek);
+          if (k === "projectNum") return "id";
           if (k.startsWith("custom:")) return k;
-          const col = COLS.find((c) => c.key === k && c.key !== "projectNum");
+          const col = COLS.find((c) => c.key === k);
           return col && col.titleKey != null && col.titleKey !== "" ? String(col.titleKey) : null;
         })
         .filter(Boolean);
@@ -1660,18 +1799,20 @@ export default {
       });
 
       const newMerged = [...before, ...excelMerged, ...after];
-      this.$cache.local.setJSON(storageKey, newMerged);
+      persistDefectTableColumnPrefs(this.$cache.local, newMerged, storageKey);
       this.excelColumnPickerLiveColumns = newMerged.map((c) => ({ ...c }));
       this.excelColumnPickerOrderRev = (this.excelColumnPickerOrderRev || 0) + 1;
     },
     /**
      * 将宿主期望的数据列顺序同步到库内 fields[]（表头/表体/colgroup 均按 fields 渲染）。
-     * 固定前导列为 defectId、projectNum，其余按 colsWithoutProjectNum。
+     * 仅 defectId 固定前导；编号 projectNum 与其它数据列均按个人序（excelOrderedDataCols）。
+     * @param {{ deferLayout?: boolean }} [opts] deferLayout=true 时不立刻 layout/forceUpdate（由调用方合并一次）
      */
-    applyExcelColumnOrderToEditorFields() {
+    applyExcelColumnOrderToEditorFields(opts) {
       const ed = this.$refs.excelEditor;
-      if (!ed || !Array.isArray(ed.fields)) return;
-      const headNames = ["defectId", "projectNum"];
+      if (!ed || !Array.isArray(ed.fields)) return false;
+      const deferLayout = !!(opts && opts.deferLayout);
+      const headNames = ["defectId"];
       const head = [];
       const rest = [];
       ed.fields.forEach((f) => {
@@ -1680,7 +1821,7 @@ export default {
         else rest.push(f);
       });
       head.sort((a, b) => headNames.indexOf(a.name) - headNames.indexOf(b.name));
-      const order = this.colsWithoutProjectNum.map((c) => c.key);
+      const order = this.excelOrderedDataCols.map((c) => c.key);
       rest.sort((a, b) => {
         const ia = order.indexOf(a.name);
         const ib = order.indexOf(b.name);
@@ -1691,18 +1832,26 @@ export default {
       });
       const next = [...head, ...rest];
       const dataFieldCount = ed.fields.filter((f) => f && f.name && !isExcelFillerFieldName(f.name)).length;
-      if (next.length !== dataFieldCount) return;
+      if (next.length !== dataFieldCount) return false;
+      const curNames = ed.fields
+        .filter((f) => f && f.name && !isExcelFillerFieldName(f.name))
+        .map((f) => f.name);
+      const nextNames = next.map((f) => f.name);
+      const orderSame =
+        curNames.length === nextNames.length &&
+        curNames.every((n, i) => n === nextNames[i]);
+      if (orderSame) return false;
       ed.fields.splice(0, ed.fields.length, ...next);
       ed.fields.forEach((field) => {
         if (!field) return;
         if (field.name === "defectId") field.pos = 0;
-        else if (field.name === "projectNum") field.pos = 1;
         else {
           const oi = order.indexOf(field.name);
           field.pos = oi >= 0 ? 10 + oi : 500;
         }
       });
       this.syncExcelFillerColumns(ed);
+      if (deferLayout) return true;
       setTimeout(() => {
         const editor = this.$refs.excelEditor;
         if (!editor) return;
@@ -1710,6 +1859,7 @@ export default {
         this.scheduleExcelEditorLayoutFix();
         editor.$forceUpdate();
       }, 0);
+      return true;
     },
     findDefectExcelLabelHeaderTh(target) {
       const root = this.$refs.excelEditor && this.$refs.excelEditor.$el;
@@ -1739,7 +1889,7 @@ export default {
       return f && f.name ? String(f.name) : null;
     },
     excelReorderableFieldKeys() {
-      return this.colsWithoutProjectNum.map((c) => c.key);
+      return this.excelOrderedDataCols.map((c) => c.key);
     },
     teardownExcelColumnHeaderDragSession() {
       const dragSession = this._excelColDrag;
@@ -1906,14 +2056,13 @@ export default {
         }
       }
       if (!hoverKey || !allowed.has(hoverKey) || hoverKey === fromKey) return;
-      const keys = this.colsWithoutProjectNum.map((c) => c.key);
+      const keys = this.excelOrderedDataCols.map((c) => c.key);
       const nextKeys = this.reorderExcelColumnKeys(keys, fromKey, hoverKey, insertAfter);
       if (!nextKeys || nextKeys.join("\0") === keys.join("\0")) return;
       this.excelDataColumnKeyOrder = nextKeys;
       this.syncMergedTableFieldListOrderFromExcel(nextKeys);
       this.$nextTick(() => {
-        this.applyExcelColumnOrderToEditorFields();
-        this.applyExcelColumnVisibilityToEditorFields();
+        this.applyExcelColumnLayoutToEditorFields();
       });
     },
     tryBeginExcelColumnHeaderDrag(e) {
@@ -1966,6 +2115,7 @@ export default {
         .filter((k) => all.includes(k));
       this.excelColumnPickerCheckedKeys = checked.length ? checked : [...all];
       this.excelColumnPickerLiveColumns = merged.map((c) => ({ ...c }));
+      this.excelDataColumnKeyOrder = excelDataColumnKeysFromMerged(merged, COLS);
     },
     /** 编号列是否出现在「显示字段」中且当前已勾选（无 id 选项时不展示 Excel 编号列） */
     excelProjectNumColumnVisible() {
@@ -2000,34 +2150,44 @@ export default {
      * 再 `calStickyLeft`（库内用 setTimeout 包一层）。VueExcelColumn 只在 created 里把 invisible 快照进 fields，
      * 仅靠模板改 `:invisible` 不会同步到内部 field，列选择器变更必须走本方法。
      */
-    applyExcelColumnVisibilityToEditorFields() {
+    /**
+     * @param {{ deferLayout?: boolean }} [opts] deferLayout=true 时不立刻 schedule layout（由调用方合并一次）
+     * @returns {boolean} 是否有显隐变更
+     */
+    applyExcelColumnVisibilityToEditorFields(opts) {
       const ed = this.$refs.excelEditor;
-      if (!ed || !Array.isArray(ed.fields)) return;
+      if (!ed || !Array.isArray(ed.fields)) return false;
+      const deferLayout = !!(opts && opts.deferLayout);
       const picked = this.excelColumnPickerCheckedKeys || [];
+      let changed = false;
       ed.fields.forEach((f) => {
         if (!f || !f.name) return;
         if (isExcelFillerFieldName(f.name)) return;
+        let nextInvisible = f.invisible;
         if (f.name === "defectId") {
-          f.invisible = true;
-          return;
+          nextInvisible = true;
+        } else if (f.name === "projectNum") {
+          nextInvisible = !this.excelProjectNumColumnVisible();
+        } else {
+          const col = this.findExcelCol(f.name);
+          if (!col) {
+            nextInvisible = true;
+          } else {
+            const pickerKey = this.excelTablePickerKeyForCol(col);
+            if (!pickerKey) nextInvisible = false;
+            else nextInvisible = !picked.some((k) => String(k) === pickerKey);
+          }
         }
-        if (f.name === "projectNum") {
-          f.invisible = !this.excelProjectNumColumnVisible();
-          return;
+        if (!!f.invisible !== !!nextInvisible) {
+          f.invisible = nextInvisible;
+          changed = true;
+        } else {
+          f.invisible = nextInvisible;
         }
-        const col = this.findExcelCol(f.name);
-        if (!col) {
-          f.invisible = true;
-          return;
-        }
-        const pickerKey = this.excelTablePickerKeyForCol(col);
-        if (!pickerKey) {
-          f.invisible = false;
-          return;
-        }
-        f.invisible = !picked.some((k) => String(k) === pickerKey);
       });
+      if (!changed) return false;
       this.syncExcelFillerColumns(ed);
+      if (deferLayout) return true;
       /* 与 PanelSetting.columnLabelClick 一致，仅 calStickyLeft；布局夹紧仍由 scheduleExcelEditorLayoutFix 负责 */
       setTimeout(() => {
         const editor = this.$refs.excelEditor;
@@ -2035,17 +2195,31 @@ export default {
         if (typeof editor.calStickyLeft === "function") editor.calStickyLeft();
         this.scheduleExcelEditorLayoutFix();
       }, 0);
+      return true;
+    },
+    /** 列序 + 显隐各算一次，只触发一轮 layout / forceUpdate */
+    applyExcelColumnLayoutToEditorFields() {
+      const orderChanged = this.applyExcelColumnOrderToEditorFields({ deferLayout: true });
+      const visChanged = this.applyExcelColumnVisibilityToEditorFields({ deferLayout: true });
+      if (!orderChanged && !visChanged) return;
+      setTimeout(() => {
+        const editor = this.$refs.excelEditor;
+        if (!editor) return;
+        if (typeof editor.calStickyLeft === "function") editor.calStickyLeft();
+        this.scheduleExcelEditorLayoutFix();
+        if (orderChanged && typeof editor.$forceUpdate === "function") editor.$forceUpdate();
+      }, 0);
     },
     /**
      * vue-excel-editor 按 pos 插入 fields；全部默认 0 时新列会追加到末尾，fields 顺序与表头 DOM 不一致会错位/“列不显示”。
-     * 与 COLS 中数据列顺序一致（不含编号列）。
+     * 与个人数据列序一致（含编号 projectNum）。
      */
     excelSheetDataColumnPos(c) {
-      const idx = this.colsWithoutProjectNum.findIndex((x) => x.key === c.key);
+      const idx = this.excelOrderedDataCols.findIndex((x) => x.key === c.key);
       return 10 + (idx < 0 ? 0 : idx);
     },
     persistDefectTableFieldListFromExcelPicker(nextVisibleTableKeys) {
-      const storageKey = DEFECT_TABLE_FIELD_LIST_STORAGE_KEY;
+      const storageKey = getDefectTableColumnCacheKey();
       const merged = this.resolvedDefectMergedColumns.map((c) => ({ ...c }));
       const pickSet = new Set(this.excelTableColumnPickerOptions.map((c) => String(c.key)));
       const next = (nextVisibleTableKeys || []).map((k) => String(k));
@@ -2056,7 +2230,7 @@ export default {
         }
         return { ...col };
       });
-      this.$cache.local.setJSON(storageKey, updated);
+      persistDefectTableColumnPrefs(this.$cache.local, updated, storageKey);
       this.excelColumnPickerLiveColumns = updated.map((c) => ({ ...c }));
     },
     onExcelColumnPickerChange(keys) {
@@ -2072,10 +2246,15 @@ export default {
       }
       this.excelColumnPickerCheckedKeys = next;
       this.persistDefectTableFieldListFromExcelPicker(next);
-      this.excelColumnPickerOrderRev += 1;
+      if (!this.excelColumnPickerOpen) {
+        this.excelColumnPickerOrderRev += 1;
+      }
       this.$nextTick(() => {
         this.applyExcelColumnVisibilityToEditorFields();
         this.updateExcelEditorHeight();
+        if (this.excelColumnPickerOpen) {
+          requestAnimationFrame(() => this.bindExcelColumnPickerSortable())
+        }
       });
     },
     /**
@@ -2213,8 +2392,7 @@ export default {
           this.excelDataColumnKeyOrder = null;
           this.initExcelColumnPickerFromCache();
           this.$nextTick(() => {
-            this.applyExcelColumnVisibilityToEditorFields();
-            this.applyExcelColumnOrderToEditorFields();
+            this.applyExcelColumnLayoutToEditorFields();
           });
         })
         .catch(() => {
@@ -2439,6 +2617,7 @@ export default {
       if (v == null || v === "") return "";
       const sk = String(v);
       if (sk === "2") return String(this.$t("RESOLVED") || "RESOLVED");
+      if (sk === "5") return String(this.$t("CREATED") || "CREATED");
       const m = this.defectStateSelectMap;
       if (m && Object.prototype.hasOwnProperty.call(m, sk)) return String(m[sk]);
       return String(v);
@@ -2473,6 +2652,9 @@ export default {
       const raw = text == null ? "" : String(text).trim();
       if (raw === "2" || raw === "RESOLVED" || raw === String(this.$t("RESOLVED"))) {
         return "2";
+      }
+      if (raw === "5" || raw === "CREATED" || raw === String(this.$t("CREATED"))) {
+        return "5";
       }
       return this.excelMapFieldToValue(text, this.defectStateSelectMap, (k) => (k == null || k === "" ? "" : String(k)));
     },
@@ -3005,8 +3187,17 @@ export default {
         this.projectId ||
         0;
       if (!pid) {
+        const had = Object.keys(this.memberSelectMap).length > 0;
         Object.keys(this.memberSelectMap).forEach((k) => delete this.memberSelectMap[k]);
-        this.refreshExcelEditorView();
+        this._excelMembersProjectId = 0;
+        if (had) this.refreshExcelEditorView();
+        return;
+      }
+      /* 同项目已拉过且 map 非空：跳过，避免每次 search 后再 forceUpdate 造成二次闪烁 */
+      if (
+        this._excelMembersProjectId === pid &&
+        Object.keys(this.memberSelectMap).length > 0
+      ) {
         return;
       }
       listMemberOfProject(pid, { pageNum: 1, pageSize: 2000 }).then((res) => {
@@ -3016,8 +3207,15 @@ export default {
           if (id == null || id === "") return;
           m[String(id)] = String(mem.nickName || mem.userName || mem.memberName || id);
         });
+        const prev = this.memberSelectMap;
+        const prevKeys = Object.keys(prev);
+        const nextKeys = Object.keys(m);
+        const same =
+          prevKeys.length === nextKeys.length &&
+          nextKeys.every((k) => String(prev[k]) === String(m[k]));
         this.syncExcelOptionMap(this.memberSelectMap, m);
-        this.refreshExcelEditorView();
+        this._excelMembersProjectId = pid;
+        if (!same) this.refreshExcelEditorView();
       });
     },
     /** 多人处理时取首位用于 Excel 下拉；保存后变为单人列表 */
@@ -3847,6 +4045,7 @@ export default {
     search(params) {
       this.loading = true;
       this.queryParams = params;
+      /* 成员仅项目变化时刷新；勿在每次查询后再 forceUpdate，否则数据落地后又闪一次 */
       this.refreshProjectMembers();
       const gen = ++this.excelListRequestGen;
       this.excelListPageNum = 1;
@@ -3870,8 +4069,7 @@ export default {
           this.defectList = rows.map((r) => this.mapDefectRowForExcelSheet(r));
           this.sheetRows = this.buildSheetRows(this.defectList);
           this.$nextTick(() => {
-            this.applyExcelColumnVisibilityToEditorFields();
-            this.applyExcelColumnOrderToEditorFields();
+            /* 刷新只换数据：列序/显隐未变，勿再 apply（会 splice+forceUpdate 造成二次刷新感） */
             this.applyPersistedExcelColumnWidthsToEditor();
             this.scheduleExcelEditorLayoutFix();
             this.ensureExcelScrollLoadMoreListener();
@@ -4242,14 +4440,14 @@ export default {
     /** 与 listDefect 行映射一致，供 search 与占位行新增后合并 */
     mapDefectRowForExcelSheet(r) {
       if (!r) return {};
-      const stateKeys = ["PROCESSING", "AUDIT", "RESOLVED", "REJECTED", "CLOSED"];
+      const stateKeys = ["PROCESSING", "AUDIT", "RESOLVED", "REJECTED", "CLOSED", "CREATED"];
       let defectStateCell = "";
       if (r.defectState != null && r.defectState !== "") {
         if (typeof r.defectState === "number" && Number.isFinite(r.defectState)) {
           defectStateCell = String(r.defectState);
         } else {
           const num = Number(r.defectState);
-          if (Number.isFinite(num) && num >= 0 && num <= 4) defectStateCell = String(num);
+          if (Number.isFinite(num) && num >= 0 && num <= 5) defectStateCell = String(num);
           else {
             const name = r.defectStateName != null ? String(r.defectStateName) : String(r.defectState);
             const idx = stateKeys.indexOf(name);

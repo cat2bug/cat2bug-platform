@@ -1,28 +1,24 @@
 // cover some element-ui styles
 
-/* 全局 Loading：未增强前的 EP 默认转圈；增强后由 Cat2BugLoading 接管（见 cat2bug-loading-enhance） */
+/*
+ * 全局 Loading：EP 原生转圈/文案一律隐藏，只由 Cat2BugLoading 接管
+ *（见 cat2bug-loading-enhance）。勿等 is-cat2bug-replaced，否则表格/甘特等
+ * 会在增强前闪一帧 circular。
+ */
 .el-loading-spinner {
-  .circular {
-    width: 42px;
-    height: 42px;
-    animation: loading-rotate 2s linear infinite;
-  }
-
-  .path {
-    animation: loading-dash 1.5s ease-in-out infinite;
-    stroke: var(--cat2bug-primary, #1890ff);
-    stroke-width: 2;
-    stroke-linecap: round;
+  .circular,
+  > svg,
+  .el-icon-loading,
+  i {
+    display: none !important;
   }
 
   .el-loading-text {
-    color: var(--cat2bug-primary, #1890ff);
-    margin: 3px 0;
-    font-size: 14px;
+    display: none !important;
   }
 }
 
-/* 增强后：隐藏 EP 原转圈（不拆子树），奔跑猫在 body 浮动层居中 */
+/* 增强后：整棵 spinner 子树隐藏（不拆 vnode），奔跑猫在 body 浮动层居中 */
 .el-loading-spinner.is-cat2bug-replaced {
   opacity: 0 !important;
   visibility: hidden !important;

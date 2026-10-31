@@ -2,7 +2,6 @@
   <div
     class="list-defect-log"
     v-loading="loading"
-    :element-loading-text="$t('loading')"
   >
     <div class="list-defect-log-panel">
     <el-row

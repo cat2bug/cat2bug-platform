@@ -50,6 +50,8 @@ export default {
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: flex-start;
+  min-width: 0;
+  max-width: 100%;
   padding: 5px;
   > * {
     margin-right: 10px;
@@ -58,14 +60,25 @@ export default {
     display: flex;
     align-items: flex-start;
     flex-direction: column;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
     p {
       margin: 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     span {
       font-size: 10px;
       color: #c0c4cc;
       line-height: 12px;
       height: 12px;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 }

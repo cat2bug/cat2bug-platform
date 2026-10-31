@@ -102,6 +102,11 @@ export const useUserStore = defineStore('user', {
         this.teamMember = true
         this.contextTeam = null
         removeToken()
+        return import('@/utils/defect-custom-field-columns').then(m => {
+          if (m && typeof m.clearCustomFieldColumnsCache === 'function') {
+            m.clearCustomFieldColumnsCache()
+          }
+        }).catch(() => {})
       })
     },
     FedLogOut() {
@@ -112,6 +117,11 @@ export const useUserStore = defineStore('user', {
       this.teamMember = true
       this.contextTeam = null
       removeToken()
+      import('@/utils/defect-custom-field-columns').then(m => {
+        if (m && typeof m.clearCustomFieldColumnsCache === 'function') {
+          m.clearCustomFieldColumnsCache()
+        }
+      }).catch(() => {})
     }
   }
 })

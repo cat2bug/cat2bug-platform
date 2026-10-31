@@ -17,7 +17,7 @@
         </div>
       </div>
     </template>
-    <div class="case" v-loading="loading" :element-loading-text="$t('case.load-prompted')">
+    <div class="case" v-loading="loading">
       <div ref="caseHistory" v-show="promptHistoryList && promptHistoryList.length>0" class="case-history">
         <el-row class="case-history-row" v-for="(prompt,index) in promptHistoryList" :key="index" @click="selectHistoryHandle(prompt)">
           <el-tag type="success" effect="dark">{{$t('DEMAND') + ' ' + (index+1).toString().padStart(2,'0')}}</el-tag>

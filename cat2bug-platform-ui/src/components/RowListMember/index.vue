@@ -17,7 +17,7 @@
         <span
           v-if="showOverflowBadge && index === displayMembers.length - 1"
           class="project-member-icons__count"
-        >{{ overflowCount }}</span>
+        >{{ overflowBadgeText }}</span>
       </span>
     </el-tooltip>
   </div>
@@ -62,8 +62,13 @@ export default {
     showOverflowBadge() {
       return this.validMembers.length > this.displayMembers.length
     },
+    /** 角标展示剩余人数（+N） */
     overflowCount() {
-      return this.validMembers.length
+      return Math.max(0, this.validMembers.length - this.displayMembers.length)
+    },
+    overflowBadgeText() {
+      const n = this.overflowCount
+      return n > 0 ? `+${n}` : ''
     }
   },
   methods: {
@@ -72,7 +77,7 @@ export default {
     },
     tooltipContent(member, index) {
       if (this.showOverflowBadge && index === this.displayMembers.length - 1) {
-        return `共${this.overflowCount}人`
+        return `共${this.validMembers.length}人`
       }
       return member.nickName || member.userName || member.name || ''
     }
@@ -128,12 +133,12 @@ export default {
     position: absolute;
     right: -2px;
     bottom: -2px;
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-    padding: 0;
-    border-radius: 50%;
-    font-size: 9px;
+    width: auto;
+    height: 18px;
+    min-width: 18px;
+    padding: 0 4px;
+    border-radius: 999px;
+    font-size: 10px;
     line-height: 1;
     font-weight: 700;
     display: inline-flex;

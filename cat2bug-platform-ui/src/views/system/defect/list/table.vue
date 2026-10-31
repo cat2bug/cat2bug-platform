@@ -23,11 +23,21 @@
             class="defect-column-picker"
             @change="onColumnPickerChange"
           >
-            <el-checkbox
-              v-for="c in defectColumnPickerOptions"
-              :key="c.key"
-              :value="c.key"
-            >{{ c.isCustomField && c.fieldLabel ? c.fieldLabel : (c.label || $t(c.key)) }}</el-checkbox>
+            <div ref="columnPickerSortRoot" class="defect-column-picker-sort-root">
+              <div
+                v-for="c in defectColumnPickerOptions"
+                :key="c.key"
+                class="defect-column-picker-row"
+                :data-field-key="c.key"
+              >
+                <span class="defect-column-picker-drag" @click.stop.prevent>
+                  <span class="defect-column-picker-drag__grip" aria-hidden="true" />
+                </span>
+                <el-checkbox :value="c.key">{{
+                  c.isCustomField && c.fieldLabel ? c.fieldLabel : (c.label || $t(c.key))
+                }}</el-checkbox>
+              </div>
+            </div>
           </el-checkbox-group>
           <template #reference>
             <el-button
@@ -66,14 +76,13 @@
         ref="defectTableContext"
         v-loading="loading"
         class="defect-table-context"
-        :element-loading-text="$t('loading')"
       >
         <!-- 宽表横向滚动限制在本层，避免整页 main-container 底部出现横向条与分页同一底边叠在一起「压住」分页 -->
         <div class="defect-table-x-scroll">
         <cat2-bug-table
           v-if="defectTableColumnsReady"
           ref="cat2BugTable"
-          cache-key="defect-table"
+          :cache-key="defectTableCacheKeyPrefix"
           preserve-column-order
           row-key="defectId"
           :columns="resolvedDefectTableColumns"
@@ -223,13 +232,16 @@ import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import DefectTools from "@/components/Defect/DefectTools";
 import Cat2BugTable from "@/components/Cat2BugTable";
+import Sortable from "sortablejs";
 import {listDefect} from "@/api/system/defect";
 import {lifeTime} from "@/utils/defect";
 import { TableOptions } from "@/views/system/defect/list/table-options";
 import {
   buildDefectTableColumnDefaults,
   clearCustomFieldColumnsCache,
+  getDefectTableCacheKeyPrefix,
   loadDefectColumnLayout,
+  persistDefectTableColumnPrefs,
   pruneDefectTableColumnCacheFromColumns,
   resolveDefectTableOrderByColumn,
   syncNewDefectTableColumnsIntoFieldListCache
@@ -239,6 +251,7 @@ import {
   defectDisplayFieldPickerOptions,
   resolveDefectMergedColumns
 } from "@/utils/defect-display-field";
+import { getVisibleColumnPickerPopperEl } from "@/utils/column-picker-popover-kbd";
 import { enumOptionTextStyle, enumOptions, formatCustomFieldValue, urlListFromCustomFieldValue } from "@/components/DefectCustomField/format";
 import { resolveCommaSeparatedUrls } from "@/utils/upload-asset";
 import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
@@ -308,6 +321,10 @@ export default {
       tableColumnDefaults: TableOptions.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
       defectColumnPickerRev: 0,
+      /** 「显示字段」浮层是否打开（打开期间避免 Rev 重挂载打断拖拽） */
+      columnPickerOpen: false,
+      /** 个人列序写入 localStorage 后递增，迫使 resolvedDefectTableColumns 重读缓存 */
+      columnPrefsEpoch: 0,
       /** 拖列后的列顺序快照，供「显示字段」列表即时排序（$cache 非响应式） */
       defectColumnPickerLiveColumns: null,
       /** 字段管理列布局已加载后再挂载表格，避免 TableOptions 默认序写入缓存 */
@@ -356,8 +373,12 @@ export default {
     }
   },
   computed: {
+    defectTableCacheKeyPrefix() {
+      return getDefectTableCacheKeyPrefix()
+    },
     resolvedDefectTableColumns() {
       if (!this.defectTableColumnsReady) return [];
+      void this.columnPrefsEpoch;
       return resolveDefectMergedColumns(this.$cache.local, this.tableColumnDefaults);
     },
     defectColumnPickerOptions() {
@@ -428,12 +449,138 @@ export default {
     });
   },
   destroyed() {
+    this.destroyColumnPickerSortable();
+    this.destroyDefectTableHeaderHeightSync();
+    this.destroyDefectTableBodyResizeObserver();
+  },
+  beforeUnmount() {
+    this.destroyColumnPickerSortable();
     this.destroyDefectTableHeaderHeightSync();
     this.destroyDefectTableBodyResizeObserver();
   },
   methods: {
     emitColumnPickerVisible(visible) {
       this.$emit('column-picker-visible-change', visible)
+      this.columnPickerOpen = !!visible
+      if (visible) {
+        this.syncColumnPickerFromTable()
+        this._columnPickerSortableRetry = 0
+        this.$nextTick(() => {
+          requestAnimationFrame(() => this.bindColumnPickerSortable())
+        })
+      } else {
+        this._columnPickerSortableRetry = 0
+        this.destroyColumnPickerSortable()
+      }
+    },
+    /** 打开面板时以表格当前列序为准，避免与个人缓存/Excel 侧快照脱节 */
+    syncColumnPickerFromTable() {
+      const table = this.$refs.cat2BugTable
+      const list =
+        table && Array.isArray(table.tableFieldList) && table.tableFieldList.length
+          ? table.tableFieldList
+          : this.resolvedDefectTableColumns
+      this.defectColumnPickerLiveColumns = (list || []).map((c) => ({ ...c }))
+      this.columnPickerCheckedKeys = defectDisplayFieldCheckedKeys(
+        this.defectColumnPickerLiveColumns
+      )
+      this.defectColumnPickerRev += 1
+    },
+    destroyColumnPickerSortable() {
+      if (this._columnPickerSortable) {
+        this._columnPickerSortable.destroy()
+        this._columnPickerSortable = null
+      }
+    },
+    resolveColumnPickerSortRoot() {
+      const refRoot = this.$refs.columnPickerSortRoot
+      const fromRef = Array.isArray(refRoot) ? refRoot[0] : refRoot
+      if (fromRef && fromRef.querySelector && fromRef.querySelector('.defect-column-picker-row')) {
+        return fromRef
+      }
+      const popper = getVisibleColumnPickerPopperEl()
+      if (popper) {
+        const inPopper = popper.querySelector('.defect-column-picker-sort-root')
+        if (inPopper && inPopper.querySelector('.defect-column-picker-row')) return inPopper
+        const fallback = popper.querySelector('.defect-column-picker')
+        if (fallback && fallback.querySelector('.defect-column-picker-row')) return fallback
+      }
+      return (
+        document.querySelector(
+          '.defect-column-picker-popover .defect-column-picker-sort-root'
+        ) ||
+        document.querySelector('.defect-column-picker-popover .defect-column-picker')
+      )
+    },
+    bindColumnPickerSortable() {
+      if (!this.columnPickerOpen) return
+      this.destroyColumnPickerSortable()
+      const root = this.resolveColumnPickerSortRoot()
+      if (!root || !root.querySelector('.defect-column-picker-row')) {
+        if ((this._columnPickerSortableRetry || 0) < 12) {
+          this._columnPickerSortableRetry = (this._columnPickerSortableRetry || 0) + 1
+          setTimeout(() => this.bindColumnPickerSortable(), 40)
+        }
+        return
+      }
+      this._columnPickerSortableRetry = 0
+      this._columnPickerSortable = Sortable.create(root, {
+        animation: 150,
+        handle: '.defect-column-picker-drag',
+        draggable: '.defect-column-picker-row',
+        filter: '.el-checkbox, .el-checkbox__input, .el-checkbox__inner, .el-checkbox__original',
+        preventOnFilter: false,
+        ghostClass: 'defect-column-picker-row--ghost',
+        chosenClass: 'defect-column-picker-row--chosen',
+        forceFallback: true,
+        fallbackOnBody: true,
+        fallbackTolerance: 3,
+        onEnd: () => {
+          const keys = Array.from(root.querySelectorAll('.defect-column-picker-row'))
+            .map((n) => n.getAttribute('data-field-key'))
+            .filter(Boolean)
+          this.applyColumnPickerOrder(keys)
+        }
+      })
+    },
+    /** 按显示字段面板顺序重排表格列并写入个人缓存 */
+    applyColumnPickerOrder(orderedKeys) {
+      const table = this.$refs.cat2BugTable
+      if (!table || typeof table.setColumns !== 'function') return
+      const current = (
+        this.defectColumnPickerLiveColumns && this.defectColumnPickerLiveColumns.length
+          ? this.defectColumnPickerLiveColumns
+          : table.tableFieldList || []
+      ).map((c) => ({ ...c }))
+      if (!current.length || !orderedKeys || !orderedKeys.length) return
+      const byKey = new Map(current.map((c) => [String(c.key), c]))
+      const seen = new Set()
+      const next = []
+      orderedKeys.forEach((k) => {
+        const col = byKey.get(String(k))
+        if (col) {
+          next.push(col)
+          seen.add(String(k))
+        }
+      })
+      current.forEach((c) => {
+        if (!seen.has(String(c.key))) next.push(c)
+      })
+      const same =
+        next.length === current.length &&
+        next.every((c, i) => String(c.key) === String(current[i].key))
+      this.defectColumnPickerLiveColumns = next.map((c) => ({ ...c }))
+      this.columnPickerCheckedKeys = defectDisplayFieldCheckedKeys(next)
+      /* 显式落盘个人序（不依赖 Cat2BugTable 内部 save，避免只改内存刷新丢序） */
+      persistDefectTableColumnPrefs(this.$cache.local, next)
+      this.columnPrefsEpoch += 1
+      if (!same) {
+        table.setColumns(next)
+      }
+      /* 不 bump Rev：避免重挂载打断 Sortable；下一帧按新序重绑即可 */
+      this.$nextTick(() => {
+        requestAnimationFrame(() => this.bindColumnPickerSortable())
+      })
     },
     isCustomFieldType(column, fieldType) {
       const meta = column && column.customFieldMeta;
@@ -489,15 +636,24 @@ export default {
         this.$nextTick(() => {
           if (gen !== this._columnLayoutGen) return
           syncNewDefectTableColumnsIntoFieldListCache(this.$cache.local, this.tableColumnDefaults);
+          /* sync 可能升级/补键，递增 epoch 后按最新缓存合并（勿用过期 computed） */
+          this.columnPrefsEpoch += 1;
           this.applyTableColumnsToCat2BugTable();
         });
-      }).catch(finishWithBase);
+      }).catch(() => {
+        /* 布局拉取失败时勿长期当成「全开默认」；清缓存便于下次重试 */
+        clearCustomFieldColumnsCache();
+        finishWithBase();
+      });
     },
     applyTableColumnsToCat2BugTable() {
       this.$nextTick(() => {
         const table = this.$refs.cat2BugTable;
         if (!table || !table.setColumns) return;
-        const merged = this.resolvedDefectTableColumns.map(c => ({ ...c }));
+        const merged = resolveDefectMergedColumns(
+          this.$cache.local,
+          this.tableColumnDefaults
+        ).map((c) => ({ ...c }));
         table.setColumns(merged);
         this.defectColumnPickerLiveColumns = merged.map(c => ({ ...c }));
         this.columnPickerCheckedKeys = defectDisplayFieldCheckedKeys(merged);
@@ -655,8 +811,13 @@ export default {
     },
     onTableColumnsChange(columns) {
       this.defectColumnPickerLiveColumns = (columns || []).map(c => ({ ...c }));
-      this.defectColumnPickerRev += 1;
       this.columnPickerCheckedKeys = defectDisplayFieldCheckedKeys(columns);
+      /* 表头拖序已由 Cat2BugTable.saveShowColumns 落盘；再 bump epoch 让父级 columns 与缓存一致 */
+      this.columnPrefsEpoch += 1;
+      /* 浮层打开时勿 bump Rev，否则会拆掉 Sortable 根节点导致拖不动 */
+      if (!this.columnPickerOpen) {
+        this.defectColumnPickerRev += 1;
+      }
       this.$nextTick(() => this.syncDefectTreeToolbarWithTableHeader());
     },
     onColumnPickerChange(keys) {

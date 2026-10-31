@@ -34,7 +34,7 @@ final class DefectExcelColumnSupport {
             col("defectLevel", "defect.level", "缺陷等级", false),
             col("defectState", "defect.state", "缺陷状态", false),
             col("moduleName", "module", "交付物", false),
-            col("handleByNames", "handle-by", "处理人", true)
+            col("handleByNames", "handle-by", "处理人", false)
     );
 
     private static final List<ColumnDef> DEFAULT_TEMPLATE_COLUMNS = List.of(
@@ -44,7 +44,7 @@ final class DefectExcelColumnSupport {
             col("defectLevel", "defect.level", "缺陷等级", false),
             col("defectStateImportName", "defect.state", "缺陷状态", false),
             col("moduleName", "module", "交付物", false),
-            col("handleByNames", "handle-by", "处理人", true)
+            col("handleByNames", "handle-by", "处理人", false)
     );
 
     private static final Map<String, ColumnDef> EXPORT_BY_FIELD = indexByField(DEFAULT_EXPORT_COLUMNS);

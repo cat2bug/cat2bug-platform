@@ -1,7 +1,7 @@
 import { TableOptions } from '@/views/system/defect/list/table-options'
 import {
   buildDefectTableColumnDefaults,
-  DEFECT_TABLE_COLUMN_CACHE_KEY,
+  getDefectTableColumnCacheKey,
   mergeDefectTableColumnPrefs
 } from '@/utils/defect-custom-field-columns'
 import { normalizeFieldRow } from '@/components/DefectCustomField/format'
@@ -124,7 +124,7 @@ export function resolveOrderedDefectTabFilterFields(localCache, layout, options 
   const merged = mergeDefectTableColumnPrefs(
     localCache,
     defaults,
-    DEFECT_TABLE_COLUMN_CACHE_KEY
+    getDefectTableColumnCacheKey()
   )
 
   if (merged && merged.length) {

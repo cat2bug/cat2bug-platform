@@ -51,7 +51,7 @@ import {
 } from "@/utils/defect-action-visibility";
 
 export default {
-  emits: ['update:defect', 'update'],
+  emits: ['update:defect', 'update', 'view', 'delete', 'restore', 'log', 'collect'],
   name: "DefectTools",
   components: {PassDialog, AssignDialog, RejectDialog, RepairDialog,CloseDialog,OpenDialog,EditDefectDialog,StarSwitch, ShareCard },
   setup() {
@@ -174,24 +174,34 @@ export default {
     logHandle(log) {
       this.$emit('log',log);
     },
-    /** 点击收藏操作 */
+    /** 点击收藏操作；可选第三参 run，供父级做置顶动画后再真正提交 */
     clickCollectHandle(collect, defect,isRefreshList) {
-      // 保存收藏状态
-      updateUserDefect(defect.defectId, {
-        defectId: defect.defectId,
-        userId: this.currentUserId,
-        collect: collect?1:0
-      }).then(res=>{
-        defect.collect = collect;
-        if (isRefreshList) {
-          this.$emit('update:defect', this.defect); this.$emit('update', this.defect);
-        }
-        if(collect) {
-          this.$message.success(this.$i18n.t('collect-success').toString());
-        } else {
-          this.$message.success(this.$i18n.t('cancel-success').toString());
-        }
-      });
+      let started = false
+      const run = () => {
+        if (started) return
+        started = true
+        const prev = !!(defect && defect.collect)
+        defect.collect = collect
+        updateUserDefect(defect.defectId, {
+          defectId: defect.defectId,
+          userId: this.currentUserId,
+          collect: collect ? 1 : 0
+        }).then(() => {
+          if (isRefreshList) {
+            this.$emit('update:defect', this.defect)
+            this.$emit('update', this.defect)
+          }
+          this.$message.success(
+            this.$i18n.t(collect ? 'collect-success' : 'cancel-success').toString()
+          )
+        }).catch(() => {
+          defect.collect = prev
+        })
+      }
+      this.$emit('collect', collect, defect, run)
+      this.$nextTick(() => {
+        if (!started) run()
+      })
     },
     handleRestore(event) {
       const defectId = this.defect.defectId;

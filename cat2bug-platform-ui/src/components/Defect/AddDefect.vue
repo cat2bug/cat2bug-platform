@@ -137,11 +137,8 @@ export default {
         defectLevel: 'middle',
         customFields: {}
       },
-      // 表单校验
+      // 表单校验（处理人可选，与未指派泳道闭环）
       rules: {
-        handleBy: [
-          { required: true, message: this.$i18n.t('defect.handle-by-cannot-empty'), trigger: "input" }
-        ],
         defectName: [
           { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: "input" }
         ],
@@ -192,11 +189,6 @@ export default {
     },
     applyDefectFormRulesForBuiltinLayout() {
       const rules = {}
-      if (this.isBuiltinDefectFieldVisible('handleBy')) {
-        rules.handleBy = [
-          { required: true, message: this.$i18n.t('defect.handle-by-cannot-empty'), trigger: 'input' }
-        ]
-      }
       if (this.isBuiltinDefectFieldVisible('defectName')) {
         rules.defectName = [
           { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: 'input' }
@@ -374,11 +366,15 @@ export default {
               this.$emit('added', res.data);
               if (this.isSaveFormCache) {
                 this.reset();
+                /* reset 已在 nextTick 里清自定义字段/描述；再等一拍后抓关闭基线，避免默认值晚到被当成脏数据 */
                 this.$nextTick(() => {
                   const orderedFields = this.$refs.orderedFields
                   if (orderedFields) {
                     if (typeof orderedFields.resetCustomFields === 'function') {
                       orderedFields.resetCustomFields()
+                    }
+                    if (typeof orderedFields.clearDescribeEditor === 'function') {
+                      orderedFields.clearDescribeEditor()
                     }
                     const selectModule = orderedFields.getSelectModuleRef && orderedFields.getSelectModuleRef()
                     if (selectModule && typeof selectModule.resetFromForm === 'function') {
@@ -390,7 +386,9 @@ export default {
                       selectCase.search(this.form.moduleId)
                     }
                   }
-                  this.captureDefectFormCloseBaseline()
+                  this.$nextTick(() => {
+                    this.captureDefectFormCloseBaseline()
+                  })
                 });
               } else {
                 this.doCloseDefectFormDrawer();

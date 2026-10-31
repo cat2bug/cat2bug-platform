@@ -4,6 +4,7 @@
 
 <script>
 const STATE_CLASS_MAP = {
+  CREATED: 'created',
   PROCESSING: 'processing',
   AUDIT: 'audit',
   RESOLVED: 'resolved',
@@ -51,6 +52,12 @@ export default {
   background-color: var(--defect-state-unknown-bg, #909399);
   border-color: var(--defect-state-unknown-border, #909399);
   color: var(--defect-state-unknown-color, #ffffff);
+}
+
+.defect-state-tag.created {
+  background-color: var(--defect-state-created-bg, #909399);
+  border-color: var(--defect-state-created-border, #909399);
+  color: var(--defect-state-created-color, #ffffff);
 }
 
 .defect-state-tag.processing {

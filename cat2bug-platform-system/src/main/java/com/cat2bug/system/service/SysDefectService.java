@@ -143,7 +143,7 @@ public class SysDefectService {
                 .filter(module -> module.getModulePath() != null)
                 .collect(Collectors.toMap(SysModule::getModulePath, module -> module, (left, right) -> left));
         Map<String, SysUser> userMap = sysUserProjectMapper
-                .selectSysUserListByProjectId(projectId, null, 0, Integer.MAX_VALUE).stream()
+                .selectSysUserListByProjectId(projectId, null, null, 0, Integer.MAX_VALUE).stream()
                 .filter(user -> user.getNickName() != null)
                 .collect(Collectors.toMap(SysUser::getNickName, user -> user, (left, right) -> left));
         var levelDict = sysDictDataService.selectDictDataByType("defect_level");
@@ -205,8 +205,6 @@ public class SysDefectService {
                 } else {
                     invalidCells.add("处理人");
                 }
-            } else {
-                emptyCells.add("处理人");
             }
 
             if (!emptyCells.isEmpty()) {
@@ -258,7 +256,10 @@ public class SysDefectService {
             return ImportDefectResult.failure(String.join("<br/>", errors));
         }
 
-        inserts.forEach(DefectDefaults::applyDefectDefaults);
+        inserts.forEach(d -> {
+            DefectDefaults.applyDefectDefaults(d);
+            DefectDefaults.normalizeCreatedProcessingByHandler(d);
+        });
         int batchSize = 50;
         for (int start = 0; start < inserts.size(); start += batchSize) {
             int end = Math.min(start + batchSize, inserts.size());
@@ -307,6 +308,7 @@ public class SysDefectService {
         LoginUser loginUser = requireLoginUser();
         Date now = new Date();
         DefectDefaults.applyDefectDefaults(defect);
+        DefectDefaults.normalizeCreatedProcessingByHandler(defect);
         defect.setCreateTime(now);
         defect.setUpdateTime(now);
         defect.setCreateBy(loginUser.getUsername());
@@ -337,6 +339,7 @@ public class SysDefectService {
         LoginUser loginUser = requireLoginUser();
         assertPlanNodeWriteAllowed(existing, defect, loginUser.getUserId());
         DefectDefaults.applyDefectDefaults(defect);
+        DefectDefaults.normalizeCreatedProcessingByHandler(defect);
         defect.setUpdateTime(new Date());
         defect.setUpdateBy(loginUser.getUsername());
         defect.setUpdateById(loginUser.getUserId());
@@ -365,6 +368,16 @@ public class SysDefectService {
         }
         if (patch.getHandleBy() != null) {
             update.setHandleBy(patch.getHandleBy());
+            Integer st = existing.getDefectState();
+            boolean terminal = st != null
+                    && (st == DefectConstants.STATE_CLOSED || st == DefectConstants.STATE_RESOLVED);
+            if (!terminal) {
+                if (patch.getHandleBy().isEmpty()) {
+                    update.setDefectState(DefectConstants.STATE_CREATED);
+                } else if (st != null && st == DefectConstants.STATE_CREATED) {
+                    update.setDefectState(DefectConstants.STATE_PROCESSING);
+                }
+            }
         }
         if (patch.getModuleId() != null) {
             update.setModuleId(patch.getModuleId());
@@ -452,11 +465,22 @@ public class SysDefectService {
 
     @Transactional
     public SysDefectLog assign(SysDefectLog log) {
-        requireTransition(log, "assign",
-                DefectConstants.STATE_PROCESSING, DefectConstants.STATE_AUDIT, DefectConstants.STATE_REJECTED);
+        SysDefect existing = requireTransition(log, "assign",
+                DefectConstants.STATE_CREATED,
+                DefectConstants.STATE_PROCESSING,
+                DefectConstants.STATE_AUDIT,
+                DefectConstants.STATE_REJECTED);
+        List<Long> receiveBy = log.getReceiveBy();
+        if (receiveBy == null || receiveBy.isEmpty()) {
+            throw new ApiException("处理人不能为空");
+        }
         SysDefect patch = new SysDefect();
-        patch.setDefectId(requireDefectId(log));
-        patch.setHandleBy(log.getReceiveBy());
+        patch.setDefectId(existing.getDefectId());
+        patch.setHandleBy(receiveBy);
+        if (existing.getDefectState() != null
+                && existing.getDefectState() == DefectConstants.STATE_CREATED) {
+            patch.setDefectState(DefectConstants.STATE_PROCESSING);
+        }
         doUpdateSysDefect(patch);
 
         log.setDefectLogType(DefectLogState.ASSIGN);
@@ -506,7 +530,7 @@ public class SysDefectService {
         requireTransition(log, "pass", DefectConstants.STATE_AUDIT);
         SysDefect patch = new SysDefect();
         patch.setDefectId(requireDefectId(log));
-        patch.setDefectState(DefectConstants.STATE_CLOSED);
+        patch.setDefectState(DefectConstants.STATE_RESOLVED);
         doUpdateSysDefect(patch);
 
         log.setDefectLogType(DefectLogState.PASS);
@@ -517,7 +541,10 @@ public class SysDefectService {
     @Transactional
     public SysDefectLog close(SysDefectLog log) {
         requireTransition(log, "close",
-                DefectConstants.STATE_PROCESSING, DefectConstants.STATE_AUDIT, DefectConstants.STATE_REJECTED);
+                DefectConstants.STATE_CREATED,
+                DefectConstants.STATE_PROCESSING,
+                DefectConstants.STATE_AUDIT,
+                DefectConstants.STATE_REJECTED);
         SysDefect patch = new SysDefect();
         patch.setDefectId(requireDefectId(log));
         patch.setDefectState(DefectConstants.STATE_CLOSED);
@@ -530,11 +557,24 @@ public class SysDefectService {
 
     @Transactional
     public SysDefectLog open(SysDefectLog log) {
-        requireTransition(log, "open", DefectConstants.STATE_CLOSED);
+        SysDefect existing = requireTransition(log, "open",
+                DefectConstants.STATE_CLOSED, DefectConstants.STATE_RESOLVED);
         SysDefect patch = new SysDefect();
-        patch.setDefectId(requireDefectId(log));
-        patch.setDefectState(DefectConstants.STATE_PROCESSING);
-        patch.setHandleBy(log.getReceiveBy());
+        patch.setDefectId(existing.getDefectId());
+        List<Long> receiveBy = log.getReceiveBy();
+        List<Long> nextHandlers;
+        if (receiveBy != null && !receiveBy.isEmpty()) {
+            patch.setHandleBy(receiveBy);
+            nextHandlers = receiveBy;
+        } else {
+            /* 未传人则保留原处理人；勿写 null，避免误清 handle_by */
+            nextHandlers = existing.getHandleBy();
+        }
+        /* 与创建/编辑一致：有人 → 处理中，无人 → 已创建（看板未指派） */
+        boolean hasHandlers = nextHandlers != null && !nextHandlers.isEmpty();
+        patch.setDefectState(hasHandlers
+                ? DefectConstants.STATE_PROCESSING
+                : DefectConstants.STATE_CREATED);
         doUpdateSysDefect(patch);
 
         log.setDefectLogType(DefectLogState.OPEN);

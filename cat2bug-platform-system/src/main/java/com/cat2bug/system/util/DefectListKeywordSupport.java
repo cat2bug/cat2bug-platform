@@ -40,7 +40,7 @@ public class DefectListKeywordSupport {
             sysDefect.setParams(new HashMap<>());
         }
         List<SysUser> userList = sysUserProjectMapper.selectSysUserListByProjectId(
-                sysDefect.getProjectId(), kw, 0, MEMBER_SEARCH_LIMIT);
+                sysDefect.getProjectId(), kw, null, 0, MEMBER_SEARCH_LIMIT);
         sysDefect.getParams().put("nameVersionKeywordHandleBy",
                 userList.stream().map(SysUser::getUserId).distinct().collect(Collectors.toList()));
     }

@@ -4,12 +4,14 @@ import { checkPermi } from '@/utils/permission'
 export const PROCESSING_STATE = 'PROCESSING'
 /** 待审核 */
 export const AUDIT_STATE = 'AUDIT'
-/** 已解决（遗留态） */
+/** 通过（原 RESOLVED） */
 export const RESOLVED_STATE = 'RESOLVED'
 /** 已驳回 */
 export const REJECTED_STATE = 'REJECTED'
 /** 已关闭 */
 export const CLOSE_STATE = 'CLOSED'
+/** 已创建（无人） */
+export const CREATED_STATE = 'CREATED'
 
 /** 批量候选动作（菜单展示顺序） */
 export const BATCH_ACTIONS = [
@@ -31,7 +33,13 @@ export function isDefectDeleted(defect) {
 }
 
 function isCurrentHandler(defect, currentUserId) {
-  return !!(defect && defect.handleBy && defect.handleBy.indexOf(currentUserId) !== -1)
+  if (!defect || currentUserId == null || currentUserId === '') return false
+  const uid = Number(currentUserId)
+  if (!Number.isFinite(uid)) return false
+  const list = defect.handleBy
+  if (!Array.isArray(list) || !list.length) return false
+  /* handleBy 可能是 number[] 或 string[]，禁止用 indexOf 严格相等误判 */
+  return list.some((id) => Number(id) === uid)
 }
 
 function isCreator(defect, currentUserId) {
@@ -52,12 +60,17 @@ export function isDefectActionVisible(action, defect, currentUserId, exclusions 
 
   switch (action) {
     case 'assign':
+      /* 已创建/无人：有指派权即可；其余须创建人或当前处理人 */
       return (
         !deleted &&
         state != CLOSE_STATE &&
         state != RESOLVED_STATE &&
         checkPermi(['system:defect:assign']) &&
-        (isCreator(defect, currentUserId) || isCurrentHandler(defect, currentUserId))
+        (state == CREATED_STATE ||
+          isCreator(defect, currentUserId) ||
+          isCurrentHandler(defect, currentUserId) ||
+          !Array.isArray(defect.handleBy) ||
+          defect.handleBy.length === 0)
       )
     case 'repair':
       return (
@@ -88,7 +101,11 @@ export function isDefectActionVisible(action, defect, currentUserId, exclusions 
         checkPermi(['system:defect:close'])
       )
     case 'open':
-      return !deleted && state == CLOSE_STATE && checkPermi(['system:defect:open'])
+      return (
+        !deleted &&
+        (state == CLOSE_STATE || state == RESOLVED_STATE) &&
+        checkPermi(['system:defect:open'])
+      )
     case 'delete':
       return (
         !deleted &&

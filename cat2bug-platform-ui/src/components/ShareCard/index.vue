@@ -292,6 +292,10 @@ export default {
     clickHandle(e) {
       e.stopPropagation();
     },
+    /** 外部关闭（如看板泳道滚动） */
+    hide() {
+      if (this.visible) this.visible = false
+    },
     /** 获取共享信息 */
     getShardInfo(defectId) {
       if(defectId) {

@@ -15,13 +15,22 @@ public final class DefectConstants {
 
     public static final String[] DEFECT_TYPES = {"BUG", "TASK", "DEMAND"};
 
-    public static final String[] DEFECT_STATES = {"PROCESSING", "AUDIT", "RESOLVED", "REJECTED", "CLOSED"};
+    /** 0～4 历史序不变；5=CREATED 追加，避免位移库内既有码。 */
+    public static final String[] DEFECT_STATES = {
+            "PROCESSING", "AUDIT", "RESOLVED", "REJECTED", "CLOSED", "CREATED"
+    };
+
+    /** 配置/下拉展示序：已创建 → 处理中 → 待验证 → 已驳回 → 通过 → 已关闭 */
+    public static final int[] DEFECT_STATE_LIST_ORDER = {
+            5, 0, 1, 3, 2, 4
+    };
 
     public static final int STATE_PROCESSING = 0;
     public static final int STATE_AUDIT = 1;
     public static final int STATE_RESOLVED = 2;
     public static final int STATE_REJECTED = 3;
     public static final int STATE_CLOSED = 4;
+    public static final int STATE_CREATED = 5;
 
     public static String typeName(Integer code) {
         return nameOf(DEFECT_TYPES, code);
@@ -80,9 +89,9 @@ public final class DefectConstants {
 
     public static List<EnumVo> getDefectStateList() {
         List<EnumVo> list = new ArrayList<>();
-        for (int i = 0; i < DEFECT_STATES.length; i++) {
-            if (!"RESOLVED".equals(DEFECT_STATES[i])) {
-                list.add(new EnumVo(i, DEFECT_STATES[i]));
+        for (int code : DEFECT_STATE_LIST_ORDER) {
+            if (code >= 0 && code < DEFECT_STATES.length) {
+                list.add(new EnumVo(code, DEFECT_STATES[code]));
             }
         }
         return list;

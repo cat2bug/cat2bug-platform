@@ -712,7 +712,7 @@ public class SysGitBrowseServiceImpl implements ISysGitBrowseService
         int returnMax = (limit != null && limit > 0)
                 ? Math.min(limit, MAX_CONTRIBUTOR_RETURN_LIMIT) : DEFAULT_CONTRIBUTOR_RETURN_LIMIT;
         List<SysUser> projectMembers = sysUserProjectMapper.selectSysUserListByProjectId(
-                repo.getProjectId(), null, 0, Integer.MAX_VALUE);
+                repo.getProjectId(), null, null, 0, Integer.MAX_VALUE);
         LoginUser loginUser = safeLoginUser();
 
         Map<String, MutableContributor> buckets = new LinkedHashMap<>();

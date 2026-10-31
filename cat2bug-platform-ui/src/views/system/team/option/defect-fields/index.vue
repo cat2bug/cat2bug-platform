@@ -349,6 +349,7 @@ import {
   pruneDefectTableColumnCacheFromColumns,
   syncNewDefectTableColumnsIntoFieldListCache
 } from '@/utils/defect-custom-field-columns'
+import { getProject } from '@/api/system/project'
 import { TableOptions } from '@/views/system/defect/list/table-options'
 import { isBuiltinFieldAlwaysEnabled } from '@/utils/defect-field-layout'
 import { storeToRefs } from 'pinia';
@@ -396,6 +397,8 @@ export default {
       loading: false,
       total: 0,
       fieldList: [],
+      /** 优先当前项目所属团队，避免 config.currentTeamId 与项目不一致改到别的团队 */
+      resolvedTeamId: null,
       queryParams: {
         pageNum: 1,
         pageSize: 10
@@ -424,10 +427,14 @@ export default {
       return this.themeMode === 'dark' ? 'defect-field-source-tag--system' : ''
     },
     teamId() {
-      return parseInt(this.config.currentTeamId)
+      const resolved = Number(this.resolvedTeamId)
+      if (Number.isFinite(resolved) && resolved > 0) return resolved
+      const fromConfig = Number(this.config && this.config.currentTeamId)
+      return Number.isFinite(fromConfig) && fromConfig > 0 ? fromConfig : null
     },
     projectId() {
-      return parseInt(this.config.currentProjectId)
+      const pid = Number(this.config && this.config.currentProjectId)
+      return Number.isFinite(pid) && pid > 0 ? pid : null
     },
     canAddDefectField() {
       return hasAnyPermi(['system:team:defect-field:add'])
@@ -516,7 +523,7 @@ export default {
     }
   },
   created() {
-    this.getList()
+    this.resolveTeamAndLoad()
   },
   mounted() {
     this.$nextTick(() => {
@@ -840,7 +847,38 @@ export default {
     parseTypeConfig(typeConfig) {
       return parseTypeConfigRaw(typeConfig)
     },
+    /** 有当前项目时按其所属团队加载，保证与缺陷页 column-layout 读的是同一套配置 */
+    resolveTeamAndLoad() {
+      const pid = this.projectId
+      const fallback = () => {
+        const fromConfig = Number(this.config && this.config.currentTeamId)
+        this.resolvedTeamId =
+          Number.isFinite(fromConfig) && fromConfig > 0 ? fromConfig : null
+        this.getList()
+      }
+      if (!pid) {
+        fallback()
+        return
+      }
+      getProject(pid)
+        .then(res => {
+          const tid = res && res.data && Number(res.data.teamId)
+          if (Number.isFinite(tid) && tid > 0) {
+            this.resolvedTeamId = tid
+            this.getList()
+            return
+          }
+          fallback()
+        })
+        .catch(fallback)
+    },
     getList() {
+      if (!this.teamId) {
+        this.fieldList = []
+        this.total = 0
+        this.loading = false
+        return
+      }
       this.loading = true
       listFields(this.teamId).then(response => {
         const data = response.data
@@ -934,6 +972,7 @@ export default {
         .then(() => {
           row.enabled = enabled
           clearCustomFieldColumnsCache()
+          if (!this.projectId) return null
           return loadDefectColumnLayout(this.projectId, { force: true })
         })
         .then(layout => {
@@ -944,7 +983,10 @@ export default {
             syncNewDefectTableColumnsIntoFieldListCache(this.$cache.local, cols)
           }
         })
-        .catch(() => {})
+        .catch(() => {
+          this.getList()
+          this.$modal.msgError(this.$t('defect.custom-field.sort-move-fail'))
+        })
         .finally(() => {
           row._toggleLoading = false
         })
