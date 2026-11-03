@@ -59,6 +59,10 @@
       >
         <template #default="{ data }">
           <span class="push-doc-node">
+            <svg-icon
+              class="push-doc-node__icon"
+              :icon-class="data.folder ? 'dir' : 'doc'"
+            />
             <span class="push-doc-node__name" :title="data.name">{{ data.name }}</span>
             <span v-if="data.localMissing" class="push-doc-node__missing">{{ $t('project.push.local-missing') }}</span>
             <span v-else class="push-doc-node__size">{{ approx(data.bytes) }}</span>
@@ -242,9 +246,16 @@ export default {
 .push-doc-node {
   display: flex;
   align-items: center;
+  gap: 6px;
   flex: 1;
   min-width: 0;
   padding-right: 8px;
+}
+.push-doc-node__icon {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  color: var(--el-text-color-secondary, #909399);
 }
 .push-doc-node__name {
   overflow: hidden;
