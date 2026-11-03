@@ -5,13 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -66,10 +70,48 @@ public class CompressUtil {
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
             return this;
         }
-        byte[] bytes = response.body();
+        return addBytes(fileName, response.body());
+    }
+
+    public CompressUtil addBytes(String fileName, byte[] bytes) throws IOException {
+        if (fileName == null || bytes == null || outputStreamFileNames.contains(fileName)) {
+            return this;
+        }
         ZipEntry entry = new ZipEntry(fileName);
         outputStream.putNextEntry(entry);
         outputStream.write(bytes, 0, bytes.length);
+        outputStream.closeEntry();
+        outputStreamFileNames.add(fileName);
+        return this;
+    }
+
+    /**
+     * 把目录树打进 zip，条目名为 {@code entryPrefix + 相对路径}（例如 {@code git/bare/slug/HEAD}）。
+     */
+    public CompressUtil addDirectoryTree(String entryPrefix, Path root) throws IOException {
+        if (root == null || !Files.isDirectory(root)) {
+            return this;
+        }
+        String prefix = entryPrefix == null ? "" : entryPrefix.replace('\\', '/');
+        if (!prefix.isEmpty() && !prefix.endsWith("/")) {
+            prefix = prefix + "/";
+        }
+        try (Stream<Path> walk = Files.walk(root)) {
+            for (Path path : walk.filter(Files::isRegularFile).toList()) {
+                String relative = root.relativize(path).toString().replace('\\', '/');
+                addBytes(prefix + relative, Files.readAllBytes(path));
+            }
+        }
+        return this;
+    }
+
+    public CompressUtil addInputStream(String fileName, InputStream in, long sizeHint) throws IOException {
+        if (fileName == null || in == null || outputStreamFileNames.contains(fileName)) {
+            return this;
+        }
+        ZipEntry entry = new ZipEntry(fileName);
+        outputStream.putNextEntry(entry);
+        in.transferTo(outputStream);
         outputStream.closeEntry();
         outputStreamFileNames.add(fileName);
         return this;

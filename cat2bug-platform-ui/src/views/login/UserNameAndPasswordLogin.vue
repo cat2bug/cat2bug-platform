@@ -580,8 +580,28 @@ html.dark .login-form {
 
   &:active {
     transform: translateY(1px);
-    background: var(--login-btn, var(--login-accent, #1890ff)) !important;
+    /* 按下：深蓝，避免被全局暗色默认按钮 active 盖成近黑 */
+    background: var(--login-btn-active, #096dd9) !important;
+    border-color: transparent !important;
     color: var(--login-on-accent, #ffffff) !important;
+    filter: none;
+  }
+
+  /* loading 时 EP 会加 disabled；暗色全局禁用底是近黑，这里保住深蓝 */
+  &.is-loading,
+  &.is-disabled,
+  &:disabled,
+  &.is-loading:hover,
+  &.is-disabled:hover,
+  &:disabled:hover,
+  &.is-loading:active,
+  &.is-disabled:active,
+  &:disabled:active {
+    background: var(--login-btn-active, #096dd9) !important;
+    border-color: transparent !important;
+    color: var(--login-on-accent, #ffffff) !important;
+    opacity: 1 !important;
+    filter: none;
   }
 }
 

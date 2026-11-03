@@ -327,6 +327,8 @@
   "project.push": "同步到雲端",
   "project.push.key": "同步金鑰",
   "project.push.key-cannot-empty": "同步金鑰不能為空！",
+  "project.push.key-placeholder": "貼上雲端入站頁產生的同步金鑰",
+  "project.push.key-hint": "請到雲端目標專案 → 雲端入站同步 →「產生同步金鑰」，複製後貼到此處。金鑰有有效期限，每次產生會作廢舊金鑰；僅用於專案資料同步，不是 API Key。",
   "sync": "同步",
   "collect-success": "關注成功",
   "cancel-success": "取消成功",

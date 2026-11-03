@@ -60,7 +60,64 @@ public class SetupMigrationService {
     private void executeMigrate(DataSource target) {
         Flyway flyway = buildFlyway(target);
         repairFailedMigrationsIfNeeded(flyway);
+        // 已有业务表但无成功迁移记录时，baselineOnMigrate 不会生效（历史表已存在），
+        // 必须显式 baseline，否则会重跑破坏性 V0_5_1__init.sql（DROP 全库）。
+        // Flyway 要求：空的 schema history 表须先删除才能 baseline。
+        if (hasBusinessSchema(target) && !hasSuccessfulMigration(flyway)) {
+            dropEmptySchemaHistoryTable(target);
+            flyway = buildFlyway(target);
+            log.warn("检测到已有业务库且无 Flyway 成功记录，按 0.5.1 baseline 跳过 init");
+            flyway.baseline();
+        }
         flyway.migrate();
+    }
+
+    private void dropEmptySchemaHistoryTable(DataSource dataSource) {
+        String table = FlywayConstants.SCHEMA_HISTORY_TABLE;
+        try (Connection connection = dataSource.getConnection();
+             var countPs = connection.prepareStatement("SELECT COUNT(*) FROM " + table);
+             var countRs = countPs.executeQuery()) {
+            long rows = 0;
+            if (countRs.next()) {
+                rows = countRs.getLong(1);
+            }
+            if (rows > 0) {
+                return;
+            }
+            try (var drop = connection.createStatement()) {
+                drop.execute("DROP TABLE " + table);
+                log.warnf("已删除空的 Flyway 历史表 %s，以便 baseline", table);
+            }
+        } catch (SQLException e) {
+            // 表不存在则无需处理
+            log.debugf("删除空 Flyway 历史表跳过: %s", e.getMessage());
+        }
+    }
+
+    /** 判断是否已有业务库（相对空库安装）。 */
+    static boolean hasBusinessSchema(DataSource dataSource) {
+        if (dataSource == null) {
+            return false;
+        }
+        try (Connection connection = dataSource.getConnection();
+             var ps = connection.prepareStatement(
+                     "SELECT 1 FROM information_schema.tables WHERE LOWER(table_name) = 'sys_user' LIMIT 1");
+             var rs = ps.executeQuery()) {
+            return rs.next();
+        } catch (SQLException e) {
+            log.warnf("检测业务表失败，按空库处理: %s", e.getMessage());
+            return false;
+        }
+    }
+
+    private static boolean hasSuccessfulMigration(Flyway flyway) {
+        for (MigrationInfo migration : flyway.info().all()) {
+            MigrationState state = migration.getState();
+            if (MigrationState.SUCCESS.equals(state) || MigrationState.BASELINE.equals(state)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void repairFailedMigrationsIfNeeded(Flyway flyway) {
@@ -231,12 +288,14 @@ public class SetupMigrationService {
     }
 
     private Flyway buildFlyway(DataSource dataSourceOverride) {
+        // 空库：0.5.0 → 再跑 V0_5_1 init；已有业务库：0.5.1，跳过整库 DROP/CREATE
+        String baselineVersion = hasBusinessSchema(dataSourceOverride) ? "0.5.1" : "0.5.0";
         FluentConfiguration configuration = Flyway.configure()
                 .locations(migrationLocation(dataSourceOverride))
                 .table(FlywayConstants.SCHEMA_HISTORY_TABLE)
                 .encoding("UTF-8")
                 .baselineOnMigrate(true)
-                .baselineVersion("0.5.0")
+                .baselineVersion(baselineVersion)
                 .baselineDescription("BaseLineInitialize")
                 .validateOnMigrate(true)
                 // 与 Spring 共用 sys_db_version，双方补入的低版本脚本须能在已升级库上补跑

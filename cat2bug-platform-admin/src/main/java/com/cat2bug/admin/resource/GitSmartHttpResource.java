@@ -316,21 +316,16 @@ public class GitSmartHttpResource {
                 .build();
     }
 
+    /**
+     * 始终把请求体落到临时文件再交给 JGit。
+     * Quarkus StreamingOutput 异步写出时，原始请求 InputStream 可能已关闭；
+     * 且 git 在 pack 超过 {@code http.postBuffer} 时会改用 chunked，直接透传易读空。
+     */
     private static InputStream materializeBody(InputStream input, HttpHeaders headers) throws IOException {
         InputStream stream = input;
         String encoding = headers.getHeaderString("Content-Encoding");
         if (encoding != null && encoding.toLowerCase().contains("gzip")) {
             stream = new GZIPInputStream(stream);
-        }
-        String contentLength = headers.getHeaderString(HttpHeaders.CONTENT_LENGTH);
-        if (contentLength != null) {
-            try {
-                if (Long.parseLong(contentLength) >= 0) {
-                    return stream;
-                }
-            } catch (NumberFormatException ignore) {
-                // fall through to materialize
-            }
         }
         java.nio.file.Path tmp = Files.createTempFile("cat2bug-git-pack-", ".bin");
         try {

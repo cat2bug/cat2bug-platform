@@ -1209,7 +1209,9 @@ export default {
     gitConfigCommands() {
       return [
         `git config --global user.name '${this.gitAuthorName}'`,
-        `git config --global user.email '${this.gitAuthorEmail}'`
+        `git config --global user.email '${this.gitAuthorEmail}'`,
+        // 超过默认 1MiB 时 git 会改用 chunked，部分代理/服务端易断流；抬高缓冲更稳
+        'git config --global http.postBuffer 524288000'
       ].join('\n')
     },
     gitHttpsAuthExample() {

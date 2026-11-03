@@ -327,6 +327,8 @@
   "project.push": "클라우드에 동기화",
   "project.push.key": "동기화 키",
   "project.push.key-cannot-empty": "동기화 키는 비워둘 수 없습니다!",
+  "project.push.key-placeholder": "클라우드 인바운드 동기화 페이지에서 만든 동기화 키 붙여넣기",
+  "project.push.key-hint": "클라우드 대상 프로젝트 → 클라우드 인바운드 동기화 →「동기화 키 생성」에서 복사해 붙여넣으세요. 만료되며, 다시 생성하면 이전 키는 무효입니다. API Key가 아닙니다.",
   "sync": "동기화",
   "collect-success": "즐겨찾기 성공",
   "cancel-success": "취소 성공",

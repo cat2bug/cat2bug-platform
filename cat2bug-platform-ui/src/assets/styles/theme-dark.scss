@@ -3155,14 +3155,15 @@ html.dark {
     }
 
     // 禁用态：必须晚于上面的 !important 实色/朴素规则，才能与浅色一样一眼可辨
-    &.is-disabled,
-    &.is-disabled:hover,
-    &.is-disabled:focus,
-    &.is-disabled:active,
-    &:disabled,
-    &:disabled:hover,
-    &:disabled:focus,
-    &:disabled:active {
+    // 登录钮 loading 时 EP 也会加 disabled，排除以免被盖成近黑底
+    &.is-disabled:not(.login-btn),
+    &.is-disabled:not(.login-btn):hover,
+    &.is-disabled:not(.login-btn):focus,
+    &.is-disabled:not(.login-btn):active,
+    &:disabled:not(.login-btn),
+    &:disabled:not(.login-btn):hover,
+    &:disabled:not(.login-btn):focus,
+    &:disabled:not(.login-btn):active {
       color: var(--el-text-color-disabled, var(--text-color-placeholder)) !important;
       background-color: var(--bg-color-base) !important;
       border-color: var(--border-color-lighter) !important;

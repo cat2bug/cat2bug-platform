@@ -48,8 +48,16 @@ export function pullProject(projectId, data) {
   return request({
     url: '/system/project/'+projectId+'/push',
     method: 'post',
-    timeout: 3600000,
+    timeout: 60000,
     data: data
+  })
+}
+
+export function getPushJob(projectId, jobId) {
+  return request({
+    url: '/system/project/' + projectId + '/push/jobs/' + jobId,
+    method: 'get',
+    timeout: 30000
   })
 }
 

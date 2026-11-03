@@ -674,7 +674,11 @@ export default {
         }).then(function(res) {
         delProject(row.projectId, res.value).then(()=>{
           _this.$modal.msgSuccess(_this.$i18n.t('delete-success'));
-          _this.refreshSidebar();
+          _this.getList();
+          _this.getCollectList();
+          useUserStore().GetInfo().then(() => {
+            usePermissionStore().GenerateRoutes();
+          });
         });
       }).catch(() => {});
     },

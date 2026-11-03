@@ -165,6 +165,7 @@ body {
   --login-card-bg: #ffffff;
   --login-accent: #1890ff;
   --login-btn: #1890ff;
+  --login-btn-active: #096dd9;
   --login-on-accent: #ffffff;
   --login-accent-glow: rgba(24, 144, 255, 0.18);
   --login-text-primary: #303133;
@@ -189,6 +190,7 @@ html.dark .logo-page {
   --login-card-bg: #1f2023;
   --login-accent: #69b1ff;
   --login-btn: #1890ff;
+  --login-btn-active: #096dd9;
   --login-on-accent: #ffffff;
   --login-accent-glow: rgba(105, 177, 255, 0.18);
   --login-text-primary: #ffffff;

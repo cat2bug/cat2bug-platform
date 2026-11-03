@@ -1,5 +1,6 @@
 package com.cat2bug.admin.resource;
 
+import com.cat2bug.admin.service.ProjectCloudPushJobService;
 import com.cat2bug.admin.service.ProjectCloudPushService;
 import com.cat2bug.admin.service.SystemExcelExportService;
 import com.cat2bug.common.api.AjaxResult;
@@ -39,6 +40,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.jboss.resteasy.reactive.RestForm;
 
 import java.util.List;
+import java.util.Map;
 
 @Path("/system/project")
 @Produces(MediaType.APPLICATION_JSON)
@@ -71,6 +73,9 @@ public class ProjectResource {
 
     @Inject
     ProjectCloudPushService projectCloudPushService;
+
+    @Inject
+    ProjectCloudPushJobService projectCloudPushJobService;
 
     @Inject
     SysMemberInviteService sysMemberInviteService;
@@ -237,12 +242,25 @@ public class ProjectResource {
     @POST
     @Path("/{projectId}/push")
     @RequiresPermissions("system:project:push")
-    public AjaxResult push(@PathParam("projectId") Long projectId, PullProject pullProject) throws java.io.IOException {
+    public AjaxResult push(@PathParam("projectId") Long projectId, PullProject pullProject) {
         LoginUser loginUser = requireLoginUser();
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(loginUser.getUserId());
         Long currentProjectId = userConfig != null ? userConfig.getCurrentProjectId() : projectId;
-        boolean ok = projectCloudPushService.pushToCloud(currentProjectId, pullProject.getPullKey());
-        return toAjax(ok ? 1 : 0);
+        return AjaxResult.success(projectCloudPushJobService.start(currentProjectId, pullProject.getPullKey()));
+    }
+
+    @GET
+    @Path("/{projectId}/push/jobs/{jobId}")
+    @RequiresPermissions("system:project:push")
+    public AjaxResult pushJobStatus(@PathParam("projectId") Long projectId,
+                                    @PathParam("jobId") String jobId) {
+        requireLoginUser();
+        Map<String, Object> status = projectCloudPushJobService.status(jobId);
+        Object jobProjectId = status.get("projectId");
+        if (jobProjectId instanceof Number number && projectId != null && number.longValue() != projectId) {
+            throw new ApiException("同步任务与项目不匹配");
+        }
+        return AjaxResult.success(status);
     }
 
     @POST
