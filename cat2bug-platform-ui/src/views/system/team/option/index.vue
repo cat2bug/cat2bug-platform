@@ -78,12 +78,24 @@ export default {
 <style lang="scss" scoped>
   $team-option-card-gap: 20px;
 
+  /* 同行卡片等高 */
   :deep(.el-row){
     margin-bottom: -$team-option-card-gap;
+    align-items: stretch;
   }
 
   :deep(.el-col){
+    display: flex;
+    flex-direction: column;
     margin-bottom: $team-option-card-gap;
+
+    > .el-card,
+    > .box-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
   }
 
   :deep(.el-card__header){
@@ -119,6 +131,7 @@ export default {
     }
   }
   :deep(.el-card__body){
+    flex: 1;
     min-height: 150px;
     display: flex;
     align-items: flex-start;

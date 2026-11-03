@@ -100,13 +100,24 @@ export default {
 <style lang="scss" scoped>
   $project-option-card-gap: 20px;
 
-  /* gutter 仅控制列间距，补相同 row-gap 使行列间隔一致 */
+  /* gutter 仅控制列间距，补相同 row-gap 使行列间隔一致；同行卡片等高 */
   :deep(.el-row){
     margin-bottom: -$project-option-card-gap;
+    align-items: stretch;
   }
 
   :deep(.el-col){
+    display: flex;
+    flex-direction: column;
     margin-bottom: $project-option-card-gap;
+
+    > .el-card,
+    > .box-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
   }
 
   :deep(.el-card__header){
@@ -148,6 +159,7 @@ export default {
     }
   }
   :deep(.el-card__body){
+    flex: 1;
     min-height: 180px;
     display: flex;
     align-items: flex-start;

@@ -239,6 +239,14 @@ public class ProjectResource {
         return toAjax(sysUserProjectService.batchInsertSysUserProject(body));
     }
 
+    @GET
+    @Path("/{projectId}/push/estimate")
+    @RequiresPermissions("system:project:push")
+    public AjaxResult pushEstimate(@PathParam("projectId") Long projectId) {
+        requireLoginUser();
+        return AjaxResult.success(projectCloudPushService.estimate(projectId));
+    }
+
     @POST
     @Path("/{projectId}/push")
     @RequiresPermissions("system:project:push")
@@ -246,7 +254,7 @@ public class ProjectResource {
         LoginUser loginUser = requireLoginUser();
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(loginUser.getUserId());
         Long currentProjectId = userConfig != null ? userConfig.getCurrentProjectId() : projectId;
-        return AjaxResult.success(projectCloudPushJobService.start(currentProjectId, pullProject.getPullKey()));
+        return AjaxResult.success(projectCloudPushJobService.start(currentProjectId, pullProject));
     }
 
     @GET
@@ -255,12 +263,48 @@ public class ProjectResource {
     public AjaxResult pushJobStatus(@PathParam("projectId") Long projectId,
                                     @PathParam("jobId") String jobId) {
         requireLoginUser();
+        if ("current".equals(jobId) || "active".equals(jobId)) {
+            return AjaxResult.success(projectCloudPushJobService.current(projectId));
+        }
         Map<String, Object> status = projectCloudPushJobService.status(jobId);
         Object jobProjectId = status.get("projectId");
         if (jobProjectId instanceof Number number && projectId != null && number.longValue() != projectId) {
             throw new ApiException("同步任务与项目不匹配");
         }
         return AjaxResult.success(status);
+    }
+
+    @POST
+    @Path("/{projectId}/push/jobs")
+    @RequiresPermissions("system:project:push")
+    public AjaxResult createPushJob(@PathParam("projectId") Long projectId, PullProject pullProject) {
+        requireLoginUser();
+        return AjaxResult.success(projectCloudPushJobService.start(projectId, pullProject));
+    }
+
+    @GET
+    @Path("/push/jobs/{jobId}")
+    @RequiresPermissions("system:project:push")
+    public AjaxResult pushJobById(@PathParam("jobId") String jobId) {
+        requireLoginUser();
+        return AjaxResult.success(projectCloudPushJobService.status(jobId));
+    }
+
+    @POST
+    @Path("/{projectId}/push/jobs/{jobId}/retry-failed")
+    @RequiresPermissions("system:project:push")
+    public AjaxResult retryFailedPush(@PathParam("projectId") Long projectId,
+                                      @PathParam("jobId") String jobId) {
+        requireLoginUser();
+        return AjaxResult.success(projectCloudPushJobService.retryFailed(projectId, jobId));
+    }
+
+    @POST
+    @Path("/push/jobs/{jobId}/retry-failed")
+    @RequiresPermissions("system:project:push")
+    public AjaxResult retryFailedPushById(@PathParam("jobId") String jobId) {
+        requireLoginUser();
+        return AjaxResult.success(projectCloudPushJobService.retryFailedById(jobId));
     }
 
     @POST

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysCloudPushJobMapper">
+
+    <resultMap type="com.cat2bug.common.domain.SysCloudPushJob" id="JobResult">
+        <result property="jobId" column="job_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="pullKey" column="pull_key"/>
+        <result property="state" column="state"/>
+        <result property="percent" column="percent"/>
+        <result property="phase" column="phase"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="message" column="message"/>
+        <result property="sessionId" column="session_id"/>
+        <result property="selectionJson" column="selection_json"/>
+        <result property="logsJson" column="logs_json"/>
+        <result property="packedBytes" column="packed_bytes"/>
+        <result property="maxTotalBytes" column="max_total_bytes"/>
+        <result property="legacyFull" column="legacy_full"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="com.cat2bug.common.domain.SysCloudPushPart" id="PartResult">
+        <result property="jobId" column="job_id"/>
+        <result property="partId" column="part_id"/>
+        <result property="partType" column="part_type"/>
+        <result property="refKey" column="ref_key"/>
+        <result property="state" column="state"/>
+        <result property="expectedBytes" column="expected_bytes"/>
+        <result property="actualBytes" column="actual_bytes"/>
+        <result property="sha256" column="sha256"/>
+        <result property="tempPath" column="temp_path"/>
+        <result property="attemptCount" column="attempt_count"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="insertJob" parameterType="com.cat2bug.common.domain.SysCloudPushJob">
+        insert into sys_cloud_push_job (
+            job_id, project_id, pull_key, state, percent, phase, error_message, message,
+            session_id, selection_json, logs_json, packed_bytes, max_total_bytes, legacy_full,
+            create_time, update_time
+        ) values (
+            #{jobId}, #{projectId}, #{pullKey}, #{state}, #{percent}, #{phase}, #{errorMessage}, #{message},
+            #{sessionId}, #{selectionJson}, #{logsJson}, #{packedBytes}, #{maxTotalBytes}, #{legacyFull},
+            #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="updateJob" parameterType="com.cat2bug.common.domain.SysCloudPushJob">
+        update sys_cloud_push_job
+        set state = #{state},
+            percent = #{percent},
+            phase = #{phase},
+            error_message = #{errorMessage},
+            message = #{message},
+            session_id = #{sessionId},
+            selection_json = #{selectionJson},
+            logs_json = #{logsJson},
+            packed_bytes = #{packedBytes},
+            max_total_bytes = #{maxTotalBytes},
+            legacy_full = #{legacyFull},
+            update_time = #{updateTime}
+        where job_id = #{jobId}
+    </update>
+
+    <select id="selectJob" resultMap="JobResult">
+        select job_id, project_id, pull_key, state, percent, phase, error_message, message,
+               session_id, selection_json, logs_json, packed_bytes, max_total_bytes, legacy_full,
+               create_time, update_time
+        from sys_cloud_push_job
+        where job_id = #{jobId}
+    </select>
+
+    <select id="selectOpenByProject" resultMap="JobResult">
+        select job_id, project_id, pull_key, state, percent, phase, error_message, message,
+               session_id, selection_json, logs_json, packed_bytes, max_total_bytes, legacy_full,
+               create_time, update_time
+        from sys_cloud_push_job
+        where project_id = #{projectId}
+          and state in ('RUNNING', 'FAILED')
+        order by case when state = 'RUNNING' then 0 else 1 end, update_time desc
+        limit 1
+    </select>
+
+    <select id="selectRunning" resultMap="JobResult">
+        select job_id, project_id, pull_key, state, percent, phase, error_message, message,
+               session_id, selection_json, logs_json, packed_bytes, max_total_bytes, legacy_full,
+               create_time, update_time
+        from sys_cloud_push_job
+        where state = 'RUNNING'
+        order by update_time asc
+    </select>
+
+    <insert id="insertPart" parameterType="com.cat2bug.common.domain.SysCloudPushPart">
+        insert into sys_cloud_push_part (
+            job_id, part_id, part_type, ref_key, state, expected_bytes, actual_bytes, sha256,
+            temp_path, attempt_count, error_message, sort_order, update_time
+        ) values (
+            #{jobId}, #{partId}, #{partType}, #{refKey}, #{state}, #{expectedBytes}, #{actualBytes}, #{sha256},
+            #{tempPath}, #{attemptCount}, #{errorMessage}, #{sortOrder}, #{updateTime}
+        )
+    </insert>
+
+    <update id="updatePart" parameterType="com.cat2bug.common.domain.SysCloudPushPart">
+        update sys_cloud_push_part
+        set state = #{state},
+            expected_bytes = #{expectedBytes},
+            actual_bytes = #{actualBytes},
+            sha256 = #{sha256},
+            temp_path = #{tempPath},
+            attempt_count = #{attemptCount},
+            error_message = #{errorMessage},
+            update_time = #{updateTime}
+        where job_id = #{jobId} and part_id = #{partId}
+    </update>
+
+    <select id="selectParts" resultMap="PartResult">
+        select job_id, part_id, part_type, ref_key, state, expected_bytes, actual_bytes, sha256,
+               temp_path, attempt_count, error_message, sort_order, update_time
+        from sys_cloud_push_part
+        where job_id = #{jobId}
+        order by sort_order asc, part_id asc
+    </select>
+</mapper>

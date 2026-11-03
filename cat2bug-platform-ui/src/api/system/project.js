@@ -43,7 +43,7 @@ export function addProject(data) {
   })
 }
 
-// 新增项目
+/** 旧单包出站。同步页已改走 estimatePush / createPushJob。 */
 export function pullProject(projectId, data) {
   return request({
     url: '/system/project/'+projectId+'/push',
@@ -53,11 +53,63 @@ export function pullProject(projectId, data) {
   })
 }
 
+/** 旧进度查询（带 projectId）。同步页轮询 getPushJobById。 */
 export function getPushJob(projectId, jobId) {
   return request({
     url: '/system/project/' + projectId + '/push/jobs/' + jobId,
     method: 'get',
     timeout: 30000
+  })
+}
+
+/**
+ * 出站体积预估。
+ * data: { maxTotalBytes, required:[{key,bytes}], repositories:[{slug,name,bytes}],
+ *         documents:[{id,name,folder,bytes,localMissing,children}] }
+ */
+export function estimatePush(projectId) {
+  return request({
+    url: '/system/project/' + projectId + '/push/estimate',
+    method: 'get',
+    timeout: 120000,
+    silentError: true
+  })
+}
+
+/** body: { pullKey, gitSlugs:[], documentIds:[] }，返回 Job（含 parts）。 */
+export function createPushJob(projectId, data) {
+  return request({
+    url: '/system/project/' + projectId + '/push/jobs',
+    method: 'post',
+    timeout: 60000,
+    data: data
+  })
+}
+
+export function getPushJobById(jobId) {
+  return request({
+    url: '/system/project/push/jobs/' + jobId,
+    method: 'get',
+    timeout: 30000,
+    silentError: true
+  })
+}
+
+export function retryFailedPushJob(jobId) {
+  return request({
+    url: '/system/project/push/jobs/' + jobId + '/retry-failed',
+    method: 'post',
+    timeout: 60000
+  })
+}
+
+/** 当前项目未完成 Job；没有时 data 为 null。 */
+export function getActivePushJob(projectId) {
+  return request({
+    url: '/system/project/' + projectId + '/push/jobs/active',
+    method: 'get',
+    timeout: 30000,
+    silentError: true
   })
 }
 

@@ -3172,9 +3172,24 @@ html.dark {
       box-shadow: none !important;
     }
 
-    &--primary.is-disabled,
-    &--primary.is-disabled:hover,
-    &--primary.is-disabled:focus,
+    // 实色 primary 禁用/loading：淡蓝底 + 浅字，避免落成近黑与页面融在一起
+    &--primary.is-disabled:not(.is-plain):not(.is-link):not(.is-text):not(.login-btn),
+    &--primary.is-disabled:not(.is-plain):not(.is-link):not(.is-text):not(.login-btn):hover,
+    &--primary.is-disabled:not(.is-plain):not(.is-link):not(.is-text):not(.login-btn):focus,
+    &--primary.is-disabled:not(.is-plain):not(.is-link):not(.is-text):not(.login-btn):active,
+    &--primary:disabled:not(.is-plain):not(.is-link):not(.is-text):not(.login-btn),
+    &--primary:disabled:not(.is-plain):not(.is-link):not(.is-text):not(.login-btn):hover,
+    &--primary:disabled:not(.is-plain):not(.is-link):not(.is-text):not(.login-btn):focus,
+    &--primary:disabled:not(.is-plain):not(.is-link):not(.is-text):not(.login-btn):active {
+      color: rgba(255, 255, 255, 0.85) !important;
+      background-color: rgba(24, 144, 255, 0.42) !important;
+      border-color: rgba(24, 144, 255, 0.42) !important;
+    }
+
+    // 朴素 primary / 其它类型禁用：灰底即可
+    &--primary.is-plain.is-disabled,
+    &--primary.is-plain.is-disabled:hover,
+    &--primary.is-plain.is-disabled:focus,
     &--success.is-disabled,
     &--success.is-disabled:hover,
     &--success.is-disabled:focus,
@@ -5984,6 +5999,31 @@ html.dark {
 
     &:hover {
       color: var(--cat2bug-accent, #69b1ff) !important;
+    }
+  }
+
+  // 37. 图片预览（el-image-viewer）：EP 默认钮底是 --el-text-color-regular，
+  // 暗色映射成近白后，白叉/箭头对比度几乎为零
+  .el-image-viewer__wrapper {
+    .el-image-viewer__btn.el-image-viewer__close,
+    .el-image-viewer__btn.el-image-viewer__prev,
+    .el-image-viewer__btn.el-image-viewer__next {
+      color: #ffffff !important;
+      background-color: rgba(0, 0, 0, 0.65) !important;
+      border-color: transparent !important;
+
+      .el-icon {
+        color: #ffffff !important;
+      }
+    }
+
+    .el-image-viewer__actions {
+      background-color: rgba(0, 0, 0, 0.65) !important;
+      border-color: transparent !important;
+
+      .el-image-viewer__actions__inner {
+        color: #ffffff !important;
+      }
     }
   }
 }
