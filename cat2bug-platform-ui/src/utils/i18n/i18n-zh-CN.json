@@ -2574,5 +2574,6 @@
   "defect.kanban.delete-denied": "无权删除所选缺陷",
   "defect.kanban.resize-lane": "拖动调整泳道宽度",
   "CREATED": "已创建",
-  "defect.kanban.lane-created": "未指派"
+  "defect.kanban.lane-created": "未指派",
+  "project.push.done": "已同步"
 }

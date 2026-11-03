@@ -54,8 +54,8 @@
             :disabled="syncDisabled"
             @click="onSubmit"
           >
-            {{ submitting ? $t('project.push.submitting') : $t('sync') }}
-            <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+            {{ syncButtonLabel }}
+            <span v-show="fieldHintsActive && !syncDisabled" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
           </el-button>
         </div>
       </el-form-item>
@@ -80,6 +80,8 @@ export default {
   data() {
     return {
       submitting: false,
+      /** 本页一旦同步成功即锁定，避免轮询字段异常时按钮仍可点 */
+      syncSucceeded: false,
       jobVisible: false,
       pollTimer: null,
       job: {
@@ -115,9 +117,12 @@ export default {
         return `[${time}] ${row.level || 'INFO'} ${row.message || ''}`
       }).join('\n')
     },
+    jobSucceeded() {
+      return this.syncSucceeded || String(this.job.state || '').toUpperCase() === 'SUCCESS'
+    },
     progressStatus() {
-      if (this.job.state === 'SUCCESS') return 'success'
-      if (this.job.state === 'FAILED') return 'exception'
+      if (this.jobSucceeded) return 'success'
+      if (String(this.job.state || '').toUpperCase() === 'FAILED') return 'exception'
       return undefined
     },
     failureReason() {
@@ -126,7 +131,12 @@ export default {
     },
     /** 成功后禁止再点；失败仍可重试 */
     syncDisabled() {
-      return this.submitting || this.job.state === 'SUCCESS'
+      return this.submitting || this.jobSucceeded
+    },
+    syncButtonLabel() {
+      if (this.submitting) return this.$t('project.push.submitting')
+      if (this.jobSucceeded) return this.$t('project.push.done')
+      return this.$t('sync')
     }
   },
   mounted() {
@@ -137,6 +147,7 @@ export default {
   },
   methods: {
     shortcutSave() {
+      if (this.syncDisabled) return
       this.onSubmit()
     },
     serializePageFormCloseState() {
@@ -156,30 +167,53 @@ export default {
         }
       })
     },
+    /** 兼容 AjaxResult 单层 / 双层 data */
+    unwrapJobPayload(res) {
+      let body = res
+      if (body && typeof body === 'object' && body.data !== undefined && (body.code !== undefined || body.msg !== undefined)) {
+        body = body.data
+      }
+      if (body && typeof body === 'object' && body.data && (body.data.jobId || body.data.state)) {
+        body = body.data
+      }
+      return body && typeof body === 'object' ? body : {}
+    },
     applyJob(data) {
       if (!data || typeof data !== 'object') return
+      const state = data.state != null ? String(data.state) : (this.job.state || '')
       this.job = {
         jobId: data.jobId || this.job.jobId,
-        state: data.state || '',
-        percent: data.percent || 0,
-        phase: data.phase || '',
-        logs: Array.isArray(data.logs) ? data.logs : [],
+        state,
+        percent: data.percent != null ? data.percent : this.job.percent,
+        phase: data.phase || this.job.phase || '',
+        logs: Array.isArray(data.logs) ? data.logs : (this.job.logs || []),
         error: data.error || '',
         message: data.message || ''
       }
+      if (String(state).toUpperCase() === 'SUCCESS') {
+        this.syncSucceeded = true
+      }
       this.scrollLogs()
+    },
+    markSyncSuccess(message) {
+      this.syncSucceeded = true
+      this.submitting = false
+      this.job.state = 'SUCCESS'
+      this.job.percent = 100
+      if (!this.job.phase) this.job.phase = this.$t('project.push.done')
+      this.$message.success(message || this.$t('project.push.success'))
     },
     pollJob(jobId) {
       this.clearPoll()
       this.pollTimer = setInterval(() => {
         getPushJob(this.projectId, jobId).then(res => {
-          const data = res.data || res
+          const data = this.unwrapJobPayload(res)
           this.applyJob(data)
-          if (data.state === 'SUCCESS') {
+          const state = String(data.state || this.job.state || '').toUpperCase()
+          if (state === 'SUCCESS') {
             this.clearPoll()
-            this.submitting = false
-            this.$message.success(data.message || this.$t('project.push.success'))
-          } else if (data.state === 'FAILED') {
+            this.markSyncSuccess(data.message)
+          } else if (state === 'FAILED') {
             this.clearPoll()
             this.submitting = false
             this.$message.error(data.error || this.$t('project.push.failed'))
@@ -196,10 +230,11 @@ export default {
     /** 提交项目同步操作（异步打包上传，轮询进度） */
     onSubmit() {
       this.$refs["form"].validate(valid => {
-        if (!valid || this.submitting || this.job.state === 'SUCCESS') {
+        if (!valid || this.syncDisabled) {
           return
         }
         this.submitting = true
+        this.syncSucceeded = false
         this.jobVisible = true
         this.job = {
           jobId: '',
@@ -211,13 +246,10 @@ export default {
           message: ''
         }
         pullProject(this.projectId, this.form).then((res) => {
-          const data = res.data || res
+          const data = this.unwrapJobPayload(res)
           if (!data || !data.jobId) {
             // 兼容旧接口：无 jobId 时视为同步完成
-            this.submitting = false
-            this.job.state = 'SUCCESS'
-            this.job.percent = 100
-            this.$message.success(this.$t('project.push.success'))
+            this.markSyncSuccess(this.$t('project.push.success'))
             return
           }
           this.applyJob(data)

@@ -2574,5 +2574,6 @@
   "defect.kanban.delete-denied": "No permission to delete the selected defects",
   "defect.kanban.resize-lane": "Drag to resize lane width",
   "CREATED": "Created",
-  "defect.kanban.lane-created": "Unassigned"
+  "defect.kanban.lane-created": "Unassigned",
+  "project.push.done": "Synced"
 }
