@@ -6,14 +6,18 @@ import com.cat2bug.common.domain.LoginUser;
 import com.cat2bug.common.domain.SysDocument;
 import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.framework.security.AuthContext;
+import com.cat2bug.framework.storage.FileUploadService;
 import com.cat2bug.system.mapper.SysDocumentMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 @ApplicationScoped
@@ -24,6 +28,9 @@ public class SysDocumentService {
 
     @Inject
     AuthContext authContext;
+
+    @Inject
+    FileUploadService fileUploadService;
 
     public TableDataInfo selectDocumentPage(SysDocument query, Integer pageNum, Integer pageSize) {
         PageDomain page = PageDomain.of(pageNum, pageSize);
@@ -56,7 +63,66 @@ public class SysDocumentService {
         sysDocument.setCreateById(loginUser.getUserId());
         sysDocument.setUpdateTime(now);
         sysDocument.setUpdateById(loginUser.getUserId());
+        // 在线新建 Markdown 可无 fileUrl；同步按本地文件判定，创建时落空文件以免「本地缺失」
+        ensureEmptyMarkdownFile(sysDocument, false);
         return sysDocumentMapper.insertSysDocument(sysDocument);
+    }
+
+    /**
+     * 若是 Markdown 文件且尚无 fileUrl，写入空 .md 并回写 fileUrl。
+     * @param persist 为 true 时额外 update 已有记录（用于同步估价治愈历史空文档）
+     */
+    @Transactional
+    public boolean ensureEmptyMarkdownFile(SysDocument doc, boolean persist) {
+        if (doc == null || !isMarkdownFile(doc)) {
+            return false;
+        }
+        if (doc.getFileUrl() != null && !doc.getFileUrl().isBlank()) {
+            return false;
+        }
+        String base = sanitizeFileBaseName(doc.getDocName());
+        String original = base + ".md";
+        try {
+            byte[] empty = new byte[0];
+            FileUploadService.UploadResult uploaded = fileUploadService.upload(
+                    new ByteArrayInputStream(empty), empty.length, original, null);
+            doc.setFileUrl(uploaded.getFileName());
+            if (doc.getFileExtension() == null || doc.getFileExtension().isBlank()) {
+                doc.setFileExtension("md");
+            }
+            if (persist && doc.getDocId() != null) {
+                LoginUser loginUser = authContext.getLoginUser();
+                if (loginUser != null) {
+                    doc.setUpdateById(loginUser.getUserId());
+                }
+                doc.setUpdateTime(new Date());
+                sysDocumentMapper.updateSysDocument(doc);
+            }
+            return true;
+        } catch (IOException e) {
+            throw new ApiException("创建 Markdown 本地文件失败：" + e.getMessage());
+        }
+    }
+
+    private static boolean isMarkdownFile(SysDocument doc) {
+        if (doc.getDocType() != null && doc.getDocType() == 0L) {
+            return false;
+        }
+        String ext = doc.getFileExtension() == null ? "" : doc.getFileExtension().trim().toLowerCase(Locale.ROOT);
+        return "md".equals(ext) || "markdown".equals(ext);
+    }
+
+    private static String sanitizeFileBaseName(String docName) {
+        String base = docName == null || docName.isBlank() ? "document" : docName.trim();
+        base = base.replaceAll("(?i)\\.md$", "");
+        base = base.replaceAll("[\\\\/:*?\"<>|]", "-");
+        if (base.isBlank()) {
+            base = "document";
+        }
+        if (base.length() > 80) {
+            base = base.substring(0, 80);
+        }
+        return base;
     }
 
     @Transactional

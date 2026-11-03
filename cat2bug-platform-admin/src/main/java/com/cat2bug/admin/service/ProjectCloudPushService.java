@@ -33,6 +33,7 @@ import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysProjectWorkCalendarMapper;
 import com.cat2bug.system.service.SysCaseService;
 import com.cat2bug.system.service.SysDefectLogService;
+import com.cat2bug.system.service.SysDocumentService;
 import com.cat2bug.system.service.SysModuleService;
 import com.cat2bug.system.service.SysUserProjectService;
 import com.cat2bug.system.service.mcp.SysProjectMcpService;
@@ -99,6 +100,9 @@ public class ProjectCloudPushService {
 
     @Inject
     SysDocumentMapper sysDocumentMapper;
+
+    @Inject
+    SysDocumentService sysDocumentService;
 
     @Inject
     SysCaseTypeMapper sysCaseTypeMapper;
@@ -564,6 +568,16 @@ public class ProjectCloudPushService {
 
     private void writeAllDocuments(CompressUtil compressUtil, Long projectId, PushProgress sink) throws IOException {
         List<SysDocument> documentList = orEmpty(loadDocuments(projectId));
+        for (SysDocument doc : documentList) {
+            if (isFolder(doc)) {
+                continue;
+            }
+            try {
+                sysDocumentService.ensureEmptyMarkdownFile(doc, true);
+            } catch (RuntimeException e) {
+                LOG.warnf(e, "heal empty markdown before pack-all failed, docId=%s", doc.getDocId());
+            }
+        }
         compressUtil.addJsonFile("document.json", documentList);
         for (SysDocument doc : documentList) {
             if (StringUtils.isNotBlank(doc.getFileUrl())) {
@@ -582,6 +596,11 @@ public class ProjectCloudPushService {
         SysDocument doc = byId.get(docId);
         if (doc == null || isFolder(doc)) {
             throw new IOException("文档不存在或不是文件：" + docId);
+        }
+        try {
+            sysDocumentService.ensureEmptyMarkdownFile(doc, true);
+        } catch (RuntimeException e) {
+            throw new IOException("文档「" + doc.getDocName() + "」无法创建本地文件：" + e.getMessage(), e);
         }
         if (resolveReadable(doc.getFileUrl()) == null) {
             throw new IOException("文档「" + doc.getDocName() + "」本地文件缺失，无法打包");
@@ -716,6 +735,14 @@ public class ProjectCloudPushService {
         Map<Long, List<Map<String, Object>>> children = new HashMap<>();
         for (SysDocument doc : docs) {
             boolean folder = isFolder(doc);
+            // 在线新建 md 曾允许无 fileUrl；估价前补空文件，避免误报「本地缺失」
+            if (!folder) {
+                try {
+                    sysDocumentService.ensureEmptyMarkdownFile(doc, true);
+                } catch (RuntimeException e) {
+                    LOG.warnf(e, "heal empty markdown file failed, docId=%s", doc.getDocId());
+                }
+            }
             Map<String, Object> node = new LinkedHashMap<>();
             long id = doc.getDocId() == null ? 0L : doc.getDocId();
             long pid = doc.getDocPid() == null ? 0L : doc.getDocPid();

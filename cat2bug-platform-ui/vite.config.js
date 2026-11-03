@@ -161,6 +161,9 @@ export default defineConfig(({ mode }) => {
   const port = Number(process.env.port || process.env.npm_config_port || 2222)
   const devHost = process.env.DEV_HOST || '0.0.0.0'
   const baseApi = mergedEnv.VUE_APP_BASE_API || '/dev-api'
+  // cloud 默认 2020；core 开发用 DEV_API_TARGET=http://127.0.0.1:2021
+  const apiTarget = process.env.DEV_API_TARGET || 'http://127.0.0.1:2020'
+  const wsTarget = (process.env.DEV_WS_TARGET || apiTarget).replace(/^http/, 'ws')
   const baseWs = mergedEnv.VUE_APP_BASE_WEBSOCKET || '/ws'
   const fileView = mergedEnv.VUE_APP_FILE_VIEW || '/file-view'
 
@@ -293,7 +296,7 @@ export default defineConfig(({ mode }) => {
       },
       proxy: {
         [baseApi]: {
-          target: 'http://127.0.0.1:2021',
+          target: apiTarget,
           changeOrigin: true,
           // 源码归档等大响应：避免开发代理默认超时把已 200 的流掐成 ERR_FAILED
           timeout: 0,
@@ -303,7 +306,7 @@ export default defineConfig(({ mode }) => {
         // Git Smart HTTP：clone/push 走与页面同源的 /git/**，转发到后端（勿返回 SPA HTML）
         // 大仓 push 易超时/断流，需拉长代理超时并关闭响应缓冲
         '/git': {
-          target: 'http://127.0.0.1:2021',
+          target: apiTarget,
           changeOrigin: true,
           timeout: 0,
           proxyTimeout: 0,
@@ -311,7 +314,7 @@ export default defineConfig(({ mode }) => {
         },
         // 命名空间 clone：/{teamKey}/{projectKey}/code/{slug}.git/**
         '^/[^/]+/[^/]+/code/[^/]+\\.git': {
-          target: 'http://127.0.0.1:2021',
+          target: apiTarget,
           changeOrigin: true,
           timeout: 0,
           proxyTimeout: 0,
@@ -319,17 +322,17 @@ export default defineConfig(({ mode }) => {
         },
         // OAuth / MCP 端点直接走后端；/oauth/consent 是前端页面，不在此列
         '^/oauth/(authorize|register|token|revoke)(\\?|$)': {
-          target: 'http://127.0.0.1:2021',
+          target: apiTarget,
           changeOrigin: false
         },
         '^/(\\.well-known/|mcp(/|\\?|$))': {
-          target: 'http://127.0.0.1:2021',
+          target: apiTarget,
           changeOrigin: false,
           timeout: 0,
           proxyTimeout: 0
         },
         [baseWs]: {
-          target: 'ws://127.0.0.1:2020',
+          target: wsTarget,
           changeOrigin: true,
           ws: true,
           rewrite: (p) => p.replace(new RegExp(`^${baseWs}`), '')
