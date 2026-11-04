@@ -7,6 +7,48 @@
       </div>
     </div>
 
+    <multipane
+      layout="vertical"
+      ref="multiPane"
+      class="custom-resizer defect-kanban-multipane"
+      :class="{ 'custom-resizer--tree-hidden': !showModuleTree }"
+      @paneResizeStop="dragStopHandle"
+    >
+      <div
+        v-if="showModuleTree"
+        ref="treeModule"
+        class="defect-tree-module defect-kanban-module-lane"
+        :style="treeModuleStyle"
+      >
+        <tree-module
+          ref="treeModuleRef"
+          :project-id="projectId"
+          :show-sidebar-toggle="true"
+          sidebar-toggle-hint-class="defect-list-hint-module-tree"
+          :toolbar-sync-height="defectTreeToolbarHeight"
+          @toggle-sidebar="toggleModuleTreeVisible"
+          @node-click="moduleTreeClickHandle"
+        />
+      </div>
+      <div
+        v-else
+        class="defect-kanban-module-strip"
+        role="button"
+        tabindex="0"
+        :title="$t('case.show-module-tree')"
+        :style="moduleStripStyle"
+        @click.stop.prevent="toggleModuleTreeVisible"
+        @keyup.enter.stop.prevent="toggleModuleTreeVisible"
+      >
+        <span class="tree-sidebar-expand-trigger defect-list-hint-module-tree">
+          <svg-icon icon-class="menu" class-name="tree-sidebar-expand-svg" />
+        </span>
+      </div>
+      <multipane-resizer
+        ref="paneResizer"
+        v-show="showModuleTree"
+        :style="[multipaneStyle, paneResizerRuleVars]"
+      />
     <div
       ref="kanbanBoard"
       v-loading="loading"
@@ -332,6 +374,7 @@
       />
       </template>
     </div>
+    </multipane>
 
     <assign-dialog
       ref="assignDialog"
@@ -380,11 +423,19 @@
 <script>
 import { markRaw } from 'vue'
 import { CircleCheckFilled, CircleCloseFilled, Search } from '@element-plus/icons-vue'
+import { Multipane, MultipaneResizer } from 'vue-multipane'
+import TreeModule from '@/components/Module/TreeModule'
 import { listDefect, assign, repair, delDefect } from '@/api/system/defect'
 import { strFormat } from '@/utils'
 import { getProject, listMemberOfProject, listProjectRole } from '@/api/system/project'
 import { useUserStore } from '@/stores/user'
 import { checkPermi } from '@/utils/permission'
+import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport'
+import {
+  createDefectModuleTreeSidebarMixin,
+  DEFECT_KANBAN_TREE_VISIBLE_KEY,
+  DEFECT_KANBAN_TREE_WIDTH_KEY
+} from '@/mixins/defectModuleTreeSidebar'
 import DefectTypeFlag from '@/components/Defect/DefectTypeFlag'
 import DefectStateFlag from '@/components/Defect/DefectStateFlag'
 import RowListMember from '@/components/RowListMember'
@@ -627,8 +678,18 @@ export default {
     OpenDialog,
     DefectBatchActionDialog,
     DefectTools,
-    Search
+    Search,
+    Multipane,
+    MultipaneResizer,
+    TreeModule
   },
+  mixins: [
+    paneResizerHandleViewport,
+    createDefectModuleTreeSidebarMixin({
+      visibleKey: DEFECT_KANBAN_TREE_VISIBLE_KEY,
+      widthKey: DEFECT_KANBAN_TREE_WIDTH_KEY
+    })
+  ],
   props: {
     projectId: { type: Number, default: null },
     query: { type: Object, default: () => ({}) }
@@ -704,6 +765,8 @@ export default {
     this.$nextTick(() => {
       this.setupBoardWidthObserver()
       this.setupAssigneeSlotObservers()
+      this.syncDefectTreeToolbarHeightFromTree()
+      this.scheduleSyncPaneResizerHandle && this.scheduleSyncPaneResizerHandle()
     })
   },
   watch: {
@@ -734,6 +797,14 @@ export default {
     }
   },
   computed: {
+    /** 收起条顶区高度跟泳道标题行对齐 */
+    moduleStripStyle() {
+      const h = this.defectTreeToolbarHeight
+      if (h != null && h > 0) {
+        return { '--kanban-module-strip-head-h': `${h}px` }
+      }
+      return null
+    },
     /** 字段管理未启用优先级时卡片不展示；布局未加载完先不显示，避免闪一下 */
     showCardPriority() {
       if (this._fieldLayoutProjectId == null) return false
@@ -833,6 +904,33 @@ export default {
   },
   methods: {
     init() {},
+    onModuleTreeLayoutChanged() {
+      this.$nextTick(() => {
+        this.syncDefectTreeToolbarHeightFromTree()
+        this.measureBoardWidth && this.measureBoardWidth()
+        this.scheduleSyncPaneResizerHandle && this.scheduleSyncPaneResizerHandle()
+      })
+    },
+    /** 标题高度跟右侧泳道头对齐（不用交付物树默认 48px 表头高） */
+    syncDefectTreeToolbarHeightFromTree() {
+      this.$nextTick(() => {
+        const board = this.$refs.kanbanBoard
+        const head = board && board.querySelector
+          ? board.querySelector('.defect-kanban-lane-head')
+          : null
+        if (!head) {
+          return
+        }
+        const h = Math.round(head.getBoundingClientRect().height || head.offsetHeight || 0)
+        if (h > 0 && h !== this.defectTreeToolbarHeight) {
+          this.defectTreeToolbarHeight = h
+        }
+      })
+    },
+    /** 与泳道间分隔条一致：手柄在条内垂直居中 */
+    syncPaneResizerHandleTop() {
+      this.multipaneStyle['--resizerHandleTop'] = '50%'
+    },
     setupBoardWidthObserver() {
       this.teardownBoardWidthObserver()
       const board = this.$refs.kanbanBoard
@@ -2111,18 +2209,14 @@ export default {
         ? cardEl.cloneNode(true)
         : document.createElement('div')
       ghost.classList.add('defect-kanban-drag-ghost', 'defect-kanban-drag-ghost-layer', 'is-front')
-      ghost.classList.remove('is-dragging', 'is-selected', 'is-drag-locked')
+      ghost.classList.remove('is-dragging', 'is-selected', 'is-drag-locked', 'is-collect-flying')
       ghost.removeAttribute('draggable')
       ghost.removeAttribute('title')
-      /* 卡片本身 overflow:hidden，角标放在 stack 上避免被裁切 */
-      ghost.style.overflow = 'visible'
-      /* 去掉克隆里的交互控件与预览图，减轻拖影绘制 */
-      ghost.querySelectorAll(
-        'button, .el-dropdown, .defect-kanban-card-media, img, video, canvas'
-      ).forEach((el) => {
-        if (el && el.parentNode) el.parentNode.removeChild(el)
-      })
+      /* 保留原卡完整外观（含预览图/工具条）；外层 wrap 已 pointer-events:none */
       ghost.style.width = `${width}px`
+      ghost.style.height = `${height}px`
+      ghost.style.maxWidth = `${width}px`
+      ghost.style.overflow = 'hidden'
       stack.appendChild(ghost)
       if (n > 1) {
         stack.classList.add('is-multi')
@@ -2454,12 +2548,156 @@ export default {
   gap: 8px;
 }
 
+.defect-kanban-multipane.custom-resizer.multipane {
+  flex: 1 1 0%;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  align-items: stretch;
+}
+.defect-kanban-multipane.custom-resizer--tree-hidden > .defect-kanban-board {
+  flex: 1 1 100%;
+  width: 100%;
+}
+/*
+ * 覆盖全局 multipane-tree-module.scss 的 flex-start：
+ * 交付物列与分隔条通底，与右侧泳道同高。
+ */
+.defect-kanban-multipane.custom-resizer:not(.custom-resizer--tree-hidden) {
+  > .defect-tree-module,
+  > .defect-kanban-module-strip {
+    align-self: stretch !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+  > .multipane-resizer {
+    align-self: stretch !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+/* 与 .defect-kanban-lane-resizer 同款 */
+.defect-kanban-multipane.custom-resizer > .multipane-resizer {
+  flex: 0 0 12px;
+  flex-shrink: 0;
+  margin: 0;
+  left: 0;
+  width: 12px;
+  cursor: col-resize;
+  position: relative;
+  box-sizing: border-box;
+  z-index: 350;
+  background: transparent !important;
+  background-image: none !important;
+  touch-action: none;
+  @include multipane-resizer-vertical-appearance;
+  &:after {
+    width: 5px;
+    height: 28px;
+  }
+}
+.defect-tree-module {
+  width: var(--treeModuleWidth);
+  max-width: 40%;
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+/* 交付物列表：与右侧泳道同壳、同顶栏高度语义 */
+.defect-kanban-module-lane {
+  --lane-accent: var(--el-text-color-secondary, #909399);
+  border: 1px solid var(--el-border-color-extra-light, #f2f2f2);
+  /* 与 Excel/表格/甘特主面板统一：--cat2bug-border-radius（默认 4px） */
+  border-radius: var(--cat2bug-border-radius, 4px);
+  background: var(--el-fill-color-blank, var(--el-bg-color, #fff));
+  overflow: hidden;
+}
+.defect-kanban-module-lane :deep(> .tree) {
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.defect-kanban-module-lane :deep(.tree-tools) {
+  --lane-head-control-h: 32px;
+  height: auto;
+  min-height: calc(12px + 12px + var(--lane-head-control-h));
+  line-height: normal;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--el-border-color-extra-light, #f2f2f2);
+  border-radius: var(--cat2bug-border-radius, 4px) var(--cat2bug-border-radius, 4px) 0 0;
+  background: color-mix(in srgb, var(--lane-accent, #909399) 8%, var(--el-bg-color, #fff));
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--el-text-color-primary, #303133);
+}
+.defect-kanban-module-lane :deep(.tree-tools-title) {
+  gap: 8px;
+  font-weight: 600;
+  &::before {
+    content: '';
+    flex: 0 0 auto;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--lane-accent, #909399);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lane-accent, #909399) 22%, transparent);
+  }
+  > .el-icon,
+  > i {
+    display: none;
+  }
+}
+.defect-kanban-module-lane :deep(.el-tree) {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 6px 10px;
+  box-sizing: border-box;
+}
+.defect-kanban-module-strip {
+  --lane-head-control-h: 32px;
+  flex: 0 0 28px;
+  width: 28px;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 0;
+  border: 1px solid var(--el-border-color-extra-light, #f2f2f2);
+  border-radius: var(--cat2bug-border-radius, 4px);
+  background: var(--el-fill-color-blank, var(--el-bg-color, #fff));
+  cursor: pointer;
+  margin-right: 12px;
+  /* 顶区与泳道标题行同高，图标与「未指派」水平对齐 */
+  :deep(.tree-sidebar-expand-trigger) {
+    width: 100%;
+    height: var(--kanban-module-strip-head-h, calc(12px + 12px + var(--lane-head-control-h)));
+    min-height: var(--kanban-module-strip-head-h, calc(12px + 12px + var(--lane-head-control-h)));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+}
+.defect-kanban-module-strip:hover {
+  background: var(--el-fill-color-light, #f5f7fa);
+}
+
 .defect-kanban-board {
   display: flex;
   gap: 0;
   min-height: 0;
   flex: 1;
   overflow: hidden;
+  min-width: 0;
   &.is-lane-resizing {
     user-select: none;
     cursor: col-resize;
@@ -2502,7 +2740,7 @@ export default {
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--el-border-color-extra-light, #f2f2f2);
-  border-radius: 12px;
+  border-radius: var(--cat2bug-border-radius, 4px);
   background: var(--el-fill-color-blank, var(--el-bg-color, #fff));
   &.is-drag-over {
     border-color: var(--lane-accent, var(--el-color-primary, #409eff));
@@ -2552,7 +2790,7 @@ export default {
   min-height: calc(12px + 12px + var(--lane-head-control-h));
   padding: 12px 14px;
   border-bottom: 1px solid var(--el-border-color-extra-light, #f2f2f2);
-  border-radius: 12px 12px 0 0;
+  border-radius: var(--cat2bug-border-radius, 4px) var(--cat2bug-border-radius, 4px) 0 0;
   background: color-mix(in srgb, var(--lane-accent, #909399) 8%, var(--el-bg-color, #fff));
   /* visible：负责人角标/平铺头像不被标题行裁切 */
   overflow: visible;
@@ -3358,11 +3596,19 @@ body.defect-kanban-lane-resizing * {
 .defect-kanban-drag-ghost {
   box-sizing: border-box;
   margin: 0;
-  box-shadow: 0 10px 28px color-mix(in srgb, #000 28%, transparent);
+  /* 与未拖动卡片 hover 同级阴影，避免拖影「变重/变样」 */
+  box-shadow: 0 4px 14px color-mix(in srgb, #000 10%, transparent);
   cursor: grabbing;
+  opacity: 0.72;
 }
 .defect-kanban-drag-ghost-stack.is-compact .defect-kanban-drag-ghost {
-  box-shadow: 0 6px 16px color-mix(in srgb, #000 22%, transparent);
+  box-shadow: 0 4px 14px color-mix(in srgb, #000 10%, transparent);
+}
+.defect-kanban-drag-ghost-stack.is-multi .defect-kanban-drag-ghost-layer.is-back {
+  opacity: 0.55;
+}
+.defect-kanban-drag-ghost-stack.is-multi .defect-kanban-drag-ghost-layer.is-back.is-depth-2 {
+  opacity: 0.4;
 }
 .defect-kanban-drag-ghost-badge {
   position: absolute;

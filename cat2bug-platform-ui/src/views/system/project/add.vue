@@ -351,22 +351,29 @@ export default {
       });
     },
     getMemberList(){
-      this.memberParams.params.excludeMembers = this.form.members.map(m=>m.userId);
+      const excludeIds = new Set((this.form.members || []).map(m => m.userId));
+      this.memberParams.params.excludeMembers = Array.from(excludeIds);
       listMember(this.currentTeamId,this.memberParams).then(res=>{
-        this.memberList = res.rows.map(m=> {
-          m.isSelect=false;
-          if(this.roleOptions && this.roleOptions.length>0){
-            m.roleIds=[this.roleOptions.filter(r=>r.projectCreateBy==false)[0].roleId];
+        const rows = (res.rows || []).map(m => {
+          m.isSelect = false;
+          if (this.roleOptions && this.roleOptions.length > 0) {
+            m.roleIds = [this.roleOptions.filter(r => r.projectCreateBy == false)[0].roleId];
           } else {
-            m.roleIds=[];
-          }
-          if(this.currentUserId == m.userId && this.form.members.length == 0) {
-            m.isSelect = true;
-            m.roleIds = this.roleOptions.filter(r=>r.projectCreateBy).map(r=>r.roleId);
-            this.form.members.push(m);
+            m.roleIds = [];
           }
           return m;
         });
+        // 新建时默认把当前用户加入项目成员，并不再出现在待选下拉中
+        if (this.form.members.length === 0) {
+          const me = rows.find(m => m.userId == this.currentUserId);
+          if (me) {
+            me.isSelect = true;
+            me.roleIds = this.roleOptions.filter(r => r.projectCreateBy).map(r => r.roleId);
+            this.form.members.push(me);
+            excludeIds.add(me.userId);
+          }
+        }
+        this.memberList = rows.filter(m => !excludeIds.has(m.userId));
       });
     },
     deleteMemberHandle(member){
@@ -382,14 +389,12 @@ export default {
       };
     },
     selectAddMemberHandle(member) {
-      member.isSelect = !member.isSelect;
-      if(member.isSelect){
+      member.isSelect = true;
+      if (!this.form.members.some(m => m.userId === member.userId)) {
         this.form.members.push(member);
-        let membersSet = new Set(this.form.members);
-        this.form.members = Array.from(membersSet);
-      } else {
-        this.form.members = this.form.members.filter(m=>m.isSelect);
       }
+      // 已选成员从下拉中移除
+      this.memberList = this.memberList.filter(m => m.userId !== member.userId);
     },
     clickProjectIconHandle(index) {
       this.activeProjectIconIndex = index;
@@ -442,7 +447,12 @@ export default {
   }
   .project-members {
     margin-top: 10px;
+    /* 成员多时在浮层内滚动，避免撑出视口 */
+    max-height: min(420px, 50vh);
+    overflow-x: hidden;
+    overflow-y: auto;
     .el-col {
+      position: relative;
       padding: 0 5px;
       display: flex;
       align-items: center;
@@ -451,17 +461,17 @@ export default {
       justify-content: flex-start;
     }
     .el-col:hover {
-      background-color: #F2F6FC;
+      background-color: var(--table-row-hover-bg, #f2f6fc);
       border-radius: 5px;
       cursor: pointer;
     }
     :deep(.el-col[select="true"]){
       .member-nameplate-content {
         p {
-          color: #1890ff;
+          color: var(--cat2bug-primary, #1890ff);
         }
         span {
-          color: #909399;
+          color: var(--text-color-secondary, #909399);
         }
       }
     }
@@ -472,7 +482,7 @@ export default {
       content: "";
       font-size: 12px;
       -webkit-font-smoothing: antialiased;
-      color: #1890ff;
+      color: var(--cat2bug-primary, #1890ff);
     }
   }
   :deep(.el-table){

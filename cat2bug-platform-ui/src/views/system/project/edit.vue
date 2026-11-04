@@ -271,22 +271,22 @@ export default {
         this.$nextTick(() => initProjectIconPopoverKbd(this));
       });
     },
-    /** 获取待添加的成员 */
+    /** 获取待添加的成员（已在表格中的成员不再出现在下拉） */
     getMemberList(){
-      this.memberParams.params.excludeMembers = this.form.members?this.form.members.map(m=>m.userId):[];
+      const excludeIds = new Set((this.form.members || []).map(m => m.userId));
+      this.memberParams.params.excludeMembers = Array.from(excludeIds);
       listMember(this.getTeamId(),this.memberParams).then(res=>{
-        // 赋值成员列表
-        this.memberList = res.rows.map(m=> {
-          // 设置不选中
-          m.isSelect=false;
-          // 设置默认角色
-          if(this.roleOptions && this.roleOptions.length>0){
-            m.roleIds=[this.roleOptions[0].roleId];
-          } else {
-            m.roleIds=[];
-          }
-          return m;
-        });
+        this.memberList = (res.rows || [])
+          .filter(m => !excludeIds.has(m.userId))
+          .map(m => {
+            m.isSelect = false;
+            if (this.roleOptions && this.roleOptions.length > 0) {
+              m.roleIds = [this.roleOptions[0].roleId];
+            } else {
+              m.roleIds = [];
+            }
+            return m;
+          });
       });
     },
     /** 获取团队id */
@@ -306,16 +306,13 @@ export default {
         }
       };
     },
-    /** 选中添加的成员 */
+    /** 选中添加的成员：加入表格并从下拉移除 */
     selectAddMemberHandle(member) {
-      member.isSelect = !member.isSelect;
-      if(member.isSelect){
+      member.isSelect = true;
+      if (!this.form.members.some(m => m.userId === member.userId)) {
         this.form.members.push(member);
-        let membersSet = new Set(this.form.members);
-        this.form.members = Array.from(membersSet);
-      } else {
-        this.form.members = this.form.members.filter(m=>m.isSelect);
       }
+      this.memberList = this.memberList.filter(m => m.userId !== member.userId);
     },
     /** 点击选中的项目图标处理方法 */
     clickProjectIconHandle(index) {
@@ -398,7 +395,12 @@ export default {
   }
   .project-members {
     margin-top: 10px;
+    /* 成员多时在浮层内滚动，避免撑出视口 */
+    max-height: min(420px, 50vh);
+    overflow-x: hidden;
+    overflow-y: auto;
     .el-col {
+      position: relative;
       padding: 0 5px;
       display: flex;
       align-items: center;
@@ -407,17 +409,17 @@ export default {
       justify-content: flex-start;
     }
     .el-col:hover {
-      background-color: #F2F6FC;
+      background-color: var(--table-row-hover-bg, #f2f6fc);
       border-radius: 5px;
       cursor: pointer;
     }
     :deep(.el-col[select="true"]){
       .member-nameplate-content {
         p {
-          color: #1890ff;
+          color: var(--cat2bug-primary, #1890ff);
         }
         span {
-          color: #909399;
+          color: var(--text-color-secondary, #909399);
         }
       }
     }
@@ -428,7 +430,7 @@ export default {
       content: "";
       font-size: 12px;
       -webkit-font-smoothing: antialiased;
-      color: #1890ff;
+      color: var(--cat2bug-primary, #1890ff);
     }
   }
   :deep(.el-table){

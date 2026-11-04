@@ -375,7 +375,7 @@
   "project.push.key": "Sync Key",
   "project.push.key-cannot-empty": "The sync key cannot be empty!",
   "project.push.key-placeholder": "Paste the sync key from cloud inbound sync",
-  "project.push.key-hint": "On cloud.cat2bug.com, create a new project, then go to Project settings → Cloud inbound sync → Generate sync key, and paste it here. The key expires; each generation invalidates the previous one.",
+  "project.push.key-hint": "On {host}, create a new project, then go to Project settings → Cloud inbound sync → Generate sync key, and paste it here. The key expires; each generation invalidates the previous one.",
   "project.push.package-hint": "Members, team config, the work calendar, and MCP settings are packed automatically. Defects, cases, plans, and deliverables are required. Git repositories are off by default. Documents are selected per file; files missing locally cannot be selected. Sizes are estimates and the total cannot exceed the limit. Secrets such as OAuth/PAT are not included.",
   "project.push.success": "Package uploaded to the cloud inbox. On the cloud site, open the target project → Cloud inbound sync, map members, and run import.",
   "project.push.submitting": "Packaging and uploading…",

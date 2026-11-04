@@ -2383,9 +2383,10 @@ export default {
       }
       return false
     },
-    /** Cmd/Ctrl+D：显示/隐藏左侧交付物列表（仅表格视图） */
+    /** Cmd/Ctrl+D：显示/隐藏左侧交付物列表（表格 / Excel / 看板；甘特无独立侧栏） */
     shortcutToggleModuleTree() {
-      if (this.defectContentComponent !== 'DefectTable') return
+      const allowed = ['DefectTable', 'DefectExcel', 'DefectKanban']
+      if (!allowed.includes(this.defectContentComponent)) return
       const content = this.$refs.defectContentComponent
       if (content && typeof content.toggleModuleTreeVisible === 'function') {
         content.toggleModuleTreeVisible()

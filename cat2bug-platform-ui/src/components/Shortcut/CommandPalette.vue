@@ -61,7 +61,7 @@
 import ShortcutBadge from './ShortcutBadge.vue'
 import { shortcutService } from '@/plugins/shortcut'
 import { normalizeKey } from '@/plugins/shortcut/keymap'
-import { SYSTEM_DOC_URL } from '@/utils/system-doc-url'
+import { openSystemDoc } from '@/utils/system-doc-url'
 import { escapeHtml } from '@/utils/sanitize-html'
 import { useSettingsStore } from '@/stores/settings'
 import { useUserStore } from '@/stores/user'
@@ -255,7 +255,7 @@ export default {
       } else if (action === 'open:git') {
         window.open('https://gitee.com/cat2bug/cat2bug-platform')
       } else if (action === 'open:docs') {
-        window.open(SYSTEM_DOC_URL)
+        openSystemDoc()
       }
     },
     applyLang(lang) {

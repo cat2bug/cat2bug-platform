@@ -328,7 +328,7 @@
   "project.push.key": "同期キー",
   "project.push.key-cannot-empty": "同期キーは必須です!",
   "project.push.key-placeholder": "クラウド入站ページで生成した同期キーを貼り付け",
-  "project.push.key-hint": "cloud.cat2bug.com で新規プロジェクトを作成し、プロジェクト設定 → クラウド入站同期 →「同期キーを生成」でコピーしてここに貼り付けてください。有効期限があり、再生成で旧キーは無効になります。",
+  "project.push.key-hint": "{host} で新規プロジェクトを作成し、プロジェクト設定 → クラウド入站同期 →「同期キーを生成」でコピーしてここに貼り付けてください。有効期限があり、再生成で旧キーは無効になります。",
   "sync": "同期",
   "collect-success": "フォローに成功しました",
   "cancel-success": "フォロー解除に成功しました",

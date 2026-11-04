@@ -63,7 +63,9 @@
                    :key="moduleId + '-' + index"
                    :module-pid="moduleId"
                    :project-id="projectId"
+                   :pin-module-id="index === 0 ? scopeRootModuleId : null"
                    :is-edit="isEdit && checkPermi(['system:module:add'])"
+                   :show-footer-add="!(index === 0 && scopeRootModuleId != null)"
                    :keyboard-active-index="keyboardActiveIndexForColumn(index)"
                    :keyboard-active-part="keyboardActivePartForColumn(index)"
                    :path-highlight-module-id="pathHighlightModuleIdForColumn(index)"
@@ -94,7 +96,7 @@ import { observeComboFocusTarget } from '@/utils/combo-focus-tab'
 import { mapElementPlusSize } from '@/utils/element-plus-size'
 
 export default {
-  emits: ['update:moduleId', 'input'],
+  emits: ['update:moduleId', 'input', 'module-created'],
   name: "SelectModule",
   components: { MemberNameplate, ModuleMenu },
   data() {
@@ -178,9 +180,25 @@ export default {
     popperExtraClass: {
       type: String,
       default: ''
+    },
+    /**
+     * 左侧交付物树当前选中节点：下拉首列仅展示该节点，其子项经 › 进入下一列（避免同列混入子项再展开导致重复）。
+     * 未选（null）时与全局一致，从根 pid=0 开始。
+     */
+    scopeModuleId: {
+      type: Number,
+      default: null
     }
   },
   computed: {
+    /** 有效的子树根；无效时退回 0 */
+    scopeRootModuleId() {
+      const id = this.scopeModuleId
+      if (id == null || id === '' || !Number.isFinite(Number(id)) || Number(id) <= 0) {
+        return null
+      }
+      return Number(id)
+    },
     controlSize() {
       return mapElementPlusSize(this.size)
     },
@@ -228,6 +246,12 @@ export default {
         this.loadModuleForProp(newVal)
       } else {
         this.clearSelectModuleState(false)
+      }
+    },
+    scopeModuleId() {
+      this.resetMenu()
+      if (this.popoverVisible) {
+        this.refreshRootMenu()
       }
     },
     popoverVisible(val) {
@@ -353,7 +377,7 @@ export default {
       if (!this.popoverVisible) return;
       this.$nextTick(() => this.fitModulePopoverLayout());
     },
-    /** 本列新建交付物成功后：选中新建项并显示键盘高亮背景，下拉保持展开 */
+    /** 本列新建交付物成功后：仅高亮新建项并通知外层插树；不写入选中值（须再点该项才算选择） */
     onModuleMenuAdded(payload, columnIndex) {
       this.popoverVisible = true;
       if (columnIndex > 0) {
@@ -379,10 +403,13 @@ export default {
         this.hideActiveAddModuleForm();
         const module = list[idx];
         if (module) {
-          this.selectModule = module;
           const pathOverride = this.buildModulePathFromOpenColumns(module, columnIndex);
-          this.syncModuleDisplay(module, pathOverride);
-          this.$emit('update:moduleId', module.moduleId, module); this.$emit('input', module.moduleId, module);
+          /* 通知外层局部插入左侧树；勿 sync/emit 选中，避免「新建即选中」 */
+          this.$emit('module-created', {
+            module: { ...module, modulePath: pathOverride || module.modulePath },
+            moduleName: payload && payload.moduleName != null ? payload.moduleName : module.moduleName,
+            modulePath: pathOverride || this.resolveModuleFullPath(module)
+          });
           this.reloadModulePathMap(this.projectId || module.projectId);
         }
         this.$nextTick(() => {
@@ -623,10 +650,10 @@ export default {
     getMenuRowCount(menu) {
       if (!menu) return 0;
       const n = (menu.moduleList || []).length;
-      return menu.isEdit ? n + 1 : n;
+      return menu.isEdit && menu.showFooterAdd !== false ? n + 1 : n;
     },
     isNewRowIndex(menu, rowIndex) {
-      if (!menu || !menu.isEdit) return false;
+      if (!menu || !menu.isEdit || menu.showFooterAdd === false) return false;
       return rowIndex === (menu.moduleList || []).length;
     },
     menuRowHasSideAdd(menu, rowIndex) {
@@ -1165,17 +1192,41 @@ export default {
       this.selectModule = module
       this.syncModuleDisplay(module)
     },
+    /** ElPopover → 内部 ElTooltip（EP 未暴露 onOpen，仅 hide/popperRef） */
+    getModulePopoverTooltip () {
+      const popover = this.$refs.modulePopover
+      if (!popover) return null
+      if (popover.tooltipRef) return popover.tooltipRef
+      const fromRefs = popover.$ && popover.$.refs && popover.$.refs.tooltipRef
+      return fromRefs || null
+    },
+    /** 首列 modulePid：有左侧树作用域时为选中节点，否则为根 0 */
+    rootMenuPid() {
+      return this.scopeRootModuleId != null ? this.scopeRootModuleId : 0
+    },
     /** 缺陷 Excel 等场景：不点伪输入，直接打开 popover 并刷新首级交付物菜单 */
     openDirectMenu () {
       if (!this.directMenu) return
+      this.activeModuleIds = [this.rootMenuPid()]
       this.popoverVisible = true
+      /* 刚挂载时仅改 data 偶发不把 visible 传到 ElPopover（props 仍为 false）；强制刷新 */
+      this.$forceUpdate()
       this.$nextTick(() => {
-        this.fitModulePopoverLayout()
-        const menus = this.$refs.moduleMenu
-        const m0 = Array.isArray(menus) ? menus[0] : menus
-        if (m0 && typeof m0.open === 'function') {
-          m0.open(this.projectId, 0)
-        }
+        this.$nextTick(() => {
+          /*
+           * EP2 Tooltip：visible 刷到子组件后再 onOpen；锚点须非 0 高度（见 .select-module-ref-minimal）。
+           */
+          const tip = this.getModulePopoverTooltip()
+          if (tip && typeof tip.onOpen === 'function') {
+            tip.onOpen()
+          }
+          this.fitModulePopoverLayout()
+          const menus = this.$refs.moduleMenu
+          const m0 = Array.isArray(menus) ? menus[0] : menus
+          if (m0 && typeof m0.open === 'function') {
+            m0.open(this.projectId, this.rootMenuPid())
+          }
+        })
       })
     },
     refreshRootMenu() {
@@ -1183,7 +1234,7 @@ export default {
         const menus = this.getModuleMenus()
         const m0 = menus[0]
         if (m0 && typeof m0.open === 'function') {
-          m0.open(this.projectId, 0)
+          m0.open(this.projectId, this.rootMenuPid())
         }
       })
     },
@@ -1288,7 +1339,11 @@ export default {
       const pathOverride = this.buildModulePathFromOpenColumns(module, index);
       this.syncModuleDisplay(module, pathOverride);
       this.popoverVisible = false;
-      this.$emit('update:moduleId', this.selectModule.moduleId, this.selectModule); this.$emit('input', this.selectModule.moduleId, this.selectModule);
+      const modOut = pathOverride
+        ? { ...this.selectModule, modulePath: pathOverride }
+        : this.selectModule;
+      this.$emit('update:moduleId', modOut.moduleId, modOut);
+      this.$emit('input', modOut.moduleId, modOut);
       this.resetMenu();
     },
     /** 点击菜单添加按钮的事件处理 */
@@ -1346,7 +1401,7 @@ export default {
       if (event) event.stopPropagation()
     },
     resetMenu() {
-      this.activeModuleIds = [0];
+      this.activeModuleIds = [this.rootMenuPid()];
       this.activeColumnIndex = 0;
       this.activeRowIndex = -1;
       this.activeRowPart = 'main';
@@ -1526,12 +1581,12 @@ export default {
   .el-popover.el-popper.select-module-popover .module-menu-scroll-btn:hover {
     color: var(--cat2bug-primary, #1890ff);
   }
-  /* directMenu：占位锚点，不占视觉高度，供 popover 对齐 */
+  /* directMenu：隐形锚点；须非 0 高度，否则 EP Popper/Tooltip 无法打开（visible 不同步） */
   .select-module-ref-minimal {
     display: block;
     width: 100%;
-    height: 0;
-    min-height: 0;
+    height: 1px;
+    min-height: 1px;
     padding: 0;
     margin: 0;
     border: none !important;

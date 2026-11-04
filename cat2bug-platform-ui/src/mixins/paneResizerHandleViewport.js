@@ -55,7 +55,11 @@ export default {
       const lineH = (rectH > 1 ? rectH : legacy) || 8
       const px = computeResizerHandleTopPx(el, lineH)
       if (px == null || Number.isNaN(px)) return
-      this.multipaneStyle['--resizerHandleTop'] = `${Math.round(px * 100) / 100}px`
+      // 整体替换以触发 Vue2 对 style 绑定的更新（仅改 key 时新属性可能不刷新）
+      this.multipaneStyle = {
+        ...this.multipaneStyle,
+        '--resizerHandleTop': `${Math.round(px * 100) / 100}px`,
+      }
     },
   },
 }

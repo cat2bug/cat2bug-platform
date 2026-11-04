@@ -99,6 +99,13 @@
         </if>
         <choose>
             <when test="defect != null and defect.moduleId == 0">AND d.module_id IS NULL</when>
+            <!-- 左侧交付物树：该节点及其全部子交付物（params.moduleIds，由 SysDefectService.restrictToModuleTree 填充） -->
+            <when test="defect != null and defect.params != null and defect.params.moduleIds != null">
+                AND d.module_id IN
+                <foreach collection="defect.params.moduleIds" item="mid" open="(" separator="," close=")">
+                    #{mid}
+                </foreach>
+            </when>
             <when test="defect != null and defect.moduleId != null and defect.moduleId &gt; 0">AND d.module_id = #{defect.moduleId}</when>
         </choose>
         <if test="defect != null and defect.createBy != null and defect.createBy != ''">

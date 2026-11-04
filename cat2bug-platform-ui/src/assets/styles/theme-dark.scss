@@ -2982,8 +2982,9 @@ html.dark {
     }
   }
 
-  /* 看板泳道分隔条：与甘特同款暗色手柄，避免白底亮块 */
-  .defect-kanban-lane-resizer {
+  /* 看板泳道 / 交付物列分隔条：同款暗色手柄，避免白底亮块 */
+  .defect-kanban-lane-resizer,
+  .defect-kanban-multipane > .multipane-resizer {
     background: transparent !important;
     background-image: none !important;
 
@@ -3963,6 +3964,41 @@ html.dark {
   .defect-excel-context,
   .defect-table-context {
     background: transparent !important;
+  }
+
+  /* Excel 左侧交付物列表：与右侧编辑器同色边框；展开时右侧贴合无缝 */
+  .defect-excel-multipane .defect-tree-module {
+    border: 1px solid var(--border-color-light) !important;
+    background-color: var(--table-bg) !important;
+  }
+  .defect-excel-multipane.custom-resizer:not(.custom-resizer--tree-hidden) > .defect-tree-module {
+    border-right: none !important;
+  }
+  .defect-excel-multipane.custom-resizer:not(.custom-resizer--tree-hidden) .defect-vue-excel-editor {
+    border-left: none !important;
+  }
+
+  /* Excel 交付物展开时分隔条：无手柄，保留 1px 竖边可拖 */
+  .defect-excel-multipane > .multipane-resizer {
+    background: transparent !important;
+    background-image: none !important;
+    pointer-events: auto !important;
+
+    &:before {
+      display: block !important;
+      background-color: var(--border-color-light) !important;
+      box-shadow: none !important;
+      pointer-events: auto !important;
+    }
+
+    &:after {
+      display: none !important;
+      content: none !important;
+    }
+
+    &:hover:before {
+      background-color: var(--cat2bug-primary) !important;
+    }
   }
 
   .defect-vue-excel-editor {

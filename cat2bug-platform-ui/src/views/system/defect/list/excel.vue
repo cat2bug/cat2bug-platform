@@ -62,6 +62,31 @@
       </div>
     </div>
 
+    <multipane
+      layout="vertical"
+      ref="multiPane"
+      class="custom-resizer defect-excel-multipane"
+      :class="{ 'custom-resizer--tree-hidden': !showModuleTree }"
+      @paneResizeStop="dragStopHandle"
+    >
+      <div v-if="showModuleTree" ref="treeModule" class="defect-tree-module" :style="treeModuleStyle">
+        <tree-module
+          ref="treeModuleRef"
+          :project-id="projectId"
+          :show-sidebar-toggle="true"
+          sidebar-toggle-hint-class="defect-list-hint-module-tree"
+          :toolbar-sync-height="defectTreeToolbarHeight"
+          @toggle-sidebar="toggleModuleTreeVisible"
+          @node-click="moduleTreeClickHandle"
+        />
+        <!-- 与右侧 Excel .footer 同高同色底横条，底边视觉连续 -->
+        <div class="defect-excel-module-footer-bar" aria-hidden="true" />
+      </div>
+      <multipane-resizer
+        ref="paneResizer"
+        v-show="showModuleTree"
+        :style="[multipaneStyle, paneResizerRuleVars]"
+      />
     <div
       ref="defectExcelContext"
       v-loading="loading"
@@ -71,6 +96,22 @@
       @click.capture="onDefectExcelCellInteractiveClickCapture"
       @paste.capture="onDefectExcelPasteCapture"
     >
+      <el-tooltip
+        v-if="!showModuleTree"
+        :content="$t('case.show-module-tree')"
+        placement="bottom"
+      >
+        <span
+          class="tree-sidebar-expand-trigger defect-excel-tree-expand-corner defect-list-hint-module-tree"
+          role="button"
+          tabindex="0"
+          @click.stop.prevent="toggleModuleTreeVisible"
+          @keyup.enter.stop.prevent="toggleModuleTreeVisible"
+          @mousedown.stop
+        >
+          <svg-icon icon-class="menu" class-name="tree-sidebar-expand-svg" />
+        </span>
+      </el-tooltip>
       <!-- 内嵌 vue-excel-editor（vendor）；v-model 绑定 value，Vue3 须用 :value + @update -->
       <vue-excel-editor
         ref="excelEditor"
@@ -134,6 +175,7 @@
         </template>
       </vue-excel-editor>
     </div>
+    </multipane>
 
     <!-- 贴在单元格下方，focus 后直接弹出 Element 日期时间下拉面板（非对话框） -->
     <!-- 交付物列右侧三角：固定层内嵌 SelectModule（与计划时间列日期面板同理） -->
@@ -148,18 +190,20 @@
         :key="
           'excel-mod-' +
           (excelModulePickerRow && excelModulePickerRow.$id != null ? String(excelModulePickerRow.$id) : '0') +
-          '-' +
-          (excelModulePickerModuleId == null || excelModulePickerModuleId === '' ? 'x' : String(excelModulePickerModuleId))
+          '-scope-' +
+          (excelModulePickerScopeId == null ? 'all' : String(excelModulePickerScopeId))
         "
         ref="excelModuleSelect"
         :module-id="excelModulePickerModuleId"
         :project-id="excelModulePickerProjectId"
+        :scope-module-id="excelModulePickerScopeId"
         :is-edit="true"
         :clearable="true"
         :direct-menu="true"
         popper-extra-class="defect-excel-module-picker-popper"
         size="small"
         @input="onExcelModuleSelectInput"
+        @module-created="onExcelModuleCreated"
       />
     </div>
 
@@ -214,14 +258,27 @@
 
 <script>
 import { ElImageViewer } from 'element-plus';
+import { Multipane, MultipaneResizer } from 'vue-multipane';
+import TreeModule from '@/components/Module/TreeModule';
 import SelectModule from "@/components/Module/SelectModule/index.vue";
 import { listDefect, updateDefect, addDefect, getDefect, delDefect } from "@/api/system/defect";
+import { listModulePath } from "@/api/system/module";
 import { listMemberOfProject } from "@/api/system/project";
+import {
+  estimateCharsForPixelWidth,
+  formatDeliverablePath
+} from "@/utils/deliverable-path-display";
 import { upload } from "@/api/common/upload";
 import { strFormat } from "@/utils";
 import { checkPermi } from "@/utils/permission";
 import errorCode from "@/utils/errorCode";
 import { TableOptions } from "@/views/system/defect/list/table-options";
+import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport';
+import {
+  createDefectModuleTreeSidebarMixin,
+  DEFECT_EXCEL_TREE_VISIBLE_KEY,
+  DEFECT_EXCEL_TREE_WIDTH_KEY
+} from '@/mixins/defectModuleTreeSidebar';
 import {
   buildImageUploadAccept,
   buildNativeImageOnerrorScript,
@@ -622,7 +679,17 @@ export default {
   components: {
     ElImageViewer,
     SelectModule,
+    Multipane,
+    MultipaneResizer,
+    TreeModule,
   },
+  mixins: [
+    paneResizerHandleViewport,
+    createDefectModuleTreeSidebarMixin({
+      visibleKey: DEFECT_EXCEL_TREE_VISIBLE_KEY,
+      widthKey: DEFECT_EXCEL_TREE_WIDTH_KEY
+    })
+  ],
   dicts: ["defect_level"],
   props: {
     query: {
@@ -680,6 +747,10 @@ export default {
       defectStateSelectMap: {},
       /** 项目成员 userId -> 展示名，供处理人下拉 */
       memberSelectMap: {},
+      /** moduleId → 全路径，交付物列按层级展示 */
+      modulePathById: {},
+      _modulePathGen: 0,
+      _modulePathProjectId: null,
       /** 由表格区域容器 ResizeObserver 测量，使 vue-excel-editor 铺满剩余高度 */
       excelEditorHeightPx: 480,
       planTimePickerVisible: false,
@@ -770,6 +841,14 @@ export default {
     };
   },
   computed: {
+    /** 左侧树当前选中交付物：交付物列下拉限定在该节点及其子树 */
+    excelModulePickerScopeId() {
+      const id = this.queryParams && this.queryParams.moduleId;
+      if (id == null || id === "" || !Number.isFinite(Number(id)) || Number(id) <= 0) {
+        return null;
+      }
+      return Number(id);
+    },
     excelInlineImageAccept() {
       return buildImageUploadAccept(EXCEL_INLINE_IMG_FILE_TYPES);
     },
@@ -954,11 +1033,13 @@ export default {
     },
     projectId() {
       this.refreshProjectMembers();
+      this.refreshModulePathMap();
       clearCustomFieldColumnsCache();
       this.loadEnabledCustomFields();
     },
     "queryParams.projectId"() {
       this.refreshProjectMembers();
+      this.refreshModulePathMap();
       clearCustomFieldColumnsCache();
       this.loadEnabledCustomFields();
     },
@@ -972,11 +1053,14 @@ export default {
   created() {
     this.initExcelColumnPickerFromCache();
     this.loadEnabledCustomFields();
+    // 首屏即按 Excel 表头高对齐，避免交付物标题先用 48px 再跳动
+    this.defectTreeToolbarHeight = EXCEL_HEAD_ROW_PX;
   },
   mounted() {
     this._excelMounted = true;
     this.bindExcelLayoutObserver();
     this.refreshProjectMembers();
+    this.refreshModulePathMap();
     this.$nextTick(() => {
       this.ensureExcelEditorLazyCallbackKeys();
       this.applyExcelColumnLayoutToEditorFields();
@@ -984,6 +1068,8 @@ export default {
       this.maybeRunInitialExcelColumnFill();
       this.scheduleExcelEditorLayoutFix();
       this.bindPlanTimeTriZoneMouseDown();
+      this.syncDefectTreeToolbarHeightFromTree();
+      this.scheduleSyncPaneResizerHandle && this.scheduleSyncPaneResizerHandle();
     });
   },
   beforeDestroy() {
@@ -1259,6 +1345,40 @@ export default {
         if (ed && ed.tableContent) {
           ed.tableContent.style.height = h + "px";
           if (!this.isExcelEditorColSepDragging()) this.scheduleExcelEditorLayoutFix();
+        }
+        this.syncModuleTreeHeightToExcelEditor();
+        this.scheduleSyncPaneResizerHandle && this.scheduleSyncPaneResizerHandle();
+      });
+    },
+    /** 交付物列高度贴齐 Excel 外壳底边，避免通高后比表格多出几像素 */
+    syncModuleTreeHeightToExcelEditor() {
+      this.$nextTick(() => {
+        const tree = this.$refs.treeModule;
+        const resizerComp = this.$refs.paneResizer;
+        const resizer = resizerComp && (resizerComp.$el || resizerComp);
+        const clear = (el) => {
+          if (!el || !el.style) return;
+          el.style.height = "";
+          el.style.maxHeight = "";
+        };
+        if (!this.showModuleTree) {
+          clear(tree);
+          clear(resizer);
+          return;
+        }
+        const ed = this.$refs.excelEditor;
+        const shell = ed && ed.$el;
+        if (!shell || typeof shell.getBoundingClientRect !== "function") return;
+        const h = Math.round(shell.getBoundingClientRect().height);
+        if (h <= 0) return;
+        const px = `${h}px`;
+        if (tree) {
+          tree.style.height = px;
+          tree.style.maxHeight = px;
+        }
+        if (resizer && resizer.style) {
+          resizer.style.height = px;
+          resizer.style.maxHeight = px;
         }
       });
     },
@@ -2581,10 +2701,91 @@ export default {
       if (c && c.key === "defectType") return this.excelDefectTypeToText;
       if (c && c.key === "defectLevel") return this.excelDefectLevelToText;
       if (c && c.key === "excelHandleByMemberId") return this.excelHandleByMemberIdToText;
+      if (c && c.key === "moduleName") return this.excelModuleNameToText;
       return this.excelColumnToTextPassthrough;
     },
     excelColumnToTextPassthrough(v) {
       return v == null ? "" : v;
+    },
+    /** 交付物列宽估算可显示字符数（预留三角热区） */
+    excelModuleNameMaxChars() {
+      const col = this.findExcelCol("moduleName");
+      const w = col && col.width != null ? Number(col.width) : 180;
+      return estimateCharsForPixelWidth(Math.max(48, (Number.isFinite(w) ? w : 180) - 28));
+    },
+    excelModuleNameToText(v) {
+      if (v == null || v === "") return "";
+      const full = String(v).trim();
+      if (!full) return "";
+      return formatDeliverablePath(full, this.excelModuleNameMaxChars()).short;
+    },
+    /** moduleId / modulePath / moduleName → 单元格展示用全路径 */
+    resolveExcelModuleDisplayPath(rowOrMod) {
+      if (!rowOrMod) return "";
+      const id = rowOrMod.moduleId;
+      if (id != null && id !== "") {
+        const mapped = this.modulePathById[id] || this.modulePathById[String(id)];
+        if (mapped) return String(mapped).trim();
+      }
+      if (rowOrMod.modulePath != null && String(rowOrMod.modulePath).trim()) {
+        return String(rowOrMod.modulePath).trim();
+      }
+      return rowOrMod.moduleName != null ? String(rowOrMod.moduleName).trim() : "";
+    },
+    refreshModulePathMap() {
+      const pid = Number(
+        (this.queryParams && this.queryParams.projectId) || this.projectId || 0
+      );
+      if (!pid) {
+        this.modulePathById = {};
+        this._modulePathProjectId = null;
+        return;
+      }
+      if (
+        this._modulePathProjectId === pid &&
+        this.modulePathById &&
+        Object.keys(this.modulePathById).length
+      ) {
+        return;
+      }
+      const gen = ++this._modulePathGen;
+      this._modulePathProjectId = pid;
+      listModulePath(pid)
+        .then((res) => {
+          if (gen !== this._modulePathGen) return;
+          const map = {};
+          (res.data || []).forEach((m) => {
+            if (m && m.moduleId != null && m.modulePath) {
+              const path = String(m.modulePath).trim();
+              map[m.moduleId] = path;
+              map[String(m.moduleId)] = path;
+            }
+          });
+          this.modulePathById = map;
+          this.applyModulePathsToSheetRows();
+        })
+        .catch(() => {
+          if (gen !== this._modulePathGen) return;
+          this.modulePathById = {};
+        });
+    },
+    /** 路径表异步到达后，把 sheet 交付物列刷成层级路径 */
+    applyModulePathsToSheetRows() {
+      let changed = false;
+      (this.sheetRows || []).forEach((row) => {
+        if (!row || row.moduleId == null || row.moduleId === "") return;
+        const path = this.resolveExcelModuleDisplayPath(row);
+        if (path && path !== row.moduleName) {
+          row.moduleName = path;
+          changed = true;
+        }
+      });
+      (this.defectList || []).forEach((row) => {
+        if (!row || row.moduleId == null || row.moduleId === "") return;
+        const path = this.resolveExcelModuleDisplayPath(row);
+        if (path && path !== row.moduleName) row.moduleName = path;
+      });
+      if (changed) this.refreshExcelEditorView();
     },
     excelDefectTypeToText(v) {
       if (v == null || v === "") return "";
@@ -2732,7 +2933,8 @@ export default {
     onPlanTimeTriZoneMouseDown(e) {
       let t = e.target;
       while (t && t.nodeType !== 1) t = t.parentNode;
-      if (!t || t.tagName !== "TD" || !t.id) return;
+      while (t && t.tagName !== "TD") t = t.parentElement;
+      if (!t || !t.id) return;
       if (t.classList.contains("first-col")) return;
       const resolved = resolveExcelCellFromTdId(t.id, this.sheetRows, this.effectiveCols);
       let fieldName = null;
@@ -2886,12 +3088,26 @@ export default {
     },
     attachExcelModulePickerOutsideClose() {
       this.removeExcelModulePickerOutsideClose();
+      this._excelModulePickerOpenedAt = Date.now();
       this._excelModulePickerOutsideClose = (ev) => {
         if (!this.excelModulePickerVisible) return;
+        /* 避开打开当次 mousedown/mouseup/click，否则 EP/本监听会立刻把刚打开的菜单关掉 */
+        if (this._excelModulePickerOpenedAt && Date.now() - this._excelModulePickerOpenedAt < 280) {
+          return;
+        }
         const anchor = this.$refs.excelModulePickerAnchor;
         const t = ev.target;
-        /* 勿用 querySelector('.select-module-popover')：页面上另有交付物下拉时取到的是第一个 DOM，误判为外部点击，mousedown 捕获阶段即关掉弹层，有子节点时无法展开 */
-        if (t && typeof t.closest === "function" && t.closest(".defect-excel-module-picker-popper")) return;
+        /*
+         * 用 closest 判断当前点击是否在「本次」弹层内（含缺陷 Excel 专用 class）。
+         * 勿用 querySelector 取页面上第一个 .select-module-popover，会误关弹层导致点不动。
+         */
+        if (
+          t &&
+          typeof t.closest === "function" &&
+          t.closest(".defect-excel-module-picker-popper, .el-popper.select-module-popover")
+        ) {
+          return;
+        }
         if (anchor && anchor.contains(t)) return;
         this.closeExcelModulePicker();
       };
@@ -2921,17 +3137,33 @@ export default {
       const ed = this.$refs.excelEditor;
       if (ed && ed.inputBox) ed.inputBox.blur();
       this.$nextTick(() => {
-        /* 勿延迟：有 moduleId 时 mounted 里 getModule 若晚于 click 曾会把 popover 关掉造成闪烁；见 SelectModule applyModuleDataWithoutClosingPopover */
+        /*
+         * 1) 等三角点击整次手势结束，避免 EP outside 立刻关掉；
+         * 2) SelectModule 刚 v-if 挂载时首次 openDirectMenu 偶发 visible 未刷到 ElPopover，短延迟后再补一次。
+         */
         setTimeout(() => {
           const sm = this.$refs.excelModuleSelect;
           if (!sm) return;
-          if (typeof sm.openDirectMenu === "function") sm.openDirectMenu();
-          else {
-            const el = sm.$el && sm.$el.querySelector(".select-module-input");
-            if (el) el.click();
-          }
-          this.attachExcelModulePickerOutsideClose();
-        }, 0);
+          const open = () => {
+            if (typeof sm.openDirectMenu === "function") sm.openDirectMenu();
+            else {
+              const el = sm.$el && sm.$el.querySelector(".select-module-input");
+              if (el) el.click();
+            }
+          };
+          open();
+          setTimeout(() => {
+            const pop = document.querySelector(
+              ".defect-excel-module-picker-popper, .el-popper.select-module-popover"
+            );
+            const hidden =
+              !pop ||
+              pop.getAttribute("aria-hidden") === "true" ||
+              getComputedStyle(pop).display === "none";
+            if (this.excelModulePickerVisible && hidden) open();
+            this.attachExcelModulePickerOutsideClose();
+          }, 80);
+        }, 120);
       });
     },
     onExcelModuleSelectInput(a, b) {
@@ -2944,36 +3176,67 @@ export default {
         void this.applyExcelModulePickFromPicker(null, null);
       }
     },
-    async applyExcelModulePickFromPicker(moduleId, mod) {
+    /**
+     * 下拉内新建交付物：只更新路径缓存 + 左侧树 batchAddNode（保持已展开节点）。
+     * 不写回单元格——须再点击该交付物才算选择。
+     */
+    onExcelModuleCreated(payload) {
+      const mod = payload && payload.module;
+      if (!mod || mod.moduleId == null) return;
+      const path =
+        (payload && payload.modulePath) ||
+        (mod.modulePath != null ? String(mod.modulePath).trim() : "");
+      if (path) {
+        this.modulePathById[mod.moduleId] = path;
+        this.modulePathById[String(mod.moduleId)] = path;
+        mod.modulePath = path;
+      } else {
+        /* 新建后路径表可能尚未含该项，强制下次可重拉 */
+        this._modulePathProjectId = null;
+      }
+      const tree = this.$refs.treeModuleRef;
+      if (tree && typeof tree.batchAddNode === "function") {
+        tree.batchAddNode(mod);
+      }
+    },
+    async applyExcelModulePickFromPicker(moduleId, mod, opts = {}) {
+      const keepPickerOpen = !!(opts && opts.keepPickerOpen);
       const row = this.excelModulePickerRow;
       if (!row) {
-        this.closeExcelModulePicker();
+        if (!keepPickerOpen) this.closeExcelModulePicker();
         return;
       }
       if (this.excelModulePickerSaving) return;
       if (this.isDeletedDefectRow(row)) {
         this.notifyDeletedDefectCannotEdit();
-        this.closeExcelModulePicker();
+        if (!keepPickerOpen) this.closeExcelModulePicker();
         return;
       }
       const newId =
         moduleId != null && moduleId !== "" && Number.isFinite(Number(moduleId)) ? Number(moduleId) : null;
-      const newName = mod && mod.moduleName != null ? String(mod.moduleName) : "";
+      const newName =
+        newId == null ? "" : this.resolveExcelModuleDisplayPath(mod || { moduleId: newId });
+      if (newId != null && newName) {
+        this.modulePathById[newId] = newName;
+        this.modulePathById[String(newId)] = newName;
+      }
       const oldId =
         row.moduleId != null && row.moduleId !== "" && Number.isFinite(Number(row.moduleId))
           ? Number(row.moduleId)
           : null;
       const oldName = row.moduleName != null ? String(row.moduleName) : "";
       if (oldId === newId && oldName === newName) {
-        this.closeExcelModulePicker();
+        if (!keepPickerOpen) this.closeExcelModulePicker();
         return;
       }
       row["moduleId"] = newId;
       row["moduleName"] = newName;
-      this.closeExcelModulePicker();
+      if (newName) row["modulePath"] = newName;
+      this.excelModulePickerModuleId = newId;
+      if (!keepPickerOpen) this.closeExcelModulePicker();
       if (!row.defectId) {
+        /* 占位行：只写表格，等必填齐全后随新建缺陷落库。勿误用「计划时间已写入」文案，新建交付物成功后也不再弹 staged 提示。 */
         this.refreshExcelEditorView();
-        this.$modal.msgWarning(String(this.$t("defect.excel-plan-time-staged-row")));
         return;
       }
       this.excelModulePickerSaving = true;
@@ -2992,6 +3255,7 @@ export default {
       } catch (e) {
         row["moduleId"] = oldId;
         row["moduleName"] = oldName;
+        row["modulePath"] = oldName || null;
         this.$modal.msgError(this.buildExcelSaveFailedMessage(row));
       } finally {
         this.excelModulePickerSaving = false;
@@ -3150,9 +3414,13 @@ export default {
     columnCellReadonly(c) {
       return !c.editable;
     },
+    /**
+     * 凡带下拉（columnOptions 非空）的可编辑列：禁止键盘录入，只能点三角/面板选择。
+     * 空数组交给 vue-excel-editor allowKeys：任意字符 key 都会 preventDefault。
+     */
     columnAllowKeys(c) {
-      if (c.key === "moduleName" && c.editable) return this.excelMapBlockKeys;
-      if (c.fieldType === "map" && c.editable) return this.excelMapBlockKeys;
+      if (!c || !c.editable) return null;
+      if (this.columnOptions(c)) return this.excelMapBlockKeys;
       return null;
     },
     columnOptions(c) {
@@ -3232,7 +3500,7 @@ export default {
       if (row && row.createBy) return String(row.createBy);
       return "";
     },
-    /** 图片/附件列：vue-excel-editor 补丁 cellHtml */
+    /** 图片/附件列：vue-excel-editor 补丁 cellHtml（交付物列勿用 cellHtml，会吃到图片列 line-height:0 导致文字高度为 0 看不见） */
     excelColumnCellHtml(c) {
       if (!c) return null;
       if (c.key === "excelImgUrlsText") return (record) => this.buildExcelImageGalleryHtml(record);
@@ -3717,6 +3985,17 @@ export default {
       if (!row) return;
 
       const col = this.findExcelCol(field.name);
+      /* 下拉列禁止粘贴改值，只能面板选择 */
+      if (col && this.columnOptions(col)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      if (field.options) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
       if (field.name === "excelImgUrlsText" || (col && col.isCustomField && col.fieldType === "image")) {
         const files = this.collectClipboardImageFiles(e);
         if (files.length) {
@@ -4458,6 +4737,7 @@ export default {
       return {
         ...r,
         defectStateText: defectStateCell,
+        moduleName: this.resolveExcelModuleDisplayPath(r),
         excelHandleByMemberId: this.firstHandleByMemberId(r),
         createByText: this.formatCreateByText(r),
         excelImgUrlsText: "",
@@ -4724,17 +5004,184 @@ export default {
       if (!row || !row.defectId || typeof this.parseTime !== "function") return;
       row["updateTime"] = this.parseTime(new Date(), "{y}-{m}-{d} {h}:{i}:{s}");
     },
+    onModuleTreeLayoutChanged() {
+      this.$nextTick(() => {
+        this.syncDefectTreeToolbarHeightFromTree();
+        this.scheduleExcelEditorLayoutFix();
+        this.syncModuleTreeHeightToExcelEditor();
+        this.scheduleSyncPaneResizerHandle && this.scheduleSyncPaneResizerHandle();
+      });
+    },
+    /** 交付物标题高度跟右侧 Excel 首行表头对齐（不用树自身默认 48px） */
+    syncDefectTreeToolbarHeightFromTree() {
+      this.$nextTick(() => {
+        let h = EXCEL_HEAD_ROW_PX;
+        const ctx = this.$refs.defectExcelContext;
+        if (ctx && typeof ctx.querySelector === "function") {
+          const th = ctx.querySelector(".systable thead tr:first-child th");
+          if (th) {
+            const measured = Math.round(
+              th.getBoundingClientRect().height || th.offsetHeight || 0
+            );
+            if (measured > 0) h = measured;
+          }
+        }
+        if (h > 0 && h !== this.defectTreeToolbarHeight) {
+          this.defectTreeToolbarHeight = h;
+        }
+      });
+    },
+    /** 展开交付物时手柄垂直居中，避免顶栏接合处出现圆角块 */
+    syncPaneResizerHandleTop() {
+      this.multipaneStyle["--resizerHandleTop"] = "50%";
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
+@import "~@/assets/styles/multipane-resizer-grip.scss";
+
 .defect-excel-root {
   width: 100%;
   flex: 1 1 0%;
   min-height: 0;
   display: flex;
   flex-direction: column;
+}
+.defect-excel-multipane.custom-resizer.multipane {
+  flex: 1 1 0%;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  align-items: stretch;
+}
+.defect-excel-multipane.custom-resizer--tree-hidden > .defect-excel-context {
+  flex: 1 1 100%;
+  width: 100%;
+}
+/*
+ * 覆盖全局 multipane-tree-module.scss 的 flex-start：
+ * 交付物列与分隔条与右侧 Excel 同高，拖动手柄才能在表格区域上下居中。
+ */
+.defect-excel-multipane.custom-resizer:not(.custom-resizer--tree-hidden) {
+  > .defect-tree-module {
+    /* 高度由 syncModuleTreeHeightToExcelEditor 贴齐 Excel 外壳，勿 stretch 通高 */
+    align-self: flex-start !important;
+    min-height: 0 !important;
+  }
+  > .multipane-resizer {
+    /* 高度与交付物列一并贴齐 Excel，避免竖边多出一截 */
+    align-self: flex-start !important;
+    min-height: 0 !important;
+  }
+}
+.defect-excel-multipane.custom-resizer > .multipane-resizer {
+  /*
+   * 热区全部压在交付物列右缘（勿 left 正偏移叠进 Excel），
+   * 否则会挡住单元格里交付物三角下拉的点击。
+   */
+  flex-shrink: 0;
+  width: 8px;
+  height: 100%;
+  margin: 0 0 0 -8px;
+  left: 0;
+  cursor: col-resize;
+  position: relative;
+  box-sizing: border-box;
+  z-index: 20;
+  background: transparent !important;
+  background-image: none !important;
+  touch-action: none;
+  pointer-events: auto;
+  @include multipane-resizer-vertical-appearance;
+  &:before {
+    display: block !important;
+    width: 1px;
+    left: 100%;
+    transform: translateX(-50%);
+    background-color: #dcdfe6;
+    box-shadow: none;
+    /* 竖线本身不抢事件，由 8px 条承接拖动 */
+    pointer-events: none;
+  }
+  &:after {
+    display: none !important;
+    content: none !important;
+  }
+  &:hover:before {
+    background-color: var(--cat2bug-primary, #1890ff);
+  }
+}
+/* 展开交付物时：Excel 左侧顶角改为直角；去掉双线，只留 resizer 那 1px 竖边 */
+.defect-excel-multipane.custom-resizer:not(.custom-resizer--tree-hidden) {
+  > .defect-tree-module {
+    border-right: none;
+  }
+  .defect-vue-excel-editor {
+    border-top-left-radius: 0 !important;
+    border-left: none !important;
+  }
+  .defect-vue-excel-editor :deep(.component-content) {
+    border-top-left-radius: 0 !important;
+    border-left: none !important;
+  }
+  .defect-vue-excel-editor :deep(.systable thead tr:first-child th.first-col) {
+    border-top-left-radius: 0 !important;
+  }
+}
+.defect-tree-module {
+  width: var(--treeModuleWidth);
+  max-width: 75%;
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-sizing: border-box;
+  /* 与右侧 Excel 同色外框（含左下角竖边）；右侧直角，接缝竖边由 resizer 画；圆角与看板/表格/甘特统一 */
+  border: 1px solid #dcdfe6;
+  border-radius: var(--cat2bug-border-radius, 4px) 0 0 0;
+  overflow: hidden;
+  background-color: var(--table-bg, #fff);
+}
+.defect-tree-module :deep(> .tree) {
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  background-color: transparent;
+}
+.defect-tree-module :deep(.tree-tools) {
+  /* 高度由 toolbar-sync-height（Excel 表头）写入；这里保证 32px 行内垂直居中 */
+  line-height: normal;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+.defect-tree-module :deep(.el-tree) {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  background-color: transparent;
+  border-radius: 0;
+}
+/* 与 :deep(.footer) / VUE_EXCEL_EDITOR_FOOTER_BAR_PX(8) 对齐 */
+.defect-excel-module-footer-bar {
+  flex: 0 0 8px;
+  height: 8px;
+  min-height: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--cat2bug-xbar-track);
+  border-top: 1px solid var(--border-color-light);
+}
+.defect-excel-tree-expand-corner {
+  position: absolute;
+  z-index: 30;
+  top: 7px;
+  left: 11px;
 }
 /* 与 .defect-vue-excel-editor .systable thead tr:first-child th 首行数据列表头一致（浅灰底、细边框、32px 高） */
 .defect-excel-col-drag-ghost {
@@ -4832,6 +5279,7 @@ export default {
 }
 .defect-excel-context {
   /* 缺陷页 Excel 模式：父级 defect-page 给 min-height + flex，此处撑满剩余高度 */
+  position: relative;
   flex: 1 1 0%;
   min-width: 0;
   min-height: 0;
@@ -4839,7 +5287,8 @@ export default {
   display: flex;
   flex-direction: column;
   background: transparent;
-  padding-bottom: 2px;
+  /* 勿留底边距：否则交付物列通高时会比 Excel 外壳多出几像素 */
+  padding-bottom: 0;
   box-sizing: border-box;
 }
 /* 去掉外层边框，只保留库内 .component-content 一层 1px，避免「双边框」显粗 */
@@ -4860,7 +5309,7 @@ export default {
 /* 与系统 Element 表格色系一致：浅边框 + 浅表头，避免过重 */
 .defect-vue-excel-editor :deep(.component-content){
   border: 1px solid #dcdfe6;
-  border-radius: 4px 4px 0 0;
+  border-radius: var(--cat2bug-border-radius, 4px) var(--cat2bug-border-radius, 4px) 0 0;
   overflow: hidden;
   /* 勿 transform：会破坏库内 .autocomplete-results(position:fixed) 相对视口定位，下拉会跑偏 */
   max-width: 100%;

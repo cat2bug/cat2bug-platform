@@ -1,5 +1,5 @@
 /**
- * 交付物全路径展示：过长时前层折叠为 .../...，末层保留尾部字符（不用 * 号）。
+ * 交付物全路径展示：过长时前层折叠为 .../末层（如 .../叶子名），末层过长再截尾部。
  * @param {string} fullPath
  * @param {number} maxLength
  * @returns {{ short: string, full: string }}
@@ -19,7 +19,7 @@ export function formatDeliverablePath(fullPath, maxLength = 32) {
   }
 
   const last = parts[parts.length - 1]
-  const prefix = parts.length >= 3 ? '.../...' : '.../'
+  const prefix = '.../'
   const candidate = prefix + last
   if (candidate.length <= maxLength) {
     return { short: candidate, full }

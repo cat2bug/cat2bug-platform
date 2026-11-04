@@ -399,7 +399,7 @@ export default {
       showFolderTree: true,
       /** 与右侧列表表头行同高（px），测完后传给左侧树标题栏 */
       documentTreeToolbarHeight: null,
-      treeModuleStyle: { "--treeModuleWidth": "280px" },
+      treeModuleStyle: { "--treeModuleWidth": "300px" },
       multipaneStyle: {},
       defaultProps: {
         children: 'children',
@@ -887,7 +887,7 @@ export default {
     },
     getFolderTreeWidth() {
       const w = this.$cache.session.get(DOCUMENT_FOLDER_TREE_WIDTH_CACHE_KEY)
-      this.treeModuleStyle['--treeModuleWidth'] = (w ? w : 280) + 'px'
+      this.treeModuleStyle['--treeModuleWidth'] = (w ? w : 300) + 'px'
     },
     cacheFolderTreeWidth() {
       if (this.$refs.treeModule) {
@@ -1447,6 +1447,7 @@ export default {
 }
 .custom-resizer > .multipane-resizer {
   flex-shrink: 0;
+  /* 与缺陷表格 / 用例页：条骑缝、8px 热区 */
   margin: 0 0 0 -8px;
   left: 4px;
   width: 8px;
@@ -1459,6 +1460,11 @@ export default {
   background-position: 0 calc(var(--multipane-header-rule-offset, 48px) - 1px);
   background-repeat: no-repeat;
   @include multipane-resizer-vertical-appearance;
+  /* 与缺陷页左右分隔手柄一致（默认 mixin 为 7×40） */
+  &:after {
+    width: 5px;
+    height: 28px;
+  }
 }
 .document-tree-module {
   width: var(--treeModuleWidth);

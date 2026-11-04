@@ -20,9 +20,11 @@
     <el-tree :highlight-current="true" ref="moduleTree" :show-checkbox="checkVisible" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="id" @node-click="handleNodeClick" @check-change="handleCheckChange">
       <template #default="{ node, data }">
         <span class="tree-node">
-          <span v-if="node.label !== $t('module.all-module')">{{ node.label }}</span>
-          <span v-else><< {{ node.label }} >></span>
-          <span v-if="editVisible">
+          <span class="tree-node-label">
+            <span v-if="node.label !== $t('module.all-module')">{{ node.label }}</span>
+            <span v-else><< {{ node.label }} >></span>
+          </span>
+          <span v-if="editVisible" class="tree-node-actions">
             <el-button
               link
               size="small"
@@ -179,32 +181,69 @@ export default {
       this.$refs.moduleDialog.open(null, parentId);
       e.stopPropagation();
     },
-    /** 批量添加节点 */
+    /** 批量添加节点（兼容单条对象或数组；根级 modulePid=0 挂到树根）——局部插入，不 reload 整树 */
     batchAddNode(modules) {
-      if(!modules) return;
-      if(modules instanceof Array) {
-        let parentNode = this.$refs.moduleTree.getNode({ id: modules[0].modulePid });
-        for(let i=0;i<modules.length;i++){
-          let module = modules[i];
-          this.$refs.moduleTree.append({
-            id: module.moduleId,
-            leaf: true,
-            name: module.moduleName,
-          }, parentNode);
-        }
-        if(parentNode) {
-          this.refreshTreeNode(parentNode);
+      if (!modules) return;
+      const list = Array.isArray(modules) ? modules : [modules];
+      if (!list.length) return;
+      const tree = this.$refs.moduleTree;
+      if (!tree) return;
+      const pid = list[0].modulePid;
+      let parentNode = null;
+      if (pid != null && pid !== '' && Number(pid) !== 0) {
+        parentNode = tree.getNode(pid) || tree.getNode({ id: Number(pid) });
+        /* 父节点尚未出现在树中：不挂到根，等用户展开路径时懒加载即可 */
+        if (!parentNode) return;
+        if (parentNode.data) parentNode.data.leaf = false;
+        parentNode.isLeaf = false;
+        /*
+         * 父节点还没懒加载过：只露出 ›，不要 append + loaded=true，
+         * 否则会当成「已加载且仅有新建那一项」，其余子节点再也出不来。
+         */
+        if (!parentNode.loaded) {
+          return;
         }
       }
+      for (let i = 0; i < list.length; i++) {
+        const module = list[i];
+        if (!module || module.moduleId == null) continue;
+        const exist = tree.getNode(module.moduleId) || tree.getNode({ id: module.moduleId });
+        if (exist) continue;
+        tree.append({
+          id: module.moduleId,
+          leaf: true,
+          name: module.moduleName,
+        }, parentNode || undefined);
+      }
+      if (parentNode) {
+        this.ensureTreeNodeNonLeafExpanded(parentNode);
+      }
     },
-    /** 刷新树节点 */
+    /** 父节点已有子节点时保持非叶子并展开，不改 loaded、不递归污染根节点 */
+    ensureTreeNodeNonLeafExpanded(node) {
+      if (!node || !node.data || node.level === 0) return;
+      node.data.leaf = false;
+      node.isLeaf = false;
+      if (typeof node.expand === 'function') {
+        node.expand();
+      }
+    },
+    /** 删除后刷新：只修正本节点/父节点 leaf，避免 loaded=true 吞掉未加载的子级 */
     refreshTreeNode(node) {
-      if(!node) return;
-      node.data.leaf=(node.childNodes==0);
-      node.isLeft=node.data.leaf;
-      node.loaded=true;
-      node.expand()
-      this.refreshTreeNode(node.parent)
+      if (!node || !node.data || node.level === 0) return;
+      const kids = node.childNodes || [];
+      const isLeaf = kids.length === 0;
+      node.data.leaf = isLeaf;
+      node.isLeaf = isLeaf;
+      if (!isLeaf && typeof node.expand === 'function') {
+        node.expand();
+      }
+      const parent = node.parent;
+      if (parent && parent.data && parent.level > 0) {
+        const pkids = parent.childNodes || [];
+        parent.data.leaf = pkids.length === 0;
+        parent.isLeaf = pkids.length === 0;
+      }
     },
     remove(e, node, data) {
       this.$modal.confirm(this.$i18n.t('module.is-delete-module')).then(function() {
@@ -266,11 +305,29 @@ export default {
 }
 .tree-node {
   flex: 1;
+  min-width: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 4px;
   font-size: 14px;
   padding-right: 8px;
+  box-sizing: border-box;
+}
+.tree-node-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.4;
+  padding: 1px 0;
+}
+.tree-node-actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  margin-top: -1px;
 }
 .tree-node-remove-btn {
   color: #f56c6c !important;
@@ -283,9 +340,21 @@ export default {
   background-color: #00afff;
 }
 .el-tree {
-  overflow-y: hidden;
-  overflow-x: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   width: 100%;
+  /* 长名称换行：覆盖 EP 默认固定行高 + nowrap */
+  :deep(.el-tree-node__content) {
+    height: auto !important;
+    min-height: 26px;
+    white-space: normal;
+    align-items: flex-start;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+  :deep(.el-tree-node__expand-icon) {
+    padding-top: 2px;
+  }
   :deep(> div[role="treeitem"]:first-child){
     margin-top: 5px;
     .el-checkbox {

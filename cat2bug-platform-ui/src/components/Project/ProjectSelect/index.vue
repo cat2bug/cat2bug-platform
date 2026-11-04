@@ -131,7 +131,7 @@ export default {
           userId: this.memberId
         },
         pageNum: 1,
-        pageSize: 10
+        pageSize: 5
       }
     }
   },
@@ -283,7 +283,7 @@ export default {
       return this.queryParams.pageNum > 1
     },
     hasNextPage() {
-      const pageSize = this.queryParams.pageSize || 10
+      const pageSize = this.queryParams.pageSize || 5
       return this.queryParams.pageNum * pageSize < this.total
     },
     goPage(pageNum, activePos) {
@@ -639,10 +639,8 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  overflow: hidden;
   min-height: 48px;
-  max-height: 280px;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .project-select-pager-divider {

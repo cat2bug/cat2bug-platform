@@ -1650,6 +1650,11 @@ export default {
   background-position: 0 calc(var(--multipane-header-rule-offset, 48px) - 1px);
   background-repeat: no-repeat;
   @include multipane-resizer-vertical-appearance;
+  /* 与看板/缺陷表格分隔手柄一致（默认 mixin 为 7×40） */
+  &:after {
+    width: 5px;
+    height: 28px;
+  }
 }
 .table-case-title {
   display: flex;

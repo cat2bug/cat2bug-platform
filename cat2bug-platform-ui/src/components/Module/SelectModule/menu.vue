@@ -12,7 +12,8 @@
       </button>
       <div ref="menuScroller" class="module-menu-scroller" @scroll="syncVerticalScrollIndicators">
         <el-row class="module-menu">
-          <el-col v-if="loading" class="module-menu-item module-menu-loading" :span="24">
+          <!-- 仅首屏空列表显示加载占位；刷新已有列表时勿再插 160px 空白块（新建后会闪一下） -->
+          <el-col v-if="loading && !moduleList.length" class="module-menu-item module-menu-loading" :span="24">
             <div
               v-loading="loading"
               class="module-menu-loading-body"
@@ -68,7 +69,7 @@
         <legacy-icon icon="el-icon-arrow-down"></legacy-icon>
       </button>
     </div>
-    <div v-if="isEdit" class="module-menu-add-footer">
+    <div v-if="isEdit && showFooterAdd" class="module-menu-add-footer">
       <div class="module-menu-footer-divider" aria-hidden="true"></div>
       <div
         class="module-menu-add-wrap"
@@ -88,7 +89,7 @@
 
 <script>
 import AddModuleMenuItem from "@/components/Module/SelectModule/add";
-import {listModule} from "@/api/system/module";
+import { getModule, listModule } from "@/api/system/module";
 import {
   estimateCharsForPixelWidth,
   formatDeliverableMenuLabel
@@ -134,6 +135,14 @@ export default {
       type: Boolean,
       default: true
     },
+    /**
+     * 是否显示列底「新建交付物」。
+     * 左侧树限定子树时首列会 pin 当前节点，底部新建会看起来像同级，应关掉；行内 + 仍可加子级。
+     */
+    showFooterAdd: {
+      type: Boolean,
+      default: true
+    },
     /** 键盘上下导航时高亮的行索引（-1 表示无；等于 moduleList.length 时为底部新建行） */
     keyboardActiveIndex: {
       type: Number,
@@ -151,6 +160,13 @@ export default {
     },
     /** 选中路径上本列应高亮的父级 moduleId */
     pathHighlightModuleId: {
+      type: Number,
+      default: null
+    },
+    /**
+     * 左侧树作用域：本列只展示该交付物本身（不并入其子项），展开后下一列再列子项。
+     */
+    pinModuleId: {
       type: Number,
       default: null
     }
@@ -302,35 +318,70 @@ export default {
       }
       return Number(module.moduleId) === Number(this.pathHighlightModuleId);
     },
-    getModuleList() {
+    finishModuleListLoad(list) {
+      this.moduleList = Array.isArray(list) ? list : [];
+      this.loading = false;
+      if (this.$refs.addModuleMenu) {
+        this.$refs.addModuleMenu.setFormVisible(this.moduleList.length == 0);
+      }
+      this.$nextTick(() => {
+        this.$emit('column-ready');
+        this.syncVerticalScrollIndicators();
+      });
+      return this.moduleList;
+    },
+    getModuleList(opts = {}) {
       this.params.projectId=this.projectId||this.getCurrentProjectId;
       this.params.modulePid=this.modulePid;
-      this.loading = true;
+      const silent = !!(opts && opts.silent) || (this.moduleList && this.moduleList.length > 0);
+      /* 已有列表时静默刷新，避免 loading 占位把菜单顶出一块空白 */
+      if (!silent) this.loading = true;
+      const pinId =
+        this.pinModuleId != null && this.pinModuleId !== '' && Number.isFinite(Number(this.pinModuleId))
+          ? Number(this.pinModuleId)
+          : null;
+      /*
+       * 左侧树作用域首列：只展示置顶的选中节点，其子项经 › 进入下一列。
+       * 若把子项并进本列再展开，会与下一列重复，新建会出现在同级与子级两处。
+       */
+      if (pinId != null && pinId > 0) {
+        return getModule(pinId)
+          .then((modRes) => {
+            const pinned = modRes && modRes.data ? modRes.data : null;
+            return this.finishModuleListLoad(pinned ? [pinned] : []);
+          })
+          .catch(() => this.finishModuleListLoad([]));
+      }
       return listModule(this.params).then(res=>{
-        this.loading = false;
-        this.moduleList = res.data;
-        if (this.$refs.addModuleMenu) {
-          this.$refs.addModuleMenu.setFormVisible(this.moduleList.length==0);
-        }
-        this.$nextTick(() => {
-          this.$emit('column-ready');
-          this.syncVerticalScrollIndicators();
-        });
-        return res.data;
-      }).catch(e=>{
-        this.loading = false;
-        this.$nextTick(() => {
-          this.$emit('column-ready');
-          this.syncVerticalScrollIndicators();
-        });
-        return [];
+        const children = Array.isArray(res.data) ? res.data.slice() : [];
+        return this.finishModuleListLoad(children);
+      }).catch(()=>{
+        return this.finishModuleListLoad([]);
       })
     },
     addModuleHandle(payload) {
       const info = (payload && typeof payload === 'object')
         ? payload
         : { moduleName: payload };
-      this.getModuleList().then(() => {
+      const created = info && info.module;
+      /* 本地插入新建项，避免整列 loading 刷新闪出顶部空白区 */
+      if (created && created.moduleId != null) {
+        const id = Number(created.moduleId);
+        const exists = (this.moduleList || []).some((m) => Number(m.moduleId) === id);
+        if (!exists) {
+          this.moduleList = [...(this.moduleList || []), created];
+        }
+        if (this.$refs.addModuleMenu) {
+          this.$refs.addModuleMenu.setFormVisible(false);
+        }
+        this.$nextTick(() => {
+          this.$emit('module-added', info);
+          this.$emit('column-ready');
+          this.syncVerticalScrollIndicators();
+        });
+        return;
+      }
+      this.getModuleList({ silent: true }).then(() => {
         this.$nextTick(() => this.$emit('module-added', info));
       });
     },

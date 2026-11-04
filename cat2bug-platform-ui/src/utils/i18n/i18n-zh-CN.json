@@ -375,7 +375,7 @@
   "project.push.key": "同步密钥",
   "project.push.key-cannot-empty": "同步密钥不能为空!",
   "project.push.key-placeholder": "粘贴云站入站页生成的同步密钥",
-  "project.push.key-hint": "请到云站 cloud.cat2bug.com 创建新项目，在项目配置 → 云端入站同步 →「生成同步密钥」，复制后粘贴到此处。密钥有有效期，每次生成会作废旧密钥。",
+  "project.push.key-hint": "请到云站 {host} 创建新项目，在项目配置 → 云端入站同步 →「生成同步密钥」，复制后粘贴到此处。密钥有有效期，每次生成会作废旧密钥。",
   "project.push.package-hint": "成员、团队配置、工作日历和 MCP 会自动打包，无需勾选。缺陷、用例、计划和交付物为必选。Git 默认不包含。文档按文件勾选，本地缺失的文件不能选。体积为估算，合计不能超过上限。不含 OAuth/PAT 等密钥。",
   "project.push.success": "已推送到云站收件箱。请到云站目标项目 → 云端入站同步，完成成员映射并执行导入。",
   "project.push.submitting": "正在打包并推送…",

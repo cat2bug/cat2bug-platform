@@ -27,7 +27,16 @@
           :disabled="submitting || selectionLocked"
           :placeholder="$t('project.push.key-placeholder')"
         />
-        <div class="project-push-key-hint">{{ $t('project.push.key-hint') }}</div>
+        <i18n-t keypath="project.push.key-hint" tag="div" class="project-push-key-hint">
+          <template #host>
+            <a
+              class="project-push-key-hint__link"
+              href="https://cloud.cat2bug.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >cloud.cat2bug.com</a>
+          </template>
+        </i18n-t>
       </el-form-item>
       <el-form-item :label="$t('project.push.include')">
         <push-selection
@@ -473,6 +482,13 @@ export default {
   line-height: 1.5;
   font-size: 12px;
   color: var(--el-text-color-secondary, #909399);
+}
+.project-push-key-hint__link {
+  color: var(--el-color-primary, #409eff);
+  text-decoration: none;
+}
+.project-push-key-hint__link:hover {
+  text-decoration: underline;
 }
 .project-push-progress {
   width: 100%;

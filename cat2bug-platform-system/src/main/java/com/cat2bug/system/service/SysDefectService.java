@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -117,6 +118,7 @@ public class SysDefectService {
 
     public TableDataInfo selectDefectPage(SysDefect query, Integer pageNum, Integer pageSize) {
         requireDefectProjectAccess(query != null ? query.getProjectId() : null);
+        restrictToModuleTree(query);
         PageDomain page = PageDomain.of(pageNum, pageSize);
         long total = sysDefectMapper.countSysDefectList(query);
         var rows = sysDefectMapper.selectSysDefectList(query, page.getOffset(), page.getPageSize());
@@ -125,9 +127,35 @@ public class SysDefectService {
     }
 
     public List<SysDefect> selectAllSysDefectList(SysDefect query) {
+        restrictToModuleTree(query);
         List<SysDefect> rows = sysDefectMapper.selectAllSysDefectList(query);
         defectMemberEnricher.enrich(rows);
         return rows;
+    }
+
+    /**
+     * 左侧交付物树点击：按该节点及其全部子交付物筛选缺陷（与用例 {@link SysCaseService#restrictToModuleTree} 一致）。
+     * moduleId==0 表示未指派（module_id IS NULL），不做子树展开。
+     */
+    public void restrictToModuleTree(SysDefect query) {
+        if (query == null) {
+            return;
+        }
+        Long moduleId = query.getModuleId();
+        if (moduleId == null || moduleId <= 0) {
+            return;
+        }
+        Set<Long> moduleIds = sysModuleMapper.getAllChildIds(query.getProjectId(), moduleId);
+        if (query.getParams() == null) {
+            query.setParams(new HashMap<>());
+        }
+        if (moduleIds == null || moduleIds.isEmpty()) {
+            query.getParams().put("moduleIds", List.of(-1L));
+        } else {
+            query.getParams().put("moduleIds", new ArrayList<>(moduleIds));
+        }
+        /* 改走 IN 子句，避免与精确 module_id = 同时生效 */
+        query.setModuleId(null);
     }
 
     @Transactional

@@ -3418,6 +3418,8 @@ export default {
       const rowPos = Array.from(row.parentNode.children).indexOf(row)
       const field = this.fields[colPos]
       if (!field || field.readonly || field.type === 'select') return
+      /* 有 options 的下拉列：禁止双击进入自由文本编辑 */
+      if (field.options) return
       e.preventDefault()
       this.moveInputSquare(rowPos, colPos)
       if (!this.inputBoxShow) {
@@ -3599,6 +3601,8 @@ export default {
     },
     inputSquareClick () {
       if (!this.currentField.readonly && !this.inputBoxShow && this.currentField.type !== 'select') {
+        /* 有 options 的下拉列：禁止点格进入自由文本编辑，只能点右侧三角选值 */
+        if (this.currentField.options) return
         this.inputBox.value = this.currentCell.textContent
         this.inputBoxShow = 1
         this.inputBox.focus()

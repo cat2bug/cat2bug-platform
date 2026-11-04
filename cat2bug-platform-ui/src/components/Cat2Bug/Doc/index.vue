@@ -5,13 +5,13 @@
 </template>
 
 <script>
-import { SYSTEM_DOC_URL } from '@/utils/system-doc-url'
+import { openSystemDoc } from '@/utils/system-doc-url'
 
 export default {
   name: 'Cat2BugDoc',
   methods: {
     goto() {
-      window.open(SYSTEM_DOC_URL)
+      openSystemDoc()
     }
   }
 }
