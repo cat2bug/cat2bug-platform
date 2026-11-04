@@ -1,13 +1,6 @@
 <template>
-  <div class="team-select-root layout-nav-hint-anchor" :class="{ 'team-select-root--collapse': collapse, 'team-select-root--readonly': !teamMember, 'team-select-root--dark': dark }" data-layout-nav="team">
-    <div v-if="!teamMember" class="team-select-readonly">
-      <el-avatar class="team-select-avatar" :size="avatarSize" shape="square" v-if="displayTeam && displayTeam.teamIcon" :src="teamAvatarSrc(displayTeam)" fit="cover" @error="onTeamAvatarError(displayTeam)"></el-avatar>
-      <el-avatar class="team-select-avatar" :size="avatarSize" shape="square" v-else-if="displayTeam">{{ displayTeam.teamName }}</el-avatar>
-      <el-avatar class="team-select-avatar" :size="avatarSize" shape="square" v-else :src="imgUrl('add.svg')" fit="cover"></el-avatar>
-      <p class="prefix-team-name" v-if="!collapse">{{ displayTeam ? displayTeam.teamName : '' }}</p>
-    </div>
+  <div class="team-select-root layout-nav-hint-anchor" :class="{ 'team-select-root--collapse': collapse, 'team-select-root--dark': dark }" data-layout-nav="team">
     <el-select
-      v-else
       class="team-select"
       :data-collapse="collapse ? 'true' : 'false'"
       v-model="currentTeamId"
@@ -66,12 +59,10 @@ export default {
   components: { Plus },
   setup() {
     const userStore = useUserStore()
-    const { config, teamMember, contextTeam } = storeToRefs(userStore)
+    const { config } = storeToRefs(userStore)
     return {
       userStore,
-      userConfig: config,
-      userTeamMember: teamMember,
-      userContextTeam: contextTeam
+      userConfig: config
     }
   },
   data() {
@@ -96,33 +87,17 @@ export default {
       immediate: true,
       handler(val) {
         this.currentTeamId = val
-        if (this.teamMember) {
-          this.getTeamList()
-        }
-      }
-    },
-    userContextTeam: function() {
-      if (!this.teamMember) {
-        this.syncReadonlyTeam()
+        this.getTeamList()
       }
     }
   },
   computed:{
-    teamMember() {
-      return this.userTeamMember !== false
-    },
     /** 折叠/展开均略留白，比上一档再小一点 */
     avatarSize() {
       return this.collapse ? 32 : 36
     },
     teamId: function (){
       return this.userConfig && this.userConfig.currentTeamId
-    },
-    displayTeam() {
-      if (this.teamMember) {
-        return this.currentTeam
-      }
-      return this.userContextTeam
     },
     currentTeam: function() {
       for(let i in this.teamList){
@@ -142,16 +117,9 @@ export default {
     }
   },
   mounted() {
-    if (this.teamMember) {
-      this.getTeamList();
-    } else {
-      this.syncReadonlyTeam();
-    }
+    this.getTeamList();
   },
   methods:{
-    syncReadonlyTeam() {
-      this.currentTeamId = this.teamId;
-    },
     teamAvatarSrc(team) {
       if (!team || !team.teamIcon) {
         return ''

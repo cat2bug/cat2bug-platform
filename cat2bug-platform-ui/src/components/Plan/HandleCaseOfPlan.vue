@@ -31,7 +31,7 @@
       <div class="next-case">
         <el-checkbox v-model="jumpNextCase">{{ $t('plan.handled-to-next-case') }}</el-checkbox>
       </div>
-      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+      <el-form ref="form" :model="form" :rules="formRules" label-width="120px">
         <el-form-item :label="$t('case.number')" prop="caseNum">
           <span>#{{ form.caseNum }}</span>
         </el-form-item>
@@ -40,7 +40,7 @@
         </el-form-item>
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$t('module')" prop="moduleId">
+            <el-form-item v-if="deliverableModuleOn" :label="$t('module')" prop="moduleId">
               <select-module ref="selectModule" size="medium" v-model:moduleId="form.moduleId" :project-id="projectId" readonly />
             </el-form-item>
           </el-col>
@@ -95,11 +95,13 @@ import CaseStep from "@/components/Case/CaseStep";
 import {getNextPlanItem, getPrevPlanItem} from "@/api/system/PlanItem";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
+import teamModuleGate from '@/mixins/team-module-gate'
 const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 
 export default {
   emits: ['update:planItem'],
   name: "HandleCaseOfPlan",
+  mixins: [teamModuleGate],
   components: {Label,CaseStepPanel,SelectModule,Cat2BugSelectLevel,FocusMemberList,PlanItemTools,CaseStep},
   setup() {
     const userStore = useUserStore()
@@ -159,6 +161,12 @@ export default {
     }
   },
   computed: {
+    formRules() {
+      if (this.deliverableModuleOn) return this.rules
+      const next = { ...this.rules }
+      delete next.moduleId
+      return next
+    },
     /** 获取当前用户id */
     userId: function () {
       return this.id;

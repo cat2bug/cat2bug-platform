@@ -30,6 +30,14 @@ public interface SysUserProjectMapper {
                                                   @Param("offset") int offset,
                                                   @Param("limit") int limit);
 
+    /** 本项目所属团队成员 − 已在项目中；空 search 仍返回列表 */
+    long countTeamNotMemberListByProjectId(@Param("projectId") Long projectId, @Param("search") String search);
+
+    List<SysUser> selectTeamNotMemberListByProjectId(@Param("projectId") Long projectId,
+                                                     @Param("search") String search,
+                                                     @Param("offset") int offset,
+                                                     @Param("limit") int limit);
+
     int insertSysUserProject(SysUserProject sysUserProject);
 
     int updateSysUserProjectByUserIdAndProjectId(SysUserProject sysUserProject);

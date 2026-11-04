@@ -1,20 +1,21 @@
 <template>
   <div class="app-container">
-    <el-page-header :title="$t('back')" @back="goBack" :content="$t('role.manage')">
-    </el-page-header>
-    <div class="member-tools">
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch">
-        <el-form-item label="" prop="roleName">
-          <el-input
-            v-model="queryParams.roleName"
-            :placeholder="$t('role.enter-name')"
-            :prefix-icon="$legacyIcon('el-icon-user')"
-            clearable
-            style="width: 240px"
-            @input="handleQuery"
-          />
-        </el-form-item>
-      </el-form>
+    <el-row class="project-add-page-header project-add-page-header--with-filter">
+      <el-page-header :title="$t('back')" @back="goBack" :content="$t('role.manage')">
+      </el-page-header>
+    </el-row>
+    <div class="list-page-toolbar" v-show="showSearch">
+      <div class="list-page-toolbar__filters">
+        <el-input
+          v-model="queryParams.roleName"
+          :placeholder="$t('role.enter-name')"
+          :prefix-icon="$legacyIcon('el-icon-user')"
+          clearable
+          size="small"
+          style="width: 240px"
+          @input="handleQuery"
+        />
+      </div>
     </div>
     <el-table v-loading="loading" :data="roleList" @selection-change="handleSelectionChange">
       <el-table-column :label="$t('role.display-order')" prop="roleSort" width="120" align="center" />
@@ -357,7 +358,7 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.dateRange = [];
-      this.resetForm("queryForm");
+      this.queryParams.roleName = undefined;
       this.handleQuery();
     },
     // 多选框选中数据

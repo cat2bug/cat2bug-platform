@@ -1,31 +1,30 @@
 <template>
   <div class="app-container">
-    <el-row>
+    <el-row class="project-add-page-header project-add-page-header--with-filter">
       <el-page-header @back="goBack" :content="$t('project.manage')">
       </el-page-header>
     </el-row>
     <!--项目列表-->
-    <div class="project-tools">
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
-        <el-form-item prop="teamName">
-          <el-input
-            v-model="queryParams.teamName"
-            :placeholder="$t('team.please-enter-name')"
-            clearable
-            @input="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item prop="defectName">
-          <el-input
-            v-model="queryParams.projectName"
-            :placeholder="$t('project.enter-project-name')"
-            :prefix-icon="$legacyIcon('el-icon-search')"
-            clearable
-            size="small"
-            @input="handleQuery"
-          />
-        </el-form-item>
-      </el-form>
+    <div class="list-page-toolbar" v-show="showSearch">
+      <div class="list-page-toolbar__filters">
+        <el-input
+          v-model="queryParams.teamName"
+          :placeholder="$t('team.please-enter-name')"
+          clearable
+          size="small"
+          style="width: 220px"
+          @input="handleQuery"
+        />
+        <el-input
+          v-model="queryParams.projectName"
+          :placeholder="$t('project.enter-project-name')"
+          :prefix-icon="$legacyIcon('el-icon-search')"
+          clearable
+          size="small"
+          style="width: 240px"
+          @input="handleQuery"
+        />
+      </div>
     </div>
     <el-table v-loading="loading" :data="projectList">
       <el-table-column :label="$t('team.name')" align="left" prop="teamName">
@@ -206,15 +205,5 @@ export default {
   }
   .project-list-title:hover, .project-block:hover {
     cursor: pointer;
-  }
-  .project-tools {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-direction: row;
-    margin-bottom: 10px;
-    :deep(.el-form-item){
-      margin-bottom: 0px;
-    }
   }
 </style>

@@ -2,15 +2,18 @@ package com.cat2bug.admin.resource;
 
 import com.cat2bug.common.api.AjaxResult;
 import com.cat2bug.common.domain.LoginUser;
+import com.cat2bug.common.domain.ModulePageSettings;
 import com.cat2bug.common.domain.SysProjectMcp;
 import com.cat2bug.common.domain.SysUser;
 import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.common.security.McpModules;
+import com.cat2bug.common.security.TeamModuleGates;
 import com.cat2bug.common.util.MessageUtils;
 import com.cat2bug.framework.security.AuthContext;
 import com.cat2bug.framework.security.RequiresPermissions;
 import com.cat2bug.framework.security.token.McpPaths;
 import com.cat2bug.framework.web.PublicUrlResolver;
+import com.cat2bug.system.service.SysModulePageSettingsService;
 import com.cat2bug.system.service.mcp.McpAccessService;
 import com.cat2bug.system.service.mcp.McpProjectAccess;
 import com.cat2bug.system.service.mcp.SysProjectMcpService;
@@ -54,6 +57,9 @@ public class ProjectMcpResource {
     McpAccessService mcpAccessService;
 
     @Inject
+    SysModulePageSettingsService modulePageSettingsService;
+
+    @Inject
     PublicUrlResolver publicUrlResolver;
 
     @GET
@@ -88,7 +94,7 @@ public class ProjectMcpResource {
         out.put("projectId", settings.getProjectId());
         out.put("enabled", settings.isEnabled());
         out.put("modules", settings.getModules() == null ? List.of() : settings.getModules());
-        out.put("availableModules", availableModules());
+        out.put("availableModules", availableModules(teamPage(access)));
         out.put("updateBy", settings.getUpdateBy());
         out.put("updateTime", settings.getUpdateTime());
         out.put("editable", access.hasRolePermission(EDIT_PERMISSION));
@@ -101,12 +107,26 @@ public class ProjectMcpResource {
         return out;
     }
 
-    private static List<Map<String, Object>> availableModules() {
+    private ModulePageSettings teamPage(McpProjectAccess access) {
+        if (access.project() == null || access.project().getTeamId() == null) {
+            return null;
+        }
+        try {
+            return modulePageSettingsService.getByTeamId(access.project().getTeamId());
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static List<Map<String, Object>> availableModules(ModulePageSettings page) {
         List<Map<String, Object>> list = new ArrayList<>();
         for (McpModules.Module module : McpModules.ALL) {
             Map<String, Object> m = new LinkedHashMap<>();
+            String gate = TeamModuleGates.gateOfMcpKey(module.key());
+            boolean teamEnabled = gate == null || page == null || page.isEnabled(gate);
             m.put("key", module.key());
             m.put("permissionPrefixes", module.permissionPrefixes());
+            m.put("teamEnabled", teamEnabled);
             list.add(m);
         }
         return list;

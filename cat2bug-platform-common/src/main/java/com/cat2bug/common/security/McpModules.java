@@ -20,7 +20,7 @@ public final class McpModules {
 
     public static final List<Module> ALL = List.of(
             new Module("defect", List.of("system:defect:", "system:comment:")),
-            new Module("case", List.of("system:case:")),
+            new Module("case", List.of("system:case:", "system:case-review:")),
             new Module("plan", List.of("system:plan:", "system:PlanItem:")),
             new Module("deliverable", List.of("system:module:")),
             new Module("document", List.of("system:document:")),

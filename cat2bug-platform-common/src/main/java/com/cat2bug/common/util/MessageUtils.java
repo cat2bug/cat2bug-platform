@@ -17,7 +17,10 @@ public final class MessageUtils {
     }
 
     public static String message(String code, Object... args) {
-        String pattern = resolve(code, Locale.SIMPLIFIED_CHINESE);
+        String exact = TeamModuleLabelContext.exact(code);
+        String pattern = exact != null
+                ? exact
+                : TeamModuleLabelContext.apply(resolve(code, MessageLocaleContext.get()));
         if (args == null || args.length == 0) {
             return pattern;
         }
@@ -28,6 +31,21 @@ public final class MessageUtils {
         if (code == null) {
             return "";
         }
+        Locale effective = locale != null ? locale : Locale.SIMPLIFIED_CHINESE;
+        String found = lookup(code, effective);
+        if (found != null) {
+            return found;
+        }
+        if (!Locale.SIMPLIFIED_CHINESE.equals(effective)) {
+            found = lookup(code, Locale.SIMPLIFIED_CHINESE);
+            if (found != null) {
+                return found;
+            }
+        }
+        return code;
+    }
+
+    private static String lookup(String code, Locale locale) {
         try {
             ResourceBundle bundle = ResourceBundle.getBundle(BUNDLE, locale);
             if (bundle.containsKey(code)) {
@@ -36,6 +54,6 @@ public final class MessageUtils {
         } catch (MissingResourceException ignored) {
             // fall through
         }
-        return code;
+        return null;
     }
 }

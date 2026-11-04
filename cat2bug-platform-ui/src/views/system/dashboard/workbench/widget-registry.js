@@ -1,5 +1,7 @@
 import { defineAsyncComponent } from 'vue'
 import { checkPermi } from '@/utils/permission'
+import { useModulePageSettingsStore } from '@/stores/modulePageSettings'
+import { isTeamModuleEnabled } from '@/utils/module-page-settings'
 
 const BoardChartHost = defineAsyncComponent(() => import('./widgets/BoardChartHost.vue'))
 const MyKpi = defineAsyncComponent(() => import('./widgets/MyKpi.vue'))
@@ -289,6 +291,26 @@ export const WORKBENCH_WIDGETS = {
   }
 }
 
+const GROUP_TEAM_MODULE_KEY = {
+  defect: 'defect',
+  case: 'case_plan',
+  plan: 'case_plan',
+  document: 'document',
+  deliverable: 'deliverable',
+  git: 'code'
+}
+
+Object.values(WORKBENCH_WIDGETS).forEach((widget) => {
+  if (widget.teamModuleKey) return
+  if (GROUP_TEAM_MODULE_KEY[widget.group]) {
+    widget.teamModuleKey = GROUP_TEAM_MODULE_KEY[widget.group]
+    return
+  }
+  if (widget.group === 'member' && widget.id && widget.id.indexOf('defect') >= 0) {
+    widget.teamModuleKey = 'defect'
+  }
+})
+
 export function getWidgetDef(id) {
   return WORKBENCH_WIDGETS[id] || null
 }
@@ -316,7 +338,15 @@ export function colMinSpans(cols) {
 function widgetAllowed(def) {
   if (!def || def.disabled) return false
   if (def.perms && def.perms.length && !checkPermi(def.perms)) return false
+  if (def.teamModuleKey && !isTeamModuleEnabled(useModulePageSettingsStore().settings, def.teamModuleKey)) {
+    return false
+  }
   return true
+}
+
+/** 画布与目录：团队关闭对应模块后不展示。 */
+export function isWidgetVisible(type) {
+  return widgetAllowed(getWidgetDef(type))
 }
 
 /** 看板顶部项目 KPI 墙（与走势类图表分区） */

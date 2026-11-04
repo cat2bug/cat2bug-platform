@@ -14,7 +14,11 @@
         >
           <span class="deliverable-path-text">{{ row.display || $t('no-data') }}</span>
         </el-tooltip>
-        <span v-else>{{ row.display || $t('no-data') }}</span>
+        <span
+          v-else
+          :class="{ 'defect-metric-value': !!row.valueColor }"
+          :style="row.valueColor ? { '--defect-metric-color': row.valueColor } : null"
+        >{{ row.display || $t('no-data') }}</span>
       </el-col>
     </el-row>
   </div>
@@ -39,6 +43,11 @@ import { formatCustomFieldValue, normalizeFieldRow, enumOptions } from './format
 import { formatDeliverablePath, looksLikeDeliverablePath } from '@/utils/deliverable-path-display'
 import { parseTime } from '@/utils/ruoyi'
 import { lifeTime } from '@/utils/defect'
+import {
+  defectLifeMs,
+  lifeTimeMetricColor,
+  rejectCountMetricColor
+} from '@/utils/defect-page-settings'
 
 /** 基础信息内以独立风箱展示的类型（顺序仍跟字段管理，不按类型重排） */
 const ACCORDION_FIELD_TYPES = Object.freeze(['image', 'object', 'file'])
@@ -47,6 +56,9 @@ export default {
   name: 'DefectCustomFieldsDisplay',
   dicts: ['defect_level'],
   components: { Cat2BugEmpty },
+  inject: {
+    defectPageSettingsState: { default: null }
+  },
   props: {
     projectId: { type: Number, default: null },
     /** 完整缺陷对象（详情抽屉传入） */
@@ -213,13 +225,17 @@ export default {
     },
     buildExtraRow(extra, defect) {
       let display = ''
+      let valueColor = null
+      const settings = this.defectPageSettingsState && this.defectPageSettingsState.settings
       if (extra.fieldKey === '__lifeTime') {
         display = lifeTime(defect) || ''
+        valueColor = lifeTimeMetricColor(settings, defectLifeMs(defect))
       } else if (extra.fieldKey === '__rejectCount') {
         display =
           defect.rejectCount != null && defect.rejectCount !== ''
             ? String(defect.rejectCount)
             : '0'
+        valueColor = rejectCountMetricColor(settings, defect.rejectCount)
       }
       return {
         fieldKey: extra.fieldKey,
@@ -227,7 +243,8 @@ export default {
         fieldType: 'string',
         display,
         urls: [],
-        color: null
+        color: null,
+        valueColor
       }
     },
     buildRowFromColumn(col, defect) {
@@ -357,6 +374,9 @@ export default {
 .deliverable-path-text {
   cursor: default;
   word-break: break-all;
+}
+.defect-metric-value {
+  color: var(--defect-metric-color);
 }
 .defect-custom-field-display-col {
   margin-bottom: 8px;

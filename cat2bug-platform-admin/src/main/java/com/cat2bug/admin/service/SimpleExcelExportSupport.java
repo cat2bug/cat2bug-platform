@@ -2,6 +2,7 @@ package com.cat2bug.admin.service;
 
 import com.cat2bug.common.excel.ExcelTableModel;
 import com.cat2bug.common.excel.FastExcelSupport;
+import com.cat2bug.common.util.TeamModuleLabelContext;
 import org.dhatim.fastexcel.Worksheet;
 
 import java.util.ArrayList;
@@ -26,7 +27,9 @@ final class SimpleExcelExportSupport {
     }
 
     static <T> byte[] export(String sheetName, List<ColumnDef<T>> columns, List<T> rows, String errorMessage) {
-        List<String> headers = columns.stream().map(ColumnDef::header).toList();
+        List<String> headers = columns.stream()
+                .map(column -> TeamModuleLabelContext.apply(column.header()))
+                .toList();
         List<List<String>> values = new ArrayList<>(rows.size());
         for (T item : rows) {
             List<String> line = new ArrayList<>(columns.size());
@@ -36,7 +39,8 @@ final class SimpleExcelExportSupport {
             }
             values.add(line);
         }
-        return write(ExcelTableModel.simple(sheetName, headers, values), col -> DEFAULT_COLUMN_WIDTH, errorMessage);
+        return write(ExcelTableModel.simple(TeamModuleLabelContext.apply(sheetName), headers, values),
+                col -> DEFAULT_COLUMN_WIDTH, errorMessage);
     }
 
     /** 单 Sheet 写出，列宽按 {@code columnWidth}（字符数，可含小数）覆盖模型默认列宽。 */

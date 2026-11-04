@@ -2,6 +2,9 @@ package com.cat2bug.admin.setup;
 
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -33,5 +36,17 @@ class SetupMigrationServiceTest {
     void isRepairableMigrationError_detectsFailedValidation() {
         assertTrue(SetupMigrationService.isRepairableMigrationError(
                 new RuntimeException("Migrations have failed validation")));
+    }
+
+    @Test
+    void resolveMigrationLocations_prefersLocalFilesystemMysqlDir() {
+        String[] locations = SetupMigrationService.resolveMigrationLocations(
+                SetupMigrationService.MYSQL_LOCATION);
+        assertTrue(locations.length >= 1);
+        assertTrue(locations[0].startsWith("filesystem:") || locations[0].equals(SetupMigrationService.MYSQL_LOCATION));
+        if (locations[0].startsWith("filesystem:")) {
+            Path dir = Path.of(locations[0].substring("filesystem:".length()));
+            assertTrue(Files.isDirectory(dir), "resolved dir should exist: " + dir);
+        }
     }
 }

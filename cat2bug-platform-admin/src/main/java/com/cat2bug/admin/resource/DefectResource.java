@@ -12,6 +12,7 @@ import com.cat2bug.common.domain.SysDefect;
 import com.cat2bug.common.domain.SysDefectLog;
 import com.cat2bug.common.domain.SysDefectShard;
 import com.cat2bug.common.domain.SysUserDefect;
+import com.cat2bug.common.domain.vo.DefectMergeRequest;
 import com.cat2bug.common.excel.ExcelColumnExportSupport;
 import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.common.util.LocaleUtils;
@@ -148,6 +149,15 @@ public class DefectResource {
     public AjaxResult edit(SysDefect sysDefect) {
         int rows = sysDefectService.updateSysDefect(sysDefect);
         return rows > 0 ? AjaxResult.success() : AjaxResult.error("更新失败");
+    }
+
+    @POST
+    @Path("/merge")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RequiresPermissions("system:defect:merge")
+    public AjaxResult merge(DefectMergeRequest request) {
+        SysDefect merged = sysDefectService.mergeDefects(request);
+        return AjaxResult.success(merged);
     }
 
     @PUT

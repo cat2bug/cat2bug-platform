@@ -1,26 +1,26 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="测试计划" prop="planId">
+      <el-form-item :label="$t('plan')" prop="planId">
         <el-input
           v-model="queryParams.planId"
-          placeholder="请输入测试计划"
+          :placeholder="$t('plan')"
           clearable
           @keyup.enter="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="交付物" prop="moduleId">
+      <el-form-item v-if="deliverableModuleOn" :label="$t('module')" prop="moduleId">
         <el-input
           v-model="queryParams.moduleId"
-          placeholder="请输入交付物"
+          :placeholder="$t('module')"
           clearable
           @keyup.enter="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="测试用例" prop="caseId">
+      <el-form-item v-if="casePlanModuleOn" :label="$t('case')" prop="caseId">
         <el-input
           v-model="queryParams.caseId"
-          placeholder="请输入测试用例"
+          :placeholder="$t('case')"
           clearable
           @keyup.enter="handleQuery"
         />
@@ -54,10 +54,10 @@
           end-placeholder="结束日期"
         ></el-date-picker>
       </el-form-item>
-      <el-form-item label="缺陷" prop="defectId">
+      <el-form-item v-if="defectModuleOn" :label="$t('defect')" prop="defectId">
         <el-input
           v-model="queryParams.defectId"
-          placeholder="请输入缺陷"
+          :placeholder="$t('defect')"
           clearable
           @keyup.enter="handleQuery"
         />
@@ -117,9 +117,9 @@
     <el-table v-loading="loading" :data="PlanItemList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="测试计划子项ID" align="center" prop="planItemId" />
-      <el-table-column label="测试计划" align="center" prop="planId" />
-      <el-table-column label="交付物" align="center" prop="moduleId" />
-      <el-table-column label="测试用例" align="center" prop="caseId" />
+      <el-table-column :label="$t('plan')" align="center" prop="planId" />
+      <el-table-column v-if="deliverableModuleOn" :label="$t('module')" align="center" prop="moduleId" />
+      <el-table-column v-if="casePlanModuleOn" :label="$t('case')" align="center" prop="caseId" />
       <el-table-column label="计划子项状态" align="center" prop="planItemState">
         <template #default="scope">
           <dict-tag :options="dict.type.plan_item_state" :value="scope.row.planItemState"/>
@@ -131,7 +131,7 @@
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="缺陷" align="center" prop="defectId" />
+      <el-table-column v-if="defectModuleOn" :label="$t('defect')" align="center" prop="defectId" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button
@@ -163,14 +163,14 @@
     <!-- 添加或修改测试计划子项对话框 -->
     <el-dialog :title="title" v-model="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="测试计划" prop="planId">
-          <el-input v-model="form.planId" placeholder="请输入测试计划" />
+        <el-form-item :label="$t('plan')" prop="planId">
+          <el-input v-model="form.planId" :placeholder="$t('plan')" />
         </el-form-item>
-        <el-form-item label="交付物" prop="moduleId">
-          <el-input v-model="form.moduleId" placeholder="请输入交付物" />
+        <el-form-item v-if="deliverableModuleOn" :label="$t('module')" prop="moduleId">
+          <el-input v-model="form.moduleId" :placeholder="$t('module')" />
         </el-form-item>
-        <el-form-item label="测试用例" prop="caseId">
-          <el-input v-model="form.caseId" placeholder="请输入测试用例" />
+        <el-form-item v-if="casePlanModuleOn" :label="$t('case')" prop="caseId">
+          <el-input v-model="form.caseId" :placeholder="$t('case')" />
         </el-form-item>
         <el-form-item label="计划子项状态" prop="planItemState">
           <el-select v-model="form.planItemState" placeholder="请选择计划子项状态">
@@ -185,8 +185,8 @@
         <el-form-item label="更新人" prop="updateById">
           <el-input v-model="form.updateById" placeholder="请输入更新人" />
         </el-form-item>
-        <el-form-item label="缺陷" prop="defectId">
-          <el-input v-model="form.defectId" placeholder="请输入缺陷" />
+        <el-form-item v-if="defectModuleOn" :label="$t('defect')" prop="defectId">
+          <el-input v-model="form.defectId" :placeholder="$t('defect')" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -201,9 +201,11 @@
 
 <script>
 import { listPlanItem, getPlanItem, delPlanItem, addPlanItem, updatePlanItem } from "@/api/system/PlanItem";
+import teamModuleGate from '@/mixins/team-module-gate'
 
 export default {
   name: "PlanItem",
+  mixins: [teamModuleGate],
   dicts: ['plan_item_state'],
   data() {
     return {

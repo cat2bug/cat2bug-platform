@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>计划统计卡 · 10 套样式预览</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #fff;
+      --text: #303133;
+      --muted: #909399;
+      --border: #dcdfe6;
+      --primary: #1890ff;
+      --pass: #67c23a;
+      --fail: #f56c6c;
+      --unexec: #909399;
+      --radius: 4px;
+      --block: #f0f2f5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141414;
+        --card: #1d1e1f;
+        --text: #e5eaf3;
+        --muted: #a3a6ad;
+        --border: #4c4d4f;
+        --block: #262727;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      line-height: 1.45;
+    }
+    h1 { font-size: 20px; margin: 0 0 8px; font-weight: 600; }
+    .hint { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+    .option {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .option-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .option-head strong { font-size: 15px; }
+    .badge {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: var(--radius);
+      background: var(--block);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .desc { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .mock-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .mock-card {
+      flex: 1 1 96px;
+      min-width: 88px;
+      min-height: 72px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+    .mock-card .t { font-size: 11px; color: var(--muted); }
+    .mock-card .v { font-size: 16px; font-weight: 700; }
+    .mock-card.rate .v { font-size: 14px; font-weight: 600; color: var(--muted); }
+    .mock-card.key { flex: 1.2 1 110px; }
+
+    /* A1 */
+    .a1 .key { border-left: 3px solid var(--primary); background: color-mix(in srgb, var(--card) 92%, var(--primary)); }
+    .a1 .rate { border-left: 3px solid var(--border); background: var(--block); }
+
+    /* A2 */
+    .a2 .key::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--primary); }
+    .a2 .rate::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--border); }
+
+    /* A3 */
+    .a3 .key { background: var(--card); box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+    .a3 .rate { background: var(--block); border-color: transparent; }
+
+    /* A4 */
+    .a4 .mock-card { padding-bottom: 12px; }
+    .a4 .key::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: 4px; height: 3px; border-radius: 2px; background: var(--primary); }
+    .a4 .rate::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: 4px; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--primary) 40%, var(--border) 40%); }
+
+    /* A5 */
+    .a5 .key .v { font-size: 22px; color: var(--primary); }
+    .a5 .rate .v { font-size: 13px; font-weight: 500; }
+    .a5 .t { font-size: 10px; }
+
+    /* A6 */
+    .a6 .key { flex: 1.8 1 140px; }
+    .a6 .rate { flex: 0.7 1 72px; min-width: 64px; }
+
+    /* A7 */
+    .a7 .mock-card { padding-top: 14px; }
+    .a7 .key::before { content: ""; position: absolute; left: 8px; top: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
+    .a7 .rate::before { content: ""; position: absolute; left: 8px; top: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
+
+    /* A8 */
+    .a8 .key-case { padding-bottom: 14px; }
+    .a8 .key-case .bar { position: absolute; left: 8px; right: 8px; bottom: 5px; height: 4px; display: flex; border-radius: 2px; overflow: hidden; }
+    .a8 .key-case .bar i { display: block; height: 100%; }
+    .a8 .key { border-left: 3px solid var(--primary); }
+    .a8 .rate { background: var(--block); }
+
+    /* A9 */
+    .a9-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .a9-group { border: 1px dashed var(--border); border-radius: var(--radius); padding: 8px; }
+    .a9-group-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+
+    /* A10 */
+    .a10 .key { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 6%, var(--card)); }
+    .a10 .rate { border-color: var(--border); background: transparent; }
+
+    .pick {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <h1>计划执行页统计卡 · 10 套样式预览</h1>
+  <p class="hint">在 Cursor 聊天里回复例如「选 A3」或「选 A1+A4」即可落地。本页仅预览，不改产品代码。</p>
+
+  <div class="grid">
+    <section class="option a1">
+      <div class="option-head"><strong>A1 · 极简左边条</strong><span class="badge">亮色优先</span></div>
+      <p class="desc">主色左边条抬关键卡；比率卡灰条 + 浅底。</p>
+      <div class="mock-row">
+        <div class="mock-card key"><span class="t">距离结束</span><span class="v">02天</span></div>
+        <div class="mock-card key"><span class="t">用例</span><span class="v" style="color:var(--pass)">1/0/0</span></div>
+        <div class="mock-card rate"><span class="t">发现率</span><span class="v">0%</span></div>
+      </div>
+      <div class="pick">回复：选 A1</div>
+    </section>
+
+    <section class="option a2">
+      <div class="option-head"><strong>A2 · 顶强调线</strong><span class="badge">亮色优先</span></div>
+      <p class="desc">顶部 2px 色线；关键用主色，比率用灰线。</p>
+      <div class="mock-row">
+        <div class="mock-card key"><span class="t">距离结束</span><span class="v">02天</span></div>
+        <div class="mock-card key"><span class="t">用例</span><span class="v" style="color:var(--pass)">1/0/0</span></div>
+        <div class="mock-card rate"><span class="t">发现率</span><span class="v">0%</span></div>
+      </div>
+      <div class="pick">回复：选 A2</div>
+    </section>
+
+    <section class="option a3">
+      <div class="option-head"><strong>A3 · 双层底阶</strong><span class="badge">亮色优先</span></div>
+      <p class="desc">关键卡抬起；比率卡沉入灰底，几乎无色条。</p>
+      <div class="mock-row">
+        <div class="mock-card key"><span class="t">距离结束</span><span class="v">02天</span></div>
+        <div class="mock-card key"><span class="t">用例</span><span class="v" style="color:var(--pass)">1/0/0</span></div>
+        <div class="mock-card rate"><span class="t">发现率</span><span class="v">0%</span></div>
+      </div>
+      <div class="pick">回复：选 A3</div>
+    </section>
+
+    <section class="option a4">
+      <div class="option-head"><strong>A4 · 底进度条</strong><span class="badge">亮暗均可</span></div>
+      <p class="desc">底部细进度轨；比率按百分比填充。</p>
+      <div class="mock-row">
+        <div class="mock-card key"><span class="t">距离结束</span><span class="v">02天</span></div>
+        <div class="mock-card key"><span class="t">用例</span><span class="v" style="color:var(--pass)">1/0/0</span></div>
+        <div class="mock-card rate"><span class="t">发现率</span><span class="v">40%</span></div>
+      </div>
+      <div class="pick">回复：选 A4</div>
+    </section>
+
+    <section class="option a5">
+      <div class="option-head"><strong>A5 · 数字主导</strong><span class="badge">暗色优先</span></div>
+      <p class="desc">标签极小、关键数字超大主色；比率数字弱化。</p>
+      <div class="mock-row">
+        <div class="mock-card key"><span class="t">距离结束</span><span class="v">02天</span></div>
+        <div class="mock-card key"><span class="t">用例</span><span class="v">1</span></div>
+        <div class="mock-card rate"><span class="t">发现率</span><span class="v">0%</span></div>
+      </div>
+      <div class="pick">回复：选 A5</div>
+    </section>
+
+    <section class="option a6">
+      <div class="option-head"><strong>A6 · 分栏叙事</strong><span class="badge">亮色优先</span></div>
+      <p class="desc">关键卡加宽；比率卡变窄挤在一侧。</p>
+      <div class="mock-row">
+        <div class="mock-card key"><span class="t">距离结束</span><span class="v">02天</span></div>
+        <div class="mock-card key"><span class="t">用例</span><span class="v" style="color:var(--pass)">1/0/0</span></div>
+        <div class="mock-card rate"><span class="t">发现率</span><span class="v">0%</span></div>
+        <div class="mock-card rate"><span class="t">修复率</span><span class="v">0%</span></div>
+      </div>
+      <div class="pick">回复：选 A6</div>
+    </section>
+
+    <section class="option a7">
+      <div class="option-head"><strong>A7 · 语义色点缀</strong><span class="badge">均衡</span></div>
+      <p class="desc">左上角小色点；关键语义色、比率灰点。</p>
+      <div class="mock-row">
+        <div class="mock-card key"><span class="t">距离结束</span><span class="v">02天</span></div>
+        <div class="mock-card key"><span class="t">用例</span><span class="v" style="color:var(--pass)">1/0/0</span></div>
+        <div class="mock-card rate"><span class="t">发现率</span><span class="v">0%</span></div>
+      </div>
+      <div class="pick">回复：选 A7</div>
+    </section>
+
+    <section class="option a8">
+      <div class="option-head"><strong>A8 · 分段状态条</strong><span class="badge">亮色优先</span></div>
+      <p class="desc">用例卡底部四色分段条；其它卡左边条。</p>
+      <div class="mock-row">
+        <div class="mock-card key"><span class="t">距离结束</span><span class="v">02天</span></div>
+        <div class="mock-card key key-case">
+          <span class="t">用例</span><span class="v" style="color:var(--pass)">1/0/0</span>
+          <span class="bar"><i style="flex:3;background:var(--pass)"></i><i style="flex:1;background:var(--fail)"></i><i style="flex:1;background:var(--unexec)"></i></span>
+        </div>
+        <div class="mock-card rate"><span class="t">发现率</span><span class="v">0%</span></div>
+      </div>
+      <div class="pick">回复：选 A8</div>
+    </section>
+
+    <section class="option a9">
+      <div class="option-head"><strong>A9 · 指标群组条带</strong><span class="badge">亮色优先</span></div>
+      <p class="desc">左「执行概况」、右「质量比率」两组容器。</p>
+      <div class="a9-wrap">
+        <div class="a9-group">
+          <div class="a9-group-label">执行概况</div>
+          <div class="mock-row">
+            <div class="mock-card key"><span class="t">距离结束</span><span class="v">02天</span></div>
+            <div class="mock-card key"><span class="t">用例</span><span class="v" style="color:var(--pass)">1</span></div>
+          </div>
+        </div>
+        <div class="a9-group">
+          <div class="a9-group-label">质量比率</div>
+          <div class="mock-row">
+            <div class="mock-card rate"><span class="t">发现率</span><span class="v">0%</span></div>
+            <div class="mock-card rate"><span class="t">修复率</span><span class="v">0%</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="pick">回复：选 A9</div>
+    </section>
+
+    <section class="option a10">
+      <div class="option-head"><strong>A10 · 浅描边强调框</strong><span class="badge">暗色优先</span></div>
+      <p class="desc">关键卡主色描边 + 极淡底；比率卡灰描边。</p>
+      <div class="mock-row">
+        <div class="mock-card key"><span class="t">距离结束</span><span class="v">02天</span></div>
+        <div class="mock-card key"><span class="t">用例</span><span class="v" style="color:var(--pass)">1/0/0</span></div>
+        <div class="mock-card rate"><span class="t">发现率</span><span class="v">0%</span></div>
+      </div>
+      <div class="pick">回复：选 A10</div>
+    </section>
+  </div>
+</body>
+</html>

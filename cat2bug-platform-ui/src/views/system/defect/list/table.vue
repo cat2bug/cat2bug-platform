@@ -56,10 +56,10 @@
       layout="vertical"
       ref="multiPane"
       class="custom-resizer"
-      :class="{ 'custom-resizer--tree-hidden': !showModuleTree }"
+      :class="{ 'custom-resizer--tree-hidden': !moduleTreeOpen }"
       @paneResizeStop="dragStopHandle"
     >
-      <div v-if="showModuleTree" ref="treeModule" class="defect-tree-module" :style="treeModuleStyle">
+      <div v-if="moduleTreeOpen" ref="treeModule" class="defect-tree-module" :style="treeModuleStyle">
         <tree-module
           ref="treeModuleRef"
           :project-id="projectId"
@@ -71,7 +71,7 @@
           v-resize="setDragComponentSize"
         />
       </div>
-      <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="[multipaneStyle, paneResizerRuleVars]"></multipane-resizer>
+      <multipane-resizer ref="paneResizer" v-show="moduleTreeOpen" :style="[multipaneStyle, paneResizerRuleVars]"></multipane-resizer>
       <div
         ref="defectTableContext"
         v-loading="loading"
@@ -95,7 +95,7 @@
           @selection-change="handleSelectionChange">
           <template #prepend>
             <el-table-column
-              v-if="!showModuleTree"
+              v-if="deliverableModuleOn && !showModuleTree"
               key="defect-sidebar-expand-col"
               fixed
               width="30"
@@ -140,12 +140,18 @@
                 <div>
                   <legacy-icon icon="el-icon-time"></legacy-icon>
                   <span>{{ $t('defect.life-time') }}:</span>
-                  <span class="defect-statistics-value">{{defectLife(scope.row)}}</span>
+                  <span
+                    class="defect-statistics-value"
+                    :style="{ '--defect-metric-color': lifeTimeValueColor(scope.row) }"
+                  >{{defectLife(scope.row)}}</span>
                 </div>
                 <div>
                   <legacy-icon icon="el-icon-document-delete"></legacy-icon>
                   <span>{{$i18n.t('reject')}}:</span>
-                  <span class="defect-statistics-value">{{scope.row.rejectCount}}</span>
+                  <span
+                    class="defect-statistics-value"
+                    :style="{ '--defect-metric-color': rejectCountValueColor(scope.row) }"
+                  >{{scope.row.rejectCount}}</span>
                 </div>
               </div>
             </div>
@@ -235,6 +241,11 @@ import Cat2BugTable from "@/components/Cat2BugTable";
 import Sortable from "sortablejs";
 import {listDefect} from "@/api/system/defect";
 import {lifeTime} from "@/utils/defect";
+import {
+  defectLifeMs,
+  lifeTimeMetricColor,
+  rejectCountMetricColor
+} from '@/utils/defect-page-settings'
 import { TableOptions } from "@/views/system/defect/list/table-options";
 import {
   buildDefectTableColumnDefaults,
@@ -256,6 +267,7 @@ import { enumOptionTextStyle, enumOptions, formatCustomFieldValue, urlListFromCu
 import { resolveCommaSeparatedUrls } from "@/utils/upload-asset";
 import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
 import multipaneTreeTableHeightSync from "@/mixins/multipaneTreeTableHeightSync";
+import teamModuleGate from "@/mixins/team-module-gate";
 
 const DEFECT_TREE_MODULE_WIDTH_CACHE_KEY = "defect_tree_module_width";
 /** 缺陷列表左侧交付物树是否展开（本地缓存） */
@@ -265,7 +277,10 @@ export default {
   name: "DefectTable",
   emits: ['defect-click', 'refresh', 'column-picker-visible-change', 'selection-change'],
   dicts: ['defect_level'],
-  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, teamModuleGate],
+  inject: {
+    defectPageSettingsState: { default: null }
+  },
   components: {
     Multipane,
     MultipaneResizer,
@@ -392,6 +407,18 @@ export default {
     defectLife: function () {
       return function (defect) {
         return lifeTime(defect);
+      }
+    },
+    lifeTimeValueColor() {
+      return (defect) => {
+        const settings = this.defectPageSettingsState && this.defectPageSettingsState.settings
+        return lifeTimeMetricColor(settings, defectLifeMs(defect))
+      }
+    },
+    rejectCountValueColor() {
+      return (defect) => {
+        const settings = this.defectPageSettingsState && this.defectPageSettingsState.settings
+        return rejectCountMetricColor(settings, defect && defect.rejectCount)
       }
     },
     getUrl: function () {
@@ -1035,7 +1062,9 @@ export default {
     margin: 0px;
   }
 }
-/* 缺陷名称列：标题最多 3 行，超出省略；加上统计行后整行仍不超过 100px */
+/* 缺陷名称列：标题最多 3 行，超出省略；加上统计行后整行仍不超过 100px。
+ * line-clamp 必须加在 .el-link__inner 上：el-link 默认 inline-flex，
+ * 夹在外层时省略号不生效，会被单元格 max-height + overflow:hidden 裁成半截字。 */
 .defect-table-root :deep(td.defect-name-col .cell:has(.table-defect-title)){
   display: flex !important;
   flex-direction: column;
@@ -1044,6 +1073,10 @@ export default {
   word-break: break-word;
   text-align: left !important;
   justify-content: flex-start !important;
+  /* 名称列由内层标题做省略，取消单元格 4 行 clamp，避免与 flex 布局打架 */
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  line-height: inherit;
 }
 .table-defect-title {
   display: flex;
@@ -1052,24 +1085,37 @@ export default {
   align-items: flex-start;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   text-align: left;
   .el-link {
     flex: 0 1 auto;
     align-self: stretch;
+    display: block;
     width: 100%;
     max-width: 100%;
+    min-width: 0;
     padding-left: 0;
     text-align: left !important;
-    white-space: pre-line;
-    word-break: break-word;
-    line-height: 1.45;
     overflow: hidden;
-    display: -webkit-box;
+  }
+  :deep(.el-link__inner) {
+    display: -webkit-box !important;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
     line-clamp: 3;
     -webkit-box-pack: start;
     -webkit-box-align: start;
+    overflow: hidden;
+    white-space: pre-line;
+    word-break: break-word;
+    line-height: 22px;
+    max-height: 66px; /* 3 × 22px，保证整行字不被 max-height 拦腰裁切 */
+    text-align: left;
+  }
+  .defect-statistics {
+    flex-shrink: 0;
   }
 }
 .el-table {
@@ -1093,7 +1139,8 @@ export default {
   .defect-statistics-value {
     padding-left: 3px;
     font-size: 11px;
-    color: #303133;
+    /* 经 CSS 变量上色，避免暗色主题 color:!important 盖掉内联 style */
+    color: var(--defect-metric-color, #303133);
   }
 }
 .annex-link {

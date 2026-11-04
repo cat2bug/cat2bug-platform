@@ -51,7 +51,7 @@ public class SysUserConfigService {
             return;
         }
         if (!projectMembershipAuth.canAccessProject(userId, projectId)) {
-            throw new ApiException(403, "无权限访问该项目");
+            throw new ApiException(403, ProjectMembershipAuth.PROJECT_REMOVED_MESSAGE);
         }
     }
 

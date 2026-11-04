@@ -22,5 +22,7 @@ public interface SysTeamPlanMapper {
 
     int update(SysTeamPlan plan);
 
+    int deleteByPlanId(@Param("planId") Long planId);
+
     int countTeamsByPlanId(@Param("planId") Long planId);
 }

@@ -156,7 +156,7 @@
             </template>
             <defect-custom-field-accordion-body :row="row" />
           </el-collapse-item>
-          <el-collapse-item v-if="defectCase && defectCase.caseId" name="caseId">
+          <el-collapse-item v-if="defectCase && defectCase.caseId && casePlanModuleOn" name="caseId">
             <template #title>
               <span class="shard-collapse-title">{{ $i18n.t('case') }}</span>
             </template>
@@ -216,6 +216,7 @@ import MarkdownContent from '@/components/Markdown/MarkdownContent.vue'
 import LangSelect from "@/components/LangSelect";
 import Cat2BugEmpty from '@/components/Cat2BugEmpty'
 import {getCase} from "@/api/system/case";
+import teamModuleGate from '@/mixins/team-module-gate'
 import webQrcode from '@/assets/images/web_qrcode.png'
 import {
   accordionRowHasContent,
@@ -226,7 +227,8 @@ import {
 const I18N_LOCALE_KEY='i18n-locale'
 const DEFECT_SHARD_PASSWORD_KEY = "defect-shard-password-"
 export default {
-  name: "DefectShardInfo",
+  name: 'DefectShardInfo',
+  mixins: [teamModuleGate],
   components: {
     ListDefectLog,
     DefectTypeFlag,

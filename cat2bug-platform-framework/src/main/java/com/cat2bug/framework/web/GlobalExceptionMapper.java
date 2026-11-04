@@ -34,7 +34,14 @@ public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
                 return Response.ok(AjaxResult.error(status, apiException.getMessage())).build();
             }
             if (status == AjaxResult.HTTP_FORBIDDEN) {
-                return SecurityResponses.forbidden();
+                String msg = apiException.getMessage();
+                if (msg == null || msg.isBlank()) {
+                    return SecurityResponses.forbidden();
+                }
+                // 保留业务文案（如「您已被移出该项目」），勿统一盖成通用无权限提示
+                return Response.ok(AjaxResult.error(status, msg))
+                        .type(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)
+                        .build();
             }
             return Response.status(status).entity(body).build();
         }

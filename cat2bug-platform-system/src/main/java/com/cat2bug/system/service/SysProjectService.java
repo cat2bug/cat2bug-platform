@@ -3,14 +3,13 @@ package com.cat2bug.system.service;
 import com.cat2bug.common.api.TableDataInfo;
 import com.cat2bug.common.core.page.PageDomain;
 import com.cat2bug.common.domain.SysProject;
-import com.cat2bug.common.domain.SysUserProject;
-import com.cat2bug.common.domain.SysUserProjectRole;
+import com.cat2bug.common.domain.SysUser;
+import com.cat2bug.common.domain.vo.BatchUserRoleVo;
 import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.common.util.MessageUtils;
 import com.cat2bug.common.util.PathKeyValidator;
 import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
-import com.cat2bug.system.mapper.SysUserProjectRoleMapper;
 import com.cat2bug.system.service.mcp.SysProjectMcpService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -18,7 +17,10 @@ import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 @ApplicationScoped
 public class SysProjectService {
@@ -35,7 +37,7 @@ public class SysProjectService {
     SysUserProjectMapper sysUserProjectMapper;
 
     @Inject
-    SysUserProjectRoleMapper sysUserProjectRoleMapper;
+    SysUserProjectService sysUserProjectService;
 
     @Inject
     SysProjectMcpService sysProjectMcpService;
@@ -134,22 +136,58 @@ public class SysProjectService {
         if (sysProjectMapper.insertSysProject(sysProject) != 1) {
             throw new ApiException("创建项目失败");
         }
-        SysUserProject up = new SysUserProject();
-        up.setProjectId(sysProject.getProjectId());
-        up.setUserId(userId);
-        up.setProjectLock(0);
-        if (sysUserProjectMapper.insertSysUserProject(up) != 1 || up.getUserProjectId() == null) {
-            throw new ApiException("创建项目成员失败");
-        }
-        SysUserProjectRole role = new SysUserProjectRole();
-        role.setUserProjectId(up.getUserProjectId());
-        role.setRoleId(PROJECT_CREATE_BY_ROLE_ID);
-        if (sysUserProjectRoleMapper.insertSysUserProjectRole(role) != 1) {
-            throw new ApiException("创建项目角色失败");
-        }
+        insertProjectMembers(sysProject, userId);
         sysProjectMcpService.createDefault(sysProject.getProjectId(), String.valueOf(userId));
         sysCaseTypeService.ensureTeamDefaultsIfEmpty(sysProject.getProjectId());
         return 1;
+    }
+
+    /**
+     * 写入创建表单中的项目成员（按 userId 去重）；若未包含创建人则自动补上，并确保创建人带 project.create-by。
+     */
+    private void insertProjectMembers(SysProject sysProject, Long userId) {
+        Map<Long, SysUser> byId = new LinkedHashMap<>();
+        List<SysUser> members = sysProject.getMembers();
+        if (members != null) {
+            for (SysUser member : members) {
+                if (member == null || member.getUserId() == null) {
+                    continue;
+                }
+                byId.putIfAbsent(member.getUserId(), member);
+            }
+        }
+        if (!byId.containsKey(userId)) {
+            SysUser creator = new SysUser();
+            creator.setUserId(userId);
+            creator.setRoleIds(new Long[]{PROJECT_CREATE_BY_ROLE_ID});
+            byId.put(userId, creator);
+        }
+        for (SysUser member : byId.values()) {
+            Long[] roleIds = resolveCreateMemberRoleIds(member, userId);
+            BatchUserRoleVo batch = new BatchUserRoleVo();
+            batch.setProjectId(sysProject.getProjectId());
+            batch.setMemberIds(new Long[]{member.getUserId()});
+            batch.setRoleIds(roleIds);
+            sysUserProjectService.batchInsertSysUserProject(batch);
+        }
+    }
+
+    private Long[] resolveCreateMemberRoleIds(SysUser member, Long creatorUserId) {
+        LinkedHashSet<Long> roles = new LinkedHashSet<>();
+        if (member.getRoleIds() != null) {
+            for (Long roleId : member.getRoleIds()) {
+                if (roleId != null) {
+                    roles.add(roleId);
+                }
+            }
+        }
+        if (creatorUserId.equals(member.getUserId())) {
+            roles.add(PROJECT_CREATE_BY_ROLE_ID);
+        }
+        if (roles.isEmpty()) {
+            throw new ApiException(MessageUtils.message("project.member_role_not_empty"));
+        }
+        return roles.toArray(Long[]::new);
     }
     public int updateSysProject(SysProject sysProject, Long userId) {
         applyProjectKeyOnUpdate(sysProject);

@@ -25,13 +25,67 @@ function buildGitCodeChildren() {
   ]
 }
 
+function buildCaseChildren() {
+  return [
+    {
+      path: 'case',
+      name: 'ProjectScopedCase',
+      component: Stub,
+      meta: { projectModule: 'case', projectModuleView: PROJECT_MODULE_VIEW.case, projectListPage: true }
+    },
+    {
+      path: 'case/reviews',
+      name: 'ProjectScopedCaseReviews',
+      component: Stub,
+      meta: { projectModule: 'case', projectModuleView: PROJECT_MODULE_VIEW.case, noCache: true }
+    },
+    {
+      path: 'case/reviews/:reviewId',
+      name: 'ProjectScopedCaseReviewDetail',
+      component: Stub,
+      meta: { projectModule: 'case', projectModuleView: PROJECT_MODULE_VIEW.case, noCache: true }
+    }
+  ]
+}
+
+function buildPlanChildren() {
+  return [
+    {
+      path: 'plan',
+      name: 'ProjectScopedPlan',
+      component: Stub,
+      meta: { projectModule: 'plan', projectModuleView: PROJECT_MODULE_VIEW.plan, projectListPage: true }
+    },
+    {
+      path: 'plan/new',
+      name: 'ProjectScopedPlanNew',
+      component: Stub,
+      meta: { projectModule: 'plan', projectModuleView: PROJECT_MODULE_VIEW.plan, noCache: true }
+    },
+    {
+      path: 'plan/:planId/edit',
+      name: 'ProjectScopedPlanEdit',
+      component: Stub,
+      meta: { projectModule: 'plan', projectModuleView: PROJECT_MODULE_VIEW.plan, noCache: true }
+    },
+    {
+      path: 'plan/:planId/run',
+      name: 'ProjectScopedPlanRun',
+      component: Stub,
+      meta: { projectModule: 'plan', projectModuleView: PROJECT_MODULE_VIEW.plan, noCache: true }
+    }
+  ]
+}
+
 function buildChildren() {
   const children = [
     { path: '', name: 'ProjectScopedHome', component: Stub },
     { path: 'dashboard', name: 'ProjectScopedDashboard', component: Stub },
-    ...buildGitCodeChildren()
+    ...buildGitCodeChildren(),
+    ...buildPlanChildren(),
+    ...buildCaseChildren()
   ]
-  PROJECT_MODULES.filter(m => m !== 'dashboard' && m !== 'code').forEach(mod => {
+  PROJECT_MODULES.filter(m => m !== 'dashboard' && m !== 'code' && m !== 'plan' && m !== 'case').forEach(mod => {
     const pascal = mod.charAt(0).toUpperCase() + mod.slice(1)
     children.push({
       path: `${mod}/:pathMatch(.*)*`,
@@ -109,6 +163,34 @@ describe('project-scoped route table', () => {
 
     await router.push('/acme/demo/module')
     expect(router.currentRoute.value.name).toBe('ProjectScopedModule')
+  })
+
+  it('resolves case list and review history routes', async () => {
+    await router.push('/acme/demo/case')
+    expect(router.currentRoute.value.name).toBe('ProjectScopedCase')
+
+    await router.push('/acme/demo/case/reviews')
+    expect(router.currentRoute.value.name).toBe('ProjectScopedCaseReviews')
+
+    await router.push('/acme/demo/case/reviews/99')
+    expect(router.currentRoute.value.name).toBe('ProjectScopedCaseReviewDetail')
+    expect(router.currentRoute.value.params.reviewId).toBe('99')
+  })
+
+  it('resolves plan list, new, edit and run pages', async () => {
+    await router.push('/acme/demo/plan')
+    expect(router.currentRoute.value.name).toBe('ProjectScopedPlan')
+
+    await router.push('/acme/demo/plan/new')
+    expect(router.currentRoute.value.name).toBe('ProjectScopedPlanNew')
+
+    await router.push('/acme/demo/plan/42/edit')
+    expect(router.currentRoute.value.name).toBe('ProjectScopedPlanEdit')
+    expect(router.currentRoute.value.params.planId).toBe('42')
+
+    await router.push('/acme/demo/plan/42/run')
+    expect(router.currentRoute.value.name).toBe('ProjectScopedPlanRun')
+    expect(router.currentRoute.value.params.planId).toBe('42')
   })
 
   it('resolves code/{slug} browse deep links', async () => {

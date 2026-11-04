@@ -12,8 +12,9 @@
       </el-form-item>
       <el-form-item :label="$t('project-mcp.modules')">
         <el-checkbox-group v-model="form.modules" :disabled="!settings.editable || !form.enabled">
-          <el-checkbox v-for="key in moduleKeys" :key="key" :value="key">
+          <el-checkbox v-for="key in moduleKeys" :key="key" :value="key" :disabled="teamModuleClosed(key)">
             {{ $t('project-mcp.module.' + key) }}
+            <span v-if="teamModuleClosed(key)" class="mcp-page__team-closed">{{ $t('project-mcp.module.team-closed') }}</span>
           </el-checkbox>
         </el-checkbox-group>
         <div class="mcp-page__hint">{{ $t('project-mcp.modules-hint') }}</div>
@@ -82,6 +83,8 @@ import { markRaw } from 'vue'
 import { CopyDocument } from '@element-plus/icons-vue'
 import { getProjectMcp, updateProjectMcp } from '@/api/system/project-mcp'
 import { useUserStore } from '@/stores/user'
+import { useModulePageSettingsStore } from '@/stores/modulePageSettings'
+import { isMcpKeyClosedByTeam } from '@/utils/module-page-settings'
 
 /**
  * 未配置 cat2bug.public-url 时，展示地址与当前网页协议/主机对齐。
@@ -139,6 +142,10 @@ export default {
     moduleKeys() {
       return (this.settings.availableModules || []).map(m => (typeof m === 'string' ? m : m.key))
     },
+    teamModuleClosed() {
+      const settings = useModulePageSettingsStore().settings
+      return (key) => isMcpKeyClosedByTeam(settings, key)
+    },
     displayMcpUrl() {
       return alignMcpUrlWithPage(this.settings.mcpUrl || '', !!this.settings.publicUrlConfigured)
     },
@@ -194,6 +201,8 @@ export default {
     }
   },
   created() {
+    const projectId = this.projectId
+    if (projectId) useModulePageSettingsStore().loadProject(projectId)
     this.load()
   },
   methods: {
@@ -256,6 +265,11 @@ export default {
 <style scoped>
 .mcp-settings-page {
   max-width: 960px;
+}
+.mcp-page__team-closed {
+  margin-left: 6px;
+  font-size: 12px;
+  color: var(--text-color-secondary);
 }
 .mcp-page__hint,
 .mcp-page__updated {

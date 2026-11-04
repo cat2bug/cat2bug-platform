@@ -5,6 +5,7 @@ import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.common.excel.ExcelHeaderCell;
 import com.cat2bug.common.excel.ExcelHeaderStyle;
 import com.cat2bug.common.excel.FastExcelSupport;
+import com.cat2bug.common.util.TeamModuleLabelContext;
 import com.cat2bug.system.service.SysModuleService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -44,7 +45,7 @@ public class CaseImportTemplateService {
                 .toList();
 
         return FastExcelSupport.writeWorkbook(workbook -> {
-            Worksheet sheet = workbook.newWorksheet(CaseExcelColumnSupport.TEMPLATE_SHEET_NAME);
+            Worksheet sheet = workbook.newWorksheet(TeamModuleLabelContext.apply(CaseExcelColumnSupport.TEMPLATE_SHEET_NAME));
             Worksheet listSheet = workbook.newWorksheet(CaseExcelColumnSupport.LIST_SHEET_NAME);
             listSheet.setVisibilityState(VisibilityState.HIDDEN);
 

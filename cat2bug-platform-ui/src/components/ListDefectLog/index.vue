@@ -71,19 +71,20 @@ import OPEN from "@/components/ListDefectLog/open";
 import UPDATE from "@/components/ListDefectLog/update";
 import DELETE from "@/components/ListDefectLog/delete";
 import RESTORE from "@/components/ListDefectLog/restore";
+import MERGE from "@/components/ListDefectLog/merge";
 import CommentInput from "@/components/Comment/CommentInput";
 import CommentView from "@/components/Comment/CommentView";
 import {addComment} from "@/api/system/comment";
 import {checkPermi} from "@/utils/permission";
 
-/** 与后端 SysDefectLogStateEnum.ordinal() 一致，兼容接口返回枚举序号而非名称的情况 */
+/** 与后端 DefectLogState.ordinal() 一致，兼容接口返回枚举序号而非名称的情况 */
 const DEFECT_LOG_TYPE_ORDER = [
-  'CREATE', 'ASSIGN', 'REJECT', 'PASS', 'REJECTED', 'REPAIR', 'CLOSED', 'OPEN', 'UPDATE', 'IMPORT', 'DELETE', 'RESTORE'
+  'CREATE', 'ASSIGN', 'REJECT', 'PASS', 'REJECTED', 'REPAIR', 'CLOSED', 'OPEN', 'UPDATE', 'IMPORT', 'DELETE', 'RESTORE', 'MERGE'
 ];
 
 export default {
   name: "ListDefectLog",
-  components:{ CREATE,IMPORT,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN,UPDATE,DELETE,RESTORE, CommentInput, CommentView },
+  components:{ CREATE,IMPORT,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN,UPDATE,DELETE,RESTORE,MERGE, CommentInput, CommentView },
   data() {
     return {
       defectId: null,

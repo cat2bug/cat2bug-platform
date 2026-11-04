@@ -3,7 +3,8 @@
     <el-button
       size="small"
       :link="isTextMode"
-      :type="isTextMode ? undefined : 'danger'"
+      type="primary"
+      class="blue"
       :icon="$legacyIcon('el-icon-plus')"
       @click="handleOpenAddDefect($event, planItem)"
       v-hasPermi="['system:defect:add']"
@@ -13,7 +14,7 @@
     <el-button
       size="small"
       :link="isTextMode"
-      :type="isTextMode ? undefined : 'danger'"
+      type="warning"
       :icon="$legacyIcon('el-icon-attract')"
       @click="handleOpenRelatedDefect($event, planItem)"
       v-hasPermi="['system:defect:add']"
@@ -24,7 +25,7 @@
       v-if="planItem.defectIds && planItem.defectIds.length==1"
       size="small"
       :link="isTextMode"
-      :type="isTextMode ? undefined : 'danger'"
+      type="danger"
       @click="handleOpenHandleDefect(planItem, planItem.defectIds[0])"
       v-hasPermi="['system:defect:edit']"
     > <svg-icon icon-class="bug"></svg-icon>
@@ -34,7 +35,7 @@
       class="defect-dropdown"
       size="small"
       :split-button="!isTextMode"
-      :type="isTextMode ? undefined : 'danger'"
+      type="danger"
       placement="bottom-start"
       @visible-change="handlePlanItemDefectList($event, planItem)"
       @command="handleOpenHandleDefect(planItem, $event)"
@@ -53,7 +54,7 @@
     <el-button
       size="small"
       :link="isTextMode"
-      :type="isTextMode ? undefined : type"
+      type="success"
       :icon="$legacyIcon('el-icon-check')"
       @click="handlePlanItemState(planItem, 'pass')"
       v-if="hasPassPermi(planItem)"
@@ -61,7 +62,8 @@
     <el-button
       size="small"
       :link="isTextMode"
-      :type="isTextMode ? undefined : type"
+      type="danger"
+      class="red"
       :icon="$legacyIcon('el-icon-close')"
       @click="handlePlanItemState(planItem, 'unexecuted')"
       v-if="hasCancelPassPermi(planItem)"

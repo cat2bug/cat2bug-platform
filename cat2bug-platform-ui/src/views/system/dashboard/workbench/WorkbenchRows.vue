@@ -48,7 +48,7 @@
 
 <script>
 import { normalizeSpans, colWidgets } from './row-layout'
-import { getWidgetDef } from './widget-registry'
+import { getWidgetDef, isWidgetVisible } from './widget-registry'
 
 const STACK_MQ = 720
 
@@ -72,7 +72,7 @@ export default {
           cols: (row.cols || [])
             .map(c => ({
               ...c,
-              widgets: colWidgets(c).filter(w => getWidgetDef(w.type))
+              widgets: colWidgets(c).filter(w => isWidgetVisible(w.type))
             }))
             .filter(c => c.widgets.length)
         }))
@@ -91,7 +91,7 @@ export default {
       this.stackMode = window.innerWidth < STACK_MQ
     },
     colWidgetsOf(col) {
-      return colWidgets(col).filter(w => getWidgetDef(w.type))
+      return colWidgets(col).filter(w => isWidgetVisible(w.type))
     },
     isBare(type) {
       return !!getWidgetDef(type)?.bare

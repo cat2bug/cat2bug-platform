@@ -3,6 +3,7 @@ package com.cat2bug.framework.storage;
 import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.framework.config.Cat2BugProfileConfig;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import javax.imageio.ImageIO;
@@ -32,8 +33,16 @@ public class FileUploadService {
     @Inject
     Cat2BugProfileConfig profileConfig;
 
+    @Inject
+    Instance<UploadByteLimit> uploadByteLimit;
+
     public UploadResult upload(InputStream input, long size, String originalFilename, String customFileName)
             throws IOException {
+        return upload(input, size, originalFilename, customFileName, null);
+    }
+
+    public UploadResult upload(InputStream input, long size, String originalFilename, String customFileName,
+                               Long projectId) throws IOException {
         if (input == null) {
             throw new ApiException("上传文件不能为空");
         }
@@ -42,7 +51,7 @@ public class FileUploadService {
         if (sourceName == null || sourceName.isBlank()) {
             throw new ApiException("文件名不能为空");
         }
-        if (size > DEFAULT_MAX_SIZE) {
+        if (size > maxBytes(projectId)) {
             throw new ApiException("文件大小超出限制");
         }
         if (sourceName.length() > 100) {
@@ -84,6 +93,9 @@ public class FileUploadService {
         }
         String imageFormat = matcher.group(1);
         byte[] data = Base64.getDecoder().decode(matcher.group(2));
+        if (data.length > maxBytes(null)) {
+            throw new ApiException("文件大小超出限制");
+        }
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(data));
         if (image == null) {
             throw new ApiException("无效的图片数据");
@@ -125,6 +137,14 @@ public class FileUploadService {
             return false;
         }
         return false;
+    }
+
+    private long maxBytes(Long projectId) {
+        if (uploadByteLimit == null || !uploadByteLimit.isResolvable()) {
+            return DEFAULT_MAX_SIZE;
+        }
+        UploadByteLimit limit = uploadByteLimit.get();
+        return projectId == null ? limit.systemMaxBytes() : limit.effectiveMaxBytes(projectId);
     }
 
     private static String extractExtension(String filename) {

@@ -3,7 +3,7 @@
     <!-- 仅操作按钮参与表格列宽；对话框/弹层挂到隔离层，避免撑开操作列 -->
     <div class="defect-tools__bar">
       <slot name="left"></slot>
-      <span v-show="!isDeleted" class="defect-tools-share-wrap">
+      <span v-show="!isDeleted && shareAllowed" class="defect-tools-share-wrap">
         <share-card :params="defect" />
       </span>
       <star-switch v-show="!isDeleted" v-model="defect.collect" @change="clickCollectHandle($event, defect, false)"></star-switch>
@@ -54,6 +54,9 @@ export default {
   emits: ['update:defect', 'update', 'view', 'delete', 'restore', 'log', 'collect'],
   name: "DefectTools",
   components: {PassDialog, AssignDialog, RejectDialog, RepairDialog,CloseDialog,OpenDialog,EditDefectDialog,StarSwitch, ShareCard },
+  inject: {
+    defectPageSettingsState: { default: null }
+  },
   setup() {
     const userStore = useUserStore()
     const { id } = storeToRefs(userStore)
@@ -87,6 +90,10 @@ export default {
     },
   },
   computed: {
+    shareAllowed() {
+      const settings = this.defectPageSettingsState && this.defectPageSettingsState.settings
+      return !settings || settings.allowShare !== false
+    },
     isCompact() {
       if (this.compact != null) return this.compact;
       return this.isText === true;

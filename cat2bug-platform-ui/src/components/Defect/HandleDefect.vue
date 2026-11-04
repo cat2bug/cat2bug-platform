@@ -76,7 +76,7 @@
           </template>
           <defect-custom-field-accordion-body :row="row" />
         </el-collapse-item>
-        <el-collapse-item v-if="defectCase && defectCase.caseId" name="caseId">
+        <el-collapse-item v-if="defectCase && defectCase.caseId && casePlanModuleOn" name="caseId">
           <template #title>
             <span class="handle-defect-collapse-title" data-collapse-name="caseId">{{ $i18n.t('case') }}</span>
           </template>
@@ -111,6 +111,7 @@ import CaseCard from "@/components/Case/CaseCard";
 import Cat2BugEmpty from '@/components/Cat2BugEmpty'
 import FocusMemberList from "@/components/FocusMemberList";
 import {getCase} from "@/api/system/case";
+import teamModuleGate from '@/mixins/team-module-gate'
 import MarkdownContent from '@/components/Markdown/MarkdownContent.vue'
 import {normalizeDefectTypeAndLevel} from "@/utils/defect-defaults";
 import handleDefectKbdHints from '@/mixins/handle-defect-kbd-hints'
@@ -122,7 +123,7 @@ import {
 
 export default {
   name: "EditDefect",
-  mixins: [handleDefectKbdHints],
+  mixins: [handleDefectKbdHints, teamModuleGate],
   dicts: ['defect_level'],
   components: {
     SelectProjectMember,
@@ -159,10 +160,10 @@ export default {
       // 表单校验（处理人可选）
       rules: {
         defectName: [
-          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: "input" }
+          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: ['change', 'blur'] }
         ],
         defectDescribe: [
-          { required: true, message: this.$i18n.t('defect.describe-cannot-empty'), trigger: "input" }
+          { required: true, message: this.$i18n.t('defect.describe-cannot-empty'), trigger: ['change', 'blur'] }
         ],
       },
       options: {

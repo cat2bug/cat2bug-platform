@@ -196,6 +196,8 @@ import {
   supportsFieldDefaultValue
 } from '@/components/DefectCustomField/format'
 import { resolveOrderedDefectFormFields } from '@/utils/defect-form-field-order'
+import { hiddenDefectBuiltinFormKeys } from '@/utils/module-page-settings'
+import { useModulePageSettingsStore } from '@/stores/modulePageSettings'
 
 export default {
   name: 'DefectFormOrderedFields',
@@ -227,7 +229,10 @@ export default {
     }
   },
   computed: {
-    defectDatetimeValueFormat: () => DEFECT_DATETIME_VALUE_FORMAT
+    defectDatetimeValueFormat: () => DEFECT_DATETIME_VALUE_FORMAT,
+    teamFieldGate() {
+      return hiddenDefectBuiltinFormKeys(useModulePageSettingsStore().settings).join(',')
+    }
   },
   watch: {
     defectFieldLayout: {
@@ -241,6 +246,9 @@ export default {
     },
     projectId() {
       this.rebuildOrderedFormFields()
+    },
+    teamFieldGate() {
+      this.rebuildOrderedFormFields()
     }
   },
   created() {
@@ -248,11 +256,12 @@ export default {
   },
   methods: {
     rebuildOrderedFormFields() {
+      const hidden = new Set(hiddenDefectBuiltinFormKeys(useModulePageSettingsStore().settings))
       this.orderedFormFields = resolveOrderedDefectFormFields(
         this.$cache && this.$cache.local,
         this.defectFieldLayout,
         { isBuiltinVisible: this.isBuiltinDefectFieldVisible }
-      )
+      ).filter((item) => !hidden.has(item.formKey) && !hidden.has(item.fieldKey))
     },
     /** 打开新建/编辑时：按最新个人显示字段序重排，并补自定义字段默认值 */
     refreshCustomFieldDefaults() {

@@ -47,6 +47,109 @@ const PROJECT_MODULE_LAZY_VIEWS = Object.freeze({
 })
 
 /**
+ * 测试计划列表 + 新建/编辑/执行整页（避免 plan/:pathMatch 吞掉深层路径；plan/new 须在 :planId 之前）。
+ */
+/**
+ * 用例列表 + 评审记录列表/详情（reviews 静态段须在 case/:pathMatch 之前）。
+ */
+function buildCaseChildren() {
+  const caseMeta = {
+    projectScoped: true,
+    projectModule: 'case',
+    titleI18nKey: 'case',
+    projectModuleView: PROJECT_MODULE_VIEW.case || null
+  }
+  return [
+    {
+      path: 'case',
+      name: 'ProjectScopedCase',
+      component: () => import('@/views/system/case/index'),
+      meta: {
+        ...caseMeta,
+        title: 'case',
+        projectListPage: true
+      }
+    },
+    {
+      path: 'case/reviews',
+      name: 'ProjectScopedCaseReviews',
+      component: () => import('@/views/system/case/reviews/index'),
+      meta: {
+        ...caseMeta,
+        title: i18n.global.t('case.review.history'),
+        titleI18nKey: 'case.review.history',
+        noCache: true
+      }
+    },
+    {
+      path: 'case/reviews/:reviewId',
+      name: 'ProjectScopedCaseReviewDetail',
+      component: () => import('@/views/system/case/reviews/detail'),
+      meta: {
+        ...caseMeta,
+        title: i18n.global.t('case.review.detail'),
+        titleI18nKey: 'case.review.detail',
+        noCache: true
+      }
+    }
+  ]
+}
+
+function buildPlanChildren() {
+  const planMeta = {
+    projectScoped: true,
+    projectModule: 'plan',
+    titleI18nKey: 'plan',
+    projectModuleView: PROJECT_MODULE_VIEW.plan || null
+  }
+  return [
+    {
+      path: 'plan',
+      name: 'ProjectScopedPlan',
+      component: () => import('@/views/system/plan/index'),
+      meta: {
+        ...planMeta,
+        title: 'plan',
+        projectListPage: true
+      }
+    },
+    {
+      path: 'plan/new',
+      name: 'ProjectScopedPlanNew',
+      component: () => import('@/views/system/plan/form'),
+      meta: {
+        ...planMeta,
+        title: i18n.global.t('plan.create'),
+        titleI18nKey: 'plan.create',
+        noCache: true
+      }
+    },
+    {
+      path: 'plan/:planId/edit',
+      name: 'ProjectScopedPlanEdit',
+      component: () => import('@/views/system/plan/form'),
+      meta: {
+        ...planMeta,
+        title: i18n.global.t('plan.edit'),
+        titleI18nKey: 'plan.edit',
+        noCache: true
+      }
+    },
+    {
+      path: 'plan/:planId/run',
+      name: 'ProjectScopedPlanRun',
+      component: () => import('@/views/system/plan/run'),
+      meta: {
+        ...planMeta,
+        title: i18n.global.t('plan.run'),
+        titleI18nKey: 'plan.run',
+        noCache: true
+      }
+    }
+  ]
+}
+
+/**
  * Real `code` list + `code/{slug}/**` browse tree (replaces module-placeholder for code).
  */
 function buildGitCodeChildren() {
@@ -267,8 +370,10 @@ function buildProjectScopedChildren() {
   ]
 
   children.push(...buildGitCodeChildren())
+  children.push(...buildPlanChildren())
+  children.push(...buildCaseChildren())
 
-  PROJECT_MODULES.filter(mod => mod !== 'dashboard' && mod !== 'code').forEach(mod => {
+  PROJECT_MODULES.filter(mod => mod !== 'dashboard' && mod !== 'code' && mod !== 'plan' && mod !== 'case').forEach(mod => {
     const pascal = mod.charAt(0).toUpperCase() + mod.slice(1)
     const view = PROJECT_MODULE_LAZY_VIEWS[mod] || projectModulePlaceholder
     children.push({
@@ -808,6 +913,105 @@ export const dynamicRoutes = [
           title: i18n.global.t('defect.custom-field.title'),
           titleI18nKey: 'defect.custom-field.title',
           activeMenu: '/team-options/team-option'
+        }
+      }
+    ]
+  },
+  {
+    path: '/team-options/team-defect-page-settings',
+    component: Layout,
+    name: 'TeamDefectPageSettingsRoot',
+    hidden: true,
+    permissions: ['system:team:defect-field:list'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/team/option/defect-page-settings/index'),
+        name: 'TeamDefectPageSettings',
+        meta: {
+          title: i18n.global.t('defect.page-settings.title'),
+          titleI18nKey: 'defect.page-settings.title',
+          activeMenu: '/team-options/team-option'
+        }
+      }
+    ]
+  },
+  {
+    path: '/team-options/team-case-plan-page-settings',
+    component: Layout,
+    name: 'TeamCasePlanPageSettingsRoot',
+    hidden: true,
+    permissions: ['system:team:case-type:list'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/team/option/module-page-settings/index'),
+        name: 'TeamCasePlanPageSettings',
+        meta: {
+          title: i18n.global.t('team.module-page.case_plan-page'),
+          titleI18nKey: 'team.module-page.case_plan-page',
+          activeMenu: '/team-options/team-option',
+          modulePageKey: 'case_plan'
+        }
+      }
+    ]
+  },
+  {
+    path: '/team-options/team-code-page-settings',
+    component: Layout,
+    name: 'TeamCodePageSettingsRoot',
+    hidden: true,
+    permissions: ['system:team:query'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/team/option/module-page-settings/index'),
+        name: 'TeamCodePageSettings',
+        meta: {
+          title: i18n.global.t('team.module-page.code-page'),
+          titleI18nKey: 'team.module-page.code-page',
+          activeMenu: '/team-options/team-option',
+          modulePageKey: 'code'
+        }
+      }
+    ]
+  },
+  {
+    path: '/team-options/team-deliverable-page-settings',
+    component: Layout,
+    name: 'TeamDeliverablePageSettingsRoot',
+    hidden: true,
+    permissions: ['system:team:query'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/team/option/module-page-settings/index'),
+        name: 'TeamDeliverablePageSettings',
+        meta: {
+          title: i18n.global.t('team.module-page.deliverable-page'),
+          titleI18nKey: 'team.module-page.deliverable-page',
+          activeMenu: '/team-options/team-option',
+          modulePageKey: 'deliverable'
+        }
+      }
+    ]
+  },
+  {
+    path: '/team-options/team-document-page-settings',
+    component: Layout,
+    name: 'TeamDocumentPageSettingsRoot',
+    hidden: true,
+    permissions: ['system:team:query'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/team/option/module-page-settings/index'),
+        name: 'TeamDocumentPageSettings',
+        meta: {
+          title: i18n.global.t('team.module-page.document-page'),
+          titleI18nKey: 'team.module-page.document-page',
+          activeMenu: '/team-options/team-option',
+          modulePageKey: 'document'
         }
       }
     ]

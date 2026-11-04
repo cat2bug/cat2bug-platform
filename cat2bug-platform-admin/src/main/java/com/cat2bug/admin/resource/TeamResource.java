@@ -71,6 +71,12 @@ public class TeamResource {
     @Inject
     com.cat2bug.system.service.SysTeamPlanService sysTeamPlanService;
 
+    @Inject
+    com.cat2bug.system.service.TeamMembershipAuth teamMembershipAuth;
+
+    @Inject
+    com.cat2bug.system.service.SysPermissionService sysPermissionService;
+
     @GET
     @Path("/list")
     @RequiresPermissions("system:team:list")
@@ -149,13 +155,21 @@ public class TeamResource {
         return AjaxResult.success(created);
     }
 
+    @GET
+    @Path("/{teamId}/membership")
+    public AjaxResult membership(@PathParam("teamId") Long teamId) {
+        LoginUser loginUser = requireLoginUser();
+        return AjaxResult.success(sysUserTeamService.membershipInfo(teamId, loginUser.getUserId()));
+    }
+
     @POST
     @Path("/{teamId}/member")
     @RequiresPermissions("system:team:member:create")
     public AjaxResult createMember(@PathParam("teamId") Long teamId, SysUser sysUser) {
+        LoginUser loginUser = requireLoginUser();
+        teamMembershipAuth.requireFormalTeamMember(loginUser.getUserId(), teamId);
         sysUser.setPhoneNumber(StringUtils.trimToNull(sysUser.getPhoneNumber()));
         sysUser.setEmail(StringUtils.trimToNull(sysUser.getEmail()));
-        LoginUser loginUser = requireLoginUser();
         sysUser.setCreateBy(loginUser.getUsername());
         if (StringUtils.isNotEmpty(sysUser.getPassword())) {
             sysUser.setPassword(BCrypt.withDefaults().hashToString(12, sysUser.getPassword().toCharArray()));
@@ -167,8 +181,9 @@ public class TeamResource {
     @Path("/{teamId}/invite")
     @RequiresPermissions("system:team:member:invite")
     public AjaxResult inviteMember(@PathParam("teamId") Long teamId, BatchUserRoleVo batchUserRoleVo) {
-        batchUserRoleVo.setTeamId(teamId);
         LoginUser loginUser = requireLoginUser();
+        teamMembershipAuth.requireFormalTeamMember(loginUser.getUserId(), teamId);
+        batchUserRoleVo.setTeamId(teamId);
         return toAjax(sysTeamService.inviteMember(batchUserRoleVo, String.valueOf(loginUser.getUserId())));
     }
 
@@ -179,6 +194,7 @@ public class TeamResource {
                                        CreateMemberInviteVo request,
                                        @Context UriInfo uriInfo) {
         LoginUser loginUser = requireLoginUser();
+        teamMembershipAuth.requireFormalTeamMember(loginUser.getUserId(), teamId);
         return AjaxResult.success(sysMemberInviteService.createTeamInviteLink(
                 teamId, request, loginUser.getUserId(), InviteLinkUrlSupport.resolveInviteBaseUrl(uriInfo)));
     }
@@ -216,6 +232,8 @@ public class TeamResource {
     public AjaxResult editTeamMemberRole(@PathParam("teamId") Long teamId,
                                          @PathParam("memberId") Long memberId,
                                          SysUserTeam sysUserTeam) {
+        LoginUser loginUser = requireLoginUser();
+        teamMembershipAuth.requireFormalTeamMember(loginUser.getUserId(), teamId);
         return toAjax(sysUserTeamService.updateSysUserTeamByTeamIdAndMemberId(teamId, memberId, sysUserTeam));
     }
 
@@ -225,13 +243,53 @@ public class TeamResource {
     public AjaxResult editTeamMemberRoleIds(@PathParam("teamId") Long teamId,
                                             @PathParam("memberId") Long memberId,
                                             Long[] roleIds) {
+        LoginUser loginUser = requireLoginUser();
+        teamMembershipAuth.requireFormalTeamMember(loginUser.getUserId(), teamId);
         return toAjax(sysUserTeamRoleService.updateSysUserTeamRoleByTeamIdAndMemberIdAndRoleIds(
                 teamId, memberId, roleIds));
+    }
+
+    @DELETE
+    @Path("/{teamId}/member/{memberId}")
+    @RequiresPermissions("system:team:edit")
+    public AjaxResult removeMember(@PathParam("teamId") Long teamId,
+                                   @PathParam("memberId") Long memberId) {
+        LoginUser loginUser = requireLoginUser();
+        teamMembershipAuth.requireFormalTeamMember(loginUser.getUserId(), teamId);
+        return toAjax(sysUserTeamService.deleteTeamMember(teamId, memberId));
+    }
+
+    /**
+     * 转让创建人：不依赖 system:team:edit，服务内校验调用者必须是当前 team.create-by。
+     */
+    @POST
+    @Path("/{teamId}/transfer-creator")
+    public AjaxResult transferCreator(@PathParam("teamId") Long teamId, java.util.Map<String, Object> body) {
+        LoginUser loginUser = requireLoginUser();
+        Long targetUserId = null;
+        if (body != null && body.get("targetUserId") != null) {
+            Object raw = body.get("targetUserId");
+            if (raw instanceof Number n) {
+                targetUserId = n.longValue();
+            } else {
+                targetUserId = Long.valueOf(String.valueOf(raw));
+            }
+        }
+        int rows = sysUserTeamService.transferCreator(teamId, loginUser.getUserId(), targetUserId);
+        if (rows > 0) {
+            // 原创建人会话仍缓存 create-by 权限，须按当前团队角色立刻重算并写回 session
+            sysPermissionService.updateRoleAndPermissionOfCurrentUser(loginUser);
+        }
+        return toAjax(rows);
     }
 
     @PUT
     @RequiresPermissions("system:team:edit")
     public AjaxResult edit(SysTeam sysTeam) {
+        LoginUser loginUser = requireLoginUser();
+        if (sysTeam != null && sysTeam.getTeamId() != null) {
+            teamMembershipAuth.requireFormalTeamMember(loginUser.getUserId(), sysTeam.getTeamId());
+        }
         sysTeam.setLock(null);
         sysTeam.setLockRemark(null);
         return toAjax(sysTeamService.updateSysTeam(sysTeam));

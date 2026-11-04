@@ -270,7 +270,7 @@
 <!--        </el-form-item>-->
         <el-form-item v-if="form.docType==1" prop="fileUrl" class="cat2bug-form-item-upload">
           <template #label>{{ $t('file') }}</template>
-          <file-upload v-model="form.fileUrl" :drag="true" :file-size="500" :limit="1" :file-type="[]" @upload="fileUploadHandle"/>
+          <file-upload v-model="form.fileUrl" :drag="true" :file-size="documentUploadLimitMb" :limit="1" :file-type="[]" @upload="fileUploadHandle"/>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -338,6 +338,7 @@ import multipaneTreeTableHeightSync from '@/mixins/multipaneTreeTableHeightSync'
 import { serializeToolDialogFormCloseState } from '@/utils/defect-tool-dialog-close-state'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { getCurrentProjectId, getCurrentUserId } from '@/utils/store-context'
+import { useModulePageSettingsStore } from '@/stores/modulePageSettings'
 import { consumeDocumentReturnFolder } from '@/utils/document-folder-state'
 
 const DOCUMENT_KBD_SCOPE = 'document'
@@ -464,6 +465,9 @@ export default {
     };
   },
   computed: {
+    documentUploadLimitMb() {
+      return useModulePageSettingsStore().effectiveUploadMb
+    },
     $_formShortcutSurfaceVisible() {
       return this.open === true || this.moveDialogVisible === true
     },

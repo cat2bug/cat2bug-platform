@@ -21,6 +21,7 @@ import com.cat2bug.system.service.SysDictDataService;
 import com.cat2bug.system.service.SysModuleService;
 import com.cat2bug.system.service.SysProjectDefectFieldService;
 import com.cat2bug.system.service.SysUserConfigService;
+import com.cat2bug.common.util.TeamModuleLabelContext;
 import com.cat2bug.system.util.DefectCustomFieldExcelSupport;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -105,7 +106,7 @@ public class DefectExcelService {
 
         String assetHost = params.get("host") != null ? String.valueOf(params.get("host")).trim() : null;
         return FastExcelSupport.writeWorkbook(workbook -> {
-            Worksheet sheet = workbook.newWorksheet(DefectExcelColumnSupport.SHEET_NAME);
+            Worksheet sheet = workbook.newWorksheet(TeamModuleLabelContext.apply(DefectExcelColumnSupport.SHEET_NAME));
             FastExcelSupport.writeHeaders(sheet, headerCells(columns), 0);
             for (int rowIndex = 0; rowIndex < defects.size(); rowIndex++) {
                 SysDefect defect = defects.get(rowIndex);
@@ -179,7 +180,7 @@ public class DefectExcelService {
             }
 
             DefectCustomFieldExcelSupport.mergeCustomFieldsFromImport(rows, defects, customFieldDefs);
-            applyEmbeddedImages(fileBytes, defects, defectSheetRows, columnByIndex);
+            applyEmbeddedImages(fileBytes, defects, defectSheetRows, columnByIndex, projectId);
             return defects;
         } catch (IOException e) {
             throw new ApiException("解析导入文件失败");
@@ -192,7 +193,7 @@ public class DefectExcelService {
      * 将 xlsx 悬浮图落到 profile，并写入系统 imgUrls / 自定义 image 字段（单元格文本为空时也能导入）。
      */
     private void applyEmbeddedImages(byte[] fileBytes, List<SysDefect> defects, List<Integer> defectSheetRows,
-                                     Map<Integer, DefectExcelColumnSupport.ColumnDef> columnByIndex) {
+                                     Map<Integer, DefectExcelColumnSupport.ColumnDef> columnByIndex, Long projectId) {
         if (defects == null || defects.isEmpty() || defectSheetRows == null || defectSheetRows.isEmpty()) {
             return;
         }
@@ -218,7 +219,7 @@ public class DefectExcelService {
                 if (images == null || images.isEmpty()) {
                     continue;
                 }
-                List<String> urls = uploadEmbeddedImages(images);
+                List<String> urls = uploadEmbeddedImages(images, projectId);
                 if (urls.isEmpty()) {
                     continue;
                 }
@@ -236,7 +237,7 @@ public class DefectExcelService {
         }
     }
 
-    private List<String> uploadEmbeddedImages(List<ExcelDrawingImageReader.EmbeddedImage> images) {
+    private List<String> uploadEmbeddedImages(List<ExcelDrawingImageReader.EmbeddedImage> images, Long projectId) {
         List<String> urls = new ArrayList<>();
         for (ExcelDrawingImageReader.EmbeddedImage image : images) {
             if (image == null || image.data() == null || image.data().length == 0) {
@@ -244,7 +245,7 @@ public class DefectExcelService {
             }
             String fileName = StringUtils.isNotEmpty(image.fileName()) ? image.fileName() : "import.png";
             try (InputStream in = new ByteArrayInputStream(image.data())) {
-                var result = fileUploadService.upload(in, image.data().length, fileName, null);
+                var result = fileUploadService.upload(in, image.data().length, fileName, null, projectId);
                 if (result != null && StringUtils.isNotEmpty(result.getUrl())) {
                     urls.add(result.getUrl());
                 }

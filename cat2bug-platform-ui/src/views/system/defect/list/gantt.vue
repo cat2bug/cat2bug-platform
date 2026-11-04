@@ -175,7 +175,7 @@
                     </span>
                   </template>
                 </el-tab-pane>
-                <el-tab-pane name="module">
+                <el-tab-pane v-if="deliverableModuleOn" name="module">
                   <template #label>
                     <span class="defect-gantt-group-tab-label">
                       <svg-icon icon-class="menu" class-name="defect-gantt-group-tab-svg" />
@@ -982,6 +982,7 @@ import ProjectWorkCalendarDialog from '@/views/system/project/work-calendar/inde
 import { getProject } from '@/api/system/project'
 import { listModulePath } from '@/api/system/module'
 import { checkPermi } from '@/utils/permission'
+import teamModuleGate from '@/mixins/team-module-gate'
 import { useUserStore } from '@/stores/user'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import RowListMember from '@/components/RowListMember'
@@ -1055,6 +1056,7 @@ const AUTO_LEVEL_UPDATE_CONCURRENCY = 6
 
 export default {
   name: 'DefectGantt',
+  mixins: [teamModuleGate],
   components: {
     ArrowDown,
     ArrowRight,
@@ -1722,6 +1724,12 @@ export default {
     }
   },
   watch: {
+    deliverableModuleOn: {
+      immediate: true,
+      handler(on) {
+        if (!on && this.groupBy === 'module') this.groupBy = 'handler'
+      }
+    },
     showDeps(val) {
       if (!val) {
         this.selectedLinkId = null

@@ -2923,9 +2923,9 @@ export default {
   overflow: hidden;
 }
 
-.cat2-bug-table-wrap .el-table__body-wrapper tbody tr.el-table__row > td.el-table__cell:not(.cat2bug-operate-column):not(.defect-state-col):not(.el-table-column--selection):not(:has(.table-row-full-height)) > .cell,
-.cat2-bug-table-wrap .el-table__fixed .el-table__fixed-body-wrapper tbody tr.el-table__row > td.el-table__cell:not(.cat2bug-operate-column):not(.defect-state-col):not(.el-table-column--selection):not(:has(.table-row-full-height)) > .cell,
-.cat2-bug-table-wrap .el-table__fixed-right .el-table__fixed-body-wrapper tbody tr.el-table__row > td.el-table__cell:not(.cat2bug-operate-column):not(.defect-state-col):not(.el-table-column--selection):not(:has(.table-row-full-height)) > .cell {
+.cat2-bug-table-wrap .el-table__body-wrapper tbody tr.el-table__row > td.el-table__cell:not(.cat2bug-operate-column):not(.defect-state-col):not(.defect-name-col):not(.el-table-column--selection):not(:has(.table-row-full-height)) > .cell,
+.cat2-bug-table-wrap .el-table__fixed .el-table__fixed-body-wrapper tbody tr.el-table__row > td.el-table__cell:not(.cat2bug-operate-column):not(.defect-state-col):not(.defect-name-col):not(.el-table-column--selection):not(:has(.table-row-full-height)) > .cell,
+.cat2-bug-table-wrap .el-table__fixed-right .el-table__fixed-body-wrapper tbody tr.el-table__row > td.el-table__cell:not(.cat2bug-operate-column):not(.defect-state-col):not(.defect-name-col):not(.el-table-column--selection):not(:has(.table-row-full-height)) > .cell {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
@@ -2934,6 +2934,21 @@ export default {
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
+}
+
+/* 缺陷名称列：单元格保持 flex 排标题+统计；3 行省略由 .table-defect-title .el-link__inner 负责 */
+.cat2-bug-table-wrap .el-table__body-wrapper tbody tr.el-table__row > td.defect-name-col.el-table__cell > .cell,
+.cat2-bug-table-wrap .el-table__fixed .el-table__fixed-body-wrapper tbody tr.el-table__row > td.defect-name-col.el-table__cell > .cell,
+.cat2-bug-table-wrap .el-table__fixed-right .el-table__fixed-body-wrapper tbody tr.el-table__row > td.defect-name-col.el-table__cell > .cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  line-height: inherit;
+  white-space: normal;
+  word-break: break-word;
 }
 
 /* 附件等多行列表：省略发生在列表自身，避免被外层 flex 吃掉 */

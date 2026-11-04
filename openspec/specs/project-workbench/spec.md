@@ -1,7 +1,9 @@
 # project-workbench Specification
 
-## Requirements
+## Purpose
 
+项目落地页工作台壳层、页签与组件放置；组件显隐须尊重团队功能模块闸门。
+## Requirements
 ### Requirement: Project landing shows workbench shell with tabs
 
 Within a project, the module formerly presented as a fixed dashboard SHALL present a **workbench** shell with a fixed **工作台** tab, optional custom tabs (private and project-shared), and an add control, as specified by `workbench-custom-tabs`. The browser path MAY remain `/{teamKey}/{projectKey}` or `/{teamKey}/{projectKey}/dashboard`. The shell MUST NOT present a **看板** tab.
@@ -76,3 +78,18 @@ Phase one MUST scope workbench layout and content to the current project only. T
 - **WHEN** a member switches from project A to project B
 - **THEN** the workbench shows layout and data for project B
 - **THEN** project A's layout is unchanged
+
+### Requirement: Workbench hides widgets for team-disabled modules
+
+工作台画布与组件目录 MUST 尊重所属团队的模块页面设置：当某开关键关闭时，声明依赖该开关键（或其映射业务域）的组件 MUST 不渲染在画布上，且 MUST NOT 出现在可添加目录中（或等价不可添加）。全部业务模块关闭时，依赖这些模块的组件 MUST 均不显示。
+
+#### Scenario: Defect widgets hidden when defect module off
+
+- **WHEN** 团队关闭缺陷模块且用户打开项目工作台
+- **THEN** 已放置的缺陷类组件不显示，目录中亦不可再添加缺陷类组件
+
+#### Scenario: Case and plan widgets follow case_plan switch
+
+- **WHEN** 团队关闭 `case_plan`
+- **THEN** 用例类与计划类工作台组件均不显示
+

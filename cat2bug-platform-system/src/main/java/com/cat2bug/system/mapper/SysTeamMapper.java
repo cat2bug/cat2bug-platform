@@ -12,9 +12,11 @@ import java.util.List;
 @MapperDataSource(QuarkusMapperDataSources.RUNTIME_MYSQL)
 public interface SysTeamMapper {
 
-    long countSysTeamList(@Param("teamName") String teamName);
+    long countSysTeamList(@Param("teamName") String teamName,
+                          @Param("planId") Long planId);
 
     List<SysTeam> selectSysTeamList(@Param("teamName") String teamName,
+                                    @Param("planId") Long planId,
                                     @Param("offset") int offset,
                                     @Param("limit") int limit);
 

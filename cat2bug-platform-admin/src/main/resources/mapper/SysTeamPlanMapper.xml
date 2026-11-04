@@ -79,6 +79,10 @@
         where plan_id = #{planId}
     </update>
 
+    <delete id="deleteByPlanId">
+        delete from sys_team_plan where plan_id = #{planId}
+    </delete>
+
     <select id="countTeamsByPlanId" resultType="int">
         select count(1) from sys_team where plan_id = #{planId}
     </select>

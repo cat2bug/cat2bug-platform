@@ -1,11 +1,14 @@
 package com.cat2bug.admin.mcp;
 
+import com.cat2bug.common.domain.ModulePageSettings;
 import com.cat2bug.common.domain.SysProject;
 import com.cat2bug.common.domain.SysProjectDefectFieldManageItem;
 import com.cat2bug.common.domain.SysRole;
 import com.cat2bug.common.domain.SysUser;
 import com.cat2bug.common.domain.open.ApiMember;
+import com.cat2bug.common.util.ModulePageSettingsSupport;
 import com.cat2bug.system.mapper.OpenApiMemberMapper;
+import com.cat2bug.system.service.SysModulePageSettingsService;
 import com.cat2bug.system.service.SysProjectDefectFieldService;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkiverse.mcp.server.McpConnection;
@@ -104,6 +107,9 @@ public class McpGuideTools {
     @Inject
     SysProjectDefectFieldService defectFieldService;
 
+    @Inject
+    SysModulePageSettingsService modulePageSettingsService;
+
     @Tool(name = "get_guide",
             description = "Cat2Bug 使用指南：项目实况（你的角色、可用模块与可执行操作）+ 业务流程说明（缺陷流转、每一步谁来做、用哪个工具、"
                     + "做完后该提示用户什么）。开始操作或回答业务问题前先调用；topic 取 overview（默认）/ roles / defect / case / "
@@ -117,20 +123,22 @@ public class McpGuideTools {
             throw new ToolCallException("topic 取值应为 " + String.join(" / ", TOPICS.keySet()) + "：" + topic);
         }
         McpScope scope = context.scope(connection, List.of());
+        ModulePageSettings page = pageSettings(scope);
         List<String> usable = McpProjectTools.usableModules(scope.access());
+        String title = topicTitle(t, page);
 
         StringBuilder out = new StringBuilder();
-        out.append("# Cat2Bug 使用指南：").append(t.label()).append("\n\n## 本项目实况\n\n");
-        facts(out, scope, usable);
+        out.append("# Cat2Bug 使用指南：").append(title).append("\n\n## 本项目实况\n\n");
+        facts(out, scope, usable, page);
         if (t.module() == null) {
-            operations(out, scope, usable);
+            operations(out, scope, usable, page);
             members(out, scope, "roles".equals(key));
         } else if (!usable.contains(t.module())) {
-            out.append("\n你在本项目没有『").append(t.label()).append("』模块的权限（角色未授予，或项目未把该模块开放给 MCP）。")
+            out.append("\n你在本项目没有『").append(title).append("』模块的权限（角色未授予，或项目未把该模块开放给 MCP）。")
                     .append("如需使用，请项目管理员在网页「项目设置 → AI 管理 → MCP 接入」中开启该模块，并确认你的角色有相应权限。\n");
-            return out.toString();
+            return ModulePageSettingsSupport.applyVisible(out.toString(), page);
         } else {
-            operations(out, scope, List.of(t.module()));
+            operations(out, scope, List.of(t.module()), page);
             if ("defect".equals(key)) {
                 defectFacts(out, scope);
             } else if ("plan".equals(key)) {
@@ -139,11 +147,11 @@ public class McpGuideTools {
                 caseFacts(out, scope);
             }
         }
-        out.append("\n").append(content.topic(key));
-        return out.toString();
+        out.append("\n").append(ModulePageSettingsSupport.applyVisible(content.topic(key), page));
+        return ModulePageSettingsSupport.applyVisible(out.toString(), page);
     }
 
-    private void facts(StringBuilder out, McpScope scope, List<String> usable) {
+    private void facts(StringBuilder out, McpScope scope, List<String> usable, ModulePageSettings page) {
         SysProject p = scope.access().project();
         out.append("- 项目：").append(p.getProjectName());
         if (p.getTeamKey() != null && p.getProjectKey() != null) {
@@ -165,10 +173,10 @@ public class McpGuideTools {
         }
         out.append("- 你的角色：").append(roleNames.isEmpty() ? "（无）" : String.join("、", roleNames)).append('\n');
         out.append("- 可用模块：").append(usable.isEmpty() ? "（无）" : String.join("、", usable.stream()
-                .map(m -> MODULE_LABELS.getOrDefault(m, m)).toList())).append('\n');
+                .map(m -> moduleLabel(m, page)).toList())).append('\n');
     }
 
-    private void operations(StringBuilder out, McpScope scope, List<String> modules) {
+    private void operations(StringBuilder out, McpScope scope, List<String> modules, ModulePageSettings page) {
         out.append("- 你可执行的操作：\n");
         for (String m : modules) {
             Map<String, String> ops = OPERATIONS.get(m);
@@ -179,7 +187,7 @@ public class McpGuideTools {
                     .filter(e -> scope.access().allows(e.getKey()))
                     .map(Map.Entry::getValue)
                     .toList();
-            out.append("  - ").append(MODULE_LABELS.getOrDefault(m, m)).append("：")
+            out.append("  - ").append(moduleLabel(m, page)).append("：")
                     .append(allowed.isEmpty() ? "（无）" : String.join("、", allowed)).append('\n');
         }
     }
@@ -302,6 +310,31 @@ public class McpGuideTools {
         }
         out.append("- 还有未执行子项的测试计划：").append(open.isEmpty() ? "无" : open.size() + " 个，"
                 + String.join("，", open.subList(0, Math.min(open.size(), 10)))).append('\n');
+    }
+
+    private ModulePageSettings pageSettings(McpScope scope) {
+        Long teamId = scope.access().project() == null ? null : scope.access().project().getTeamId();
+        if (teamId == null) {
+            return ModulePageSettingsSupport.defaults();
+        }
+        try {
+            return modulePageSettingsService.getByTeamId(teamId);
+        } catch (RuntimeException e) {
+            return ModulePageSettingsSupport.defaults();
+        }
+    }
+
+    private static String moduleLabel(String mcpKey, ModulePageSettings page) {
+        String alias = page == null ? null : page.aliasForMcp(mcpKey);
+        return alias != null ? alias : MODULE_LABELS.getOrDefault(mcpKey, mcpKey);
+    }
+
+    private static String topicTitle(Topic topic, ModulePageSettings page) {
+        if (topic.module() == null) {
+            return topic.label();
+        }
+        String alias = page == null ? null : page.aliasForMcp(topic.module());
+        return alias != null ? alias : topic.label();
     }
 
     private static Map<String, String> ordered(String... pairs) {

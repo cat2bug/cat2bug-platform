@@ -40,6 +40,9 @@ public interface SysProjectMapper {
 
     int updateSysProject(SysProject sysProject);
 
+    /** 转让创建人时同步审计字段 create_by（存用户 id 字符串）。 */
+    int updateCreateBy(@Param("projectId") Long projectId, @Param("createBy") String createBy);
+
     int updateUsedBytes(@Param("projectId") Long projectId, @Param("usedBytes") Long usedBytes);
 
     /** 当前用户担任创建人或项目管理员的项目（可跨团队）。 */

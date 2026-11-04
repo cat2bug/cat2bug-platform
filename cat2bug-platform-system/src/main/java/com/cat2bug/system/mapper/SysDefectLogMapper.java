@@ -27,4 +27,9 @@ public interface SysDefectLogMapper {
     int deleteSysDefectLogByDefectLogIds(Long[] defectLogIds);
 
     int batchInsertSysDefectLog(@Param("logList") List<SysDefectLog> logList);
+
+    /**
+     * 批量拉取周期指标所需日志列（CREATE/OPEN/PASS/CLOSED/REJECTED）。
+     */
+    List<SysDefectLog> selectCycleMetricLogsByDefectIds(@Param("defectIds") List<Long> defectIds);
 }

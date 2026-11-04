@@ -15,5 +15,6 @@ public enum DefectLogState {
     UPDATE,
     IMPORT,
     DELETE,
-    RESTORE
+    RESTORE,
+    MERGE
 }

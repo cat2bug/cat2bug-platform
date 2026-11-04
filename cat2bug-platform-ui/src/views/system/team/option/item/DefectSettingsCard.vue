@@ -16,6 +16,13 @@
       >
         <el-link>{{ $t('defect.custom-field.manage') }}</el-link>
       </router-link>
+      <router-link
+        v-if="canListDefectFields"
+        class="defect-settings-card-page-link"
+        :to="href('team-defect-page-settings')"
+      >
+        <el-link>{{ $t('defect.page-settings.manage') }}</el-link>
+      </router-link>
     </el-card>
   </el-col>
 </template>
@@ -38,3 +45,10 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.defect-settings-card-page-link {
+  display: block;
+  margin-top: 8px;
+}
+</style>

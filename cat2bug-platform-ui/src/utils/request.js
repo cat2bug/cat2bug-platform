@@ -11,6 +11,7 @@ import cache from '@/plugins/cache'
 import { saveAs } from 'file-saver'
 import i18n from "@/utils/i18n/i18n";
 import { isUpgradeLockMessage, resetUpgradeStatusCache } from '@/utils/upgrade-status'
+import { handleProjectRemovedResponse } from '@/utils/project-removed-guard'
 const I18N_LOCALE_KEY='i18n-locale'
 let downloadLoadingInstance;
 // 是否显示重新登录
@@ -166,6 +167,9 @@ service.interceptors.response.use(res => {
       const rawMsg = (res.data && res.data.msg) || msg
       if (isUpgradeLockMessage(rawMsg)) {
         redirectToUpgradeWizard()
+        return Promise.reject(res.data)
+      }
+      if (code === 403 && handleProjectRemovedResponse(rawMsg, res.config)) {
         return Promise.reject(res.data)
       }
       const silent = res.config.silentError === true

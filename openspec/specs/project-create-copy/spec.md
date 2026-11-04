@@ -55,7 +55,7 @@ The system MUST NOT offer copying of defects, API keys, outbound push configurat
 
 ### Requirement: Copy size estimate versus project storage quota
 
-Before completing create-with-copy, the system SHALL show an estimated byte size of the selected copy items against the target team plan’s per-project max storage (default 1 GiB). If the estimate exceeds the limit, the system MUST prevent completing the copy selection as submitted (block submit and/or further selection) and explain the quota.
+Before completing create-with-copy, the system SHALL show an estimated byte size of the selected copy items against the target team plan’s per-project max storage (default 5 GiB). If the estimate exceeds the limit, the system MUST prevent completing the copy selection as submitted (block submit and/or further selection) and explain the quota.
 
 #### Scenario: Over quota blocked
 

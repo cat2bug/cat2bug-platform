@@ -36,7 +36,7 @@ function isDarkMask(mask) {
  */
 function isStatisticMask(mask) {
   return !!(mask && typeof mask.closest === 'function'
-    && mask.closest('.statistic-item, .statistic-box, .defect-tools-statistic'))
+    && mask.closest('.statistic-item, .statistic-box, .defect-tools-statistic, .plan-statistical, .plan-run-statistics-band'))
 }
 
 function resolveLoadingSize(mask) {

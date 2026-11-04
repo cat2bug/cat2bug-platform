@@ -36,7 +36,7 @@
       </div>
     </template>
     <div class="app-container" v-loading="loading">
-      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+      <el-form ref="form" :model="form" :rules="formRules" label-width="120px">
         <el-form-item>
           <span v-if="isAddMode" class="create-next-case-row">
             <span v-show="fieldHintsActive" class="cat2bug-field-hint save-cache-field-hint" aria-hidden="true">O</span>
@@ -47,7 +47,7 @@
           <el-input type="textarea" v-model="form.caseName" :placeholder="$t('case.please-enter-title')" :rows="3" maxlength="255" show-word-limit />
         </el-form-item>
         <div class="case-module-level-row">
-          <el-form-item class="case-pair-field" :label="$t('module')" prop="moduleId">
+          <el-form-item v-if="deliverableModuleOn" class="case-pair-field" :label="$t('module')" prop="moduleId">
             <select-module ref="selectModule" size="medium" v-model:moduleId="form.moduleId" :project-id="projectId"/>
           </el-form-item>
           <el-form-item class="case-pair-field" :label="$t('level')" prop="caseLevel">
@@ -103,6 +103,7 @@
 import {addCase, closeEditWindow, getCase, getNextCase, getPrevCase, updateCase} from "@/api/system/case";
 import CaseStepPanel from "./CaseStepPanel"
 import SelectModule from "@/components/Module/SelectModule"
+import teamModuleGate from '@/mixins/team-module-gate'
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 import FocusMemberList from "@/components/FocusMemberList";
@@ -116,7 +117,7 @@ const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 
 export default {
   name: "AddCase",
-  mixins: [dialogFormShortcuts, formFieldHints, caseDrawerClose],
+  mixins: [dialogFormShortcuts, formFieldHints, caseDrawerClose, teamModuleGate],
   components: {Label,CaseStepPanel,SelectModule,Cat2BugSelectLevel,FocusMemberList},
   data() {
     return {
@@ -168,6 +169,12 @@ export default {
     }
   },
   computed: {
+    formRules() {
+      if (this.deliverableModuleOn) return this.rules
+      const next = { ...this.rules }
+      delete next.moduleId
+      return next
+    },
     /** 获取当前用户id */
     userId: function () {
       return useUserStore().id;

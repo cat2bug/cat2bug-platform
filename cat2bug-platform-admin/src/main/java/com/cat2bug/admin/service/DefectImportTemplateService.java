@@ -12,6 +12,7 @@ import com.cat2bug.common.excel.ExcelColumnExportSupport;
 import com.cat2bug.common.excel.ExcelHeaderCell;
 import com.cat2bug.common.excel.ExcelHeaderStyle;
 import com.cat2bug.common.excel.FastExcelSupport;
+import com.cat2bug.common.util.TeamModuleLabelContext;
 import com.cat2bug.framework.security.AuthContext;
 import com.cat2bug.system.service.SysDictDataService;
 import com.cat2bug.system.service.SysModuleService;
@@ -91,7 +92,7 @@ public class DefectImportTemplateService {
                 DefectExcelColumnSupport.resolveTemplateColumns(params, locale, customFieldDefs);
 
         return FastExcelSupport.writeWorkbook(workbook -> {
-            Worksheet sheet = workbook.newWorksheet(DefectExcelColumnSupport.SHEET_NAME);
+            Worksheet sheet = workbook.newWorksheet(TeamModuleLabelContext.apply(DefectExcelColumnSupport.SHEET_NAME));
             Worksheet listSheet = workbook.newWorksheet(LIST_SHEET_NAME);
             listSheet.setVisibilityState(VisibilityState.HIDDEN);
 

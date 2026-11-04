@@ -48,14 +48,28 @@ const loadedLocales = new Map([
   ['en_US', Promise.resolve()]
 ])
 
+function afterLocaleMessagesSet(locale) {
+  return import('@/utils/module-page-i18n').then((modI18n) => {
+    modI18n.invalidateLocaleBaseline(locale)
+    modI18n.reapplyModulePageI18n()
+  })
+}
+
 /** 非默认语言按需加载；切换 locale 时自动触发，启动时需在 mount 前 await 已保存的语言以免闪现 key */
-export function loadLocaleMessages(locale) {
-  if (loadedLocales.has(locale)) return loadedLocales.get(locale)
+export function loadLocaleMessages(locale, { force = false } = {}) {
+  if (!force && loadedLocales.has(locale)) return loadedLocales.get(locale)
+  if (force) loadedLocales.delete(locale)
   const loader = MESSAGE_LOADERS[locale]
-  if (!loader) return Promise.resolve()
+  if (!loader) {
+    if (locale === 'zh_CN' || locale === 'en_US') {
+      return afterLocaleMessagesSet(locale)
+    }
+    return Promise.resolve()
+  }
   const pending = loader()
     .then((mod) => {
       i18n.global.setLocaleMessage(locale, { ...ELEMENT_LOCALES[locale], ...(mod.default || mod) })
+      return afterLocaleMessagesSet(locale)
     })
     .catch((err) => {
       loadedLocales.delete(locale)
@@ -75,6 +89,38 @@ if (typeof i18n.t !== 'function') {
 }
 if (typeof i18n.te !== 'function') {
   i18n.te = (...args) => i18n.global.te(...args)
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept(
+    [
+      './i18n-zh-CN.json',
+      './i18n-en-US.json',
+      './i18n-zh-TW.json',
+      './i18n-ar.json',
+      './i18n-ja-JP.json',
+      './i18n-ko-KR.json',
+      './i18n-ru.json'
+    ],
+    async () => {
+      const [{ default: zh }, { default: enUs }] = await Promise.all([
+        import('./i18n-zh-CN.json'),
+        import('./i18n-en-US.json')
+      ])
+      i18n.global.setLocaleMessage('zh_CN', { ...zhCn, ...zh })
+      i18n.global.setLocaleMessage('en_US', { ...en, ...enUs })
+      const locales = [...loadedLocales.keys()]
+      loadedLocales.clear()
+      loadedLocales.set('zh_CN', Promise.resolve())
+      loadedLocales.set('en_US', Promise.resolve())
+      await afterLocaleMessagesSet('zh_CN')
+      await afterLocaleMessagesSet('en_US')
+      for (const locale of locales) {
+        if (locale === 'zh_CN' || locale === 'en_US') continue
+        await loadLocaleMessages(locale, { force: true })
+      }
+    }
+  )
 }
 
 export default i18n

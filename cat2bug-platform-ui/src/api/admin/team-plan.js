@@ -30,6 +30,13 @@ export function updateTeamPlan(data) {
   })
 }
 
+export function delTeamPlan(planId) {
+  return request({
+    url: '/admin/team-plan/' + planId,
+    method: 'delete'
+  })
+}
+
 export function bindTeamPlan(teamId, planId) {
   return request({
     url: '/admin/team/' + teamId + '/plan',

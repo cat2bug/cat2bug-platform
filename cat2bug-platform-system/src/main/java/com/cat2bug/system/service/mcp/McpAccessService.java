@@ -9,6 +9,7 @@ import com.cat2bug.common.security.McpModules;
 import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysProjectMcpMapper;
 import com.cat2bug.system.mapper.SysRoleMapper;
+import com.cat2bug.system.service.SysModulePageSettingsService;
 import com.cat2bug.system.service.SysPermissionService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -45,6 +46,9 @@ public class McpAccessService {
 
     @Inject
     SysPermissionService permissionService;
+
+    @Inject
+    SysModulePageSettingsService modulePageSettingsService;
 
     public McpProjectAccess access(SysUser user, Long projectId) {
         String key = user.getUserId() + ":" + projectId;
@@ -84,6 +88,9 @@ public class McpAccessService {
         SysProjectMcp settings = projectMcpMapper.selectByProjectId(projectId);
         boolean enabled = settings != null && settings.isEnabled();
         List<String> modules = settings == null ? List.of() : McpModules.normalize(settings.getModules());
+        if (project.getTeamId() != null && !modules.isEmpty()) {
+            modules = modulePageSettingsService.retainEnabledMcpModules(project.getTeamId(), modules);
+        }
         boolean admin = SysUser.isAdmin(userId);
         boolean member = projectMcpMapper.countMember(projectId, userId) > 0;
 

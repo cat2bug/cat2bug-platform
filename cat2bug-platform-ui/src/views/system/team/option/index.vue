@@ -4,8 +4,26 @@
       <el-col :span="6">
         <team-base-info-card />
       </el-col>
+      <team-module-settings-card
+        icon="code"
+        title-key="team.module-page.code-title"
+        describe-key="team.module-page.code-describe"
+        page-route="team-code-page-settings"
+      />
       <team-case-settings-card />
       <team-defect-settings-card />
+      <team-module-settings-card
+        icon="cascader"
+        title-key="team.module-page.deliverable-title"
+        describe-key="team.module-page.deliverable-describe"
+        page-route="team-deliverable-page-settings"
+      />
+      <team-module-settings-card
+        icon="education"
+        title-key="team.module-page.document-title"
+        describe-key="team.module-page.document-describe"
+        page-route="team-document-page-settings"
+      />
       <el-col :span="6">
         <team-member-card />
       </el-col>
@@ -18,6 +36,7 @@ import TeamBaseInfoCard from './item/base'
 import TeamMemberCard from './item/member'
 import TeamCaseSettingsCard from './item/CaseSettingsCard'
 import TeamDefectSettingsCard from './item/DefectSettingsCard'
+import TeamModuleSettingsCard from './item/ModuleSettingsCard'
 import pageActionHints from '@/mixins/page-action-hints'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import {
@@ -34,7 +53,8 @@ export default {
     TeamBaseInfoCard,
     TeamMemberCard,
     TeamCaseSettingsCard,
-    TeamDefectSettingsCard
+    TeamDefectSettingsCard,
+    TeamModuleSettingsCard
   },
   mounted() {
     this.registerTeamOptionShortcuts();
@@ -128,6 +148,12 @@ export default {
       fill: currentColor;
       margin-right: 10px;
       margin-top: 3px;
+      flex-shrink: 0;
+    }
+    .svg-icon {
+      font-size: 16px;
+      width: 1em;
+      height: 1em;
     }
   }
   :deep(.el-card__body){

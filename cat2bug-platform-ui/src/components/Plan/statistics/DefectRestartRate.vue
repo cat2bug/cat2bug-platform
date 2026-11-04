@@ -21,7 +21,7 @@
     </div>
     </template>
     <!--            缺陷重开率的数据-->
-    <div class="plan-statistical-block">
+    <div class="plan-statistical-block" :style="planStatRateStyle">
       <el-statistic
         group-separator=","
         :title="$t('plan.defect-restart-rate')"
@@ -30,13 +30,19 @@
           {{ plan.defectRestartRate || '0%' }}
         </template>
       </el-statistic>
+      <div class="plan-stat-rate-bar" aria-hidden="true">
+        <div class="plan-stat-rate-bar__fill"></div>
+      </div>
     </div>
   </el-tooltip>
 </template>
 
 <script>
+import { planStatRateMixin } from './planStatRateMixin'
+
 export default {
   name: "DefectRestartRate.vue",
+  mixins: [planStatRateMixin('defectRestartRate')],
   props: {
     plan: {
       type: Object,

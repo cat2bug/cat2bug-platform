@@ -1,5 +1,7 @@
 package com.cat2bug.system.service;
 
+import com.cat2bug.common.api.TableDataInfo;
+import com.cat2bug.common.core.page.PageDomain;
 import com.cat2bug.common.domain.LoginUser;
 import com.cat2bug.common.domain.SysCase;
 import com.cat2bug.common.domain.SysCaseReview;
@@ -50,7 +52,55 @@ public class SysCaseReviewService {
     AuthContext authContext;
 
     public List<SysCaseReview> list(Long projectId) {
-        return reviewMapper.selectByProject(projectId);
+        return list(buildListQuery(projectId, null, null, null, null));
+    }
+
+    public List<SysCaseReview> list(SysCaseReview query) {
+        requireListQuery(query);
+        return reviewMapper.selectByQueryAll(query);
+    }
+
+    public TableDataInfo listPage(SysCaseReview query, Integer pageNum, Integer pageSize) {
+        requireListQuery(query);
+        PageDomain page = PageDomain.of(pageNum, pageSize);
+        long total = reviewMapper.countByQuery(query);
+        List<SysCaseReview> rows = reviewMapper.selectByQuery(query, page.getOffset(), page.getPageSize());
+        return new TableDataInfo(rows, total);
+    }
+
+    public SysCaseReview buildListQuery(Long projectId, String status, String createTimeBegin,
+                                        String createTimeEnd, String createBy) {
+        SysCaseReview query = new SysCaseReview();
+        query.setProjectId(projectId);
+        query.setStatus(normalizeListStatus(status));
+        query.setCreateTimeBegin(blankToNull(createTimeBegin));
+        query.setCreateTimeEnd(blankToNull(createTimeEnd));
+        query.setCreateBy(blankToNull(createBy));
+        return query;
+    }
+
+    static String normalizeListStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+        String value = status.trim();
+        if (STATUS_OPEN.equals(value) || STATUS_COMPLETED.equals(value)) {
+            return value;
+        }
+        throw new ApiException("评审状态只能是 open 或 completed");
+    }
+
+    private static String blankToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
+    }
+
+    private void requireListQuery(SysCaseReview query) {
+        if (query == null || query.getProjectId() == null) {
+            throw new ApiException("项目不能为空");
+        }
     }
 
     public SysCaseReview get(Long reviewId) {

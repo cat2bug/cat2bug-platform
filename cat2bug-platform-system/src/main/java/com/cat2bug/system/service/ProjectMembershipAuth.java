@@ -17,6 +17,9 @@ import java.util.List;
 @ApplicationScoped
 public class ProjectMembershipAuth {
 
+    /** 前端据此弹「已移出项目」引导；勿随意改文案。 */
+    public static final String PROJECT_REMOVED_MESSAGE = "您已被移出该项目";
+
     @Inject
     SysUserProjectMapper sysUserProjectMapper;
 
@@ -52,9 +55,22 @@ public class ProjectMembershipAuth {
     }
 
     public void requireProjectAccess(Long userId, Long projectId) {
-        if (!canAccessProject(userId, projectId)) {
-            throw new ApiException(403, "无权限访问该项目");
+        if (canAccessProject(userId, projectId)) {
+            return;
         }
+        // 仅当拒绝的正是「当前项目」时返回可识别文案，供前端弹框跳转；切到其它无权项目仍用通用提示
+        if (isCurrentProject(userId, projectId)) {
+            throw new ApiException(403, PROJECT_REMOVED_MESSAGE);
+        }
+        throw new ApiException(403, "无权限访问该项目");
+    }
+
+    public boolean isCurrentProject(Long userId, Long projectId) {
+        if (userId == null || projectId == null || projectId <= 0) {
+            return false;
+        }
+        SysUserConfig config = sysUserConfigMapper.selectSysUserConfigByUserId(userId);
+        return config != null && projectId.equals(config.getCurrentProjectId());
     }
 
     /**

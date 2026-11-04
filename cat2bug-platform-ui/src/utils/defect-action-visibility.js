@@ -129,10 +129,20 @@ export function isDefectActionVisible(action, defect, currentUserId, exclusions 
 }
 
 /**
+ * 批量「合并」：≥2 条、均有 merge 权限、均未删除；不受混合状态限制。
+ * @param {object[]} defects
+ */
+export function isMergeBatchActionAvailable(defects) {
+  if (!defects || defects.length < 2) return false
+  if (!checkPermi(['system:defect:merge'])) return false
+  return defects.every((d) => d && !isDefectDeleted(d))
+}
+
+/**
  * 计算批量菜单各动作是否可用（严格：选中每一条都可做）。
  * @param {object[]} defects
  * @param {number|string} currentUserId
- * @returns {{ hasSelection: boolean, mixed: boolean, assign: boolean, repair: boolean, reject: boolean, pass: boolean, close: boolean, open: boolean, delete: boolean }}
+ * @returns {{ hasSelection: boolean, mixed: boolean, assign: boolean, repair: boolean, reject: boolean, pass: boolean, close: boolean, open: boolean, delete: boolean, merge: boolean }}
  */
 export function getBatchActionFlags(defects, currentUserId) {
   const empty = {
@@ -145,6 +155,7 @@ export function getBatchActionFlags(defects, currentUserId) {
     close: false,
     open: false,
     delete: false,
+    merge: false,
   }
   if (!defects || !defects.length) return empty
 
@@ -162,5 +173,6 @@ export function getBatchActionFlags(defects, currentUserId) {
       )
     }
   }
+  flags.merge = isMergeBatchActionAvailable(defects)
   return flags
 }

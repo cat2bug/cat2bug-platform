@@ -5,7 +5,8 @@ export function usePlanHandleDrawerKbd() {
   const instance = getCurrentInstance()
   const vm = () => instance && instance.proxy
 
-  const $_focusHandlePlanFirstControl = () => {
+  // 仅闭包内使用，勿放入 setup 返回值（Vue 禁止 setup 暴露 $/_ 前缀属性）
+  const focusHandlePlanFirstControl = () => {
     const host = vm()
     if (!host) return
     const list = host.$refs && host.$refs.list
@@ -27,7 +28,7 @@ export function usePlanHandleDrawerKbd() {
     if (!host || typeof host.$nextTick !== 'function') return
     host.$nextTick(() => {
       requestAnimationFrame(() => {
-        $_focusHandlePlanFirstControl()
+        focusHandlePlanFirstControl()
       })
     })
   }
@@ -52,7 +53,6 @@ export function usePlanHandleDrawerKbd() {
   }
 
   return {
-    $_focusHandlePlanFirstControl,
     onHandlePlanDrawerOpenedKbd,
     shortcutClose,
     shortcutSave

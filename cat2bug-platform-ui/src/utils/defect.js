@@ -9,19 +9,31 @@ export {
 
 const DEFECT_TEMP_TAB_KEY = "defect-temp-tab-key";
 
-/** 计算缺陷存活时间 */
+/** 计算缺陷存活时间（优先 API 派生 handleStartTime/handlePassTime；起点缺则 createTime） */
 export function lifeTime (defect){
-  let passTime = defect.handlePassTime ? new Date(defect.handlePassTime): new Date();
-  let startTime = defect.handleStartTime ? new Date(defect.handleStartTime): new Date();
-  let lifeTime = passTime.getTime() - startTime.getTime();
-  const day = Math.floor(lifeTime/(1000 * 60 * 60 * 24));
-  lifeTime = lifeTime%(1000 * 60 * 60 * 24);
-  const hour = Math.floor(lifeTime/(1000 * 60 * 60));
-  lifeTime = lifeTime%(1000 * 60 * 60);
-  const minute = Math.floor(lifeTime/(1000 * 60));
+  if (!defect) {
+    return '0' + i18n.t('minute');
+  }
+  const startSource = defect.handleStartTime || defect.createTime;
+  const startTime = startSource ? new Date(startSource) : null;
+  const passTime = defect.handlePassTime
+    ? new Date(defect.handlePassTime)
+    : new Date();
+  if (!startTime || Number.isNaN(startTime.getTime())) {
+    return '0' + i18n.t('minute');
+  }
+  let lifeMs = passTime.getTime() - startTime.getTime();
+  if (lifeMs < 0) {
+    lifeMs = 0;
+  }
+  const day = Math.floor(lifeMs / (1000 * 60 * 60 * 24));
+  lifeMs = lifeMs % (1000 * 60 * 60 * 24);
+  const hour = Math.floor(lifeMs / (1000 * 60 * 60));
+  lifeMs = lifeMs % (1000 * 60 * 60);
+  const minute = Math.floor(lifeMs / (1000 * 60));
   let ret = [];
-  if(day) ret.push(day + i18n.t('day'));
-  if(hour) ret.push(hour + i18n.t('hour'));
+  if (day) ret.push(day + i18n.t('day'));
+  if (hour) ret.push(hour + i18n.t('hour'));
   ret.push(minute + i18n.t('minute'));
   return ret.join(' ');
 }

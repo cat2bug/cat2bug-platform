@@ -155,6 +155,8 @@ import {
   normalizeEnabledBuiltinKeys
 } from '@/utils/defect-field-layout'
 import { resolveOrderedDefectTabFilterFields } from '@/utils/defect-tab-filter-fields'
+import { hiddenDefectBuiltinFormKeys } from '@/utils/module-page-settings'
+import { useModulePageSettingsStore } from '@/stores/modulePageSettings'
 
 export default {
   name: 'DefectTabOrderedFilterFields',
@@ -169,11 +171,12 @@ export default {
   },
   computed: {
     orderedFilterFields() {
+      const hidden = new Set(hiddenDefectBuiltinFormKeys(useModulePageSettingsStore().settings))
       return resolveOrderedDefectTabFilterFields(
         this.$cache && this.$cache.local,
         this.fieldLayout,
         { isBuiltinVisible: this.isBuiltinFieldVisible }
-      )
+      ).filter((item) => !hidden.has(item.formKey) && !hidden.has(item.fieldKey))
     },
     defectStates: {
       get() {

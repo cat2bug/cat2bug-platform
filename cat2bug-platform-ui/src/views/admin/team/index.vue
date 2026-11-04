@@ -1,19 +1,52 @@
 <template>
   <div class="app-container">
-    <el-row>
+    <el-row class="project-add-page-header project-add-page-header--with-filter">
       <el-page-header @back="goBack" :content="$t('team.manage')">
       </el-page-header>
     </el-row>
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="" prop="teamName">
+    <div class="list-page-toolbar">
+      <div class="list-page-toolbar__filters">
         <el-input
           v-model="queryParams.teamName"
           :placeholder="$t('team.please-enter-name')"
           clearable
+          style="width: 220px"
           @input="handleQuery"
-        />
-      </el-form-item>
-    </el-form>
+        >
+          <template #prefix>
+            <svg-icon icon-class="search" />
+          </template>
+        </el-input>
+        <el-select
+          v-model="queryParams.planId"
+          clearable
+          style="width: 200px"
+          :placeholder="$t('admin.team-plan.filter')"
+          @change="handleQuery"
+        >
+          <template #prefix>
+            <svg-icon icon-class="team-plan" />
+          </template>
+          <el-option
+            v-for="p in planOptions"
+            :key="p.planId"
+            :label="localizePlanName(p)"
+            :value="p.planId"
+          />
+        </el-select>
+      </div>
+      <div class="list-page-toolbar__actions">
+        <el-button
+          @click="goTeamPlan"
+          v-hasPermi="['admin:team-plan:list']"
+        >
+          <template #icon>
+            <svg-icon icon-class="team-plan" />
+          </template>
+          {{ $t('admin.team-plan.manage') }}
+        </el-button>
+      </div>
+    </div>
 
     <el-table v-loading="loading" :data="teamList">
       <el-table-column :label="$t('team.icon')" align="center" prop="teamIcon" width="100">
@@ -36,7 +69,7 @@
       <el-table-column :label="$t('member.count')" align="center" prop="memberCount" width="130" />
       <el-table-column :label="$t('admin.team-plan')" align="left" prop="planName" width="140">
         <template #default="scope">
-          {{ scope.row.planName || '—' }}
+          {{ localizePlanName(scope.row) }}
         </template>
       </el-table-column>
       <el-table-column :label="$t('team.introduce')" align="left" prop="introduce" />
@@ -69,11 +102,11 @@
     />
     <team-lock-dialog ref="teamLockDialog" @change="handleQuery"></team-lock-dialog>
     <el-dialog :title="$t('admin.team.bind-plan')" v-model="planDialogVisible" width="420px" append-to-body>
-      <el-select v-model="bindPlanId" style="width: 100%" :placeholder="$t('admin.team-plan')">
+      <el-select v-model="bindPlanId" style="width: 100%" :placeholder="$t('admin.team-plan.select-required')">
         <el-option
           v-for="p in planOptions"
           :key="p.planId"
-          :label="p.planName"
+          :label="localizePlanName(p)"
           :value="p.planId"
         />
       </el-select>
@@ -89,6 +122,7 @@
 import TeamLockDialog from './lock'
 import { listTeam } from "@/api/admin/team";
 import { listTeamPlan, bindTeamPlan } from "@/api/admin/team-plan";
+import { localizeTeamPlanName } from "@/utils/team-plan-i18n";
 
 export default {
   name: "AdminTeam",
@@ -122,6 +156,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         teamName: null,
+        planId: null,
       },
       // 表单参数
       form: {},
@@ -131,12 +166,23 @@ export default {
     };
   },
   created() {
+    this.loadPlanOptions();
     this.getList();
   },
   methods: {
+    loadPlanOptions() {
+      listTeamPlan().then(res => {
+        this.planOptions = res.data || []
+      }).catch(() => {
+        this.planOptions = []
+      })
+    },
     /** 返回 */
     goBack() {
       this.$router.back();
+    },
+    localizePlanName(row) {
+      return localizeTeamPlanName(this, row)
     },
     handleBindPlan(row) {
       this.bindTeamId = row.teamId
@@ -148,7 +194,7 @@ export default {
     },
     submitBindPlan() {
       if (!this.bindPlanId) {
-        this.$modal.msgError(this.$t('admin.team-plan.name-required'))
+        this.$modal.msgError(this.$t('admin.team-plan.select-required'))
         return
       }
       bindTeamPlan(this.bindTeamId, this.bindPlanId).then(() => {
@@ -198,6 +244,9 @@ export default {
       this.$router.push({path:'/admin/project', query: {
           teamName: team.teamName
         }})
+    },
+    goTeamPlan() {
+      this.$router.push({ path: '/admin/team-plan' })
     }
   }
 };

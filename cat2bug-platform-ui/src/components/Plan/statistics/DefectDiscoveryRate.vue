@@ -22,7 +22,7 @@
     </div>
     </template>
     <!--            缺陷发现率的数据-->
-    <div class="plan-statistical-block">
+    <div class="plan-statistical-block" :style="planStatRateStyle">
       <el-statistic
         group-separator=","
         :title="$t('plan.defect-discovery-rate')"
@@ -31,13 +31,19 @@
           {{ plan.defectDiscoveryRate || '0%' }}
         </template>
       </el-statistic>
+      <div class="plan-stat-rate-bar" aria-hidden="true">
+        <div class="plan-stat-rate-bar__fill"></div>
+      </div>
     </div>
   </el-tooltip>
 </template>
 
 <script>
+import { planStatRateMixin } from './planStatRateMixin'
+
 export default {
   name: "DefectDiscoveryRate",
+  mixins: [planStatRateMixin('defectDiscoveryRate')],
   props: {
     plan: {
       type: Object,

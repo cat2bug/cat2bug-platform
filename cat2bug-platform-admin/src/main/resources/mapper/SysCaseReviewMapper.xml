@@ -29,6 +29,55 @@
         ORDER BY review_id DESC
     </select>
 
+    <sql id="selectCaseReviewListWhere">
+        <where>
+            r.project_id = #{query.projectId}
+            <if test="query.status != null and query.status != ''">
+                AND r.status = #{query.status}
+            </if>
+            <if test="query.createBy != null and query.createBy != ''">
+                AND r.create_by = #{query.createBy}
+            </if>
+            <if test="query.createTimeBegin != null and query.createTimeBegin != ''">
+                AND r.create_time &gt;= #{query.createTimeBegin}
+            </if>
+            <if test="query.createTimeEnd != null and query.createTimeEnd != ''">
+                AND r.create_time &lt;= #{query.createTimeEnd}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="selectCaseReviewListSelect">
+        SELECT r.review_id AS reviewId, r.project_id AS projectId, r.status, r.report_markdown AS reportMarkdown,
+               r.create_by AS createBy, r.create_time AS createTime, r.complete_by AS completeBy,
+               r.complete_time AS completeTime,
+               COUNT(i.item_id) AS itemCount,
+               COALESCE(SUM(CASE WHEN i.verdict = 'passed' THEN 1 ELSE 0 END), 0) AS passedCount,
+               COALESCE(SUM(CASE WHEN i.verdict = 'changes' THEN 1 ELSE 0 END), 0) AS changesCount,
+               COALESCE(SUM(CASE WHEN i.verdict = 'pending' THEN 1 ELSE 0 END), 0) AS pendingCount
+        FROM sys_case_review r
+        LEFT JOIN sys_case_review_item i ON i.review_id = r.review_id
+        <include refid="selectCaseReviewListWhere"/>
+        GROUP BY r.review_id, r.project_id, r.status, r.report_markdown, r.create_by, r.create_time,
+                 r.complete_by, r.complete_time
+        ORDER BY r.review_id DESC
+    </sql>
+
+    <select id="countByQuery" resultType="long">
+        SELECT COUNT(*)
+        FROM sys_case_review r
+        <include refid="selectCaseReviewListWhere"/>
+    </select>
+
+    <select id="selectByQuery" resultType="com.cat2bug.common.domain.SysCaseReview">
+        <include refid="selectCaseReviewListSelect"/>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectByQueryAll" resultType="com.cat2bug.common.domain.SysCaseReview">
+        <include refid="selectCaseReviewListSelect"/>
+    </select>
+
     <select id="selectItems" resultType="com.cat2bug.common.domain.SysCaseReviewItem">
         SELECT i.item_id AS itemId, i.review_id AS reviewId, i.case_id AS caseId, i.verdict,
                i.item_comment AS comment, c.case_num AS caseNum, c.case_name AS caseName, t.type_name AS caseTypeName

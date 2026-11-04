@@ -1,7 +1,30 @@
 <template>
-  <!-- 添加或修改测试计划对话框 -->
-  <el-dialog :title="title ? $t(title) : ''" v-model="open" width="80%" custom-class="plan-add-dialog" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @closed="cancel" @opened="onPlanAddDialogOpened">
-    <el-form ref="form" class="plan-add-dialog__form" :model="form" :rules="rules" label-width="120px">
+  <!-- 新建/编辑测试计划整页（原 el-dialog，现与执行页同为路由整页） -->
+  <div class="app-container plan-form-page">
+    <div class="plan-form-page-header">
+      <div class="plan-form-title">
+        <legacy-icon icon="el-icon-arrow-left" class="plan-form-back" @click="requestCloseToolDialog" />
+        <span class="plan-form-title-text">{{ title ? $t(title) : '' }}</span>
+      </div>
+      <div class="plan-form-actions">
+        <el-button
+          size="default"
+          :icon="$legacyIcon('el-icon-close')"
+          @click="requestCloseToolDialog"
+        >{{ $t('cancel') }}</el-button>
+        <el-button
+          type="primary"
+          size="default"
+          class="defect-kbd-hint-host"
+          :icon="$legacyIcon('el-icon-finished')"
+          @click="submitForm"
+        >
+          {{ $t('plan.save') }}
+          <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+        </el-button>
+      </div>
+    </div>
+    <el-form ref="form" class="plan-add-dialog__form plan-form-page__form" :model="form" :rules="rules" label-width="120px" @submit.prevent>
       <el-form-item :label="$t('plan.name')" prop="planName">
         <el-input v-model="form.planName" :placeholder="$t('plan.enter-name')" maxlength="255" />
       </el-form-item>
@@ -70,8 +93,8 @@
                   <el-option v-for="item in caseTypes" :key="item.typeId" :label="item.typeName" :value="item.typeId" />
                 </el-select>
               </el-form-item>
-              <el-form-item prop="reviewStatus">
-                <el-select v-model="caseQueryParams.reviewStatus" clearable size="small" :placeholder="$t('case.review-status')" @change="handleQuery">
+              <el-form-item prop="reviewStatus" class="plan-add-review-status-item">
+                <el-select v-model="caseQueryParams.reviewStatus" class="plan-add-review-status-input" clearable size="small" :placeholder="$t('case.review-status')" @change="handleQuery">
                   <el-option :label="$t('case.review.none')" value="none" />
                   <el-option :label="$t('case.review.in_review')" value="in_review" />
                   <el-option :label="$t('case.review.passed')" value="passed" />
@@ -81,9 +104,9 @@
             </el-form>
           </div>
         </div>
-        <multipane layout="vertical" ref="multiPane" class="custom-resizer" :class="{ 'custom-resizer--tree-hidden': !showModuleTree }" @paneResizeStop="dragStopHandle">
+        <multipane layout="vertical" ref="multiPane" class="custom-resizer" :class="{ 'custom-resizer--tree-hidden': !moduleTreeOpen }" @paneResizeStop="dragStopHandle">
           <!--      树形模块选择组件-->
-          <div v-if="showModuleTree" class="tree-module" ref="treeModule" :style="treeModuleStyle">
+          <div v-if="moduleTreeOpen" class="tree-module" ref="treeModule" :style="treeModuleStyle">
             <tree-plan-item-module
               ref="treeModuleRef"
               :project-id="projectId"
@@ -100,14 +123,14 @@
               :show-count="false"
               v-resize="setDragComponentSize" />
           </div>
-          <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="[multipaneStyle, paneResizerRuleVars]"></multipane-resizer>
+          <multipane-resizer ref="paneResizer" v-show="moduleTreeOpen" :style="[multipaneStyle, paneResizerRuleVars]"></multipane-resizer>
           <!--      用例列表-->
           <div ref="caseContext" class="case-context">
           <div ref="planAddCaseContextBody" class="case-context-body plan-add-case-context-body">
           <div class="plan-add-case-table-scroll">
-          <el-table ref="planItemTable" v-loading="loading" :data="caseList" :max-height="planAddTableBodyMaxHeight" v-resize="setDragComponentSize" @select="handleSelectionChange" @select-all="handleAllSelectionChange">
+          <el-table ref="planItemTable" v-loading="loading" :data="caseList" :max-height="planAddTableBodyMaxHeight || undefined" v-resize="setDragComponentSize" @select="handleSelectionChange" @select-all="handleAllSelectionChange">
             <el-table-column
-              v-if="!showModuleTree"
+              v-if="deliverableModuleOn && !showModuleTree"
               key="plan-add-sidebar-expand-col"
               fixed
               width="30"
@@ -206,15 +229,7 @@
         </multipane>
       </div>
     </el-form>
-    <template #footer>
-    <div class="dialog-footer">
-      <el-button type="primary" class="defect-kbd-hint-host" @click="submitForm">
-        {{ $t('plan.save') }}
-        <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
-      </el-button>
-      <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
-    </div>    </template>
-  </el-dialog>
+  </div>
 </template>
 
 <script>
@@ -227,6 +242,7 @@ import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport';
+import teamModuleGate from '@/mixins/team-module-gate';
 import multipaneTreeTableHeightSync from '@/mixins/multipaneTreeTableHeightSync';
 import planAddDialogKbd from '@/mixins/plan-add-dialog-kbd';
 import {addPlan, getPlan, updatePlan} from "@/api/system/plan";
@@ -235,15 +251,17 @@ import { listCaseTypes } from "@/api/system/case-type";
 import {listCase, listPlanCaseId, listPlanCaseLevel} from "@/api/system/case";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
+import { buildProjectModulePath } from "@/utils/project-module-path";
+import { checkPermi } from "@/utils/permission";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
-/** 新建/编辑计划弹窗：左侧树是否展开（与缺陷列表一致用 local） */
+/** 新建/编辑计划：左侧树是否展开（与缺陷列表一致用 local） */
 const PLAN_ADD_DIALOG_TREE_VISIBLE_CACHE_KEY = 'plan_add_dialog_tree_module_visible';
 
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, planAddDialogKbd],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, planAddDialogKbd, teamModuleGate],
   components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage,Cat2BugText, Cat2BugSelectLevel },
   setup() {
     const userStore = useUserStore()
@@ -256,10 +274,12 @@ export default {
       treeModuleStyle: {'--treeModuleWidth':'300px'},
       // 遮罩层
       loading: true,
-      // 弹出层标题
+      // 页标题 i18n key
       title: "",
-      // 是否显示弹出层
-      open: false,
+      // 整页视为「已打开」，供快捷键/脏检查 mixin 复用
+      open: true,
+      navigatingBack: false,
+      _planFormAllowLeave: false,
       planTimeRang: [new Date(), new Date()],
       // 查询参数
       caseQueryParams: {
@@ -305,25 +325,16 @@ export default {
       planAddTableBodyMaxHeight: null,
     }
   },
-  watch: {
-    open(val) {
-      if (val) {
-        this.$nextTick(() => {
-          this.initPlanAddTableHeaderHeightSync();
-          this.initPlanAddTableBodyResizeObserver();
-          this.$nextTick(() => {
-            this.setDragComponentSize();
-          });
-        });
-      } else {
-        this.destroyPlanAddTableHeaderHeightSync();
-        this.destroyPlanAddTableBodyResizeObserver();
-      }
-    },
-  },
   created() {
     const treeVis = this.$cache.local.get(PLAN_ADD_DIALOG_TREE_VISIBLE_CACHE_KEY);
     this.showModuleTree = !(treeVis === '0' || treeVis === 'false');
+  },
+  mounted() {
+    this.bootstrapFromRoute();
+  },
+  beforeUnmount() {
+    this.destroyPlanAddTableHeaderHeightSync();
+    this.destroyPlanAddTableBodyResizeObserver();
   },
   directives: {
     resize: {
@@ -374,11 +385,61 @@ export default {
       };
     },
   },
-  destroyed() {
-    this.destroyPlanAddTableHeaderHeightSync();
-    this.destroyPlanAddTableBodyResizeObserver();
-  },
   methods: {
+    /** 按路由进入新建或编辑 */
+    bootstrapFromRoute() {
+      const name = this.$route && this.$route.name;
+      const planId = this.$route && this.$route.params && this.$route.params.planId;
+      if (name === 'ProjectScopedPlanEdit' || (planId && String(this.$route.path || '').endsWith('/edit'))) {
+        if (!checkPermi(['system:plan:edit'])) {
+          this.$modal.msgWarning('没有操作权限');
+          this._planFormAllowLeave = true;
+          this.goBackToList();
+          return;
+        }
+        this.openUpdate({ planId });
+        return;
+      }
+      if (!checkPermi(['system:plan:add'])) {
+        this.$modal.msgWarning('没有操作权限');
+        this._planFormAllowLeave = true;
+        this.goBackToList();
+        return;
+      }
+      this.openAdd();
+    },
+    goBackToList() {
+      if (this.navigatingBack) return;
+      this.navigatingBack = true;
+      const { teamKey, projectKey } = this.$route.params;
+      const path = buildProjectModulePath(teamKey, projectKey, 'plan');
+      const finish = () => { this.navigatingBack = false; };
+      if (path) {
+        this.$router.push(path).finally(finish);
+      } else {
+        this.$router.back();
+        finish();
+      }
+    },
+    async guardLeavePlanForm(next) {
+      if (this._planFormAllowLeave) {
+        next();
+        return;
+      }
+      const ok = await this.confirmCloseToolDialog();
+      if (ok) {
+        this.toolDialogCloseBaseline = null;
+        next();
+      } else {
+        next(false);
+      }
+    },
+    doCloseToolDialog() {
+      this.toolDialogCloseBaseline = null;
+      this._planFormAllowLeave = true;
+      if (typeof this.reset === 'function') this.reset();
+      this.goBackToList();
+    },
     reviewStatusLabel(status) {
       if (!status) return this.$t('case.review.none')
       const key = 'case.review.' + status
@@ -389,10 +450,13 @@ export default {
       if (!this.projectId) return
       listCaseTypes(this.projectId, { enabledOnly: true }).then(res => { this.caseTypes = res.data || [] }).catch(() => {})
     },
-    onPlanAddDialogOpened() {
-      this.loadCaseTypes()
+    onPlanAddPageReady() {
+      this.open = true;
+      this.loadCaseTypes();
       this.onPlanAddDialogOpenedKbd();
       this.$nextTick(() => {
+        this.initPlanAddTableHeaderHeightSync();
+        this.initPlanAddTableBodyResizeObserver();
         this.syncPlanAddTableBodyMaxHeight();
         this.setDragComponentSize();
         requestAnimationFrame(() => {
@@ -501,40 +565,46 @@ export default {
       this.caseQueryParams.pageNum = 1;
       this.getPlanItemCaseList();
     },
-    /** 取消按钮 */
+    /** 取消 / 返回 */
     cancel() {
-      this.open = false;
-      this.reset();
-      this.$emit('close')
+      this.requestCloseToolDialog();
     },
-    /** 新增按钮操作 */
+    /** 进入新建 */
     openAdd() {
+      this._planFormAllowLeave = false;
       this.reset();
-      this.open = true;
       this.title = "plan.create";
       this.getTreeModuleWidth();
-      this.caseQueryParams.params.planId= 'cat2bug-temp-id';
+      this.caseQueryParams.params.planId = 'cat2bug-temp-id';
       this.getPlanItemCaseList();
       this.$nextTick(() => {
         this.$refs.treeModuleRef && this.$refs.treeModuleRef.reloadData();
+        this.onPlanAddPageReady();
       });
     },
-    /** 修改按钮操作 */
+    /** 进入编辑 */
     openUpdate(plan) {
+      this._planFormAllowLeave = false;
       this.reset();
       const planId = plan.planId;
+      this.title = "plan.edit";
+      this.getTreeModuleWidth();
+      this.caseQueryParams.params.planId = planId;
       getPlan(planId).then(response => {
         this.form = response.data;
         this.planTimeRang = [new Date(this.form.planStartTime), new Date(this.form.planEndTime)];
-        if(response.data.sysPlanItemList) {
-          this.selectCaseIdSet = new Set(response.data.sysPlanItemList.map(i=>i.caseId));
+        if (response.data.sysPlanItemList) {
+          this.selectCaseIdSet = new Set(response.data.sysPlanItemList.map(i => i.caseId));
         }
-        this.open = true;
-        this.title = "plan.edit";
+        this.getPlanItemCaseList();
+        this.$nextTick(() => {
+          this.$refs.treeModuleRef && this.$refs.treeModuleRef.reloadData();
+          this.onPlanAddPageReady();
+        });
+      }).catch(() => {
+        this._planFormAllowLeave = true;
+        this.goBackToList();
       });
-      this.getTreeModuleWidth();
-      this.caseQueryParams.params.planId= planId;
-      this.getPlanItemCaseList();
     },
     /** 提交按钮 */
     submitForm() {
@@ -549,16 +619,18 @@ export default {
           this.form.planStartTime = new Date(this.planTimeRang[0]).getTime();
           this.form.planEndTime = new Date(this.planTimeRang[1]).getTime();
           if (this.form.planId != null) {
-            updatePlan(this.form).then(response => {
+            updatePlan(this.form).then(() => {
               this.$modal.msgSuccess(this.$i18n.t('modify-success'));
-              this.open = false;
-              this.$emit('add', this.form);
+              this._planFormAllowLeave = true;
+              this.toolDialogCloseBaseline = null;
+              this.goBackToList();
             });
           } else {
-            addPlan(this.form).then(response => {
+            addPlan(this.form).then(() => {
               this.$modal.msgSuccess(this.$i18n.t('create-success'));
-              this.open = false;
-              this.$emit('update', this.form);
+              this._planFormAllowLeave = true;
+              this.toolDialogCloseBaseline = null;
+              this.goBackToList();
             });
           }
         }
@@ -688,13 +760,24 @@ export default {
             parseFloat(st.marginTop || '0') +
             parseFloat(st.marginBottom || '0');
         }
-        const next = Math.max(120, Math.floor(body.clientHeight - reserveBelowTable - 2));
+        const available = Math.max(120, Math.floor(body.clientHeight - reserveBelowTable - 2));
+        // 用表头 + 表体内层 table 自然高判断是否需要封顶；短表不设 max-height，分页紧贴列表
+        const tbl = this.$refs.planItemTable;
+        const tableEl = tbl && tbl.$el;
+        let next = available;
+        if (tableEl) {
+          const header = tableEl.querySelector('.el-table__header-wrapper');
+          const bodyTable = tableEl.querySelector('.el-table__body-wrapper table');
+          const naturalH =
+            (header ? header.offsetHeight : 0) + (bodyTable ? bodyTable.offsetHeight : 0);
+          next = naturalH > available ? available : null;
+        }
         if (this.planAddTableBodyMaxHeight !== next) {
           this.planAddTableBodyMaxHeight = next;
           this.$nextTick(() => {
-            const tbl = this.$refs.planItemTable;
-            if (tbl && typeof tbl.doLayout === 'function') {
-              tbl.doLayout();
+            const t = this.$refs.planItemTable;
+            if (t && typeof t.doLayout === 'function') {
+              t.doLayout();
             }
           });
         }
@@ -856,12 +939,13 @@ export default {
   display: flex;
   flex-direction: column;
 }
+/* 高度随表格内容；纵向上限由 planAddTableBodyMaxHeight（父列减分页）交给 el-table max-height。
+   短表分页紧贴列表，多余空白在分页下方；长表顶满后分页贴页底（页面 padding-bottom 10px） */
 .plan-add-case-table-scroll {
-  flex: 1 1 0%;
+  flex: 0 1 auto;
   align-self: stretch;
   width: 100%;
   min-width: 0;
-  min-height: 0;
   overflow-x: auto;
   overflow-y: hidden;
   /* 表格可横向滚动但不显示滚动条（仍可用触控板 / Shift+滚轮） */
@@ -875,6 +959,7 @@ export default {
     }
   }
 }
+/* 分页贴表格区底部；与页面底间距由 .plan-form-page padding-bottom（通用 10px）承担 */
 .plan-add-table-pagination-band {
   flex-shrink: 0;
 }
@@ -893,67 +978,108 @@ export default {
 </style>
 
 <style lang="scss">
-/* append-to-body：弹窗在 body 下，需非 scoped */
-.plan-add-dialog.el-dialog {
+/* 计划新建/编辑整页：与计划列表左右 20px 一致；选用例区占满剩余高度 */
+.plan-form-page.app-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 12vh);
-  max-height: calc(100vh - 12vh);
-  min-height: 560px;
-  margin-top: 6vh !important;
-  margin-bottom: 6vh !important;
+  /* 撑满 app-main（已按是否有 tags 算好 50/84），勿写死 100vh-84 否则无 tags 时底空 34px */
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  /* 左右 20px；上下用通用区块竖向间距 10px */
+  padding: var(--project-list-section-v-gap, 10px) 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
 
-  .el-dialog__header {
-    flex-shrink: 0;
-  }
+/* 底距由页面 padding-bottom 承担，避免与 .table-pagination-band margin-bottom 叠成 20px */
+.plan-form-page .table-pagination-band {
+  margin-bottom: 0;
+}
 
-  .el-dialog__body {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
+.plan-form-page .plan-form-page-header {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  min-height: 32px;
+}
 
-  .el-dialog__footer {
-    flex-shrink: 0;
-  }
+.plan-form-page .plan-form-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
 
-  .plan-add-dialog__form {
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+.plan-form-page .plan-form-back {
+  font-size: 22px;
+  cursor: pointer;
+}
 
-  .plan-add-dialog__form > .el-form-item,
-  .plan-add-dialog__form > .el-row {
-    flex-shrink: 0;
-  }
+.plan-form-page .plan-form-back:hover {
+  color: var(--text-color-secondary);
+}
 
-  .plan-add-dialog__case-divider {
-    flex-shrink: 0;
-    margin: 8px 0;
-  }
+.plan-form-page .plan-form-title-text {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-color-primary);
+}
 
-  .plan-add-case-select {
-    flex: 1 1 0%;
-    min-height: 240px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+.plan-form-page .plan-form-actions {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cat2bug-toolbar-item-gap, 10px);
+}
 
-  /* 左侧交付物/优先级树：不要外层边框盒子，与弹框背景一致 */
-  .custom-resizer:not(.custom-resizer--tree-hidden) > .tree-module > .tree {
-    background-color: transparent !important;
-  }
+.plan-form-page .plan-form-actions .el-button + .el-button {
+  margin-left: 0;
+}
 
-  /* 右侧用例表格：与左侧一致，不要外框 */
-  .el-table:not(.el-table--border) {
-    border: none !important;
-  }
+.plan-form-page .plan-add-dialog__form,
+.plan-form-page .plan-form-page__form {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.plan-form-page .plan-add-dialog__form > .el-form-item,
+.plan-form-page .plan-add-dialog__form > .el-row {
+  flex-shrink: 0;
+}
+
+.plan-form-page .plan-add-dialog__case-divider {
+  flex-shrink: 0;
+  margin: 8px 0;
+}
+
+.plan-form-page .plan-add-case-select {
+  flex: 1 1 0%;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 短表时表区撑满、分页置底；与页面底间距见 padding-bottom（通用 10px） */
+.plan-form-page .plan-add-case-context-body {
+  justify-content: flex-start;
+}
+
+.plan-form-page .custom-resizer:not(.custom-resizer--tree-hidden) > .tree-module > .tree {
+  background-color: transparent !important;
+}
+
+.plan-form-page .el-table:not(.el-table--border) {
+  border: none !important;
 }
 </style>

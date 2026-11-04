@@ -83,6 +83,7 @@
                   <div
                     v-for="(w, wi) in colWidgetsOf(col)"
                     :key="w.instanceId || w.type"
+                    v-show="isWidgetVisible(w.type)"
                     class="wb-editor__item"
                     :class="{
                       'is-over': dragOverColId === col.id && dragOverInstanceId === w.instanceId
@@ -106,6 +107,7 @@
                     </div>
                     <div class="wb-editor__filled-bd">
                       <component
+                        v-if="isWidgetVisible(w.type)"
                         :is="componentOf(w.type)"
                         v-bind="propsOf(w, true)"
                         @update:doc-id="(id) => onDocId(col.id, id, w.instanceId)"
@@ -187,7 +189,7 @@ import {
   GRID_SPAN,
   spansLabel
 } from './row-layout'
-import { listCatalogWidgets, colMinSpans, getWidgetDef } from './widget-registry'
+import { listCatalogWidgets, colMinSpans, getWidgetDef, isWidgetVisible } from './widget-registry'
 import WorkbenchWidgetCatalog from './WorkbenchWidgetCatalog.vue'
 
 const STACK_MQ = 720
@@ -395,6 +397,7 @@ export default {
     colWidgetsOf(col) {
       return colWidgets(col)
     },
+    isWidgetVisible,
     catalogForCol(col) {
       const used = new Set(colWidgets(col).map(w => w.type))
       return this.catalog.filter(w => !used.has(w.id))

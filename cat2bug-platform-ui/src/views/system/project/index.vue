@@ -4,7 +4,7 @@
     <el-tabs v-model="activeProjectTabName" @tab-change="selectProjectTabHandle">
       <el-tab-pane :label="$t('project.my-participated-in')" :name="$t('project.my-participated-in')"></el-tab-pane>
 <!--      <el-tab-pane :label="$t('project.my-manage')" :name="$t('project.my-manage')"></el-tab-pane>-->
-      <el-tab-pane :label="$t('project.all-project')" name=""></el-tab-pane>
+      <el-tab-pane v-if="isFormalTeamMember" :label="$t('project.all-project')" name=""></el-tab-pane>
 <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
     </el-tabs>
 <!--    收藏列表-->
@@ -59,6 +59,7 @@
       </el-form>
       <div ref="projectManageToolsRight" class="project-manage-tools-right">
         <el-button
+          v-if="isFormalTeamMember"
           class="project-manage-hint-create"
           type="primary"
           plain
@@ -224,8 +225,10 @@ export default {
   components: { ProjectNameplate, RowListMember,StarSwitch },
   setup() {
     const permissionStore = usePermissionStore()
+    const userStore = useUserStore()
     const { sidebarRouters } = storeToRefs(permissionStore)
-    return { sidebarRouters }
+    const { teamMember } = storeToRefs(userStore)
+    return { sidebarRouters, userTeamMember: teamMember }
   },
   data() {
     return {
@@ -276,6 +279,10 @@ export default {
     };
   },
   computed: {
+    /** 当前团队正式队员；仅项目挂职则隐藏「全部项目」与建项目 */
+    isFormalTeamMember() {
+      return this.userTeamMember !== false
+    },
     collect: function() {
       return function (project) {
         return project.collect?'true':'false';
@@ -292,7 +299,7 @@ export default {
     /** 是否显示添加按钮 */
     visibleAdd() {
       return function (project) {
-        return checkPermi(['system:project:add']) && (parseInt(project.createBy) === this.currentUserId || project.members.filter(m=>m.userId == this.currentUserId).length>0)
+        return this.isFormalTeamMember && checkPermi(['system:project:add']) && (parseInt(project.createBy) === this.currentUserId || project.members.filter(m=>m.userId == this.currentUserId).length>0)
       }
     },
     /** 是否显示删除按钮 */
@@ -370,7 +377,7 @@ export default {
           badgeSelector: '.project-manage-hint-create',
           floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
           run: () => this.shortcutCreateProject(),
-          visible: () => checkPermi(['system:project:add'])
+          visible: () => this.isFormalTeamMember && checkPermi(['system:project:add'])
         }
       ]
     },
@@ -432,7 +439,7 @@ export default {
       this.enterListQueryKeyboardNav()
     },
     shortcutCreateProject() {
-      if (!checkPermi(['system:project:add'])) return
+      if (!this.isFormalTeamMember || !checkPermi(['system:project:add'])) return
       this.handleAdd()
     },
     switchTabParticipated() {
@@ -444,6 +451,10 @@ export default {
       this.activeProjectTabName = name
     },
     switchTabAll() {
+      if (!this.isFormalTeamMember) {
+        this.switchTabParticipated()
+        return
+      }
       if (this.activeProjectTabName === '') {
         this.selectProjectTabHandle('')
         return
@@ -462,7 +473,11 @@ export default {
     },
     /** 选择项目分组；name 来自 tab-change（切换后的页签名）或快捷键显式传入 */
     selectProjectTabHandle(name){
-      const tabName = name !== undefined && name !== null ? name : this.activeProjectTabName
+      let tabName = name !== undefined && name !== null ? name : this.activeProjectTabName
+      if (!this.isFormalTeamMember) {
+        tabName = this.$i18n.t('project.my-participated-in')
+        this.activeProjectTabName = tabName
+      }
       this.reset();
       if (tabName === this.$i18n.t('project.my-participated-in')) {
         this.queryParams.params.userId = getCurrentUserId();

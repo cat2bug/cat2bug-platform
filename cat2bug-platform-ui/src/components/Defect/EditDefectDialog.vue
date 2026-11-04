@@ -103,7 +103,7 @@ export default {
       },
       rules: {
         defectName: [
-          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: 'input' }
+          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: ['change', 'blur'] }
         ]
       }
     }
@@ -130,7 +130,7 @@ export default {
       const rules = {}
       if (this.isBuiltinDefectFieldVisible('defectName')) {
         rules.defectName = [
-          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: 'input' }
+          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: ['change', 'blur'] }
         ]
       }
       const customFields = ((this.defectFieldLayout && this.defectFieldLayout.customFields) || [])

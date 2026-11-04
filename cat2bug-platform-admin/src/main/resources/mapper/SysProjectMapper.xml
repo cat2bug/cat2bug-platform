@@ -190,6 +190,10 @@
         where project_id = #{projectId}
     </update>
 
+    <update id="updateCreateBy">
+        update sys_project set create_by = #{createBy} where project_id = #{projectId}
+    </update>
+
     <update id="deleteSysProjectByProjectId">
         update sys_project set project_state = 0 where project_id = #{projectId}
     </update>

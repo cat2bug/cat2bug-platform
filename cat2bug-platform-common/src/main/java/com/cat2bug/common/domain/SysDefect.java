@@ -53,6 +53,16 @@ public class SysDefect {
     private List<SysUser> focusList;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date handleTime;
+    /**
+     * 本周期存活起点（派生字段，不落库）：最近一次 CREATE/OPEN，缺省回退 createTime。
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date handleStartTime;
+    /**
+     * 本周期存活终点（派生字段，不落库）：最晚一次 PASS/CLOSED，无则当前时刻。
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date handlePassTime;
     private String imgUrls;
     private String annexUrls;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -62,6 +72,7 @@ public class SysDefect {
     private String delFlag;
     private Map<String, Object> params;
     private boolean collect;
+    /** 本周期驳回次数（派生字段，不落库）：锚点之后 REJECTED 日志条数 */
     private int rejectCount;
 
     /** Excel 导入/导出：类型显示名 */
@@ -309,6 +320,22 @@ public class SysDefect {
 
     public void setHandleTime(Date handleTime) {
         this.handleTime = handleTime;
+    }
+
+    public Date getHandleStartTime() {
+        return handleStartTime;
+    }
+
+    public void setHandleStartTime(Date handleStartTime) {
+        this.handleStartTime = handleStartTime;
+    }
+
+    public Date getHandlePassTime() {
+        return handlePassTime;
+    }
+
+    public void setHandlePassTime(Date handlePassTime) {
+        this.handlePassTime = handlePassTime;
     }
 
     public String getImgUrls() {

@@ -23,6 +23,7 @@ import com.cat2bug.system.service.ProjectCopyService;
 import com.cat2bug.system.service.SysProjectService;
 import com.cat2bug.system.service.SysUserConfigService;
 import com.cat2bug.system.service.SysRoleService;
+import com.cat2bug.system.service.SysPermissionService;
 import com.cat2bug.system.service.SysUserProjectRoleService;
 import com.cat2bug.system.service.SysUserProjectService;
 import jakarta.inject.Inject;
@@ -72,10 +73,19 @@ public class ProjectResource {
     SysUserProjectRoleService sysUserProjectRoleService;
 
     @Inject
+    SysPermissionService sysPermissionService;
+
+    @Inject
     SysUserConfigService sysUserConfigService;
 
     @Inject
     ProjectCloudPushService projectCloudPushService;
+
+    @Inject
+    com.cat2bug.system.service.TeamMembershipAuth teamMembershipAuth;
+
+    @Inject
+    com.cat2bug.system.service.ProjectMembershipAuth projectMembershipAuth;
 
     @Inject
     ProjectCloudPushJobService projectCloudPushJobService;
@@ -144,6 +154,7 @@ public class ProjectResource {
         LoginUser loginUser = requireLoginUser();
         var project = sysProjectService.selectSysProjectByProjectId(projectId, loginUser.getUserId());
         if (project == null) {
+            projectMembershipAuth.requireProjectAccess(loginUser.getUserId(), projectId);
             throw new ApiException(403, "无权限访问该项目");
         }
         return AjaxResult.success(project);
@@ -187,6 +198,18 @@ public class ProjectResource {
     }
 
     @GET
+    @Path("/{projectId}/team-not-member")
+    @RequiresPermissions("system:project:member:add")
+    public TableDataInfo teamNotMemberList(@PathParam("projectId") Long projectId,
+                                           @QueryParam("params[search]") String search,
+                                           @QueryParam("search") String searchAlt,
+                                           @QueryParam("pageNum") Integer pageNum,
+                                           @QueryParam("pageSize") Integer pageSize) {
+        String keyword = (search != null && !search.isBlank()) ? search : searchAlt;
+        return sysUserProjectService.selectTeamNotMemberPage(projectId, keyword, pageNum, pageSize);
+    }
+
+    @GET
     @Path("/copy-sources")
     @RequiresPermissions("system:project:add")
     public AjaxResult copySources() {
@@ -225,6 +248,9 @@ public class ProjectResource {
     @RequiresPermissions("system:project:add")
     public AjaxResult add(SysProject sysProject) {
         LoginUser loginUser = requireLoginUser();
+        if (sysProject != null && sysProject.getTeamId() != null) {
+            teamMembershipAuth.requireFormalTeamMember(loginUser.getUserId(), sysProject.getTeamId());
+        }
         ProjectCopySelection selection = sysProject != null ? sysProject.getCopySelection() : null;
         boolean copying = selection != null && selection.hasWork();
         if (copying && sysProject.getTeamId() != null) {
@@ -407,6 +433,29 @@ public class ProjectResource {
         LoginUser loginUser = requireLoginUser();
         return toAjax(sysUserProjectService.deleteMember(
                 projectId, memberId, loginUser.getUserId(), handoffUserId));
+    }
+
+    /**
+     * 转让创建人：不依赖 member:remove，服务内校验调用者必须是当前 project.create-by。
+     */
+    @POST
+    @Path("/{projectId}/transfer-creator")
+    public AjaxResult transferCreator(@PathParam("projectId") Long projectId, Map<String, Object> body) {
+        LoginUser loginUser = requireLoginUser();
+        Long targetUserId = null;
+        if (body != null && body.get("targetUserId") != null) {
+            Object raw = body.get("targetUserId");
+            if (raw instanceof Number n) {
+                targetUserId = n.longValue();
+            } else {
+                targetUserId = Long.valueOf(String.valueOf(raw));
+            }
+        }
+        int rows = sysUserProjectService.transferCreator(projectId, loginUser.getUserId(), targetUserId);
+        if (rows > 0) {
+            sysPermissionService.updateRoleAndPermissionOfCurrentUser(loginUser);
+        }
+        return toAjax(rows);
     }
 
     private LoginUser requireLoginUser() {

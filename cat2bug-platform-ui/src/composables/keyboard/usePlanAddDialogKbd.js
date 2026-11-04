@@ -130,6 +130,12 @@ export function usePlanAddDialogKbd() {
 
   const getFieldHintScrollContainer = () => {
     const host = vm()
+    const page = host && host.$el && (
+      host.$el.classList && host.$el.classList.contains('plan-form-page')
+        ? host.$el
+        : host.$el.closest && host.$el.closest('.plan-form-page')
+    )
+    if (page) return page
     const body = host && host.$el && host.$el.closest('.el-dialog__body')
     return body || getFieldHintContainer()
   }
@@ -189,6 +195,7 @@ export default {
       return serializePlanAddCloseState(this) !== this.toolDialogCloseBaseline
     },
     doCloseToolDialog() {
+      // 整页模式：组件内可覆盖为回列表；此处保留兼容
       this.open = false
       this.toolDialogCloseBaseline = null
       if (typeof this.reset === 'function') this.reset()

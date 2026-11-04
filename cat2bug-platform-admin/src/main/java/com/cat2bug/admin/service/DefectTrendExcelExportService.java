@@ -7,6 +7,7 @@ import com.cat2bug.common.excel.ExcelChart;
 import com.cat2bug.common.excel.ExcelChartSeries;
 import com.cat2bug.common.excel.FastExcelSupport;
 import com.cat2bug.common.excel.XlsxPatcher;
+import com.cat2bug.common.util.TeamModuleLabelContext;
 import com.cat2bug.system.mapper.SysDashboardMapper;
 import com.cat2bug.system.util.SysDefectTrendLineHelper;
 import com.cat2bug.system.util.SysMemberDefectLineHelper;
@@ -103,7 +104,7 @@ public class DefectTrendExcelExportService {
                                                 List<Map<String, Object>> list) {
         List<ExcelChartSeries> series = new ArrayList<>();
         byte[] xlsx = FastExcelSupport.writeWorkbook(workbook -> {
-            Worksheet sheet = workbook.newWorksheet(sheetName);
+            Worksheet sheet = workbook.newWorksheet(TeamModuleLabelContext.apply(sheetName));
             int rowNum = -1;
             reserveChartRow(sheet, ++rowNum);
             int titleRow = ++rowNum;
@@ -142,7 +143,7 @@ public class DefectTrendExcelExportService {
                                                  List<SysMemberOfDefectsLine> list) {
         List<ExcelChartSeries> series = new ArrayList<>();
         byte[] xlsx = FastExcelSupport.writeWorkbook(workbook -> {
-            Worksheet sheet = workbook.newWorksheet(sheetName);
+            Worksheet sheet = workbook.newWorksheet(TeamModuleLabelContext.apply(sheetName));
             int rowNum = -1;
             reserveChartRow(sheet, ++rowNum);
             int titleRow = ++rowNum;

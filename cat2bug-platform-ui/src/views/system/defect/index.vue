@@ -145,25 +145,25 @@
                   size="small"
                 >
                   <!-- 表格模式 -->
-                  <el-radio-button value="DefectTable">
+                  <el-radio-button v-if="isDefectViewEnabled('DefectTable')" value="DefectTable">
                     <span class="defect-content-view-switch-inner" :title="$t('table')">
                       <svg-icon icon-class="table" />
                     </span>
                   </el-radio-button>
                   <!-- Excel模式 -->
-                  <el-radio-button value="DefectExcel">
+                  <el-radio-button v-if="isDefectViewEnabled('DefectExcel')" value="DefectExcel">
                     <span class="defect-content-view-switch-inner" :title="$t('excel')">
                       <svg-icon icon-class="excel2" />
                     </span>
                   </el-radio-button>
                   <!-- 甘特图模式 -->
-                  <el-radio-button value="DefectGantt">
+                  <el-radio-button v-if="isDefectViewEnabled('DefectGantt')" value="DefectGantt">
                     <span class="defect-content-view-switch-inner" :title="$t('gantt')">
                       <svg-icon icon-class="gantt" />
                     </span>
                   </el-radio-button>
                   <!-- 看板模式：图标用用户提供的 PNG（CSS mask，跟 currentColor） -->
-                  <el-radio-button value="DefectKanban">
+                  <el-radio-button v-if="isDefectViewEnabled('DefectKanban')" value="DefectKanban">
                     <span class="defect-content-view-switch-inner" :title="$t('kanban')">
                       <span class="defect-kanban-switch-icon" aria-hidden="true" />
                     </span>
@@ -280,9 +280,17 @@
                   <legacy-icon icon="el-icon-document-copy" />{{ $t('open') }}
                 </el-dropdown-item>
                 <el-dropdown-item
+                  v-if="defectBatchFlags.merge"
+                  command="merge"
+                  :divided="defectBatchHasFlowAction"
+                  class="orange"
+                >
+                  <legacy-icon icon="el-icon-connection" />{{ $t('defect.merge') }}
+                </el-dropdown-item>
+                <el-dropdown-item
                   v-if="defectBatchFlags.delete"
                   command="delete"
-                  :divided="defectBatchHasFlowAction"
+                  :divided="defectBatchHasFlowAction || defectBatchFlags.merge"
                   class="red"
                 >
                   <legacy-icon icon="el-icon-delete" />{{ $t('delete') }}
@@ -325,6 +333,11 @@
         :project-id="getProjectId()"
         @done="onDefectBatchDone"
       />
+      <merge-defect-drawer
+        ref="mergeDefectDrawer"
+        :project-id="getProjectId()"
+        @merged="onDefectBatchDone"
+      />
       <!-- 添加页签对话框 -->
       <defect-tab-dialog
         ref="defectTabDialog"
@@ -340,7 +353,7 @@
 </template>
 
 <script>
-import { defineAsyncComponent, markRaw } from 'vue'
+import { defineAsyncComponent, markRaw, provide, reactive } from 'vue'
 import { Delete, EditPen, MoreFilled } from '@element-plus/icons-vue'
 import Sortable from 'sortablejs'
 import { checkPermi } from '@/utils/permission'
@@ -349,6 +362,7 @@ import { configDefect, delDefect } from '@/api/system/defect'
 import AddDefect from '@/components/Defect/AddDefect'
 import HandleDefect from '@/components/Defect/HandleDefect'
 import DefectBatchActionDialog from '@/components/Defect/DefectBatchActionDialog'
+import MergeDefectDrawer from '@/components/Defect/MergeDefectDrawer'
 import SelectProjectMember from '@/components/Project/SelectProjectMember'
 import { getBatchActionFlags } from '@/utils/defect-action-visibility'
 import { strFormat } from '@/utils/index'
@@ -358,6 +372,13 @@ import DefectTabDialog from '@/views/system/defect/DefectTabDialog'
 import DefectImport from '@/views/system/defect/DefectImport'
 import i18n from '@/utils/i18n/i18n'
 import { getDefectTempTab, lifeTime, removeDefectTempTab } from '@/utils/defect'
+import {
+  defaultDefectPageSettings,
+  enabledDefectViews,
+  mergeDefectPageSettings,
+  resolveDefectContentView
+} from '@/utils/defect-page-settings'
+import { getProjectDefectPageSettings } from '@/api/system/defect-page-settings'
 import { resolveExportAssetHost } from '@/utils/ruoyi'
 import {
   appendExportColumnParams,
@@ -490,6 +511,7 @@ export default {
     AddDefect,
     HandleDefect,
     DefectBatchActionDialog,
+    MergeDefectDrawer,
     SelectProjectMember,
     ProjectLabel,
     Cat2BugStatistic,
@@ -502,10 +524,15 @@ export default {
     MoreFilledIcon: markRaw(MoreFilled),
   },
   setup() {
+    const defectPageSettingsState = reactive({
+      settings: defaultDefectPageSettings()
+    })
+    provide('defectPageSettingsState', defectPageSettingsState)
     return {
       userStore: useUserStore(),
       EditPenIcon: markRaw(EditPen),
-      DeleteIcon: markRaw(Delete)
+      DeleteIcon: markRaw(Delete),
+      defectPageSettingsState
     }
   },
   data() {
@@ -611,6 +638,12 @@ export default {
       return this.userStore.id
     },
     /** 获取项目id */
+    defectPageSettings() {
+      return this.defectPageSettingsState.settings
+    },
+    enabledDefectContentViews() {
+      return enabledDefectViews(this.defectPageSettings)
+    },
     projectId: function() {
       return this.$route.query.projectId ? parseInt(this.$route.query.projectId) : parseInt((this.userStore.config || {}).currentProjectId)
     },
@@ -657,7 +690,7 @@ export default {
       const f = this.defectBatchFlags
       return !!(
         f.hasSelection &&
-        (f.assign || f.repair || f.reject || f.pass || f.close || f.open || f.delete)
+        (f.assign || f.repair || f.reject || f.pass || f.close || f.open || f.delete || f.merge)
       )
     },
     defectTabAddBtnClass() {
@@ -844,17 +877,45 @@ export default {
       this.whenDefectContentReady((child) => {
         if (typeof child.init === 'function') child.init()
       })
-      // 获取缺陷配置
-      this.getDefectConfig()
-      // 显示指定缺陷信息
-      if (this.$route.query.defectId) {
-        this.$refs.editDefectForm.open(this.$route.query.defectId)
-      }
-      this.registerDefectShortcuts()
-      this.$nextTick(() => {
-        this.$_bindDefectQueryNavFocusIn()
-        this.$_bindDefectToolbarNavFocusIn()
+      this.loadDefectPageSettings().finally(() => {
+        // 获取缺陷配置
+        this.getDefectConfig()
+        // 显示指定缺陷信息
+        if (this.$route.query.defectId) {
+          this.$refs.editDefectForm.open(this.$route.query.defectId)
+        }
+        this.registerDefectShortcuts()
+        this.$nextTick(() => {
+          this.$_bindDefectQueryNavFocusIn()
+          this.$_bindDefectToolbarNavFocusIn()
+        })
       })
+    },
+    isDefectViewEnabled(name) {
+      return this.enabledDefectContentViews.includes(name)
+    },
+    loadDefectPageSettings() {
+      if (!this.projectId) {
+        this.defectPageSettingsState.settings = defaultDefectPageSettings()
+        this.applyDefectViewFromSettings()
+        return Promise.resolve()
+      }
+      return getProjectDefectPageSettings(this.projectId)
+        .then((res) => {
+          this.defectPageSettingsState.settings = mergeDefectPageSettings(res.data)
+          this.applyDefectViewFromSettings()
+        })
+        .catch(() => {
+          this.defectPageSettingsState.settings = defaultDefectPageSettings()
+          this.applyDefectViewFromSettings()
+        })
+    },
+    applyDefectViewFromSettings() {
+      const next = resolveDefectContentView(this.defectContentComponent, this.defectPageSettings)
+      if (next !== this.defectContentComponent) {
+        this.defectContentComponent = next
+      }
+      this.$cache.local.set(DEFECT_CONTENT_VIEW_CACHE_KEY, next)
     },
     /** 向快捷键引擎注册缺陷页动作（动作引导键 Space 打开） */
     registerDefectShortcuts() {
@@ -2392,9 +2453,10 @@ export default {
         content.toggleModuleTreeVisible()
       }
     },
-    /** Cmd/Ctrl+O：在表格 / Excel / 甘特显示模式间循环切换 */
+    /** Cmd/Ctrl+O：在已启用的表格 / Excel / 甘特 / 看板间循环切换 */
     shortcutSwitchView() {
-      const order = DEFECT_CONTENT_VIEW_ALLOWED
+      const order = this.enabledDefectContentViews
+      if (!order.length) return
       const idx = order.indexOf(this.defectContentComponent)
       const next = order[(idx < 0 ? 0 : idx + 1) % order.length]
       this.defectContentComponent = next
@@ -2993,6 +3055,13 @@ export default {
         this.handleDefectBatchDelete(defects)
         return
       }
+      if (command === 'merge') {
+        const drawer = this.$refs.mergeDefectDrawer
+        if (drawer && typeof drawer.open === 'function') {
+          drawer.open(defects)
+        }
+        return
+      }
       const dialog = this.$refs.defectBatchActionDialog
       if (dialog && typeof dialog.open === 'function') {
         dialog.open(command, defects)
@@ -3085,8 +3154,10 @@ export default {
     /** 切换缺陷内容组件改变的处理（含异步 chunk 就绪等待） */
     handleDefectContentChange() {
       const c = this.defectContentComponent
-      if (DEFECT_CONTENT_VIEW_ALLOWED.includes(c)) {
+      if (this.enabledDefectContentViews.includes(c)) {
         this.$cache.local.set(DEFECT_CONTENT_VIEW_CACHE_KEY, c)
+      } else {
+        this.applyDefectViewFromSettings()
       }
       this.whenDefectContentReady((child) => {
         if (typeof child.init === 'function') child.init()

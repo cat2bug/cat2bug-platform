@@ -14,6 +14,7 @@ import com.cat2bug.common.domain.SysProjectDefectTabs;
 import com.cat2bug.common.domain.SysUser;
 import com.cat2bug.common.domain.SysUserConfig;
 import com.cat2bug.common.domain.SysVersion;
+import com.cat2bug.common.domain.vo.DefectMergeRequest;
 import com.cat2bug.common.domain.vo.EnumVo;
 import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.common.util.DefectDefaults;
@@ -25,6 +26,7 @@ import com.cat2bug.system.mapper.SysDefectMapper;
 import com.cat2bug.system.mapper.SysModuleMapper;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.util.DefectCustomFieldsValidator;
+import com.cat2bug.system.util.DefectCycleMetricsEnricher;
 import com.cat2bug.system.util.DefectImportLabelResolver;
 import com.cat2bug.system.util.DefectMemberEnricher;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -35,8 +37,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -60,6 +64,9 @@ public class SysDefectService {
 
     @Inject
     DefectMemberEnricher defectMemberEnricher;
+
+    @Inject
+    DefectCycleMetricsEnricher defectCycleMetricsEnricher;
 
     @Inject
     MemberFocusService memberFocusService;
@@ -123,6 +130,7 @@ public class SysDefectService {
         long total = sysDefectMapper.countSysDefectList(query);
         var rows = sysDefectMapper.selectSysDefectList(query, page.getOffset(), page.getPageSize());
         defectMemberEnricher.enrich(rows);
+        defectCycleMetricsEnricher.enrich(rows);
         return new TableDataInfo(rows, total);
     }
 
@@ -130,6 +138,7 @@ public class SysDefectService {
         restrictToModuleTree(query);
         List<SysDefect> rows = sysDefectMapper.selectAllSysDefectList(query);
         defectMemberEnricher.enrich(rows);
+        defectCycleMetricsEnricher.enrich(rows);
         return rows;
     }
 
@@ -317,6 +326,7 @@ public class SysDefectService {
         }
         SysDefect defect = sysDefectMapper.selectSysDefectByDefectId(defectId);
         defectMemberEnricher.enrich(defect);
+        defectCycleMetricsEnricher.enrich(defect);
         return defect;
     }
 
@@ -356,6 +366,7 @@ public class SysDefectService {
         log.setDefectLogDescribe(defect.getDefectDescribe());
         insertLog(log);
         defectMemberEnricher.enrich(defect);
+        defectCycleMetricsEnricher.enrich(defect);
         return defect;
     }
 
@@ -372,6 +383,87 @@ public class SysDefectService {
         defect.setUpdateBy(loginUser.getUsername());
         defect.setUpdateById(loginUser.getUserId());
         return sysDefectMapper.updateSysDefect(defect);
+    }
+
+    /**
+     * 浅合并：在同一事务内更新主缺陷、软删其余源缺陷，并在主缺陷写入 MERGE 日志。
+     */
+    @Transactional
+    public SysDefect mergeDefects(DefectMergeRequest request) {
+        if (request == null) {
+            throw new ApiException(MessageUtils.message("defect.merge.request-empty"));
+        }
+        if (request.getProjectId() == null) {
+            throw new ApiException(MessageUtils.message("defect.merge.project-id-empty"));
+        }
+        if (request.getMasterDefectId() == null) {
+            throw new ApiException(MessageUtils.message("defect.merge.master-id-empty"));
+        }
+        if (request.getSourceDefectIds() == null || request.getSourceDefectIds().isEmpty()) {
+            throw new ApiException(MessageUtils.message("defect.merge.source-empty"));
+        }
+        LinkedHashSet<Long> sourceIds = new LinkedHashSet<>(request.getSourceDefectIds());
+        if (sourceIds.size() < 2) {
+            throw new ApiException(MessageUtils.message("defect.merge.min-two-sources"));
+        }
+        if (!sourceIds.contains(request.getMasterDefectId())) {
+            throw new ApiException(MessageUtils.message("defect.merge.master-not-in-sources"));
+        }
+        SysDefect patch = request.getDefect();
+        if (patch == null) {
+            throw new ApiException(MessageUtils.message("defect.merge.defect-body-empty"));
+        }
+        if (patch.getDefectId() == null) {
+            patch.setDefectId(request.getMasterDefectId());
+        }
+        if (!Objects.equals(patch.getDefectId(), request.getMasterDefectId())) {
+            throw new ApiException(MessageUtils.message("defect.merge.defect-id-mismatch"));
+        }
+        if (patch.getProjectId() != null && !Objects.equals(patch.getProjectId(), request.getProjectId())) {
+            throw new ApiException(MessageUtils.message("defect.merge.project-id-mismatch"));
+        }
+        patch.setProjectId(request.getProjectId());
+
+        List<SysDefect> sources = new ArrayList<>();
+        for (Long defectId : sourceIds) {
+            SysDefect row = sysDefectMapper.selectSysDefectByDefectId(defectId);
+            if (row == null) {
+                throw new ApiException(MessageUtils.message("defect.merge.defect-not-found", defectId));
+            }
+            requireDefectProjectAccess(row.getProjectId());
+            if (!Objects.equals(row.getProjectId(), request.getProjectId())) {
+                throw new ApiException(MessageUtils.message("defect.merge.source-not-in-project"));
+            }
+            if (!"0".equals(row.getDelFlag())) {
+                throw new ApiException(MessageUtils.message("defect.merge.source-deleted"));
+            }
+            sources.add(row);
+        }
+
+        if (updateSysDefect(patch) <= 0) {
+            throw new ApiException(MessageUtils.message("defect.merge.update-master-failed"));
+        }
+
+        List<String> mergedNums = new ArrayList<>();
+        for (SysDefect source : sources) {
+            if (Objects.equals(source.getDefectId(), request.getMasterDefectId())) {
+                continue;
+            }
+            if (sysDefectMapper.deleteSysDefectByDefectId(source.getDefectId()) <= 0) {
+                throw new ApiException(MessageUtils.message("defect.merge.delete-source-failed"));
+            }
+            if (source.getProjectNum() != null) {
+                mergedNums.add("#" + source.getProjectNum());
+            }
+        }
+
+        SysDefectLog log = new SysDefectLog();
+        log.setDefectId(request.getMasterDefectId());
+        log.setDefectLogType(DefectLogState.MERGE);
+        log.setDefectLogDescribe(String.join("、", mergedNums));
+        insertLog(log);
+
+        return selectSysDefectByDefectId(request.getMasterDefectId());
     }
 
     /**

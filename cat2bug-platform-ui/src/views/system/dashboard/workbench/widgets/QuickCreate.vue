@@ -27,7 +27,6 @@
       @added="onCreated"
     />
     <add-case ref="addCase" append-to-body @added="onCreated" />
-    <add-plan-dialog ref="addPlan" @add="onCreated" />
   </div>
 </template>
 
@@ -35,14 +34,15 @@
 import { Plus } from '@element-plus/icons-vue'
 import { getCurrentProjectId } from '@/utils/store-context'
 import { checkPermi } from '@/utils/permission'
+import { useModulePageSettingsStore } from '@/stores/modulePageSettings'
 import { addDocument, listDocument } from '@/api/system/document'
+import { buildProjectModulePath } from '@/utils/project-module-path'
 import AddDefect from '@/components/Defect/AddDefect'
 import AddCase from '@/components/Case/AddCase'
-import AddPlanDialog from '@/components/Plan/AddPlanDialog'
 
 export default {
   name: 'QuickCreate',
-  components: { Plus, AddDefect, AddCase, AddPlanDialog },
+  components: { Plus, AddDefect, AddCase },
   data() {
     return {
       projectId: null,
@@ -50,10 +50,18 @@ export default {
     }
   },
   computed: {
-    canDefect() { return checkPermi(['system:defect:add']) },
-    canCase() { return checkPermi(['system:case:add']) },
-    canPlan() { return checkPermi(['system:plan:add']) },
-    canDocument() { return checkPermi(['system:document:add']) }
+    canDefect() {
+      return checkPermi(['system:defect:add']) && useModulePageSettingsStore().isEnabled('defect')
+    },
+    canCase() {
+      return checkPermi(['system:case:add']) && useModulePageSettingsStore().isEnabled('case_plan')
+    },
+    canPlan() {
+      return checkPermi(['system:plan:add']) && useModulePageSettingsStore().isEnabled('case_plan')
+    },
+    canDocument() {
+      return checkPermi(['system:document:add']) && useModulePageSettingsStore().isEnabled('document')
+    }
   },
   mounted() {
     this.projectId = getCurrentProjectId()
@@ -69,7 +77,11 @@ export default {
       if (this.$refs.addCase) this.$refs.addCase.open()
     },
     openPlan() {
-      if (this.$refs.addPlan) this.$refs.addPlan.openAdd()
+      const { teamKey, projectKey } = this.$route.params
+      const path = buildProjectModulePath(teamKey, projectKey, 'plan', 'new')
+      if (path) {
+        this.$router.push(path)
+      }
     },
     async createDocument() {
       if (this.creatingDoc) return

@@ -18,6 +18,11 @@ import org.flywaydb.core.api.MigrationState;
 import org.jboss.logging.Logger;
 
 import javax.sql.DataSource;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -290,8 +295,12 @@ public class SetupMigrationService {
     private Flyway buildFlyway(DataSource dataSourceOverride) {
         // 空库：0.5.0 → 再跑 V0_5_1 init；已有业务库：0.5.1，跳过整库 DROP/CREATE
         String baselineVersion = hasBusinessSchema(dataSourceOverride) ? "0.5.1" : "0.5.0";
+        String classpathLocation = migrationLocation(dataSourceOverride);
+        // JVM/dev：优先 filesystem，避免 Quarkus 热加载后新 SQL 能扫到但 getResourceAsStream 失败
+        // （Unable to obtain inputstream for resource: db/mysql/V...sql）
+        String[] locations = resolveMigrationLocations(classpathLocation);
         FluentConfiguration configuration = Flyway.configure()
-                .locations(migrationLocation(dataSourceOverride))
+                .locations(locations)
                 .table(FlywayConstants.SCHEMA_HISTORY_TABLE)
                 .encoding("UTF-8")
                 .baselineOnMigrate(true)
@@ -310,5 +319,47 @@ public class SetupMigrationService {
             configuration.javaMigrationClassProvider(new QuarkusFlywayClassProvider(scanner.scanForClasses()));
         }
         return configuration.load();
+    }
+
+    /**
+     * JVM 下若 classpath 目录能解析为本地文件夹，改用 filesystem: 读取脚本；
+     * Native 或非 file URL 时仍用原 classpath: 位置。
+     */
+    static String[] resolveMigrationLocations(String classpathLocation) {
+        if (classpathLocation == null || classpathLocation.isBlank()) {
+            return new String[]{H2_LOCATION};
+        }
+        if (ImageInfo.inImageRuntimeCode()) {
+            return new String[]{classpathLocation};
+        }
+        String relative = classpathLocation.startsWith("classpath:")
+                ? classpathLocation.substring("classpath:".length())
+                : classpathLocation;
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        if (cl == null) {
+            cl = SetupMigrationService.class.getClassLoader();
+        }
+        URL url = cl != null ? cl.getResource(relative) : null;
+        if (url != null && "file".equals(url.getProtocol())) {
+            try {
+                Path dir = Paths.get(url.toURI());
+                if (Files.isDirectory(dir)) {
+                    return new String[]{"filesystem:" + dir.toAbsolutePath().normalize()};
+                }
+            } catch (URISyntaxException | RuntimeException e) {
+                log.debugf("迁移目录转 filesystem 失败，回退 classpath: %s", e.getMessage());
+            }
+        }
+        // 开发态常见：源码树在模块 resources，而 ClassLoader 尚未索引新文件
+        Path moduleMysql = Paths.get("src/main/resources").resolve(relative).toAbsolutePath().normalize();
+        if (Files.isDirectory(moduleMysql)) {
+            return new String[]{"filesystem:" + moduleMysql};
+        }
+        Path adminMysql = Paths.get("cat2bug-platform-admin/src/main/resources")
+                .resolve(relative).toAbsolutePath().normalize();
+        if (Files.isDirectory(adminMysql)) {
+            return new String[]{"filesystem:" + adminMysql};
+        }
+        return new String[]{classpathLocation};
     }
 }

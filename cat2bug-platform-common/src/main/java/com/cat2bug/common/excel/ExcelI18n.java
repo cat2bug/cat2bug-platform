@@ -2,6 +2,7 @@ package com.cat2bug.common.excel;
 
 import com.cat2bug.common.util.LocaleUtils;
 import com.cat2bug.common.util.StringUtils;
+import com.cat2bug.common.util.TeamModuleLabelContext;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -39,8 +40,13 @@ public final class ExcelI18n {
     }
 
     public static String header(String i18nKey, String defaultHeader, Locale locale) {
+        String exact = TeamModuleLabelContext.exact(i18nKey);
+        if (StringUtils.isNotEmpty(exact)) {
+            return exact;
+        }
         String translated = message(i18nKey, locale);
-        return StringUtils.isNotEmpty(translated) ? translated : defaultHeader;
+        String raw = StringUtils.isNotEmpty(translated) ? translated : defaultHeader;
+        return TeamModuleLabelContext.apply(raw);
     }
 
     public static String requiredHeader(String i18nKey, String requiredI18nKey, String defaultHeader, Locale locale) {

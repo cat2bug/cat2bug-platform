@@ -59,6 +59,17 @@ export function updateDefect(data, axiosConfig) {
   })
 }
 
+/** 合并重复缺陷（权限 system:defect:merge） */
+export function mergeDefects(data) {
+  const payload = { ...data }
+  payload.srcHost = `${window.location.protocol}//${window.location.host}`
+  return request({
+    url: '/system/defect/merge',
+    method: 'post',
+    data: payload
+  })
+}
+
 // 指派
 export function assign(defectId, data) {
   data.srcHost = `${window.location.protocol}//${window.location.host}`;

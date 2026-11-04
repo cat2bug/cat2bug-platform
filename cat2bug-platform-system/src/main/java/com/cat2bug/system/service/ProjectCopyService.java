@@ -672,6 +672,12 @@ public class ProjectCopyService {
             if (member.getUserId().equals(userId)) {
                 // 创建人已在新项目上，只追加除 project.create-by 以外的角色
                 addCreatorExtraRoles(target.getProjectId(), userId, member, failures);
+                ok++;
+                continue;
+            }
+            // 已在「项目成员」表单加入的，去重跳过插入，保留创建时选定的角色
+            if (isAlreadyProjectMember(target.getProjectId(), member.getUserId())) {
+                ok++;
                 continue;
             }
             try {
@@ -700,6 +706,14 @@ public class ProjectCopyService {
             }
         }
         return finishCounts("members", ok, failures, "成员");
+    }
+
+    private boolean isAlreadyProjectMember(Long projectId, Long memberId) {
+        SysUserProject query = new SysUserProject();
+        query.setProjectId(projectId);
+        query.setUserId(memberId);
+        List<SysUserProject> rows = sysUserProjectMapper.selectSysUserProjectList(query);
+        return rows != null && !rows.isEmpty();
     }
 
     /** 创建人保留 project.create-by，源项目上的其他角色追加，不替换创建人角色。 */

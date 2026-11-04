@@ -18,6 +18,12 @@ import i18n from '@/utils/i18n/i18n'
 import { cancelColdBootComplete, installNProgressColdBootGuard, isColdBootPending, scheduleColdBootComplete } from '@/utils/bootstrap-progress'
 import { ensureProjectScopedContext } from '@/utils/project-scoped-guard'
 import { ensureGitRepoIdAttached, routeNeedsGitRepoId } from '@/utils/git-repo-route-guards'
+import { useModulePageSettingsStore } from '@/stores/modulePageSettings'
+import {
+  isTeamModuleEnabled,
+  teamModuleFallbackPath,
+  teamModuleKeyFromLocation
+} from '@/utils/module-page-settings'
 
 NProgress.configure({ showSpinner: false })
 installNProgressColdBootGuard(NProgress)
@@ -127,7 +133,20 @@ function handleUpgradeAwaitingReadyRoute(to, next) {
  * Inject repositoryId for code/:slug routes. Route `beforeEnter` does not re-run
  * when only the slug param changes (repo switch), so this must live in beforeEach.
  */
+function redirectIfTeamModuleClosed(to, next) {
+  const key = teamModuleKeyFromLocation(to)
+  if (!key) return false
+  const store = useModulePageSettingsStore(pinia)
+  if (!store.loaded || isTeamModuleEnabled(store.settings, key)) return false
+  const fallback = teamModuleFallbackPath(to)
+  if (!fallback || fallback === to.path) return false
+  Message.warning(i18n.global.t('team.module-page.disabled-route').toString())
+  next({ path: fallback, replace: true })
+  return true
+}
+
 function proceedAfterGitRepoId(to, next) {
+  if (redirectIfTeamModuleClosed(to, next)) return
   if (!routeNeedsGitRepoId(to)) {
     next()
     return

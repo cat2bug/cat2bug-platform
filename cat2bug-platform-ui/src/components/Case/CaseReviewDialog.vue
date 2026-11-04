@@ -101,7 +101,7 @@
 </template>
 
 <script>
-import { commentCaseReview, completeCaseReview, getCaseReview, listCaseReviews, submitCaseReview, updateCaseReviewReport } from '@/api/system/case-review'
+import { commentCaseReview, completeCaseReview, extractCaseReviewList, getCaseReview, listCaseReviews, submitCaseReview, updateCaseReviewReport } from '@/api/system/case-review'
 import { addDocument, listDocument } from '@/api/system/document'
 import { upload } from '@/api/common/upload'
 import { appMessageError } from '@/utils/app-message'
@@ -227,9 +227,31 @@ export default {
         }
       })
     },
+    openByReviewId(reviewId) {
+      if (reviewId == null || reviewId === '') {
+        return Promise.resolve(false)
+      }
+      return getCaseReview(reviewId).then(detail => {
+        const review = detail.data || {}
+        if (!review.reviewId) {
+          return false
+        }
+        this.projectId = review.projectId
+        this.reviewId = review.reviewId
+        this.items = review.items || []
+        this.report = review.reportMarkdown || ''
+        this.status = review.status === 'completed' ? 'completed' : 'open'
+        this.step = this.status === 'completed' ? 1 : 0
+        this.batchVerdict = ''
+        this.skippedText = ''
+        this.open = true
+        return true
+      }).catch(() => false)
+    },
     openExisting(projectId, caseId) {
       return listCaseReviews(projectId).then(res => {
-        const opens = (res.data || []).filter(item => item.status === 'open')
+        const { rows } = extractCaseReviewList(res)
+        const opens = rows.filter(item => item.status === 'open')
         const next = (index) => {
           if (index >= opens.length) {
             return false

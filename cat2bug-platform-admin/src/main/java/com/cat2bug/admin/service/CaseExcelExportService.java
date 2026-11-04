@@ -6,6 +6,7 @@ import com.cat2bug.common.excel.ExcelHeaderCell;
 import com.cat2bug.common.excel.ExcelHeaderStyle;
 import com.cat2bug.common.excel.ExcelImageEmbedSupport;
 import com.cat2bug.common.excel.FastExcelSupport;
+import com.cat2bug.common.util.TeamModuleLabelContext;
 import com.cat2bug.system.service.SysCaseService;
 import com.cat2bug.system.service.SysModuleService;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -50,7 +51,7 @@ public class CaseExcelExportService {
                 .toList();
         String assetHost = params.get("host") != null ? String.valueOf(params.get("host")).trim() : null;
         return FastExcelSupport.writeWorkbook(workbook -> {
-            Worksheet sheet = workbook.newWorksheet(CaseExcelColumnSupport.SHEET_NAME);
+            Worksheet sheet = workbook.newWorksheet(TeamModuleLabelContext.apply(CaseExcelColumnSupport.SHEET_NAME));
             FastExcelSupport.writeHeaders(sheet, headers, 0);
             for (int rowIndex = 0; rowIndex < list.size(); rowIndex++) {
                 SysCase item = list.get(rowIndex);

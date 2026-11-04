@@ -1,6 +1,8 @@
 package com.cat2bug.admin.resource;
 
 import com.cat2bug.common.api.AjaxResult;
+import com.cat2bug.common.api.TableDataInfo;
+import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.common.domain.SysCaseReview;
 import com.cat2bug.common.domain.SysCaseReviewItem;
 import com.cat2bug.framework.security.RequiresPermissions;
@@ -25,8 +27,22 @@ public class CaseReviewResource {
 
     @GET
     @RequiresPermissions("system:case:query")
-    public AjaxResult list(@QueryParam("projectId") Long projectId) {
-        return AjaxResult.success(sysCaseReviewService.list(projectId));
+    public Object list(@QueryParam("projectId") Long projectId,
+                       @QueryParam("status") String status,
+                       @QueryParam("createTimeBegin") String createTimeBegin,
+                       @QueryParam("createTimeEnd") String createTimeEnd,
+                       @QueryParam("createBy") String createBy,
+                       @QueryParam("pageNum") Integer pageNum,
+                       @QueryParam("pageSize") Integer pageSize) {
+        if (projectId == null) {
+            throw new ApiException("项目不能为空");
+        }
+        SysCaseReview query = sysCaseReviewService.buildListQuery(
+                projectId, status, createTimeBegin, createTimeEnd, createBy);
+        if (pageNum == null) {
+            return AjaxResult.success(sysCaseReviewService.list(query));
+        }
+        return sysCaseReviewService.listPage(query, pageNum, pageSize);
     }
 
     @GET

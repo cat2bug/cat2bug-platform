@@ -1,10 +1,25 @@
 <template>
   <section class="app-main">
-    <router-view v-slot="{ Component }">
+    <router-view v-slot="{ Component, route }">
+      <!--
+        noCache 页（如计划执行）与 keep-alive 分槽渲染，避免 out-in 离场后下一页挂不上导致白屏。
+        参考常见 Vue3 后台模板：缓存页 / 非缓存页两套 transition。
+      -->
       <transition name="fade-transform" mode="out-in">
         <keep-alive :include="cachedViews">
-          <component :is="Component" v-if="Component && !$route.meta.link" :key="key" />
+          <component
+            :is="Component"
+            v-if="Component && !route.meta.link && !route.meta.noCache"
+            :key="route.path"
+          />
         </keep-alive>
+      </transition>
+      <transition name="fade-transform" mode="out-in">
+        <component
+          :is="Component"
+          v-if="Component && !route.meta.link && route.meta.noCache"
+          :key="route.path"
+        />
       </transition>
     </router-view>
     <iframe-toggle />
@@ -21,9 +36,6 @@ export default {
   computed: {
     cachedViews() {
       return useTagsViewStore().cachedViews
-    },
-    key() {
-      return this.$route.path
     }
   }
 }

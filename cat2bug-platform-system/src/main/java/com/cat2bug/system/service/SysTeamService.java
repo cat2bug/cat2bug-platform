@@ -57,9 +57,13 @@ public class SysTeamService {
     SysUserService sysUserService;
 
     public TableDataInfo selectTeamPage(String teamName, Integer pageNum, Integer pageSize) {
+        return selectTeamPage(teamName, null, pageNum, pageSize);
+    }
+
+    public TableDataInfo selectTeamPage(String teamName, Long planId, Integer pageNum, Integer pageSize) {
         PageDomain page = PageDomain.of(pageNum, pageSize);
-        long total = sysTeamMapper.countSysTeamList(teamName);
-        List<SysTeam> rows = sysTeamMapper.selectSysTeamList(teamName, page.getOffset(), page.getPageSize());
+        long total = sysTeamMapper.countSysTeamList(teamName, planId);
+        List<SysTeam> rows = sysTeamMapper.selectSysTeamList(teamName, planId, page.getOffset(), page.getPageSize());
         return new TableDataInfo(rows, total);
     }
 
@@ -71,7 +75,7 @@ public class SysTeamService {
     }
 
     public List<SysTeam> selectTeamListAll(String teamName) {
-        return sysTeamMapper.selectSysTeamList(teamName, 0, Integer.MAX_VALUE);
+        return sysTeamMapper.selectSysTeamList(teamName, null, 0, Integer.MAX_VALUE);
     }
 
     public SysTeam selectSysTeamByTeamId(Long teamId) {
@@ -113,12 +117,11 @@ public class SysTeamService {
         String now = LocalDateTime.now().format(TIME_FMT);
         sysTeam.setCreateBy(username);
         sysTeam.setCreateTime(now);
+        // 新建团队未指定套餐时，绑定系统默认「普通团队」
         if (sysTeam.getPlanId() == null) {
-            var def = sysTeamPlanService.listAll().stream()
-                    .filter(p -> Boolean.TRUE.equals(p.getSystemDefault()))
-                    .findFirst()
-                    .orElse(null);
-            sysTeam.setPlanId(def != null && def.getPlanId() != null ? def.getPlanId() : 1L);
+            var defPlan = sysTeamPlanService.resolveSystemDefaultPlan();
+            sysTeam.setPlanId(defPlan.getPlanId());
+            sysTeam.setPlanName(SysTeamPlanService.localizeSeedPlanName(defPlan.getPlanName()));
         }
         if (sysTeamMapper.insertSysTeam(sysTeam) != 1) {
             throw new ApiException("创建团队失败");

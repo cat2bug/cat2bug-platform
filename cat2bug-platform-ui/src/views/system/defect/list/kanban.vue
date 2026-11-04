@@ -11,11 +11,11 @@
       layout="vertical"
       ref="multiPane"
       class="custom-resizer defect-kanban-multipane"
-      :class="{ 'custom-resizer--tree-hidden': !showModuleTree }"
+      :class="{ 'custom-resizer--tree-hidden': !moduleTreeOpen }"
       @paneResizeStop="dragStopHandle"
     >
       <div
-        v-if="showModuleTree"
+        v-if="moduleTreeOpen"
         ref="treeModule"
         class="defect-tree-module defect-kanban-module-lane"
         :style="treeModuleStyle"
@@ -31,7 +31,7 @@
         />
       </div>
       <div
-        v-else
+        v-else-if="deliverableModuleOn"
         class="defect-kanban-module-strip"
         role="button"
         tabindex="0"
@@ -46,7 +46,7 @@
       </div>
       <multipane-resizer
         ref="paneResizer"
-        v-show="showModuleTree"
+        v-show="moduleTreeOpen"
         :style="[multipaneStyle, paneResizerRuleVars]"
       />
     <div
@@ -431,6 +431,7 @@ import { getProject, listMemberOfProject, listProjectRole } from '@/api/system/p
 import { useUserStore } from '@/stores/user'
 import { checkPermi } from '@/utils/permission'
 import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport'
+import teamModuleGate from '@/mixins/team-module-gate'
 import {
   createDefectModuleTreeSidebarMixin,
   DEFECT_KANBAN_TREE_VISIBLE_KEY,
@@ -688,7 +689,8 @@ export default {
     createDefectModuleTreeSidebarMixin({
       visibleKey: DEFECT_KANBAN_TREE_VISIBLE_KEY,
       widthKey: DEFECT_KANBAN_TREE_WIDTH_KEY
-    })
+    }),
+    teamModuleGate
   ],
   props: {
     projectId: { type: Number, default: null },
@@ -2765,9 +2767,10 @@ export default {
     box-shadow: none;
     background: var(--el-fill-color-light, #f5f7fa);
   }
-  /* 泳道色：已创建灰 / 处理中红 / 待验证蓝 / 已结束绿 */
+  /* 泳道色：未指派/已创建淡黄 / 处理中红 / 待验证蓝 / 已结束绿 */
   &.lane-created {
-    --lane-accent: var(--el-text-color-secondary, #909399);
+    /* warning 黄；头栏/点缀用 8% mix，整体呈淡黄 */
+    --lane-accent: var(--el-color-warning, var(--progress-fill-warning, #e6a23c));
   }
   &.lane-processing {
     --lane-accent: var(--defect-state-processing-bg, #e04e4e);

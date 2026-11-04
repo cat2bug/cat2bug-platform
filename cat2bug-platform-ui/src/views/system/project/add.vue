@@ -36,23 +36,46 @@
                     inactive-color="#ff4949">
                   </el-switch>
                 </el-col>
-                <el-col :span="24" v-if="projectMemberSwitch">
-<!--                  添加成员按钮-->
+                <el-col :span="24" v-if="projectMemberSwitch" class="project-member-add-col">
+<!--                  添加成员按钮：多列换行，超出再分页，无滚动条 -->
                   <el-popover
                     v-model:visible="memberPopoverVisible"
                     placement="bottom"
-                    width="400"
-                    @show="getMemberList"
+                    :width="560"
+                    popper-class="project-add-member-popper"
+                    @show="onMemberPopoverShow"
                     @hide="resetMember"
                     trigger="click">
-                    <el-input :prefix-icon="$legacyIcon('el-icon-search')" :placeholder="$t('team.search-placeholder')" v-model="memberParams.params.search" @input="getMemberList" size="small"></el-input>
-<!--                    成员列表-->
-                      <el-row v-if="memberList && memberList.length>0" class="project-members">
-                        <el-col :select="member.isSelect" :span="24" v-for="member in memberList" :key="member.userId" @click="selectAddMemberHandle(member)">
-                          <member-nameplate :member="member"></member-nameplate>
-                        </el-col>
-                      </el-row>
+                    <el-input
+                      v-model="memberParams.params.search"
+                      clearable
+                      size="small"
+                      :prefix-icon="$legacyIcon('el-icon-search')"
+                      :placeholder="$t('team.search-placeholder')"
+                      @input="onMemberSearchInput"
+                      @clear="onMemberSearchInput('')"
+                    />
+                    <div v-if="pagedMemberList.length" class="project-members">
+                      <div
+                        v-for="member in pagedMemberList"
+                        :key="member.userId"
+                        class="project-members__item"
+                        :select="member.isSelect"
+                        @click="selectAddMemberHandle(member)"
+                      >
+                        <member-nameplate :member="member" size="small" />
+                      </div>
+                    </div>
                     <cat2-bug-empty v-else size="small" :description="$t('no-data')" />
+                    <div v-if="memberCandidateTotal > MEMBER_POPOVER_PAGE_SIZE" class="project-members-pagination">
+                      <el-pagination
+                        small
+                        layout="prev, pager, next, total"
+                        :total="memberCandidateTotal"
+                        v-model:current-page="memberPageNum"
+                        :page-size="MEMBER_POPOVER_PAGE_SIZE"
+                      />
+                    </div>
                     <template #reference>
                       <el-button :icon="$legacyIcon('el-icon-user-solid')">{{$t('project.add-member')}}</el-button>
                     </template>
@@ -126,7 +149,7 @@
                         <span class="project-copy-source-face__part">
                           <el-avatar
                             class="project-copy-source-avatar"
-                            :size="22"
+                            :size="18"
                             shape="square"
                             :src="copySourceDisplay.teamIconUrl || undefined"
                             fit="cover"
@@ -137,7 +160,7 @@
                         <span class="project-copy-source-face__part">
                           <el-avatar
                             class="project-copy-source-avatar"
-                            :size="22"
+                            :size="18"
                             shape="square"
                             :src="copySourceDisplay.projectIconUrl || undefined"
                             fit="cover"
@@ -363,16 +386,25 @@
                           class="project-copy-member-check"
                         >
                           <div class="project-copy-member-row">
-                            <member-nameplate :member="row" size="default" />
-                            <div v-if="row.roles && row.roles.length" class="project-copy-member-roles">
-                              <el-tag
-                                v-for="role in row.roles"
-                                :key="role.roleId || role.roleName"
-                                size="small"
-                                type="info"
-                                effect="plain"
-                              >{{ role.roleName || role }}</el-tag>
-                            </div>
+                            <member-nameplate :member="row" size="default">
+                              <template #title>
+                                <p class="project-copy-member-title">
+                                  <span class="project-copy-member-title__name" :title="row.nickName">{{ row.nickName }}</span>
+                                  <span
+                                    v-if="row.roles && row.roles.length"
+                                    class="project-copy-member-roles"
+                                  >
+                                    <el-tag
+                                      v-for="role in row.roles"
+                                      :key="role.roleId || role.roleName"
+                                      class="project-copy-member-role-tag"
+                                      type="info"
+                                      effect="plain"
+                                    >{{ role.roleName || role }}</el-tag>
+                                  </span>
+                                </p>
+                              </template>
+                            </member-nameplate>
                           </div>
                         </el-checkbox>
                         <div v-if="!filteredCopyMembers.length" class="project-copy-empty">{{ $t('project.copy.empty') }}</div>
@@ -443,7 +475,7 @@
             </el-form-item>
             <el-dialog
               v-model="copyProgressVisible"
-              :title="$t('project.copy.progress')"
+              :title="copyProgressTitle"
               width="480px"
               :close-on-click-modal="false"
               :show-close="copyProgressDone"
@@ -539,6 +571,10 @@ import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user'
 import { ArrowDown, CircleClose } from '@element-plus/icons-vue'
 
+/** 添加成员浮层：2 列 × 3 行，超出分页、不出现滚动条 */
+const MEMBER_POPOVER_PAGE_SIZE = 6
+const MEMBER_POPOVER_FETCH_SIZE = 500
+
 export default {
   name: "ProjectAdd",
   mixins: [projectCreateFormKbd],
@@ -551,6 +587,7 @@ export default {
   data() {
     return {
       PROJECT_ICON_POPOVER_HOST_CLASS,
+      MEMBER_POPOVER_PAGE_SIZE,
       memberParams: {
         params: {
           excludeMembers: [],
@@ -558,7 +595,9 @@ export default {
         }
       },
       roleOptions: [],
-      memberList:[],
+      memberList: [],
+      memberPageNum: 1,
+      memberSearchTimer: null,
       projectMemberSwitch: false,
       projectIcon: null,
       memberPopoverVisible: false,
@@ -605,7 +644,7 @@ export default {
         gitSlugs: []
       },
       copyEstimatedBytes: 0,
-      copyMaxBytes: 1073741824,
+      copyMaxBytes: 5368709120,
       copyOverQuota: false,
       copyEstimateTimer: null,
       copyProgressVisible: false,
@@ -614,6 +653,7 @@ export default {
       copyJobPercent: 0,
       copyJobItems: [],
       copyJobError: null,
+      copyJobFailed: false,
       copyPollTimer: null,
       rules: {
         projectName: [
@@ -653,10 +693,26 @@ export default {
     currentTeamId: function () {
       return this.userConfig.currentTeamId;
     },
+    memberCandidateTotal() {
+      return (this.memberList || []).length
+    },
+    pagedMemberList() {
+      const list = this.memberList || []
+      const size = MEMBER_POPOVER_PAGE_SIZE
+      const maxPage = Math.max(1, Math.ceil(list.length / size) || 1)
+      const page = Math.min(Math.max(1, this.memberPageNum || 1), maxPage)
+      const start = (page - 1) * size
+      return list.slice(start, start + size)
+    },
     copyProgressStatus() {
       if (!this.copyProgressDone) return undefined
-      if (this.copyJobError) return 'exception'
+      if (this.copyJobError || this.copyJobFailed) return 'exception'
       return 'success'
+    },
+    copyProgressTitle() {
+      if (!this.copyProgressDone) return this.$t('project.copy.progress')
+      if (this.copyJobError || this.copyJobFailed) return this.$t('project.copy.failed')
+      return this.$t('project.copy.done')
     },
     /** 复制源：团队 → 项目二级；节点带图标 */
     copySourceCascaderOptions() {
@@ -752,7 +808,7 @@ export default {
     },
     copyMembersIndeterminate() {
       if (this.copySelection.copyAllMembers) return false
-      const n = (this.copySelection.memberIds || []).length
+      const n = this.sanitizeCopyMemberIds(this.copySelection.memberIds).length
       const total = this.copyableCopyMembers.length
       return n > 0 && n < total
     },
@@ -852,10 +908,31 @@ export default {
         })
       });
     },
+    onMemberPopoverShow() {
+      this.memberPageNum = 1
+      this.getMemberList()
+    },
+    onMemberSearchInput(val) {
+      const next = val !== undefined && val !== null ? String(val) : (this.memberParams.params.search || '')
+      this.memberParams.params.search = next
+      if (this.memberSearchTimer) clearTimeout(this.memberSearchTimer)
+      this.memberSearchTimer = setTimeout(() => {
+        this.memberPageNum = 1
+        this.getMemberList()
+      }, 280)
+    },
     getMemberList(){
       const excludeIds = new Set((this.form.members || []).map(m => m.userId));
       this.memberParams.params.excludeMembers = Array.from(excludeIds);
-      listMember(this.currentTeamId,this.memberParams).then(res=>{
+      const search = (this.memberParams.params.search || '').trim()
+      listMember(this.currentTeamId, {
+        pageNum: 1,
+        pageSize: MEMBER_POPOVER_FETCH_SIZE,
+        params: {
+          excludeMembers: Array.from(excludeIds),
+          search: search || undefined
+        }
+      }).then(res=>{
         const rows = (res.rows || []).map(m => {
           m.isSelect = false;
           if (this.roleOptions && this.roleOptions.length > 0) {
@@ -876,6 +953,8 @@ export default {
           }
         }
         this.memberList = rows.filter(m => !excludeIds.has(m.userId));
+        const maxPage = Math.max(1, Math.ceil(this.memberList.length / MEMBER_POPOVER_PAGE_SIZE) || 1)
+        if (this.memberPageNum > maxPage) this.memberPageNum = maxPage
       });
     },
     deleteMemberHandle(member){
@@ -883,20 +962,28 @@ export default {
       this.form.members = this.form.members.filter(m=>m.isSelect);
     },
     resetMember() {
+      if (this.memberSearchTimer) {
+        clearTimeout(this.memberSearchTimer)
+        this.memberSearchTimer = null
+      }
       this.memberParams = {
         params: {
           excludeMembers: [],
           search: null
         }
       };
+      this.memberPageNum = 1
+      this.memberList = []
     },
     selectAddMemberHandle(member) {
       member.isSelect = true;
       if (!this.form.members.some(m => m.userId === member.userId)) {
         this.form.members.push(member);
       }
-      // 已选成员从下拉中移除
+      // 已选成员从下拉中移除，必要时回退页码
       this.memberList = this.memberList.filter(m => m.userId !== member.userId);
+      const maxPage = Math.max(1, Math.ceil(this.memberList.length / MEMBER_POPOVER_PAGE_SIZE) || 1)
+      if (this.memberPageNum > maxPage) this.memberPageNum = maxPage
     },
     clickProjectIconHandle(index) {
       this.activeProjectIconIndex = index;
@@ -996,6 +1083,7 @@ export default {
         rows.forEach(({ type, items }) => { next[type] = items })
         this.copyItems = next
         this.copySelection.memberIds = this.sanitizeCopyMemberIds(this.copySelection.memberIds)
+        this.ensureCopySelfMemberChecked()
         this.syncCopyModuleTreeChecked()
         this.onCopyModuleSearch(this.copySearch.modules)
         this.syncCopyDocumentTreeChecked()
@@ -1106,14 +1194,36 @@ export default {
       const me = this.currentUserId
       return (ids || []).filter(id => id != null && String(id) !== String(me))
     },
+    /** 当前登录用户不可取消，UI 上保持勾选；提交时仍会 sanitize 掉 */
+    ensureCopySelfMemberChecked() {
+      const me = this.currentUserId
+      if (me == null) return
+      const hasSelf = (this.copyItems.members || []).some(row => this.isCopyCurrentMember(row))
+      if (!hasSelf) return
+      const ids = this.copySelection.memberIds || []
+      if (!ids.some(id => String(id) === String(me))) {
+        this.copySelection.memberIds = [...ids, me]
+      }
+    },
     onCopyMembersAllChange(val) {
       this.copySelection.copyAllMembers = !!val
-      if (val) this.copySelection.memberIds = []
+      if (val) {
+        this.copySelection.memberIds = (this.copyItems.members || [])
+          .map(row => (row.id != null ? row.id : row.userId))
+          .filter(id => id != null)
+      } else {
+        this.copySelection.memberIds = this.currentUserId != null ? [this.currentUserId] : []
+      }
       this.refreshCopyEstimate()
     },
     onCopyMemberIdsChange(ids) {
       this.copySelection.copyAllMembers = false
-      this.copySelection.memberIds = this.sanitizeCopyMemberIds(ids)
+      let next = [...(ids || [])]
+      const me = this.currentUserId
+      if (me != null && (this.copyItems.members || []).some(row => this.isCopyCurrentMember(row))) {
+        if (!next.some(id => String(id) === String(me))) next.push(me)
+      }
+      this.copySelection.memberIds = next
       this.refreshCopyEstimate()
     },
     buildCopyModuleTree(flat) {
@@ -1330,6 +1440,7 @@ export default {
       this.copyJobId = jobId
       this.copyProgressVisible = true
       this.copyProgressDone = false
+      this.copyJobFailed = false
       this.copyJobPercent = 0
       this.copyJobItems = []
       this.copyJobError = null
@@ -1342,10 +1453,9 @@ export default {
           const state = (job.state || '').toUpperCase()
           if (state === 'SUCCESS' || state === 'FAILED' || state === 'PARTIAL') {
             this.copyProgressDone = true
+            this.copyJobFailed = state !== 'SUCCESS'
             clearInterval(this.copyPollTimer)
             this.copyPollTimer = null
-            if (state === 'SUCCESS') this.$modal.msgSuccess(this.$t('project.copy.done'))
-            else this.$modal.msgError(this.$t('project.copy.failed'))
           }
         }).catch(() => {})
       }
@@ -1376,7 +1486,7 @@ export default {
             const data = res.data
             const jobId = data && data.copyJobId
             if (jobId) {
-              this.$modal.msgSuccess(this.$i18n.t('add-success'));
+              // 创建成功与复制进度合并到同一对话框，不再另弹「添加成功」
               this.startCopyPoll(jobId)
             } else {
               this.$modal.msgSuccess(this.$i18n.t('add-success'));
@@ -1454,9 +1564,10 @@ export default {
     z-index: 1;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
-    min-height: 40px;
+    height: var(--el-component-size, 32px);
+    min-height: var(--el-component-size, 32px);
     padding: 0 11px;
     box-sizing: border-box;
     border: 1px solid var(--el-border-color, #dcdfe6);
@@ -1499,7 +1610,7 @@ export default {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 14px;
-    line-height: 22px;
+    line-height: 20px;
     color: var(--el-text-color-regular, #606266);
   }
   .project-copy-source-face__sep {
@@ -1688,18 +1799,45 @@ export default {
       line-height: normal;
       white-space: normal;
     }
+    :deep(.member-nameplate-content p.project-copy-member-title) {
+      overflow: visible;
+      text-overflow: unset;
+      white-space: normal;
+    }
   }
   .project-copy-member-row {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 0;
     min-width: 0;
   }
-  .project-copy-member-roles {
+  .project-copy-member-title {
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
     gap: 6px;
-    padding-left: 2px;
+    margin: 0;
+    max-width: 100%;
+    &__name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+  .project-copy-member-roles {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+  }
+  .project-copy-member-role-tag {
+    height: 16px;
+    padding: 0 5px;
+    border-radius: 3px;
+    font-size: 10px;
+    line-height: 14px;
   }
   .project-copy-size {
     margin-left: 8px;
@@ -1718,45 +1856,52 @@ export default {
     padding-left: 18px;
     font-size: 13px;
   }
+  .project-member-add-col {
+    margin-bottom: 10px;
+  }
   .project-members {
     margin-top: 10px;
-    /* 成员多时在浮层内滚动，避免撑出视口 */
-    max-height: min(420px, 50vh);
-    overflow-x: hidden;
-    overflow-y: auto;
-    .el-col {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    overflow: visible;
+    &__item {
       position: relative;
-      padding: 0 5px;
-      display: flex;
-      align-items: center;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      justify-content: flex-start;
-    }
-    .el-col:hover {
-      background-color: var(--table-row-hover-bg, #f2f6fc);
+      min-width: 0;
+      padding: 4px 6px;
       border-radius: 5px;
       cursor: pointer;
-    }
-    :deep(.el-col[select="true"]){
-      .member-nameplate-content {
-        p {
-          color: var(--cat2bug-primary, #1890ff);
+      &:hover {
+        background-color: var(--table-row-hover-bg, #f2f6fc);
+      }
+      &[select="true"] {
+        :deep(.member-nameplate-content) {
+          p {
+            color: var(--cat2bug-primary, #1890ff);
+          }
+          span {
+            color: var(--text-color-secondary, #909399);
+          }
         }
-        span {
-          color: var(--text-color-secondary, #909399);
+        &:after {
+          position: absolute;
+          right: 8px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-family: "element-icons";
+          content: "";
+          font-size: 12px;
+          -webkit-font-smoothing: antialiased;
+          color: var(--cat2bug-primary, #1890ff);
         }
       }
     }
-    .el-col[select="true"]:after {
-      position: absolute;
-      right: 20px;
-      font-family: "element-icons";
-      content: "";
-      font-size: 12px;
-      -webkit-font-smoothing: antialiased;
-      color: var(--cat2bug-primary, #1890ff);
-    }
+  }
+  .project-members-pagination {
+    width: 100%;
+    margin-top: 8px;
+    display: flex;
+    justify-content: flex-end;
   }
   :deep(.el-table){
     .el-form-item__error {

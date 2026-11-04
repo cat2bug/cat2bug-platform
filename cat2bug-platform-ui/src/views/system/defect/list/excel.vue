@@ -66,10 +66,10 @@
       layout="vertical"
       ref="multiPane"
       class="custom-resizer defect-excel-multipane"
-      :class="{ 'custom-resizer--tree-hidden': !showModuleTree }"
+      :class="{ 'custom-resizer--tree-hidden': !moduleTreeOpen }"
       @paneResizeStop="dragStopHandle"
     >
-      <div v-if="showModuleTree" ref="treeModule" class="defect-tree-module" :style="treeModuleStyle">
+      <div v-if="moduleTreeOpen" ref="treeModule" class="defect-tree-module" :style="treeModuleStyle">
         <tree-module
           ref="treeModuleRef"
           :project-id="projectId"
@@ -84,7 +84,7 @@
       </div>
       <multipane-resizer
         ref="paneResizer"
-        v-show="showModuleTree"
+        v-show="moduleTreeOpen"
         :style="[multipaneStyle, paneResizerRuleVars]"
       />
     <div
@@ -97,7 +97,7 @@
       @paste.capture="onDefectExcelPasteCapture"
     >
       <el-tooltip
-        v-if="!showModuleTree"
+        v-if="deliverableModuleOn && !showModuleTree"
         :content="$t('case.show-module-tree')"
         placement="bottom"
       >
@@ -180,7 +180,7 @@
     <!-- 贴在单元格下方，focus 后直接弹出 Element 日期时间下拉面板（非对话框） -->
     <!-- 交付物列右侧三角：固定层内嵌 SelectModule（与计划时间列日期面板同理） -->
     <div
-      v-if="excelModulePickerVisible"
+      v-if="excelModulePickerVisible && deliverableModuleOn"
       ref="excelModulePickerAnchor"
       class="defect-excel-module-picker-anchor"
       :style="excelModulePickerAnchorStyle"
@@ -274,6 +274,7 @@ import { checkPermi } from "@/utils/permission";
 import errorCode from "@/utils/errorCode";
 import { TableOptions } from "@/views/system/defect/list/table-options";
 import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport';
+import teamModuleGate from '@/mixins/team-module-gate';
 import {
   createDefectModuleTreeSidebarMixin,
   DEFECT_EXCEL_TREE_VISIBLE_KEY,
@@ -688,7 +689,8 @@ export default {
     createDefectModuleTreeSidebarMixin({
       visibleKey: DEFECT_EXCEL_TREE_VISIBLE_KEY,
       widthKey: DEFECT_EXCEL_TREE_WIDTH_KEY
-    })
+    }),
+    teamModuleGate
   ],
   dicts: ["defect_level"],
   props: {
@@ -3114,6 +3116,7 @@ export default {
       document.addEventListener("mousedown", this._excelModulePickerOutsideClose, true);
     },
     openExcelModulePickerFromTriangle(record) {
+      if (!this.deliverableModuleOn) return;
       if (!record) return;
       this.planTimePickerVisible = false;
       this.resetPlanTimePickerState();

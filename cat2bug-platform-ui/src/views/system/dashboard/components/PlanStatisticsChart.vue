@@ -91,6 +91,7 @@ import DefectList from "@/components/Plan/HandlePlanDialog/DefectList";
 
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user'
+import { buildProjectModulePath } from '@/utils/project-module-path'
 
 export default {
   name: "PlanStatisticsChart",
@@ -142,8 +143,13 @@ export default {
       this.download('/system/dashboard/'+this.projectId+'/plan-statistics/export', {}, `${ this.$i18n.t('dashboard.plan-statistics.title') }_${new Date().getTime()}.xlsx`)
     },
     handlePlanClick() {
-      const targetRoute = this.$router.resolve({ path:'/project/plan', query: {planId:this.query.planId}});
-      window.open(targetRoute.href, '_blank');
+      const planId = this.query.planId
+      if (!planId) return
+      const { teamKey, projectKey } = this.$route.params
+      const path = buildProjectModulePath(teamKey, projectKey, 'plan', planId, 'run')
+        || `/project/plan/${planId}/run`
+      const targetRoute = this.$router.resolve({ path })
+      window.open(targetRoute.href, '_blank')
     },
     /** 获取计划信息 */
     getPlanInfo(planId) {

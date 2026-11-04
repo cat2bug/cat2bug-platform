@@ -1,11 +1,11 @@
 <template>
-  <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+  <el-form ref="form" :model="form" :rules="formRules" label-width="120px">
     <el-form-item :label="$t('title')" prop="caseName">
       <el-input type="textarea" v-model="form.caseName" :placeholder="$t('case.please-enter-title')" :rows="3" maxlength="255" show-word-limit />
     </el-form-item>
     <el-row>
       <el-col :span="12">
-        <el-form-item :label="$t('module')" prop="moduleId">
+        <el-form-item v-if="deliverableModuleOn" :label="$t('module')" prop="moduleId">
           <select-module size="medium" v-model:moduleId="form.moduleId" :project-id="form.projectId"  @change="moduleChangeHandle"/>
         </el-form-item>
       </el-col>
@@ -50,12 +50,14 @@
 <script>
 import CaseStepPanel from "./CaseStepPanel"
 import SelectModule from "@/components/Module/SelectModule"
+import teamModuleGate from '@/mixins/team-module-gate'
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import { useUserStore } from "@/stores/user";
 import { filterSelectableCaseTypes, listCaseTypes } from "@/api/system/case-type";
 const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 export default {
   name: "CaseForm",
+  mixins: [teamModuleGate],
   components: {Cat2BugSelectLevel,CaseStepPanel,SelectModule},
   data() {
     return {
@@ -93,6 +95,12 @@ export default {
     }
   },
   computed: {
+    formRules() {
+      if (this.deliverableModuleOn) return this.rules
+      const next = { ...this.rules }
+      delete next.moduleId
+      return next
+    },
     /** 获取项目id */
     projectId() {
       return parseInt(useUserStore().config.currentProjectId);

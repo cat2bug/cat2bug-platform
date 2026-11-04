@@ -19,14 +19,19 @@
         <result property="lock" column="is_lock"/>
         <result property="lockRemark" column="lock_remark"/>
         <result property="defectBuiltinFieldConfig" column="defect_builtin_field_config"/>
+        <result property="defectPageConfig" column="defect_page_config"/>
+        <result property="modulePageConfig" column="module_page_config"/>
         <result property="caseReviewTemplate" column="case_review_template"/>
         <result property="planId" column="plan_id"/>
         <result property="planName" column="plan_name"/>
+        <result property="formalMember" column="formal_member"/>
     </resultMap>
 
     <sql id="selectSysTeamVo">
         select t.team_id, t.team_name, t.team_key, t.team_icon, t.create_by, t.create_time, t.update_by, t.update_time,
-               t.introduce, t.is_del, t.is_lock, t.lock_remark, t.defect_builtin_field_config, t.case_review_template,
+               t.introduce, t.is_del, t.is_lock, t.lock_remark, t.defect_builtin_field_config, t.defect_page_config,
+               t.module_page_config,
+               t.case_review_template,
                t.plan_id, pl.plan_name,
                IFNULL(p.project_count, 0) as project_count,
                IFNULL(m.member_count, 0) as member_count
@@ -47,6 +52,9 @@
         <where>
             <if test="teamName != null and teamName != ''">
                 and t.team_name like concat('%', #{teamName}, '%')
+            </if>
+            <if test="planId != null">
+                and t.plan_id = #{planId}
             </if>
         </where>
     </sql>
@@ -75,16 +83,30 @@
             <if test="teamName != null and teamName != ''">
                 and t.team_name like concat('%', #{teamName}, '%')
             </if>
+            <if test="planId != null">
+                and t.plan_id = #{planId}
+            </if>
         </where>
         order by t.team_id
         limit #{limit} offset #{offset}
     </select>
 
+    <!-- 正式队籍 ∪ 该队下有项目挂职 -->
     <sql id="selectSysTeamByUserWhere">
-        from sys_team t, sys_user_team utr
+        from sys_team t
         where (t.is_del != 1 OR t.is_del IS NULL)
-          and utr.team_id = t.team_id
-          and utr.user_id = #{userId}
+          and (
+            exists (
+                select 1 from sys_user_team ut
+                where ut.team_id = t.team_id and ut.user_id = #{userId}
+            )
+            or exists (
+                select 1
+                from sys_project p
+                inner join sys_user_project up on up.project_id = p.project_id and up.user_id = #{userId}
+                where p.team_id = t.team_id and p.project_state > 0
+            )
+          )
     </sql>
 
     <select id="countSysTeamListByUserId" resultType="long">
@@ -94,9 +116,13 @@
 
     <select id="selectSysTeamListByUserId" resultMap="SysTeamResult">
         select t.team_id, t.team_name, t.team_key, t.team_icon, t.create_by, t.create_time, t.update_by, t.update_time,
-               t.introduce, t.is_del, t.is_lock, t.lock_remark
+               t.introduce, t.is_del, t.is_lock, t.lock_remark,
+               (exists (
+                   select 1 from sys_user_team ut
+                   where ut.team_id = t.team_id and ut.user_id = #{userId}
+               )) as formal_member
         <include refid="selectSysTeamByUserWhere"/>
-        order by t.team_id
+        order by formal_member desc, t.team_id
         limit #{limit} offset #{offset}
     </select>
 
@@ -127,6 +153,8 @@
             <if test="updateTime != null">update_time,</if>
             <if test="introduce != null">introduce,</if>
             <if test="defectBuiltinFieldConfig != null">defect_builtin_field_config,</if>
+            <if test="defectPageConfig != null">defect_page_config,</if>
+            <if test="modulePageConfig != null">module_page_config,</if>
             <if test="caseReviewTemplate != null">case_review_template,</if>
             <if test="planId != null">plan_id,</if>
         </trim>
@@ -140,6 +168,8 @@
             <if test="updateTime != null">#{updateTime},</if>
             <if test="introduce != null">#{introduce},</if>
             <if test="defectBuiltinFieldConfig != null">#{defectBuiltinFieldConfig},</if>
+            <if test="defectPageConfig != null">#{defectPageConfig},</if>
+            <if test="modulePageConfig != null">#{modulePageConfig},</if>
             <if test="caseReviewTemplate != null">#{caseReviewTemplate},</if>
             <if test="planId != null">#{planId},</if>
         </trim>
@@ -157,6 +187,8 @@
             <if test="lock != null">is_lock = #{lock},</if>
             <if test="lockRemark != null">lock_remark = #{lockRemark},</if>
             <if test="defectBuiltinFieldConfig != null">defect_builtin_field_config = #{defectBuiltinFieldConfig},</if>
+            <if test="defectPageConfig != null">defect_page_config = #{defectPageConfig},</if>
+            <if test="modulePageConfig != null">module_page_config = #{modulePageConfig},</if>
             <if test="caseReviewTemplate != null">case_review_template = #{caseReviewTemplate},</if>
             <if test="planId != null">plan_id = #{planId},</if>
         </trim>

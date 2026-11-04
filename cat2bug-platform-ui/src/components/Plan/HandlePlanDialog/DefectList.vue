@@ -16,7 +16,7 @@
               @input="search()"
             />
           </el-form-item>
-          <el-form-item prop="defectState">
+          <el-form-item prop="defectState" class="plan-query-select-item">
             <el-select
               class="defect-state-select"
               size="small"
@@ -94,13 +94,13 @@
       layout="vertical"
       ref="multiPane"
       class="custom-resizer plan-drawer-defect-multipane"
-      :class="{ 'custom-resizer--tree-hidden': !showModuleTree }"
+      :class="{ 'custom-resizer--tree-hidden': !moduleTreeOpen }"
       @paneResizeStop="dragStopHandle"
     >
-      <div v-if="showModuleTree" class="tree-module" ref="treeModule" :style="treeModuleStyle">
+      <div v-if="moduleTreeOpen" class="tree-module" ref="treeModule" :style="treeModuleStyle">
         <slot name="tree" :toolbar-sync-height="deliverableToolbarSyncHeight" />
       </div>
-      <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="[multipaneStyle, paneResizerRuleVars]" />
+      <multipane-resizer ref="paneResizer" v-show="moduleTreeOpen" :style="[multipaneStyle, paneResizerRuleVars]" />
       <div ref="caseContext" class="plan-item-content-list plan-drawer-defect-list-pane">
         <div ref="planDrawerTableScroll" class="plan-drawer-table-scroll">
     <cat2-bug-table
@@ -124,7 +124,7 @@
     >
       <template #prepend>
         <el-table-column
-          v-if="!showModuleTree"
+          v-if="deliverableModuleOn && !showModuleTree"
           key="plan-defect-sidebar-expand-col"
           fixed
           width="30"
@@ -270,6 +270,7 @@ import {listDefectOfPlan} from "@/api/system/plan";
 import {getDefectState} from "@/api/system/DefectState";
 import { Multipane, MultipaneResizer } from "vue-multipane";
 import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
+import teamModuleGate from "@/mixins/team-module-gate";
 import multipaneTreeTableHeightSync from "@/mixins/multipaneTreeTableHeightSync";
 import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
 import { storeToRefs } from "pinia";
@@ -285,7 +286,7 @@ const PLAN_DEFECT_FIELD_LIST_CACHE_KEY = 'plan-defect-table-field-list';
 export default {
   name: "DefectList",
   dicts: ['defect_level'],
-  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, columnPickerPopoverKbd],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, columnPickerPopoverKbd, teamModuleGate],
   components: { Multipane, MultipaneResizer, LevelTag, Cat2BugText, RowListMember, Cat2BugPreviewImage, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugTable, SelectModule, SelectProjectMember },
   props: {
     showModuleTree: {
@@ -589,10 +590,21 @@ export default {
           parseFloat(st.marginTop || "0") +
           parseFloat(st.marginBottom || "0");
       }
-      const h = Math.floor(pane.clientHeight - reserveBelowTable - 2);
-      if (h < 48) return;
-      if (this.planDrawerTableMaxHeight !== h) {
-        this.planDrawerTableMaxHeight = h;
+      const available = Math.floor(pane.clientHeight - reserveBelowTable - 2);
+      if (available < 48) return;
+      // 用表头 + 表体内层 table 自然高判断是否需要封顶；短表不设 max-height，分页紧贴列表
+      const cat = this.$refs.cat2BugTable;
+      const tableEl = cat && cat.$refs && cat.$refs.elTable && cat.$refs.elTable.$el;
+      let next = available;
+      if (tableEl) {
+        const header = tableEl.querySelector(".el-table__header-wrapper");
+        const bodyTable = tableEl.querySelector(".el-table__body-wrapper table");
+        const naturalH =
+          (header ? header.offsetHeight : 0) + (bodyTable ? bodyTable.offsetHeight : 0);
+        next = naturalH > available ? available : null;
+      }
+      if (this.planDrawerTableMaxHeight !== next) {
+        this.planDrawerTableMaxHeight = next;
       }
     },
     initPlanDrawerTableScrollResize() {
@@ -894,6 +906,8 @@ export default {
   flex-direction: column;
 }
 /* 高度随表格内容走；纵向上限由 planDrawerTableMaxHeight（测父列减分页）交给 el-table */
+/* 高度随表格内容；纵向上限由 planDrawerTableMaxHeight（测父列减分页）交给 el-table。
+   短表分页紧贴列表，多余空白在分页下方；长表顶满后分页贴页底（页面 padding-bottom 10px） */
 .plan-drawer-table-scroll {
   flex: 0 1 auto;
   align-self: stretch;
@@ -971,6 +985,17 @@ export default {
 .plan-query-main :deep(.el-form--inline .el-form-item.plan-query-switch-item){
   flex: 0 0 auto;
   min-width: 0;
+}
+.plan-query-main :deep(.el-form--inline .el-form-item.plan-query-select-item){
+  /* el-select placeholder 绝对定位不撑宽度，min-width:0 时会被压成只剩箭头 */
+  flex: 0 0 auto;
+  min-width: var(--defect-query-field-width, 180px);
+}
+.plan-query-main :deep(.defect-state-select),
+.plan-query-main :deep(.plan-query-select-item .el-select){
+  width: var(--defect-query-field-width, 180px);
+  min-width: var(--defect-query-field-width, 180px);
+  flex-shrink: 0;
 }
 .plan-query-main :deep(.plan-query-switch-item .el-form-item__content){
   width: auto !important;

@@ -85,7 +85,7 @@ public class SysDocumentService {
         try {
             byte[] empty = new byte[0];
             FileUploadService.UploadResult uploaded = fileUploadService.upload(
-                    new ByteArrayInputStream(empty), empty.length, original, null);
+                    new ByteArrayInputStream(empty), empty.length, original, null, doc.getProjectId());
             doc.setFileUrl(uploaded.getFileName());
             if (doc.getFileExtension() == null || doc.getFileExtension().isBlank()) {
                 doc.setFileExtension("md");

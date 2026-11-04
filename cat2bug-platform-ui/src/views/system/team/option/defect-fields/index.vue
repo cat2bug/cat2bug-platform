@@ -5,14 +5,42 @@
       </el-page-header>
     </el-row>
 
-    <div v-if="canAddDefectField" ref="defectFieldTools" class="defect-field-tools">
-      <el-button
-        class="project-defect-field-hint-add"
-        type="primary"
-        :icon="$legacyIcon('el-icon-plus')"
-        size="small"
-        @click="handleAdd"
-      >{{ $t('defect.custom-field.add-field') }}</el-button>
+    <div ref="defectFieldTools" class="list-page-toolbar defect-field-tools">
+      <div class="list-page-toolbar__filters">
+        <el-select
+          v-model="queryParams.source"
+          style="width: 150px"
+          :placeholder="$t('defect.custom-field.field-source')"
+          @change="handleFilterChange"
+        >
+          <template #prefix>
+            <legacy-icon icon="el-icon-s-flag" class="select-header-icon" />
+          </template>
+          <el-option :label="$t('defect.custom-field.filter-source-all')" value="" />
+          <el-option :label="$t('defect.custom-field.source-system')" value="system" />
+          <el-option :label="$t('defect.custom-field.source-custom')" value="custom" />
+        </el-select>
+        <el-input
+          v-model="queryParams.keyword"
+          clearable
+          style="width: 260px"
+          :prefix-icon="$legacyIcon('el-icon-search')"
+          :placeholder="$t('defect.custom-field.filter-name-placeholder')"
+          @input="handleFilterChange"
+          @clear="handleFilterChange"
+        />
+      </div>
+      <div class="list-page-toolbar__actions">
+        <el-button
+          v-if="canAddDefectField"
+          class="project-defect-field-hint-add cat2bug-btn-outline"
+          type="primary"
+          plain
+          :icon="$legacyIcon('el-icon-plus')"
+          size="small"
+          @click="handleAdd"
+        >{{ $t('defect.custom-field.add-field') }}</el-button>
+      </div>
     </div>
 
     <div ref="defectFieldListBody" class="defect-field-list-body">
@@ -142,14 +170,26 @@
       >
         <template #default="scope">
           <div v-if="canEditDefectField" class="sort-order-arrows" @click.stop>
-            <legacy-icon icon="el-icon-caret-top" class="sort-arrow"
+            <button
+              type="button"
+              class="sort-arrow"
               :class="{ 'is-disabled': !canMoveSort(scope.row, -1) }"
               :title="$t('defect.custom-field.sort-up')"
-              @click.stop="handleSortMove(scope.row, -1)" />
-            <legacy-icon icon="el-icon-caret-bottom" class="sort-arrow"
+              :disabled="!canMoveSort(scope.row, -1)"
+              @click.stop.prevent="handleSortMove(scope.row, -1)"
+            >
+              <legacy-icon icon="el-icon-caret-top" />
+            </button>
+            <button
+              type="button"
+              class="sort-arrow"
               :class="{ 'is-disabled': !canMoveSort(scope.row, 1) }"
               :title="$t('defect.custom-field.sort-down')"
-              @click.stop="handleSortMove(scope.row, 1)" />
+              :disabled="!canMoveSort(scope.row, 1)"
+              @click.stop.prevent="handleSortMove(scope.row, 1)"
+            >
+              <legacy-icon icon="el-icon-caret-bottom" />
+            </button>
           </div>
           <span v-else>{{ scope.row.sortOrder != null ? scope.row.sortOrder : 0 }}</span>
         </template>
@@ -401,7 +441,9 @@ export default {
       resolvedTeamId: null,
       queryParams: {
         pageNum: 1,
-        pageSize: 10
+        pageSize: 10,
+        source: '',
+        keyword: ''
       },
       tableBodyMaxHeight: null,
       operateColumnWidth: 120,
@@ -454,11 +496,26 @@ export default {
         label: this.$t('defect.custom-field.type.' + value)
       }))
     },
+    filteredFieldList() {
+      let list = this.fieldList || []
+      const source = this.queryParams.source
+      if (source === 'system') list = list.filter(r => this.isBuiltinField(r))
+      else if (source === 'custom') list = list.filter(r => !this.isBuiltinField(r))
+      const kw = (this.queryParams.keyword || '').trim().toLowerCase()
+      if (kw) {
+        list = list.filter(r => {
+          const key = String(r.fieldKey || '').toLowerCase()
+          const label = String(r._displayLabel || this.displayFieldLabel(r) || '').toLowerCase()
+          return key.includes(kw) || label.includes(kw)
+        })
+      }
+      return list
+    },
     paginatedFieldList() {
       const pageNum = this.queryParams.pageNum || 1
       const pageSize = this.queryParams.pageSize || 10
       const start = (pageNum - 1) * pageSize
-      return this.fieldList.slice(start, start + pageSize)
+      return this.filteredFieldList.slice(start, start + pageSize)
     },
     enumTypeConfigForDefault() {
       if (this.form.fieldType !== 'enum') {
@@ -904,12 +961,20 @@ export default {
       }
     },
     syncPaginationTotal() {
-      this.total = this.fieldList.length
+      this.total = this.filteredFieldList.length
       const pageSize = this.queryParams.pageSize || 10
       const maxPage = Math.max(1, Math.ceil(this.total / pageSize) || 1)
       if (this.queryParams.pageNum > maxPage) {
         this.queryParams.pageNum = maxPage
       }
+    },
+    handleFilterChange() {
+      this.queryParams.pageNum = 1
+      this.syncPaginationTotal()
+      this.$nextTick(() => {
+        this.syncDefectFieldTableBodyMaxHeight()
+        this.syncDefectFieldAdaptiveColumnWidths()
+      })
     },
     handlePagination() {
       this.syncPaginationTotal()
@@ -938,9 +1003,12 @@ export default {
       const key = this.rowKey(row)
       return this.fieldList.findIndex(r => this.rowKey(r) === key)
     },
-    /** 参与排序的全部字段（系统 + 自定义共用一套 sortOrder） */
+    /**
+     * 参与上下移动的相邻参照：当前筛选结果（含跨页）。
+     * 无筛选时即整表，有筛选时只在可见属性之间换位。
+     */
     getSortablePeers() {
-      return this.fieldList
+      return this.filteredFieldList
     },
     buildPatchPayload(row, patch) {
       return {
@@ -999,43 +1067,86 @@ export default {
       const target = gi + delta
       return target >= 0 && target < peers.length
     },
-    /** 上移/下移：在整表内交换位置，并按 0..n-1 写回 sortOrder（非表头查询排序） */
+    peerSortOrderSlots(peers) {
+      const slots = peers.map((r, index) => {
+        const n = r.sortOrder != null ? Number(r.sortOrder) : index
+        return Number.isFinite(n) ? n : index
+      })
+      // 去重：相同值按出现顺序拆成递增，避免交换后仍并列
+      const used = new Set()
+      return slots.map((slot) => {
+        let next = slot
+        while (used.has(next)) next += 1
+        used.add(next)
+        return next
+      })
+    },
+    /**
+     * 上移/下移：在当前筛选结果里与相邻行换位。
+     * 只重排这些行占用的 sortOrder 槽位，不影响未显示属性的相对位置。
+     */
     handleSortMove(row, delta) {
       if (!this.canMoveSort(row, delta)) {
         return
       }
       const peers = this.getSortablePeers()
       const gi = peers.findIndex(r => this.rowKey(r) === this.rowKey(row))
+      if (gi < 0) {
+        return
+      }
       const reordered = peers.slice()
+      const swapAt = gi + delta
       const tmp = reordered[gi]
-      reordered[gi] = reordered[gi + delta]
-      reordered[gi + delta] = tmp
+      reordered[gi] = reordered[swapAt]
+      reordered[swapAt] = tmp
 
+      const slots = this.peerSortOrderSlots(peers).slice().sort((a, b) => a - b)
       const changes = []
       reordered.forEach((r, index) => {
-        if (r.sortOrder !== index) {
-          changes.push({ row: r, sortOrder: index })
+        const nextOrder = slots[index]
+        const prev = r.sortOrder != null ? Number(r.sortOrder) : null
+        if (prev !== nextOrder) {
+          changes.push({ row: r, sortOrder: nextOrder, prev })
         }
       })
       if (!changes.length) {
         return
       }
 
-      changes.forEach(c => { c.row._toggleLoading = true })
-      Promise.all(changes.map(c => {
-        const r = c.row
-        return this.isBuiltinField(r)
-          ? updateBuiltinFieldLayout(this.teamId, this.builtinLayoutPayload(r, { sortOrder: c.sortOrder }))
-          : updateField(this.teamId, r.fieldId, this.buildPatchPayload(r, { sortOrder: c.sortOrder }))
-      }))
+      // 先本地换位，筛选列表立刻反映
+      changes.forEach(c => {
+        c.row.sortOrder = c.sortOrder
+        c.row._toggleLoading = true
+      })
+      this.sortFieldList()
+
+      const builtinChanges = changes.filter(c => this.isBuiltinField(c.row))
+      const customChanges = changes.filter(c => !this.isBuiltinField(c.row))
+      const tasks = []
+      if (builtinChanges.length) {
+        // 内置布局整份读写，必须合并一次提交，避免并行互相覆盖
+        tasks.push(updateBuiltinFieldLayout(
+          this.teamId,
+          builtinChanges.map(c => this.builtinLayoutPayload(c.row, { sortOrder: c.sortOrder })[0])
+        ))
+      }
+      customChanges.forEach(c => {
+        tasks.push(updateField(
+          this.teamId,
+          c.row.fieldId,
+          this.buildPatchPayload(c.row, { sortOrder: c.sortOrder })
+        ))
+      })
+
+      Promise.all(tasks)
         .then(() => {
-          changes.forEach(c => {
-            c.row.sortOrder = c.sortOrder
-          })
-          this.sortFieldList()
           clearCustomFieldColumnsCache()
         })
         .catch(() => {
+          changes.forEach(c => {
+            c.row.sortOrder = c.prev
+          })
+          this.sortFieldList()
           this.getList()
           this.$modal.msgError(this.$t('defect.custom-field.sort-move-fail'))
         })
@@ -1236,13 +1347,12 @@ export default {
 .defect-field-tools {
   flex-shrink: 0;
   width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  align-items: center;
-  gap: var(--cat2bug-toolbar-item-gap, 10px);
   margin: 0;
+  :deep(.select-header-icon) {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+  }
 }
 .defect-field-table-pagination-band {
   flex-shrink: 0;
@@ -1400,15 +1510,23 @@ html.dark .defect-field-page .sort-order-arrows .sort-arrow.is-disabled {
   justify-content: center;
   gap: 2px;
   .sort-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
     font-size: 18px;
     line-height: 1;
     color: var(--cat2bug-primary, #1890ff);
     cursor: pointer;
     user-select: none;
-    &:hover:not(.is-disabled) {
+    &:hover:not(.is-disabled):not(:disabled) {
       color: #66b1ff;
     }
-    &.is-disabled {
+    &.is-disabled,
+    &:disabled {
       color: #c0c4cc;
       cursor: not-allowed;
       pointer-events: none;

@@ -1,11 +1,15 @@
 package com.cat2bug.admin.resource;
 
 import com.cat2bug.common.api.AjaxResult;
+import com.cat2bug.common.domain.LoginUser;
 import com.cat2bug.common.domain.SysTempFile;
+import com.cat2bug.common.domain.SysUserConfig;
 import com.cat2bug.common.exception.ApiException;
+import com.cat2bug.framework.security.LoginUserResolver;
 import com.cat2bug.framework.storage.FileDownloadHelper;
 import com.cat2bug.framework.storage.FileUploadService;
 import com.cat2bug.system.service.SysTempFileService;
+import com.cat2bug.system.service.SysUserConfigService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -14,8 +18,10 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.container.ContainerRequestContext;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 import org.jboss.resteasy.reactive.RestForm;
 
@@ -38,6 +44,15 @@ public class CommonResource {
 
     @Inject
     FileDownloadHelper fileDownloadHelper;
+
+    @Inject
+    LoginUserResolver loginUserResolver;
+
+    @Inject
+    SysUserConfigService sysUserConfigService;
+
+    @Context
+    ContainerRequestContext requestContext;
 
     @GET
     @Path("/download")
@@ -66,7 +81,7 @@ public class CommonResource {
         String originalFilename = file.fileName();
         try (var input = Files.newInputStream(file.uploadedFile())) {
             FileUploadService.UploadResult result =
-                    fileUploadService.upload(input, size, originalFilename, customFileName);
+                    fileUploadService.upload(input, size, originalFilename, customFileName, currentProjectId());
             AjaxResult ajax = AjaxResult.success();
             ajax.put("url", result.getUrl());
             ajax.put("fileName", result.getFileName());
@@ -95,7 +110,7 @@ public class CommonResource {
                 }
                 try (var input = Files.newInputStream(file.uploadedFile())) {
                     FileUploadService.UploadResult result = fileUploadService.upload(
-                            input, Files.size(file.uploadedFile()), file.fileName(), null);
+                            input, Files.size(file.uploadedFile()), file.fileName(), null, currentProjectId());
                     urls.add(result.getUrl());
                     fileNames.add(result.getFileName());
                     newFileNames.add(result.getNewFileName());
@@ -137,5 +152,20 @@ public class CommonResource {
             return AjaxResult.success();
         }
         return AjaxResult.error("操作失败");
+    }
+
+    private Long currentProjectId() {
+        if (requestContext == null) {
+            return null;
+        }
+        LoginUser user = loginUserResolver.resolve(requestContext);
+        if (user == null || user.getUserId() == null) {
+            return null;
+        }
+        SysUserConfig config = sysUserConfigService.selectSysUserConfigByUserId(user.getUserId());
+        if (config == null || config.getCurrentProjectId() == null || config.getCurrentProjectId() <= 0) {
+            return null;
+        }
+        return config.getCurrentProjectId();
     }
 }

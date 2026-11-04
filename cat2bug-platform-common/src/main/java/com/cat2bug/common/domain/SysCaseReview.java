@@ -22,6 +22,20 @@ public class SysCaseReview {
     /** 本次完成时因已在评审中而跳过的用例编号，不入库。 */
     private List<String> skippedCaseNums;
 
+    /** 列表摘要：评审条目总数（查询时 SQL 聚合，不入库）。 */
+    private Integer itemCount;
+    /** 列表摘要：结论为 passed 的条数。 */
+    private Integer passedCount;
+    /** 列表摘要：结论为 changes 的条数。 */
+    private Integer changesCount;
+    /** 列表摘要：结论为 pending 的条数。 */
+    private Integer pendingCount;
+
+    /** 列表筛选：发起时间起（仅查询，不入库）。 */
+    private String createTimeBegin;
+    /** 列表筛选：发起时间止（仅查询，不入库）。 */
+    private String createTimeEnd;
+
     public Long getReviewId() {
         return reviewId;
     }
@@ -108,5 +122,53 @@ public class SysCaseReview {
 
     public void setSkippedCaseNums(List<String> skippedCaseNums) {
         this.skippedCaseNums = skippedCaseNums;
+    }
+
+    public Integer getItemCount() {
+        return itemCount;
+    }
+
+    public void setItemCount(Integer itemCount) {
+        this.itemCount = itemCount;
+    }
+
+    public Integer getPassedCount() {
+        return passedCount;
+    }
+
+    public void setPassedCount(Integer passedCount) {
+        this.passedCount = passedCount;
+    }
+
+    public Integer getChangesCount() {
+        return changesCount;
+    }
+
+    public void setChangesCount(Integer changesCount) {
+        this.changesCount = changesCount;
+    }
+
+    public Integer getPendingCount() {
+        return pendingCount;
+    }
+
+    public void setPendingCount(Integer pendingCount) {
+        this.pendingCount = pendingCount;
+    }
+
+    public String getCreateTimeBegin() {
+        return createTimeBegin;
+    }
+
+    public void setCreateTimeBegin(String createTimeBegin) {
+        this.createTimeBegin = createTimeBegin;
+    }
+
+    public String getCreateTimeEnd() {
+        return createTimeEnd;
+    }
+
+    public void setCreateTimeEnd(String createTimeEnd) {
+        this.createTimeEnd = createTimeEnd;
     }
 }

@@ -3,6 +3,8 @@ import {
   getDefectTableColumnCacheKey,
   mergeDefectTableColumnPrefs
 } from '@/utils/defect-custom-field-columns'
+import { omitTeamGatedDefectColumns } from '@/utils/module-page-settings'
+import { useModulePageSettingsStore } from '@/stores/modulePageSettings'
 
 export { DEFECT_TABLE_COLUMN_CACHE_KEY, getDefectTableColumnCacheKey }
 
@@ -12,10 +14,13 @@ export function resolveDefectMergedColumns(
   tableColumnDefaults,
   storageKey
 ) {
-  return mergeDefectTableColumnPrefs(
-    localCache,
-    tableColumnDefaults || [],
-    storageKey || getDefectTableColumnCacheKey()
+  return omitTeamGatedDefectColumns(
+    mergeDefectTableColumnPrefs(
+      localCache,
+      tableColumnDefaults || [],
+      storageKey || getDefectTableColumnCacheKey()
+    ),
+    useModulePageSettingsStore().settings
   )
 }
 

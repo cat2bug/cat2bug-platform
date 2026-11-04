@@ -61,4 +61,13 @@
         </trim>
         where team_id = #{teamId} and user_id = #{userId}
     </update>
+
+    <delete id="deleteSysUserTeamByTeamIdAndUserId">
+        delete from sys_user_team where team_id = #{teamId} and user_id = #{userId}
+    </delete>
+
+    <select id="countFormalMember" resultType="int">
+        select count(*) from sys_user_team
+        where team_id = #{teamId} and user_id = #{userId}
+    </select>
 </mapper>

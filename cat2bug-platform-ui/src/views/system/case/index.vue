@@ -88,13 +88,27 @@
             <el-button class="case-field-picker-btn case-list-hint-columns" style="padding: 9px;" plain :icon="$legacyIcon('el-icon-s-fold')" size="small" />
           </template>
         </el-popover>
-        <el-button
-          v-hasPermi="['system:case:review']"
+        <el-dropdown
+          v-hasPermi="['system:case:review', 'system:case:query']"
+          class="case-review-split cat2bug-split-dropdown-kbd"
+          :class="{ 'case-review-split--empty': multiple || !checkPermi(['system:case:review']) }"
+          split-button
+          trigger="click"
           size="small"
           plain
-          :disabled="multiple"
-          @click="handleStartReview"
-        >{{ $t('case.review.start') }}</el-button>
+          @click="handleStartReviewClick"
+        >
+          {{ $t('case.review.start') }}
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                :disabled="multiple || !checkPermi(['system:case:review'])"
+                @click="handleStartReview"
+              >{{ $t('case.review.start') }}</el-dropdown-item>
+              <el-dropdown-item @click="handleGoReviewHistory">{{ $t('case.review.history') }}</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
         <el-button
           v-hasPermi="['system:case:remove']"
           class="case-batch-delete-btn case-hint-batch-delete"
@@ -122,6 +136,9 @@
             <template #dropdown>
               <el-dropdown-menu class="case-add-dropdown-menu">
               <el-dropdown-item @click="handleAdd"><legacy-icon icon="el-icon-plus" />{{ $i18n.t('case.create') }}</el-dropdown-item>
+              <el-dropdown-item @click="handleCloudCaseAdd">
+                <svg-icon icon-class="robot" />{{ $i18n.t('case.ai-create') }}
+              </el-dropdown-item>
               <el-divider class="case-add-dropdown-divider" />
               <el-dropdown-item @click="handleImport"><legacy-icon icon="el-icon-upload2" />{{ $t('case.import') }}</el-dropdown-item>
               <el-dropdown-item @click="handleExport"><legacy-icon icon="el-icon-download" />{{ $t('case.export') }}</el-dropdown-item>
@@ -131,24 +148,15 @@
           <span class="case-add-kbd-anchor-host" aria-hidden="true">
             <span class="case-hint-import"></span>
             <span class="case-hint-export"></span>
+            <span class="case-hint-ai"></span>
           </span>
         </span>
-        <el-button
-          v-hasPermi="['system:case:add']"
-          class="case-ai-add-btn case-hint-ai"
-          size="small"
-          type="success"
-          @click="handleCloudCaseAdd"
-        >
-          <svg-icon icon-class="robot" />
-          <span>{{ $i18n.t('case.ai-create') }}</span>
-        </el-button>
         </div>
     </div>
     <!--    模块树和用例列表区域-->
-    <multipane ref="multiPane" layout="vertical" class="custom-resizer" :class="{ 'custom-resizer--tree-hidden': !showModuleTree }" @paneResizeStop="dragStopHandle">
+    <multipane ref="multiPane" layout="vertical" class="custom-resizer" :class="{ 'custom-resizer--tree-hidden': !moduleTreeOpen }" @paneResizeStop="dragStopHandle">
       <!--      树形模块选择组件-->
-      <div v-if="showModuleTree" ref="treeModule" class="tree-module case-hint-tree" :style="treeModuleStyle">
+      <div v-if="moduleTreeOpen" ref="treeModule" class="tree-module case-hint-tree" :style="treeModuleStyle">
         <tree-module
           ref="treeModuleRef"
           v-resize="setDragComponentSize"
@@ -160,7 +168,7 @@
           @node-click="moduleClickHandle"
         />
       </div>
-      <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="[multipaneStyle, paneResizerRuleVars]"></multipane-resizer>
+      <multipane-resizer ref="paneResizer" v-show="moduleTreeOpen" :style="[multipaneStyle, paneResizerRuleVars]"></multipane-resizer>
       <!--      用例列表-->
       <div ref="caseContext" class="case-context">
         <div ref="caseContextBody" class="case-context-body">
@@ -185,7 +193,7 @@
           >
             <template #prepend>
               <el-table-column
-                v-if="!showModuleTree"
+                v-if="deliverableModuleOn && !showModuleTree"
                 key="case-sidebar-expand-col"
                 fixed
                 width="30"
@@ -378,8 +386,10 @@ import {
 } from '@/utils/excel-export-columns'
 import { getToken } from '@/utils/auth'
 import { setDefectTempTab } from '@/utils/defect'
+import { buildProjectModulePath } from '@/utils/project-module-path'
 import { setHeader } from '@/utils/request'
 import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport'
+import teamModuleGate from '@/mixins/team-module-gate'
 import multipaneTreeTableHeightSync from '@/mixins/multipaneTreeTableHeightSync'
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
@@ -406,7 +416,7 @@ const CASE_TREE_MODULE_VISIBLE_CACHE_KEY = 'case_tree_module_visible'
 
 export default {
   name: 'Case',
-  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd, columnPickerSortable, splitDropdownKbd, caseImportDialogKbd],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd, columnPickerSortable, splitDropdownKbd, caseImportDialogKbd, teamModuleGate],
   components: { ProjectLabel, AddCase, CaseReviewDialog, Cat2BugLevel, Step, TreeModule, Multipane, MultipaneResizer, AddDefect, CloudCase, CloudCase2, FocusMemberList, Cat2BugPreviewImage, Cat2BugSelectLevel, Cat2BugText, Cat2BugTable },
   setup() {
     return {
@@ -670,8 +680,8 @@ export default {
         {
           key: 'aiCreate',
           letter: L('aiCreate', 'I'),
-          badgeSelector: '.case-ai-add-btn.case-hint-ai',
-          floatOffset: { placement: 'bottom-right-outset', outset: 3 },
+          badgeSelector: '.case-add-kbd-anchor-host .case-hint-ai',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
           run: () => this.shortcutOpenCaseAi(),
           visible: () => checkPermi(['system:case:add'])
         }
@@ -1317,12 +1327,22 @@ export default {
       if (status === 'in_review') return 'warning'
       return 'info'
     },
+    handleStartReviewClick() {
+      if (this.multiple || !checkPermi(['system:case:review'])) return
+      this.handleStartReview()
+    },
     handleStartReview() {
+      if (!checkPermi(['system:case:review'])) return
       const rows = (this.selectedCases && this.selectedCases.length)
         ? this.selectedCases
         : (this.caseList || []).filter(item => this.ids.indexOf(item.caseId) > -1)
       if (!rows.length) return
       this.$refs.caseReviewDialog.start(this.projectId, rows)
+    },
+    handleGoReviewHistory() {
+      const { teamKey, projectKey } = this.$route.params
+      const path = buildProjectModulePath(teamKey, projectKey, 'case', 'reviews')
+      if (path) this.$router.push(path)
     },
     handleOpenReview(row) {
       if (!row || !row.caseId) return
@@ -1586,8 +1606,7 @@ export default {
   display: flex;
 }
 /* split 下拉整块参与工具栏换行；组内主键+箭头始终同一行 */
-.case-view-toolbar.wrapped-tools .case-right-tools > .case-add-dropdown,
-.case-view-toolbar.wrapped-tools .case-right-tools > .case-ai-add-btn {
+.case-view-toolbar.wrapped-tools .case-right-tools > .case-add-dropdown {
   flex: 0 0 auto;
   min-width: 118px;
   max-width: 100%;
@@ -1600,8 +1619,7 @@ export default {
   width: 100%;
   max-width: 100%;
 }
-.case-view-toolbar.wrapped-tools .case-right-tools.buttons-wrapped > .case-add-dropdown,
-.case-view-toolbar.wrapped-tools .case-right-tools.buttons-wrapped > .case-ai-add-btn {
+.case-view-toolbar.wrapped-tools .case-right-tools.buttons-wrapped > .case-add-dropdown {
   flex: 1 1 0;
   min-width: 118px;
   width: 100%;
@@ -1725,14 +1743,19 @@ export default {
     }
   }
 }
-.case-ai-add-btn {
-  min-width: 118px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+.case-review-split--empty {
+  :deep(.el-button-group > .el-button:first-child:not(.el-dropdown__caret-button)) {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
 }
 .case-add-dropdown-menu {
   min-width: 120px;
+
+  .el-dropdown-item .svg-icon {
+    margin-right: 5px;
+    vertical-align: -0.15em;
+  }
 }
 .case-add-dropdown-divider {
   margin-top: 5px;
@@ -1839,8 +1862,7 @@ export default {
   > .case-batch-delete-btn {
     min-width: 92px;
   }
-  > .case-add-dropdown,
-  > .case-ai-add-btn {
+  > .case-add-dropdown {
     min-width: 118px;
   }
   > * {
@@ -1911,8 +1933,7 @@ export default {
   .case-page .case-view-toolbar .table-tools > *:first-child {
     flex-shrink: 0;
   }
-  .case-page .case-view-toolbar .table-tools .case-add-dropdown,
-  .case-page .case-view-toolbar .table-tools .case-ai-add-btn {
+  .case-page .case-view-toolbar .table-tools .case-add-dropdown {
     flex: 0 0 auto;
     width: auto !important;
     min-width: 118px;
@@ -1955,8 +1976,7 @@ export default {
 .case-page .case-view-toolbar .table-tools > .case-batch-delete-btn {
   min-width: 92px;
 }
-.case-page .case-view-toolbar .table-tools > .case-add-dropdown,
-.case-page .case-view-toolbar .table-tools > .case-ai-add-btn {
+.case-page .case-view-toolbar .table-tools > .case-add-dropdown {
   min-width: 118px;
 }
 .case-add-toolbar-kbd-wrap {

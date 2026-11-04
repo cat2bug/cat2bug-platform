@@ -5,8 +5,8 @@
         <div class="clearfix">
           <svg-icon icon-class="case" />
           <div>
-            <span>{{ $t('case.type.settings') }}</span>
-            <span>{{ $t('case.type.settings-describe') }}</span>
+            <span>{{ $t('team.module-page.case_plan-title') }}</span>
+            <span>{{ $t('team.module-page.case_plan-describe') }}</span>
           </div>
         </div>
       </template>
@@ -15,6 +15,9 @@
       </router-link>
       <router-link v-if="canList" :to="href('team-case-settings')">
         <el-link>{{ $t('case.review.template') }}</el-link>
+      </router-link>
+      <router-link v-if="canList" :to="href('team-case-plan-page-settings')">
+        <el-link>{{ $t('defect.page-settings.manage') }}</el-link>
       </router-link>
     </el-card>
   </el-col>

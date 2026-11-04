@@ -17,11 +17,20 @@ public class SysTeam {
     private Boolean lock;
     private String lockRemark;
     private String defectBuiltinFieldConfig;
+    /** 缺陷页面设置 JSON（视图/色阶/分享），见 {@link DefectPageSettings} */
+    private String defectPageConfig;
+    /** 功能模块页面设置 JSON（开关/显示名/文档上传上限），见 {@link ModulePageSettings} */
+    private String modulePageConfig;
     private String caseReviewTemplate;
     /** 绑定的团队套餐 ID */
     private Long planId;
     /** 列表展示：套餐名称（非表字段） */
     private String planName;
+    /**
+     * 非表字段：当前用户是否该队正式成员（{@code sys_user_team}）。
+     * 「我的团队」并集列表中用于区分仅项目挂职。
+     */
+    private Boolean formalMember;
 
     public Long getTeamId() {
         return teamId;
@@ -143,6 +152,22 @@ public class SysTeam {
         this.defectBuiltinFieldConfig = defectBuiltinFieldConfig;
     }
 
+    public String getDefectPageConfig() {
+        return defectPageConfig;
+    }
+
+    public void setDefectPageConfig(String defectPageConfig) {
+        this.defectPageConfig = defectPageConfig;
+    }
+
+    public String getModulePageConfig() {
+        return modulePageConfig;
+    }
+
+    public void setModulePageConfig(String modulePageConfig) {
+        this.modulePageConfig = modulePageConfig;
+    }
+
     public String getCaseReviewTemplate() {
         return caseReviewTemplate;
     }
@@ -165,5 +190,13 @@ public class SysTeam {
 
     public void setPlanName(String planName) {
         this.planName = planName;
+    }
+
+    public Boolean getFormalMember() {
+        return formalMember;
+    }
+
+    public void setFormalMember(Boolean formalMember) {
+        this.formalMember = formalMember;
     }
 }

@@ -3,6 +3,7 @@ package com.cat2bug.admin.resource;
 import com.cat2bug.common.api.AjaxResult;
 import com.cat2bug.common.api.TableDataInfo;
 import com.cat2bug.common.domain.SysTeam;
+import com.cat2bug.common.util.MessageUtils;
 import com.cat2bug.framework.security.RequiresPermissions;
 import com.cat2bug.system.service.SysTeamPlanService;
 import com.cat2bug.system.service.SysTeamService;
@@ -32,9 +33,10 @@ public class AdminTeamResource {
     @Path("/list")
     @RequiresPermissions("admin:team:list")
     public TableDataInfo list(@QueryParam("teamName") String teamName,
+                              @QueryParam("planId") Long planId,
                               @QueryParam("pageNum") Integer pageNum,
                               @QueryParam("pageSize") Integer pageSize) {
-        return sysTeamService.selectTeamPage(teamName, pageNum, pageSize);
+        return sysTeamService.selectTeamPage(teamName, planId, pageNum, pageSize);
     }
 
     @PUT
@@ -54,13 +56,13 @@ public class AdminTeamResource {
     public AjaxResult bindPlan(@PathParam("teamId") Long teamId, Map<String, Object> body) {
         Object raw = body == null ? null : body.get("planId");
         if (raw == null) {
-            return AjaxResult.error("planId 不能为空");
+            return AjaxResult.error(MessageUtils.message("team.plan.bind-id-required"));
         }
         Long planId = raw instanceof Number ? ((Number) raw).longValue() : Long.parseLong(String.valueOf(raw));
         return toAjax(sysTeamPlanService.bindTeamPlan(teamId, planId));
     }
 
     private AjaxResult toAjax(int rows) {
-        return rows > 0 ? AjaxResult.success() : AjaxResult.error("操作失败");
+        return rows > 0 ? AjaxResult.success() : AjaxResult.error(MessageUtils.message("team.plan.operate-failed"));
     }
 }

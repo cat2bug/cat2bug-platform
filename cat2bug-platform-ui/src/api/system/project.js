@@ -205,6 +205,15 @@ export function listNotMemberOfProject(projectId,query) {
   })
 }
 
+// 本项目所属团队中尚未加入项目的成员（允许空 search）
+export function listTeamNotMemberOfProject(projectId, query) {
+  return request({
+    url: '/system/project/' + projectId + '/team-not-member',
+    method: 'get',
+    params: query
+  })
+}
+
 // 更新项目成员角色
 export function updateMemberRoleOfProject(projectId, memberId, roleIds) {
   return request({
@@ -228,5 +237,14 @@ export function delMemberOfProject(projectId, memberId, handoffUserId) {
     url: '/system/project/'+projectId+'/member/'+memberId,
     method: 'delete',
     params: handoffUserId != null ? { handoffUserId } : undefined
+  })
+}
+
+/** 转让项目创建人 */
+export function transferProjectCreator(projectId, targetUserId) {
+  return request({
+    url: '/system/project/' + projectId + '/transfer-creator',
+    method: 'post',
+    data: { targetUserId }
   })
 }

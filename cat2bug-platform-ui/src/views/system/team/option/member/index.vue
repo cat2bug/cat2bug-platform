@@ -1,55 +1,64 @@
 <template>
-  <div class="app-container team-member-page" ref="teamMemberMain">
+  <div
+    class="app-container case-body team-member-page team-member-list-layout project-list-page-host"
+    ref="teamMemberMain"
+  >
     <el-row class="project-add-page-header project-add-page-header--with-filter team-member-hint-back">
       <el-page-header @back="goBack" :content="$t('team.member')">
       </el-page-header>
     </el-row>
-    <el-row :gutter="20">
-      <!--用户数据-->
-      <el-col :span="24">
-        <div class="team-member-tools project-option-list-tools mb8">
-          <el-form
-            ref="queryForm"
-            size="small"
-            :inline="true"
-            class="left"
-            :class="{ 'list-query-keyboard-nav': listQueryNavActive }"
-          >
-            <el-form-item class="list-query-nav-item team-member-hint-query" data-query-key="search">
-              <el-input
-                v-model="queryParams.params.search"
-                :prefix-icon="$legacyIcon('el-icon-search')"
-                :placeholder="$t('team.search-placeholder')"
-                clearable
-                style="width: 320px"
-                size="small"
-                @input="memberSearchHandle"
-              />
-            </el-form-item>
-          </el-form>
-          <div ref="teamMemberToolsRight" class="project-option-list-tools-right">
-            <el-button
-              class="team-member-hint-create"
-              type="primary"
-              plain
-              :icon="$legacyIcon('el-icon-plus')"
-              size="small"
-              @click="createMemberHandle"
-              v-hasPermi="['system:team:member:create']"
-            >{{$t('member.create')}}</el-button>
-            <el-button
-              class="team-member-hint-invite cat2bug-btn-outline"
-              type="primary"
-              plain
-              :icon="$legacyIcon('el-icon-plus')"
-              size="small"
-              @click="inviteMemberHandle"
-              v-hasPermi="['system:team:member:invite']"
-            >{{$t('team.invite-members')}}</el-button>
-          </div>
-        </div>
 
-        <el-table v-loading="loading" :data="memberList">
+    <div ref="teamMemberTools" class="team-member-tools project-option-list-tools">
+      <el-form
+        ref="queryForm"
+        size="small"
+        :inline="true"
+        class="left"
+        :class="{ 'list-query-keyboard-nav': listQueryNavActive }"
+      >
+        <el-form-item class="list-query-nav-item team-member-hint-query" data-query-key="search">
+          <el-input
+            v-model="queryParams.params.search"
+            :prefix-icon="$legacyIcon('el-icon-search')"
+            :placeholder="$t('team.search-placeholder')"
+            clearable
+            style="width: 320px"
+            size="small"
+            @input="memberSearchHandle"
+          />
+        </el-form-item>
+      </el-form>
+      <div ref="teamMemberToolsRight" class="project-option-list-tools-right">
+        <el-button
+          class="team-member-hint-create"
+          type="primary"
+          plain
+          :icon="$legacyIcon('el-icon-plus')"
+          size="small"
+          @click="createMemberHandle"
+          v-hasPermi="['system:team:member:create']"
+        >{{$t('member.create')}}</el-button>
+        <el-button
+          class="team-member-hint-invite cat2bug-btn-outline"
+          type="primary"
+          plain
+          :icon="$legacyIcon('el-icon-plus')"
+          size="small"
+          @click="inviteMemberHandle"
+          v-hasPermi="['system:team:member:invite']"
+        >{{$t('team.invite-members')}}</el-button>
+      </div>
+    </div>
+
+    <div ref="teamMemberListBody" class="team-member-list-body">
+      <div class="team-member-table-x-scroll">
+        <el-table
+          ref="teamMemberTable"
+          class="team-member-list-table"
+          v-loading="loading"
+          :data="memberList"
+          :max-height="tableBodyMaxHeight"
+        >
           <el-table-column :label="$t('member.name')" align="left" key="nickName" prop="nickName" min-width="260" :show-overflow-tooltip="true">
             <template #default="{ row }">
               <member-nameplate :member="row"></member-nameplate>
@@ -66,26 +75,24 @@
                 v-model="row.roleIds"
                 :options="selectRoleOptions(row)"
                 :placeholder="$t('member.please-select-role')"
-                :disabled="isMemberDisabled(row) || isCreateBy(row)"
+                :disabled="isCreateBy(row)"
                 @change="(ids) => roleChangeHandle(row, ids)"
               />
             </template>
           </el-table-column>
           <el-table-column :label="$t('email')" align="left" key="email" prop="email" :show-overflow-tooltip="true" width="300">
             <template #default="{ row }">
-              <span :teamLock="row.status">{{ row.email }}</span>
+              <span>{{ row.email }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('phone-number')" align="left" key="phoneNumber" prop="phoneNumber" width="150">
             <template #default="{ row }">
-              <span :teamLock="row.status">{{ row.phoneNumber }}</span>
+              <span>{{ row.phoneNumber }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('register-time')" align="left" key="createTime" prop="createTime" width="180">
             <template #default="{ row }">
-              <div :teamLock="row.status">
-                <span :teamLock="row.status">{{ row.createTime }}</span>
-              </div>
+              <span>{{ row.createTime }}</span>
             </template>
           </el-table-column>
           <el-table-column
@@ -95,49 +102,96 @@
             class-name="small-padding fixed-width"
           >
             <template #default="{ row }">
-              <template v-if="!isCreateBy(row)">
+              <!-- 转让：仅创建人本人可见；其他人看创建人行无操作 -->
               <el-button
+                v-if="canTransferCreator(row)"
                 size="small"
                 link
-                :icon="$legacyIcon('el-icon-lock')"
-                @click="lockMemberHandle(row)"
-                v-hasPermi="['system:team:member:lock']"
-                v-if="row.status=='0'"
-              >{{$t('lock')}}</el-button>
+                :icon="$legacyIcon('el-icon-s-custom')"
+                @click="transferCreatorHandle(row)"
+              >{{$t('team.transfer-creator')}}</el-button>
               <el-button
+                v-else-if="!isCreateBy(row)"
                 size="small"
                 link
-                :icon="$legacyIcon('el-icon-unlock')"
-                @click="unlockMemberHandle(row)"
-                v-hasPermi="['system:team:member:lock']"
-                v-else-if="row.status=='1'"
-              >{{$t('unlock')}}</el-button>
-              </template>
+                type="danger"
+                :icon="$legacyIcon('el-icon-delete')"
+                @click="removeMemberHandle(row)"
+                v-hasPermi="['system:team:edit']"
+              >{{$t('delete')}}</el-button>
             </template>
           </el-table-column>
         </el-table>
+      </div>
+
+      <div
+        v-show="total>0"
+        ref="teamMemberPaginationBand"
+        class="team-member-table-pagination-band table-pagination-band"
+      >
         <pagination
           class="team-member-table-pagination"
-          v-show="total>0"
           :total="total"
           v-model:page="queryParams.pageNum"
           v-model:limit="queryParams.pageSize"
           @pagination="getMemberList"
         />
-      </el-col>
-    </el-row>
+      </div>
+    </div>
+
     <create-team-member ref="createTeamMemberDialog" @create="getMemberList" />
     <invite-team-member ref="inviteTeamMemberDialog" @invite="getMemberList" />
+    <el-dialog
+      v-model="transferOpen"
+      :title="$t('team.transfer-creator-title')"
+      width="480px"
+      append-to-body
+    >
+      <el-form label-width="100px" size="small">
+        <el-form-item :label="$t('team.transfer-target')">
+          <el-select
+            v-model="transferTargetUserId"
+            filterable
+            clearable
+            style="width: 100%"
+            :filter-method="filterTransferCandidate"
+            popper-class="team-transfer-member-select-dropdown"
+            :placeholder="$t('team.transfer-target-placeholder')"
+          >
+            <el-option
+              v-for="m in filteredTransferCandidates"
+              :key="m.userId"
+              :label="m.nickName || m.userName || String(m.userId)"
+              :value="m.userId"
+            >
+              <member-nameplate :member="m" size="default" />
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <p class="team-transfer-hint">{{ $t('team.transfer-creator-hint') }}</p>
+      </el-form>
+      <template #footer>
+        <el-button size="small" @click="transferOpen = false">{{ $t('cancel') }}</el-button>
+        <el-button type="primary" size="small" :loading="transferSubmitting" @click="confirmTransfer">
+          {{ $t('confirm') }}
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import {listMember, listTeamRole, updateMemberTeamRole, updateMemberTeamRoleIds} from "@/api/system/team";
+import {
+  listMember,
+  listTeamRole,
+  updateMemberTeamRoleIds,
+  removeTeamMember,
+  transferTeamCreator
+} from "@/api/system/team";
 import CreateTeamMember from "@/views/system/team/option/member/CreateTeamMember";
 import InviteTeamMember from "@/views/system/team/option/member/InviteTeamMember";
 import MemberNameplate from "@/components/MemberNameplate";
 import MemberRoleSelect from "@/components/MemberRoleSelect";
-import {getUser} from "@/api/system/user";
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
 import teamMemberListKbd from '@/mixins/team-member-list-kbd'
@@ -158,31 +212,41 @@ export default {
   components: { CreateTeamMember, InviteTeamMember, MemberNameplate, MemberRoleSelect },
   setup() {
     const userStore = useUserStore()
-    const { config } = storeToRefs(userStore)
-    return { config }
+    const { config, id: currentUserId } = storeToRefs(userStore)
+    return { config, userStore, currentUserId }
   },
   data() {
     return {
-      // 遮罩层
       loading: true,
-      // 总条数
       total: 0,
-      // 显示搜索条件
       showSearch: true,
       memberSearch: null,
-      // 成员列表
       memberList:[],
-      // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
         params: {},
       },
-      // 角色选项
       roleOptions: [],
+      transferOpen: false,
+      transferTargetUserId: null,
+      transferSubmitting: false,
+      transferFilterKeyword: '',
+      tableBodyMaxHeight: null,
     }
   },
   computed: {
+    transferCandidates() {
+      return (this.memberList || []).filter(m => m && m.userId != null && !this.isCreateBy(m) && m.userId !== 1)
+    },
+    filteredTransferCandidates() {
+      const kw = (this.transferFilterKeyword || '').trim().toLowerCase()
+      if (!kw) return this.transferCandidates
+      return this.transferCandidates.filter(m => {
+        const parts = [m.nickName, m.userName, m.phoneNumber, m.email]
+        return parts.some(v => v != null && String(v).toLowerCase().includes(kw))
+      })
+    },
   },
   created() {
     this.init();
@@ -193,13 +257,17 @@ export default {
     this.$nextTick(() => {
       this.$_bindListQueryNavFocusIn()
       this.$_bindListQueryNavToolbarFocusIn()
+      this.initTeamMemberListBodyResizeObserver()
+      this.syncTeamMemberTableBodyMaxHeight()
     })
+    window.addEventListener('resize', this.onTeamMemberWindowResize)
   },
   activated() {
     this.registerTeamMemberShortcuts();
     this.$nextTick(() => {
       this.$_bindListQueryNavFocusIn()
       this.$_bindListQueryNavToolbarFocusIn()
+      this.syncTeamMemberTableBodyMaxHeight()
     })
   },
   deactivated() {
@@ -207,6 +275,8 @@ export default {
   },
   beforeDestroy() {
     if (this.$shortcut) this.$shortcut.unregisterPage(TEAM_MEMBER_KBD_SCOPE);
+    window.removeEventListener('resize', this.onTeamMemberWindowResize)
+    this.destroyTeamMemberListBodyResizeObserver()
   },
   methods: {
     registerTeamMemberShortcuts() {
@@ -278,9 +348,51 @@ export default {
       if (!checkPermi(['system:team:member:invite'])) return
       this.inviteMemberHandle()
     },
-    /** 初始化数据 */
+    initTeamMemberListBodyResizeObserver() {
+      if (typeof ResizeObserver === 'undefined') return
+      this.destroyTeamMemberListBodyResizeObserver()
+      const el = this.$refs.teamMemberListBody
+      if (!el) return
+      this._teamMemberListBodyResizeObserver = new ResizeObserver(() => {
+        this.syncTeamMemberTableBodyMaxHeight()
+      })
+      this._teamMemberListBodyResizeObserver.observe(el)
+    },
+    destroyTeamMemberListBodyResizeObserver() {
+      if (this._teamMemberListBodyResizeObserver) {
+        this._teamMemberListBodyResizeObserver.disconnect()
+        this._teamMemberListBodyResizeObserver = null
+      }
+    },
+    onTeamMemberWindowResize() {
+      this.syncTeamMemberTableBodyMaxHeight()
+    },
+    syncTeamMemberTableBodyMaxHeight() {
+      this.$nextTick(() => {
+        const body = this.$refs.teamMemberListBody
+        if (!body || !body.clientHeight) return
+        const pagEl = this.$refs.teamMemberPaginationBand
+        let reserveBelowTable = 0
+        if (this.total > 0 && pagEl && pagEl.offsetParent !== null) {
+          const st = window.getComputedStyle(pagEl)
+          reserveBelowTable =
+            pagEl.offsetHeight +
+            parseFloat(st.marginTop || '0') +
+            parseFloat(st.marginBottom || '0')
+        }
+        const next = Math.max(120, Math.floor(body.clientHeight - reserveBelowTable - 2))
+        if (this.tableBodyMaxHeight !== next) {
+          this.tableBodyMaxHeight = next
+          this.$nextTick(() => {
+            const table = this.$refs.teamMemberTable
+            if (table && typeof table.doLayout === 'function') {
+              table.doLayout()
+            }
+          })
+        }
+      })
+    },
     init() {
-      // 获取当前用户信息
       listTeamRole(this.getTeamId()).then(res => {
         this.roleOptions = res.data?res.data.filter(r=>r.isTeamRole).map(r=>{
           r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
@@ -288,17 +400,18 @@ export default {
         }):[];
       });
     },
-    /** 获取团队id */
     getTeamId() {
       return this.config.currentTeamId;
     },
-    /** 是否是创建人 */
     isCreateBy(member) {
       return member.admin || (this.roleOptions.filter(r => r.teamCreateBy && member.roleIds && member.roleIds.indexOf(r.roleId) > -1).length > 0);
     },
-    /** 成员是否禁用 */
-    isMemberDisabled(member) {
-      return member.status == 1;
+    /** 仅团队创建人本人可转让（管理员等其它角色不可见） */
+    canTransferCreator(row) {
+      if (!this.isCreateBy(row) || row == null || row.userId == null) {
+        return false
+      }
+      return Number(row.userId) === Number(this.currentUserId)
     },
     selectRoleOptions(member) {
       if (this.isCreateBy(member)) {
@@ -306,15 +419,16 @@ export default {
       }
       return this.roleOptions.filter(r => r.teamCreateBy == false);
     },
-    /** 搜索用户 */
+    filterTransferCandidate(query) {
+      this.transferFilterKeyword = query == null ? '' : String(query)
+    },
     memberSearchHandle(e){
       this.queryParams.params.search=e;
       this.getMemberList();
     },
-    /** 获取团队成员列表 */
     getMemberList() {
       this.loading = true;
-      listMember(this.getTeamId(),this.queryParams).then(res => {
+      return listMember(this.getTeamId(),this.queryParams).then(res => {
         this.loading = false;
         this.memberList = (res.rows || []).map(row => {
           const ids = Array.isArray(row.roleIds)
@@ -323,9 +437,11 @@ export default {
           return { ...row, roleIds: ids }
         });
         this.total = res.total;
+        this.syncTeamMemberTableBodyMaxHeight()
+      }).catch(() => {
+        this.loading = false;
       });
     },
-    /** 更新用户权限 */
     roleChangeHandle(member, roleIds) {
       const ids = Array.isArray(roleIds) ? roleIds : (member.roleIds || [])
       if (!ids.length) {
@@ -345,50 +461,146 @@ export default {
         this.getMemberList()
       });
     },
-    /** 返回 */
     goBack() {
       this.$router.back();
     },
-    /** 邀请按钮操作 */
     inviteMemberHandle() {
       this.$refs.inviteTeamMemberDialog.open();
     },
-    /** 新增按钮操作 */
     createMemberHandle() {
       this.$refs.createTeamMemberDialog.open();
     },
-    /** 更新用户操作 */
-    updateMemberRole(memberRole){
-      updateMemberTeamRole(memberRole.teamId,memberRole.userId,memberRole).then(res=>{
-        this.$message.success(this.$i18n.t('update.success').toString());
-        this.getMemberList();
-      });
+    removeMemberHandle(member) {
+      const name = member.nickName || member.userName || member.userId
+      this.$modal.confirm(this.$t('team.remove-member-confirm', { name })).then(() => {
+        return removeTeamMember(this.getTeamId(), member.userId)
+      }).then(() => {
+        this.$message.success(this.$t('team.remove-member-success'))
+        this.getMemberList()
+      }).catch(() => {})
     },
-    /** 锁定按钮操作 */
-    lockMemberHandle(member) {
-      this.updateMemberRole({
-        teamId: this.getTeamId(),
-        userId: member.userId,
-        teamLock: 1
-      });
+    transferCreatorHandle() {
+      const self = (this.memberList || []).find(m => Number(m.userId) === Number(this.currentUserId))
+      if (!self || !this.canTransferCreator(self)) {
+        this.$modal.msgError(this.$t('team.transfer-creator-only'))
+        return
+      }
+      this.transferTargetUserId = null
+      this.transferFilterKeyword = ''
+      this.transferOpen = true
     },
-    /** 解锁按钮操作 */
-    unlockMemberHandle(member) {
-      this.updateMemberRole({
-        teamId: this.getTeamId(),
-        userId: member.userId,
-        teamLock: 0
-      });
+    confirmTransfer() {
+      const self = (this.memberList || []).find(m => Number(m.userId) === Number(this.currentUserId))
+      if (!self || !this.canTransferCreator(self)) {
+        this.$modal.msgError(this.$t('team.transfer-creator-only'))
+        return
+      }
+      if (!this.transferTargetUserId) {
+        this.$modal.msgError(this.$t('team.transfer-target-placeholder'))
+        return
+      }
+      this.transferSubmitting = true
+      transferTeamCreator(this.getTeamId(), this.transferTargetUserId).then(() => {
+        this.$message.success(this.$t('team.transfer-creator-success'))
+        this.transferOpen = false
+        // 原创建人已变为管理员：立刻刷新登录态角色/权限与菜单，并重拉成员列表
+        return this.userStore.GetInfo().then(() => {
+          return import('@/stores/permission').then(({ usePermissionStore }) => {
+            const permissionStore = usePermissionStore()
+            permissionStore.SetRoutesRefreshing(true)
+            return permissionStore.GenerateRoutes().finally(() => {
+              permissionStore.SetRoutesRefreshing(false)
+            })
+          })
+        }).catch(() => {}).then(() => this.getMemberList())
+      }).catch(() => {
+        this.$modal.msgError(this.$t('team.transfer-creator-fail'))
+      }).finally(() => {
+        this.transferSubmitting = false
+      })
     },
   }
 }
 </script>
 
 <style lang="scss" scoped>
-  :deep(.el-table){
-    span[teamLock="1"] {
-      text-decoration: line-through;
-      color: #DCDFE6;
-    }
-  }
+.app-container.case-body {
+  padding: 20px 20px 0;
+  box-sizing: border-box;
+}
+.team-member-page.team-member-list-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  flex: 1 1 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+.team-member-tools {
+  flex-shrink: 0;
+  width: 100%;
+  margin-bottom: 0;
+}
+.team-member-list-body {
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.team-member-table-x-scroll {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.team-member-table-pagination-band {
+  flex-shrink: 0;
+}
+.team-transfer-hint {
+  margin: 0 0 0 100px;
+  color: var(--el-text-color-secondary, #909399);
+  font-size: 12px;
+  line-height: 1.5;
+}
+</style>
+
+<style lang="scss">
+/* 下拉挂到 body，须非 scoped */
+.team-transfer-member-select-dropdown.el-select-dropdown {
+  min-width: 420px !important;
+}
+.team-transfer-member-select-dropdown .el-select-dropdown__wrap {
+  max-height: 360px !important;
+}
+.team-transfer-member-select-dropdown .el-select-dropdown__item {
+  height: auto;
+  min-height: 60px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  line-height: normal;
+}
+.team-transfer-member-select-dropdown .member-nameplate {
+  width: 100%;
+  padding: 2px 0;
+}
+.team-transfer-member-select-dropdown .member-nameplate-content p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-color-primary);
+}
+.team-transfer-member-select-dropdown .member-nameplate-content span {
+  font-size: 12px;
+  line-height: 16px;
+  height: auto;
+  color: var(--text-color-secondary);
+}
 </style>

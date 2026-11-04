@@ -21,6 +21,14 @@ public interface SysCaseReviewMapper {
 
     List<SysCaseReview> selectByProject(@Param("projectId") Long projectId);
 
+    long countByQuery(@Param("query") SysCaseReview query);
+
+    List<SysCaseReview> selectByQuery(@Param("query") SysCaseReview query,
+                                      @Param("offset") int offset,
+                                      @Param("limit") int limit);
+
+    List<SysCaseReview> selectByQueryAll(@Param("query") SysCaseReview query);
+
     List<SysCaseReviewItem> selectItems(@Param("reviewId") Long reviewId);
 
     SysCaseReviewItem selectItem(@Param("reviewId") Long reviewId, @Param("caseId") Long caseId);

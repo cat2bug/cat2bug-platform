@@ -173,8 +173,6 @@
       />
     </div>
     </div>
-    <add-plan-dialog ref="planDialog" @add="getList" @update="getList" />
-    <handle-plan-dialog ref="handlePlanDialog" @change="getList" />
     <dict-option-dialog ref="planItemState" title="测试状态管理" :dictType="dict.type.plan_item_state" />
   </div>
 </template>
@@ -183,13 +181,12 @@
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import RowListMember from "@/components/RowListMember";
 import {listPlan, delPlan, copyPlan} from "@/api/system/plan";
-import AddPlanDialog from "@/components/Plan/AddPlanDialog";
-import HandlePlanDialog from "@/components/Plan/HandlePlanDialog";
 import DictOptionDialog from "@/components/DictOptionDialog";
 import Cat2BugTable from "@/components/Cat2BugTable";
 import { PlanTableColumnDefaults } from "@/views/system/plan/plan-table-options";
 import {strFormat} from "@/utils";
 import {checkPermi} from "@/utils/permission";
+import { buildProjectModulePath } from "@/utils/project-module-path";
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
 import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
@@ -215,7 +212,7 @@ export default {
   name: "Plan",
   mixins: [pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd, columnPickerSortable],
   dicts: ['plan_item_state'],
-  components:{ ProjectLabel, AddPlanDialog, HandlePlanDialog, DictOptionDialog, RowListMember, Cat2BugTable },
+  components:{ ProjectLabel, DictOptionDialog, RowListMember, Cat2BugTable },
   setup() {
     return {
       userStore: useUserStore()
@@ -339,12 +336,18 @@ export default {
     window.addEventListener("resize", this.syncPlanTableBodyMaxHeight);
     this.registerPlanShortcuts();
     const actionPlanId = this.$route.query.planId;
-    if(actionPlanId && checkPermi(['system:plan:run'])) {
-      this.handlePlanRun({planId:actionPlanId})
+    if (actionPlanId && checkPermi(['system:plan:run'])) {
+      this.redirectLegacyPlanRunDeepLink(actionPlanId)
     }
   },
   activated() {
     this.registerPlanShortcuts();
+    // keep-alive 首次会与 created 叠一次；之后从执行页返回再刷新列表
+    if (this._planListActivatedOnce) {
+      this.getList();
+    } else {
+      this._planListActivatedOnce = true;
+    }
   },
   deactivated() {
     if (this.$shortcut) this.$shortcut.unregisterPage(PLAN_KBD_SCOPE);
@@ -435,10 +438,6 @@ export default {
     },
     isPlanListRowKbdBlocked() {
       if (this.planColumnPickerVisible) return true
-      const planDialog = this.$refs.planDialog
-      if (planDialog && planDialog.open) return true
-      const handleDialog = this.$refs.handlePlanDialog
-      if (handleDialog && handleDialog.visible) return true
       const stateDialog = this.$refs.planItemState
       if (stateDialog && stateDialog.visible) return true
       return false
@@ -447,6 +446,15 @@ export default {
       if (!plan || plan.planId == null) return
       if (!checkPermi(['system:plan:run'])) return
       this.handlePlanRun(plan)
+    },
+    /** 旧深链 ?planId= → 执行整页 */
+    redirectLegacyPlanRunDeepLink(planId) {
+      const { teamKey, projectKey } = this.$route.params
+      const path = buildProjectModulePath(teamKey, projectKey, 'plan', planId, 'run')
+      if (!path) return
+      const query = { ...this.$route.query }
+      delete query.planId
+      this.$router.replace({ path, query })
     },
     getListQueryNavItems() {
       return [{ key: 'planName' }, { key: 'planVersion' }]
@@ -619,13 +627,20 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    /** 添加计划 */
+    /** 添加计划：进入新建整页 */
     handleAdd() {
-      this.$refs.planDialog.openAdd();
+      if (!checkPermi(['system:plan:add'])) return
+      const { teamKey, projectKey } = this.$route.params
+      const path = buildProjectModulePath(teamKey, projectKey, 'plan', 'new')
+      if (path) this.$router.push(path)
     },
-    /** 更新计划 */
+    /** 更新计划：进入编辑整页 */
     handleUpdate(plan) {
-      this.$refs.planDialog.openUpdate(plan);
+      if (!plan || plan.planId == null) return
+      if (!checkPermi(['system:plan:edit'])) return
+      const { teamKey, projectKey } = this.$route.params
+      const path = buildProjectModulePath(teamKey, projectKey, 'plan', plan.planId, 'edit')
+      if (path) this.$router.push(path)
     },
     /** 复制计划 */
     handlePlanCopy(plan) {
@@ -634,9 +649,14 @@ export default {
         this.getList();
       });
     },
-    /** 执行计划 */
+    /** 执行计划：进入整页 */
     handlePlanRun(plan) {
-      this.$refs.handlePlanDialog.open(plan.planId);
+      if (!plan || plan.planId == null) return
+      const { teamKey, projectKey } = this.$route.params
+      const path = buildProjectModulePath(teamKey, projectKey, 'plan', plan.planId, 'run')
+      if (path) {
+        this.$router.push(path)
+      }
     },
     /** 删除按钮操作 */
     handleDelete(row) {

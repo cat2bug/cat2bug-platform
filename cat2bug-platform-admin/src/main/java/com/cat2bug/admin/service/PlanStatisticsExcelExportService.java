@@ -5,6 +5,7 @@ import com.cat2bug.common.excel.ExcelChart;
 import com.cat2bug.common.excel.ExcelChartSeries;
 import com.cat2bug.common.excel.FastExcelSupport;
 import com.cat2bug.common.excel.XlsxPatcher;
+import com.cat2bug.common.util.TeamModuleLabelContext;
 import com.cat2bug.system.mapper.SysPlanMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -47,7 +48,7 @@ public class PlanStatisticsExcelExportService {
         SysPlan query = new SysPlan();
         query.setProjectId(projectId);
         List<SysPlan> planList = sysPlanMapper.selectSysPlanList(query, 0, Integer.MAX_VALUE);
-        String sheetName = "测试计划统计";
+        String sheetName = TeamModuleLabelContext.apply("测试计划统计");
 
         List<double[]> chartValues = new ArrayList<>();
         byte[] xlsx = FastExcelSupport.writeWorkbook(workbook -> {
@@ -214,7 +215,7 @@ public class PlanStatisticsExcelExportService {
     }
 
     private void writeTitleCell(Worksheet sheet, int row, int col, String text) {
-        sheet.value(row, col, text);
+        sheet.value(row, col, TeamModuleLabelContext.apply(text));
         applyTitleStyle(sheet, row, col);
     }
 

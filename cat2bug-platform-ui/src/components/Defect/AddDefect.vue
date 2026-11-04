@@ -140,7 +140,7 @@ export default {
       // 表单校验（处理人可选，与未指派泳道闭环）
       rules: {
         defectName: [
-          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: "input" }
+          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: ['change', 'blur'] }
         ],
         // defectDescribe: [
         //   { required: true, message: this.$i18n.t('defect.describe-cannot-empty'), trigger: "input" }
@@ -191,7 +191,7 @@ export default {
       const rules = {}
       if (this.isBuiltinDefectFieldVisible('defectName')) {
         rules.defectName = [
-          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: 'input' }
+          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: ['change', 'blur'] }
         ]
       }
       const customFields = ((this.defectFieldLayout && this.defectFieldLayout.customFields) || [])

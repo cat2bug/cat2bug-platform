@@ -1,44 +1,40 @@
 <template>
   <div class="app-container">
-    <el-page-header :title="$t('back')" @back="goBack" :content="$t('member.manage')">
-    </el-page-header>
-    <div class="member-tools">
-      <!--用户数据-->
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
-        <el-form-item label="" prop="userName">
-          <el-input
-            v-model="queryParams.userName"
-            :placeholder="$t('member.please-enter-name')"
-            :prefix-icon="$legacyIcon('el-icon-user')"
-            clearable
-            style="width: 240px"
-            @input="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item label="" prop="phoneNumber">
-          <el-input
-            v-model="queryParams.phoneNumber"
-            :placeholder="$t('member.please-enter-phone-number')"
-            :prefix-icon="$legacyIcon('el-icon-phone-outline')"
-            clearable
-            style="width: 240px"
-            @input="handleQuery"
-          />
-        </el-form-item>
-      </el-form>
-
-      <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
-          <el-button
-            type="primary"
-            plain
-            :icon="$legacyIcon('el-icon-plus')"
-            size="small"
-            @click="handleAdd"
-            v-hasPermi="['system:member:add']"
-          >{{ $t('member.add') }}</el-button>
-        </el-col>
-      </el-row>
+    <el-row class="project-add-page-header project-add-page-header--with-filter">
+      <el-page-header :title="$t('back')" @back="goBack" :content="$t('member.manage')">
+      </el-page-header>
+    </el-row>
+    <div class="list-page-toolbar" v-show="showSearch">
+      <div class="list-page-toolbar__filters">
+        <el-input
+          v-model="queryParams.userName"
+          :placeholder="$t('member.please-enter-name')"
+          :prefix-icon="$legacyIcon('el-icon-user')"
+          clearable
+          size="small"
+          style="width: 240px"
+          @input="handleQuery"
+        />
+        <el-input
+          v-model="queryParams.phoneNumber"
+          :placeholder="$t('member.please-enter-phone-number')"
+          :prefix-icon="$legacyIcon('el-icon-phone-outline')"
+          clearable
+          size="small"
+          style="width: 240px"
+          @input="handleQuery"
+        />
+      </div>
+      <div class="list-page-toolbar__actions">
+        <el-button
+          type="primary"
+          plain
+          :icon="$legacyIcon('el-icon-plus')"
+          size="small"
+          @click="handleAdd"
+          v-hasPermi="['system:member:add']"
+        >{{ $t('member.add') }}</el-button>
+      </div>
     </div>
     <el-row>
       <el-table v-loading="loading" :data="userList" @selection-change="handleSelectionChange">
@@ -335,9 +331,12 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.dateRange = [];
-      this.resetForm("queryForm");
+      this.queryParams.userName = undefined;
+      this.queryParams.phoneNumber = undefined;
       this.queryParams.deptId = undefined;
-      this.$refs.tree.setCurrentKey(null);
+      if (this.$refs.tree) {
+        this.$refs.tree.setCurrentKey(null);
+      }
       this.handleQuery();
     },
     // 多选框选中数据
@@ -439,21 +438,3 @@ export default {
   }
 };
 </script>
-<style lang="scss" scoped>
-.member-tools {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  > * {
-    display: inline-block;
-    justify-content: flex-start;
-    margin-bottom: 0px;
-    :deep(.el-form-item){
-      margin-bottom: 0px;
-    }
-  }
-}
-</style>

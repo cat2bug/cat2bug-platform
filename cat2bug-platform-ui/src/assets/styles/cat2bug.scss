@@ -23,6 +23,10 @@
   --project-list-toolbar-v-gap: var(--project-list-section-v-gap);
   --case-toolbar-v-gap: var(--project-list-section-v-gap);
   --defect-toolbar-v-gap: var(--project-list-section-v-gap);
+  /* 全站工具条间距（管理页搜索框横向 / 区块纵向同源） */
+  --cat2bug-toolbar-item-gap: 10px;
+  --cat2bug-toolbar-row-gap: 8px;
+  --cat2bug-toolbar-section-gap: 10px;
   /* 全站控件圆角，与 el-table 一致 */
   --cat2bug-border-radius: 4px;
   /* 缺陷日志列表容器圆角（无外边框） */
@@ -68,6 +72,21 @@
   --plan-stat-pass-color: rgb(19, 206, 102);
   --plan-stat-fail-color: #f56c6c;
   --plan-stat-unexec-color: #909399;
+  --plan-stat-total-color: var(--cat2bug-primary, #1890ff);
+  /* 计划执行页统计卡分层（浅色） */
+  --plan-stat-card-key-bg: #ffffff;
+  --plan-stat-card-rate-bg: var(--bg-color-block, #f8f8f9);
+  --plan-stat-card-border: var(--border-color-light, #ebeef5);
+  --plan-stat-card-gap: var(--cat2bug-toolbar-item-gap, 10px);
+  --plan-stat-card-padding-y: 12px;
+  --plan-stat-card-padding-x: 12px;
+  --plan-stat-accent-width: 3px;
+  --plan-stat-title-size: 12px;
+  --plan-stat-value-size-key: 20px;
+  --plan-stat-value-size-rate: 16px;
+  --plan-stat-rate-track: var(--progress-track-bg, #ebeef5);
+  --plan-stat-rate-fill: var(--cat2bug-primary, #1890ff);
+  --plan-stat-hover-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 
   /* Cat2BugTable 表头排序箭头（浅色） */
   --cat2bug-table-sort-caret-inactive: #c0c4cc;
@@ -973,6 +992,21 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
   }
 }
 
+/* EP radio-button 默认 outline 描边；父级 overflow:hidden 会裁上边。改真实 border。 */
+.el-radio-button .el-radio-button__inner {
+  outline: none !important;
+  border: 1px solid var(--border-color-base, var(--el-border-color, #dcdfe6)) !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+}
+.el-radio-button + .el-radio-button .el-radio-button__inner {
+  margin-left: -1px;
+}
+.el-radio-button.is-active .el-radio-button__inner {
+  position: relative;
+  z-index: 1;
+  border-color: var(--cat2bug-primary, var(--el-color-primary, #409eff)) !important;
+}
 .el-radio-button:not(:last-child) .el-radio-button__inner {
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
@@ -1454,10 +1488,11 @@ img.cat2bug-image-error__img {
 }
 .plan-stat-total,
 .case-total {
-  font-weight: 500;
+  color: var(--plan-stat-total-color);
+  font-weight: 600;
 }
 
-/* 测试计划统计（仪表盘 / 执行计划抽屉）：各指标标题与数值水平居中 */
+/* 测试计划统计（仪表盘 / 执行页）：各指标标题与数值水平居中 */
 .plan-statistics > *,
 .plan-statistical-item {
   display: flex;
@@ -1483,6 +1518,7 @@ img.cat2bug-image-error__img {
   align-items: center;
   justify-content: center;
   text-align: center;
+  min-width: 0;
 
   .el-statistic {
     width: 100%;
@@ -1509,6 +1545,339 @@ img.cat2bug-image-error__img {
     align-items: center;
     width: 100%;
   }
+}
+
+/*
+ * 计划执行页统计卡视觉层（共享，供 HandlePlanDialog + Defect* 使用）
+ * key = 倒计时 / 用例四态 / 缺陷总数；rate = 比率类（可带细进度条）
+ */
+.plan-statistical {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--plan-stat-card-gap, 10px);
+  align-content: flex-start;
+}
+
+/* A4 · 底进度条：去掉左边强调条，统一用卡片底边进度轨区分关键/比率 */
+.plan-statistical-item.plan-stat-card {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 108px;
+  max-width: 100%;
+  box-sizing: border-box;
+  border-radius: var(--cat2bug-border-radius, 4px);
+  border: 1px solid var(--plan-stat-card-border, var(--border-color-light));
+  background-color: var(--plan-stat-card-rate-bg, var(--card-bg));
+  overflow: hidden;
+  color: var(--text-color-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  padding: var(--plan-stat-card-padding-y, 12px) var(--plan-stat-card-padding-x, 12px);
+  padding-bottom: calc(var(--plan-stat-card-padding-y, 12px) + var(--plan-stat-bottom-bar-height, 4px));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  --plan-stat-accent: var(--border-color-base, #dcdfe6);
+  --plan-stat-bottom-bar-height: 4px;
+
+  > .el-tooltip,
+  > .el-tooltip__trigger {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+  }
+
+  /* A4：关闭左边条 */
+  &::before {
+    content: none;
+    display: none;
+  }
+
+  &:hover {
+    box-shadow: var(--plan-stat-hover-shadow);
+    border-color: var(--border-color-base, var(--plan-stat-card-border));
+  }
+
+  /* 标题弱、数值强 */
+  .el-statistic__head,
+  .el-statistic .head,
+  .el-statistic .title {
+    color: var(--text-color-secondary) !important;
+    font-size: var(--plan-stat-title-size, 12px);
+    font-weight: 400;
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+
+  .el-statistic__content,
+  .el-statistic__content-value,
+  .el-statistic .con,
+  .el-statistic .content {
+    color: var(--text-color-primary) !important;
+    font-size: var(--plan-stat-value-size-rate, 16px);
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .el-statistic__head .plan-stat-pass,
+  .el-statistic__content-value .plan-stat-pass,
+  .head .plan-stat-pass,
+  .content .plan-stat-pass,
+  .title .plan-stat-pass,
+  .con .plan-stat-pass {
+    color: var(--plan-stat-pass-color) !important;
+  }
+  .el-statistic__head .plan-stat-fail,
+  .el-statistic__content-value .plan-stat-fail,
+  .head .plan-stat-fail,
+  .content .plan-stat-fail,
+  .title .plan-stat-fail,
+  .con .plan-stat-fail {
+    color: var(--plan-stat-fail-color) !important;
+  }
+  .el-statistic__head .plan-stat-unexec,
+  .el-statistic__content-value .plan-stat-unexec,
+  .head .plan-stat-unexec,
+  .content .plan-stat-unexec,
+  .title .plan-stat-unexec,
+  .con .plan-stat-unexec {
+    color: var(--plan-stat-unexec-color) !important;
+  }
+  .el-statistic__head .plan-stat-total,
+  .el-statistic__content-value .plan-stat-total,
+  .head .plan-stat-total,
+  .content .plan-stat-total,
+  .title .plan-stat-total,
+  .con .plan-stat-total,
+  .case-total {
+    color: var(--plan-stat-total-color) !important;
+    font-weight: 600;
+  }
+}
+
+/* 变体须带 .plan-statistical-item，否则压不过基类上的 --plan-stat-accent */
+.plan-statistical-item.plan-stat-card--key {
+  background-color: var(--plan-stat-card-key-bg, var(--card-bg));
+  --plan-stat-accent: var(--cat2bug-primary, #1890ff);
+
+  .el-statistic__content,
+  .el-statistic__content-value,
+  .el-statistic .con,
+  .el-statistic .content {
+    font-size: var(--plan-stat-value-size-key, 20px);
+    font-weight: 700;
+  }
+
+  /* 倒计时 / 缺陷总数等：底边实心强调条（用例卡自带分段条，排除） */
+  &:not(.plan-stat-card--case)::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--plan-stat-bottom-bar-height, 4px);
+    background: var(--plan-stat-accent);
+  }
+}
+
+.plan-statistical-item.plan-stat-card--countdown {
+  min-width: 168px;
+  --plan-stat-accent: var(--cat2bug-primary, #1890ff);
+
+  .el-statistic,
+  .el-countdown {
+    width: 100%;
+  }
+  .el-countdown__header,
+  .el-statistic__head {
+    color: var(--text-color-secondary);
+    font-size: var(--plan-stat-title-size, 12px);
+  }
+  .el-countdown__content,
+  .el-statistic__content {
+    font-size: var(--plan-stat-value-size-key, 20px);
+    font-weight: 700;
+    color: var(--text-color-primary);
+  }
+}
+
+.plan-stat-countdown-ended {
+  width: 100%;
+  text-align: center;
+  font-size: var(--plan-stat-value-size-key, 20px);
+  font-weight: 700;
+  color: var(--text-color-secondary);
+}
+
+.plan-statistical-item.plan-stat-card--case {
+  min-width: 220px;
+  flex: 1.35 1 0;
+  --plan-stat-accent: var(--plan-stat-pass-color);
+}
+
+.plan-statistical-item.plan-stat-card--defect {
+  --plan-stat-accent: var(--plan-stat-fail-color);
+}
+
+.plan-statistical-item.plan-stat-card--rate {
+  background-color: var(--plan-stat-card-rate-bg, var(--bg-color-block));
+  --plan-stat-accent: var(--cat2bug-primary, #1890ff);
+  opacity: 1;
+
+  .el-statistic__content,
+  .el-statistic__content-value,
+  .el-statistic .con,
+  .el-statistic .content {
+    font-size: var(--plan-stat-value-size-rate, 16px);
+    font-weight: 600;
+    color: var(--text-color-regular) !important;
+  }
+}
+
+.plan-statistical-item.plan-stat-card--metric {
+  --plan-stat-accent: var(--text-color-secondary);
+}
+
+.plan-statistical-item.plan-stat-card--metric::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--plan-stat-bottom-bar-height, 4px);
+  background: var(--plan-stat-rate-track);
+}
+
+/* 用例四态：数值网格 + 底部分段条 */
+.plan-stat-label {
+  width: 100%;
+  color: var(--text-color-secondary);
+  font-size: var(--plan-stat-title-size, 12px);
+  font-weight: 400;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.plan-stat-case-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px 6px;
+  align-items: end;
+}
+
+.plan-stat-case-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  padding: 2px 0;
+  border-radius: var(--cat2bug-border-radius, 4px);
+  line-height: 1.2;
+
+  &:hover {
+    background-color: var(--bg-color-block, transparent);
+  }
+
+  &.click {
+    cursor: pointer;
+  }
+}
+
+.plan-stat-case-num {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plan-stat-case-name {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 400;
+  color: inherit;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.plan-stat-case-cell.plan-stat-pass .plan-stat-case-num,
+.plan-stat-case-cell.plan-stat-pass .plan-stat-case-name {
+  color: var(--plan-stat-pass-color);
+}
+.plan-stat-case-cell.plan-stat-fail .plan-stat-case-num,
+.plan-stat-case-cell.plan-stat-fail .plan-stat-case-name {
+  color: var(--plan-stat-fail-color);
+}
+.plan-stat-case-cell.plan-stat-unexec .plan-stat-case-num,
+.plan-stat-case-cell.plan-stat-unexec .plan-stat-case-name {
+  color: var(--plan-stat-unexec-color);
+}
+.plan-stat-case-cell.plan-stat-total .plan-stat-case-num,
+.plan-stat-case-cell.plan-stat-total .plan-stat-case-name {
+  color: var(--plan-stat-total-color);
+}
+
+/* A4：用例分段条贴卡片底边 */
+.plan-stat-case-bar {
+  display: flex;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: none;
+  height: var(--plan-stat-bottom-bar-height, 4px);
+  margin: 0;
+  border-radius: 0;
+  overflow: hidden;
+  background: var(--plan-stat-rate-track);
+}
+
+.plan-stat-case-bar__seg {
+  min-width: 0;
+  height: 100%;
+  &.is-pass { background: var(--plan-stat-pass-color); }
+  &.is-fail { background: var(--plan-stat-fail-color); }
+  &.is-unexec { background: var(--plan-stat-unexec-color); }
+  &.is-empty { background: var(--plan-stat-rate-track); flex: 1 1 auto; }
+}
+
+/* A4：比率卡底边百分比轨，由 --plan-stat-progress（0–100）驱动 */
+.plan-stat-rate-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: none;
+  height: var(--plan-stat-bottom-bar-height, 4px);
+  margin: 0;
+  border-radius: 0;
+  background: var(--plan-stat-rate-track);
+  overflow: hidden;
+}
+
+.plan-stat-rate-bar__fill {
+  height: 100%;
+  width: calc(var(--plan-stat-progress, 0) * 1%);
+  max-width: 100%;
+  border-radius: 0;
+  background: var(--plan-stat-rate-fill);
+  transition: width 0.25s ease;
 }
 
 .plan-statistics > .el-statistic {
@@ -1554,6 +1923,8 @@ img.cat2bug-image-error__img {
 .project-manage-tools,
 .project-option-list-tools,
 .git-tools,
+.member-tools,
+.project-tools,
 .defect-excel-tools.defect-view-toolbar {
   column-gap: var(--cat2bug-toolbar-section-gap, 10px) !important;
   row-gap: var(--cat2bug-toolbar-row-gap, 8px) !important;
@@ -1576,7 +1947,9 @@ img.cat2bug-image-error__img {
 .report-tools > .left,
 .notice-tools > .left,
 .project-option-list-tools > .left,
-.git-tools > .left {
+.git-tools > .left,
+/* 管理页查询条（成员/角色/用户/字典等）：用 gap 替代 Element Plus inline 默认大间距 */
+.app-container .el-form.el-form--inline {
   display: flex !important;
   flex-wrap: wrap;
   align-items: center;
@@ -1590,7 +1963,11 @@ img.cat2bug-image-error__img {
 .plan-add-case-toolbar .el-form--inline .el-form-item,
 .defect-table-tools-bar .el-form--inline .el-form-item,
 .notice-tools > .left .el-form-item,
-.project-option-list-tools > .left .el-form-item {
+.project-option-list-tools > .left .el-form-item,
+.app-container .el-form.el-form--inline .el-form-item,
+.project-tools .el-form--inline .el-form-item,
+.member-tools .el-form--inline .el-form-item,
+.list-page-toolbar .el-form--inline .el-form-item {
   margin-right: 0 !important;
   margin-bottom: 0 !important;
 }
@@ -1947,6 +2324,34 @@ img.cat2bug-image-error__img {
   .el-select__wrapper {
     width: 100%;
     box-sizing: border-box;
+  }
+}
+
+/* el-select placeholder 绝对定位不撑宽度，未设宽时会被压成只剩箭头 */
+.plan-add-case-toolbar .el-form-item.plan-add-review-status-item {
+  flex: 0 0 auto;
+}
+
+.plan-add-case-toolbar .el-select.plan-add-review-status-input {
+  width: var(--defect-query-field-width, 180px);
+  min-width: var(--defect-query-field-width, 180px);
+  max-width: var(--defect-query-field-width, 180px);
+
+  .el-select__wrapper {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .el-select__selection {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .el-select__selected-item,
+  .el-select__placeholder {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
@@ -2317,16 +2722,19 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   align-items: flex-start;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   text-align: left;
 
   .el-link {
     align-self: stretch;
+    display: block;
     width: 100%;
     max-width: 100%;
+    min-width: 0;
     text-align: left !important;
-    /* Safari：-webkit-line-clamp 未设 box-align 时标题会在格内水平居中 */
-    -webkit-box-pack: start;
-    -webkit-box-align: start;
+    overflow: hidden;
 
     /* el-link 的下划线是撑满元素宽度的 ::after，这里链接占满整格，改为只给文字加下划线 */
     &::after,
@@ -2338,6 +2746,27 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
       text-decoration: underline;
       text-underline-offset: 3px;
     }
+  }
+
+  /* 省略加在文字节点上；夹在 el-link（inline-flex）上时省略号失效，会被行高上限裁成半截字 */
+  .el-link__inner {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    /* Safari：未设 box-align 时标题会在格内水平居中 */
+    -webkit-box-pack: start;
+    -webkit-box-align: start;
+    overflow: hidden;
+    white-space: pre-line;
+    word-break: break-word;
+    line-height: 22px;
+    max-height: 66px;
+    text-align: left;
+  }
+
+  .defect-statistics {
+    flex-shrink: 0;
   }
 }
 
@@ -2890,6 +3319,19 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   margin-top: 20px;
 }
 
+/* 列表/筛选管理页：页头与搜索工具条统一 10px（覆盖上文 20px） */
+.app-container > .el-page-header + .member-tools,
+.app-container > .el-page-header + .list-page-toolbar,
+.app-container > .el-page-header + .project-tools,
+.app-container > .el-row:first-child:not(.project-add-page-header) + .member-tools,
+.app-container > .el-row:first-child:not(.project-add-page-header) + .list-page-toolbar,
+.app-container > .el-row:first-child:not(.project-add-page-header) + .project-tools,
+.app-container > .project-add-page-header + .list-page-toolbar,
+.app-container > .project-add-page-header + .member-tools,
+.app-container > .project-add-page-header + .project-tools {
+  margin-top: var(--project-list-section-v-gap, 10px) !important;
+}
+
 /* 项目创建/编辑表单页：避免 el-row gutter 负边距撑出横向滚动条 */
 .app-container.project-form-page {
   overflow-x: hidden;
@@ -2930,9 +3372,32 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   margin-top: 20px;
 }
 
-/* 带列表筛选页：页头与筛选区 10px */
-.app-container > .project-add-page-header.project-add-page-header--with-filter + * {
-  margin-top: 10px;
+/* 带列表筛选的管理页：页头内边距 / 页头→工具条 / 工具条→列表 均为 --project-list-section-v-gap */
+.app-container > .project-add-page-header.project-add-page-header--with-filter {
+  .el-page-header {
+    padding-bottom: var(--project-list-section-v-gap, 10px);
+  }
+}
+
+.app-container > .project-add-page-header.project-add-page-header--with-filter + *,
+.app-container > .project-add-page-header.project-add-page-header--with-filter + .list-page-toolbar,
+.app-container > .project-add-page-header.project-add-page-header--with-filter + .member-tools,
+.app-container > .project-add-page-header.project-add-page-header--with-filter + .project-tools {
+  margin-top: var(--project-list-section-v-gap, 10px) !important;
+}
+
+.app-container > .project-add-page-header.project-add-page-header--with-filter + .list-page-toolbar,
+.app-container > .project-add-page-header.project-add-page-header--with-filter + .member-tools,
+.app-container > .project-add-page-header.project-add-page-header--with-filter + .project-tools {
+  margin-bottom: var(--project-list-section-v-gap, 10px) !important;
+}
+
+.app-container > .list-page-toolbar + .el-table,
+.app-container > .list-page-toolbar + .el-row > .el-table,
+.app-container > .member-tools + .el-table,
+.app-container > .member-tools + .el-row > .el-table,
+.app-container > .project-tools + .el-table {
+  margin-top: 0;
 }
 
 .red {

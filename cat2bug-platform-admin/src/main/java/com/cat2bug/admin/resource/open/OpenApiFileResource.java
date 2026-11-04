@@ -1,7 +1,10 @@
 package com.cat2bug.admin.resource.open;
 
 import com.cat2bug.common.api.AjaxResult;
+import com.cat2bug.common.domain.SysProjectApi;
+import com.cat2bug.common.open.OpenApiKeyResolver;
 import com.cat2bug.common.util.StringUtils;
+import com.cat2bug.framework.security.open.ApiKeyConstants;
 import com.cat2bug.framework.storage.FileUploadService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -11,6 +14,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.container.ContainerRequestContext;
 import org.jboss.resteasy.reactive.RestForm;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
@@ -25,10 +29,14 @@ public class OpenApiFileResource {
     @Inject
     FileUploadService fileUploadService;
 
+    @Inject
+    OpenApiKeyResolver openApiKeyResolver;
+
     @POST
     @Path("/upload")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public AjaxResult uploadFile(@RestForm("file") FileUpload file, @Context UriInfo uriInfo) {
+    public AjaxResult uploadFile(@RestForm("file") FileUpload file, @Context UriInfo uriInfo,
+                                 @Context ContainerRequestContext request) {
         try {
             if (file == null || file.uploadedFile() == null) {
                 return AjaxResult.error("上传文件不能为空");
@@ -37,7 +45,7 @@ public class OpenApiFileResource {
             String originalFilename = file.fileName();
             try (var input = Files.newInputStream(file.uploadedFile())) {
                 FileUploadService.UploadResult result =
-                        fileUploadService.upload(input, size, originalFilename, null);
+                        fileUploadService.upload(input, size, originalFilename, null, projectId(request));
                 String filePath = result.getFileName();
                 String baseUrl = uriInfo.getBaseUri().toString();
                 if (baseUrl.endsWith("/")) {
@@ -57,6 +65,18 @@ public class OpenApiFileResource {
         } catch (Exception e) {
             return AjaxResult.error(e.getMessage());
         }
+    }
+
+    private Long projectId(ContainerRequestContext request) {
+        if (request == null) {
+            return null;
+        }
+        String apiKey = request.getHeaderString(ApiKeyConstants.HEADER_NAME);
+        if (apiKey == null || apiKey.isBlank()) {
+            return null;
+        }
+        SysProjectApi projectApi = openApiKeyResolver.findProjectApi(apiKey.replace("Bearer ", "").trim());
+        return projectApi == null ? null : projectApi.getProjectId();
     }
 
     private static String extractFileName(String filePath) {

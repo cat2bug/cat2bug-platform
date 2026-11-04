@@ -17,13 +17,23 @@ The system SHALL provide an Admin “团队角色” (team plan) module reachabl
 - **WHEN** a system admin opens the team plan module
 - **THEN** they can view and edit plan quota fields
 
+#### Scenario: Admin deletes unused plan
+
+- **WHEN** a system admin deletes a non-default plan that is not bound to any team
+- **THEN** the plan is removed
+
+#### Scenario: Bound plan cannot be deleted
+
+- **WHEN** a system admin attempts to delete a plan that is bound to one or more teams
+- **THEN** the delete is rejected with a clear in-use message
+
 ### Requirement: Default ordinary team plan
 
 The system SHALL seed a default plan named 「普通团队」 with:
 
 - max team members: 10
 - max projects per team: 20
-- max storage per project: 1 GiB (1073741824 bytes)
+- max storage per project: 5 GiB (5368709120 bytes)
 
 Existing teams without an explicit plan binding SHALL use this default plan.
 
@@ -67,4 +77,18 @@ When starting a create-project copy whose estimated (or resulting) selected cont
 
 - **WHEN** the selected copy estimate exceeds the team plan’s max storage per project
 - **THEN** the copy MUST NOT start until the selection fits the limit
+
+### Requirement: Team member removal frees max_members quota
+
+When a user is removed from a team (formal `sys_user_team` deleted), that user MUST NOT count toward the team's plan `max_members`. A subsequent invite or team-add of any user (including the same user) MUST succeed only if the resulting formal member count would not exceed `max_members`.
+
+#### Scenario: Seat freed after delete
+
+- **WHEN** a team is at max members and one non-creator formal member is removed
+- **THEN** inviting or team-adding another eligible user is allowed if the new count would be ≤ max_members
+
+#### Scenario: Re-add still checks quota
+
+- **WHEN** the team is again at max members
+- **THEN** re-adding a previously removed user is rejected with a quota error
 

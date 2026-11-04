@@ -41,33 +41,34 @@ PREPARE stmt FROM @q; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 UPDATE sys_team SET plan_id = 1 WHERE plan_id IS NULL;
 
+-- 菜单 ID 用 2440+，避免与 MCP(2160) 等冲突；幂等按 perms
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark, menu_name_i18n_key)
-SELECT 2160, '团队角色', 2072, 2, 'team-plan', 'admin/team-plan/index', NULL, 1, 0, 'C', '0', '0', 'admin:team-plan:list', 'peoples', 'admin', NOW(), '', NULL, '团队套餐配额', 'admin.team-plan'
+SELECT 2440, '团队套餐', 2072, 2, 'team-plan', 'admin/team-plan/index', NULL, 1, 0, 'C', '0', '0', 'admin:team-plan:list', 'peoples', 'admin', NOW(), '', NULL, '团队套餐配额', 'admin.team-plan'
 FROM DUAL
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = 2160 OR perms = 'admin:team-plan:list');
+WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE perms = 'admin:team-plan:list');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark, menu_name_i18n_key)
-SELECT 2161, '团队角色查询', 2160, 1, '#', '', NULL, 1, 0, 'F', '0', '0', 'admin:team-plan:query', '#', 'admin', NOW(), '', NULL, '', NULL
+SELECT 2441, '团队套餐查询', 2440, 1, '#', '', NULL, 1, 0, 'F', '0', '0', 'admin:team-plan:query', '#', 'admin', NOW(), '', NULL, '', NULL
 FROM DUAL
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = 2161 OR perms = 'admin:team-plan:query');
+WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE perms = 'admin:team-plan:query');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark, menu_name_i18n_key)
-SELECT 2162, '团队角色修改', 2160, 2, '#', '', NULL, 1, 0, 'F', '0', '0', 'admin:team-plan:edit', '#', 'admin', NOW(), '', NULL, '', NULL
+SELECT 2442, '团队套餐修改', 2440, 2, '#', '', NULL, 1, 0, 'F', '0', '0', 'admin:team-plan:edit', '#', 'admin', NOW(), '', NULL, '', NULL
 FROM DUAL
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = 2162 OR perms = 'admin:team-plan:edit');
+WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE perms = 'admin:team-plan:edit');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark, menu_name_i18n_key)
-SELECT 2163, '团队角色新增', 2160, 3, '#', '', NULL, 1, 0, 'F', '0', '0', 'admin:team-plan:add', '#', 'admin', NOW(), '', NULL, '', NULL
+SELECT 2443, '团队套餐新增', 2440, 3, '#', '', NULL, 1, 0, 'F', '0', '0', 'admin:team-plan:add', '#', 'admin', NOW(), '', NULL, '', NULL
 FROM DUAL
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = 2163 OR perms = 'admin:team-plan:add');
+WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE perms = 'admin:team-plan:add');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark, menu_name_i18n_key)
-SELECT 2164, '绑定套餐', 2132, 2, '#', '', NULL, 1, 0, 'F', '0', '0', 'admin:team:plan', '#', 'admin', NOW(), '', NULL, '', 'admin.team.bind-plan'
+SELECT 2444, '绑定套餐', 2132, 2, '#', '', NULL, 1, 0, 'F', '0', '0', 'admin:team:plan', '#', 'admin', NOW(), '', NULL, '', 'admin.team.bind-plan'
 FROM DUAL
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = 2164 OR perms = 'admin:team:plan');
+WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE perms = 'admin:team:plan');
 
 INSERT INTO sys_role_menu (role_id, menu_id)
 SELECT 1, m.menu_id
 FROM sys_menu m
-WHERE m.menu_id IN (2160, 2161, 2162, 2163, 2164)
+WHERE m.perms IN ('admin:team-plan:list', 'admin:team-plan:query', 'admin:team-plan:edit', 'admin:team-plan:add', 'admin:team:plan')
   AND NOT EXISTS (SELECT 1 FROM sys_role_menu rm WHERE rm.role_id = 1 AND rm.menu_id = m.menu_id);

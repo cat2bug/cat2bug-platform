@@ -129,6 +129,31 @@ export function updateMemberTeamRoleIds(teamId, memberId, roleIds) {
   })
 }
 
+/** 当前用户在团队中的队籍信息（formalMember / creator） */
+export function getTeamMembership(teamId) {
+  return request({
+    url: '/system/team/' + teamId + '/membership',
+    method: 'get'
+  })
+}
+
+/** 删除团队正式成员（保留项目挂职） */
+export function removeTeamMember(teamId, memberId) {
+  return request({
+    url: '/system/team/' + teamId + '/member/' + memberId,
+    method: 'delete'
+  })
+}
+
+/** 转让团队创建人 */
+export function transferTeamCreator(teamId, targetUserId) {
+  return request({
+    url: '/system/team/' + teamId + '/transfer-creator',
+    method: 'post',
+    data: { targetUserId }
+  })
+}
+
 // 删除团队
 export function delTeam(teamId) {
   return request({

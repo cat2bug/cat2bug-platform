@@ -2,11 +2,13 @@ package com.cat2bug.admin.resource;
 
 import com.cat2bug.common.api.AjaxResult;
 import com.cat2bug.common.domain.SysTeamPlan;
+import com.cat2bug.common.util.MessageUtils;
 import com.cat2bug.framework.security.RequiresPermissions;
 import com.cat2bug.framework.security.SecurityUtils;
 import com.cat2bug.system.service.SysTeamPlanService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -51,7 +53,14 @@ public class AdminTeamPlanResource {
         return toAjax(sysTeamPlanService.update(plan, op));
     }
 
+    @DELETE
+    @Path("/{planId}")
+    @RequiresPermissions("admin:team-plan:remove")
+    public AjaxResult remove(@PathParam("planId") Long planId) {
+        return toAjax(sysTeamPlanService.delete(planId));
+    }
+
     private AjaxResult toAjax(int rows) {
-        return rows > 0 ? AjaxResult.success() : AjaxResult.error("操作失败");
+        return rows > 0 ? AjaxResult.success() : AjaxResult.error(MessageUtils.message("team.plan.operate-failed"));
     }
 }

@@ -6,6 +6,7 @@ import com.cat2bug.common.domain.SysDefectLog;
 import com.cat2bug.common.domain.SysDefectShard;
 import com.cat2bug.common.domain.SysProject;
 import com.cat2bug.common.domain.SysUser;
+import com.cat2bug.common.util.DefectPageSettingsSupport;
 import com.cat2bug.common.util.Md5Utils;
 import com.cat2bug.common.util.StringUtils;
 import com.cat2bug.framework.security.AuthContext;
@@ -40,6 +41,9 @@ public class SysDefectShardService {
     SysDefectService sysDefectService;
 
     @Inject
+    SysDefectPageSettingsService sysDefectPageSettingsService;
+
+    @Inject
     SysDefectLogService sysDefectLogService;
 
     @Inject
@@ -69,6 +73,17 @@ public class SysDefectShardService {
     @Transactional
     public SysDefectShard insertSysDefectShard(SysDefectShard sysDefectShard) {
         LoginUser loginUser = requireLoginUser();
+        Long projectId = sysDefectShard.getProjectId();
+        if (projectId == null && sysDefectShard.getDefectId() != null) {
+            SysDefect defect = sysDefectService.selectSysDefectByDefectIdOptional(sysDefectShard.getDefectId());
+            if (defect != null) {
+                projectId = defect.getProjectId();
+                if (sysDefectShard.getProjectId() == null) {
+                    sysDefectShard.setProjectId(projectId);
+                }
+            }
+        }
+        sysDefectPageSettingsService.assertShareAllowedForDefectProject(projectId);
         Date now = new Date();
         sysDefectShard.setCreateById(loginUser.getUserId());
         sysDefectShard.setUpdateTime(now);
@@ -123,6 +138,9 @@ public class SysDefectShardService {
         SysDefect sysDefect = sysDefectService.selectSysDefectByDefectIdOptional(shard.getDefectId());
         if (sysDefect == null) {
             return errorPayload(MSG_NOT_FOUND);
+        }
+        if (!sysDefectPageSettingsService.isShareAllowedForProject(sysDefect.getProjectId())) {
+            return errorPayload(DefectPageSettingsSupport.shareDisabledMessage());
         }
 
         SysDefectLog query = new SysDefectLog();

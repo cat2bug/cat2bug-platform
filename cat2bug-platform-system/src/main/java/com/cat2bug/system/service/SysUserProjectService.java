@@ -12,6 +12,7 @@ import com.cat2bug.common.domain.vo.BatchUserRoleVo;
 import com.cat2bug.common.domain.vo.ProjectMemberRemovePreview;
 import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.common.util.MessageUtils;
+import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectRoleMapper;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,11 +28,19 @@ import java.util.Map;
 @ApplicationScoped
 public class SysUserProjectService {
 
+    /** 项目创建人 project.create-by */
+    private static final Long PROJECT_CREATE_BY_ROLE_ID = 11L;
+    /** 项目管理员 project.admin */
+    private static final Long PROJECT_ADMIN_ROLE_ID = 6L;
+
     @Inject
     SysUserProjectMapper sysUserProjectMapper;
 
     @Inject
     SysUserProjectRoleMapper sysUserProjectRoleMapper;
+
+    @Inject
+    SysProjectMapper sysProjectMapper;
 
     @Inject
     SysProjectDefectTabsService sysProjectDefectTabsService;
@@ -63,6 +72,16 @@ public class SysUserProjectService {
         String keyword = search.trim();
         long total = sysUserProjectMapper.countNotSysUserListByProjectId(projectId, keyword);
         List<SysUser> rows = sysUserProjectMapper.selectNotSysUserListByProjectId(
+                projectId, keyword, page.getOffset(), page.getPageSize());
+        return new TableDataInfo(rows, total);
+    }
+
+    /** 本项目所属团队中尚未加入项目的成员；允许空 search。 */
+    public TableDataInfo selectTeamNotMemberPage(Long projectId, String search, Integer pageNum, Integer pageSize) {
+        PageDomain page = PageDomain.of(pageNum, pageSize);
+        String keyword = (search == null || search.isBlank()) ? null : search.trim();
+        long total = sysUserProjectMapper.countTeamNotMemberListByProjectId(projectId, keyword);
+        List<SysUser> rows = sysUserProjectMapper.selectTeamNotMemberListByProjectId(
                 projectId, keyword, page.getOffset(), page.getPageSize());
         return new TableDataInfo(rows, total);
     }
@@ -117,12 +136,70 @@ public class SysUserProjectService {
         return sysUserProjectMapper.updateSysUserProjectByUserIdAndProjectId(sysUserProject);
     }
 
+    public boolean isProjectCreator(Long projectId, Long userId) {
+        if (projectId == null || userId == null) {
+            return false;
+        }
+        return sysUserProjectRoleMapper.countByProjectUserAndRole(projectId, userId, PROJECT_CREATE_BY_ROLE_ID) > 0;
+    }
+
+    /**
+     * 转让项目创建人：仅当前创建人可调用；目标须为本项目成员；同步 sys_project.create_by。
+     */
+    @Transactional
+    public int transferCreator(Long projectId, Long operatorId, Long targetUserId) {
+        if (projectId == null || operatorId == null || targetUserId == null) {
+            throw new ApiException(400, "参数无效");
+        }
+        if (operatorId.equals(targetUserId)) {
+            throw new ApiException(400, "不能转让给自己");
+        }
+        if (!isProjectCreator(projectId, operatorId)) {
+            throw new ApiException(403, "仅项目创建人可转让");
+        }
+        SysUserProject target = findUserProject(projectId, targetUserId);
+        if (target == null || target.getUserProjectId() == null) {
+            throw new ApiException(400, "受让人须为本项目成员");
+        }
+        SysUserProject operator = findUserProject(projectId, operatorId);
+        if (operator == null || operator.getUserProjectId() == null) {
+            throw new ApiException(403, "仅项目创建人可转让");
+        }
+
+        sysUserProjectRoleMapper.deleteSysUserProjectRoleByUserProjectId(target.getUserProjectId());
+        SysUserProjectRole creatorLink = new SysUserProjectRole();
+        creatorLink.setUserProjectId(target.getUserProjectId());
+        creatorLink.setRoleId(PROJECT_CREATE_BY_ROLE_ID);
+        if (sysUserProjectRoleMapper.insertSysUserProjectRole(creatorLink) != 1) {
+            throw new ApiException("转让创建人失败");
+        }
+
+        sysUserProjectRoleMapper.deleteByUserProjectIdAndRoleId(operator.getUserProjectId(), PROJECT_CREATE_BY_ROLE_ID);
+        List<Long> remain = sysUserProjectRoleMapper.selectRoleIdsByUserProjectId(operator.getUserProjectId());
+        if (remain == null || remain.isEmpty()) {
+            SysUserProjectRole admin = new SysUserProjectRole();
+            admin.setUserProjectId(operator.getUserProjectId());
+            admin.setRoleId(PROJECT_ADMIN_ROLE_ID);
+            if (sysUserProjectRoleMapper.insertSysUserProjectRole(admin) != 1) {
+                throw new ApiException("转让后写入原创建人角色失败");
+            }
+        }
+
+        if (sysProjectMapper.updateCreateBy(projectId, String.valueOf(targetUserId)) != 1) {
+            throw new ApiException("更新项目创建人字段失败");
+        }
+        return 1;
+    }
+
     public ProjectMemberRemovePreview previewRemoveMember(Long projectId, Long memberId) {
         if (projectId == null || memberId == null) {
             throw new ApiException(400, "项目或成员无效");
         }
         if (!projectMembershipAuth.isProjectMember(memberId, projectId)) {
             throw new ApiException(404, "成员不在该项目中");
+        }
+        if (isProjectCreator(projectId, memberId)) {
+            throw new ApiException(400, "项目创建人不可删除，请先转让创建人角色");
         }
         ProjectMemberRemovePreview preview = new ProjectMemberRemovePreview();
         SysDefectService.MemberHandlerImpact impact = sysDefectService.findOpenHandlerImpact(projectId, memberId);
@@ -161,6 +238,9 @@ public class SysUserProjectService {
         if (!projectMembershipAuth.isProjectMember(memberId, projectId)) {
             throw new ApiException(404, "成员不在该项目中");
         }
+        if (isProjectCreator(projectId, memberId)) {
+            throw new ApiException(400, "项目创建人不可删除，请先转让创建人角色");
+        }
         ProjectMemberRemovePreview preview = previewRemoveMember(projectId, memberId);
         if (preview.isRequiresHandoff()) {
             if (handoffUserId == null) {
@@ -178,11 +258,9 @@ public class SysUserProjectService {
         sysGitRepositoryMemberService.syncRemoveOnProjectMemberRemoval(
                 projectId, memberId, preview.isRequiresHandoff() ? handoffUserId : null);
 
-        int rows = sysUserProjectMapper.deleteSysUserProjectByProjectIdAndUserId(projectId, memberId);
-        if (rows > 0) {
-            projectMembershipAuth.clearCurrentProjectIfMatches(memberId, projectId);
-        }
-        return rows;
+        // 不在此处清零被移出者的 currentProjectId：保留后其后续请求可命中
+        // 「您已被移出该项目」文案，由前端弹框引导回项目列表后再清上下文。
+        return sysUserProjectMapper.deleteSysUserProjectByProjectIdAndUserId(projectId, memberId);
     }
 
     /** 兼容旧调用：无交接人。 */
@@ -192,5 +270,16 @@ public class SysUserProjectService {
 
     public List<SysUser> selectSysUserListByProjectId(Long projectId) {
         return sysUserProjectMapper.selectSysUserListByProjectId(projectId, null, null, 0, Integer.MAX_VALUE);
+    }
+
+    private SysUserProject findUserProject(Long projectId, Long userId) {
+        SysUserProject query = new SysUserProject();
+        query.setProjectId(projectId);
+        query.setUserId(userId);
+        List<SysUserProject> rows = sysUserProjectMapper.selectSysUserProjectList(query);
+        if (rows == null || rows.isEmpty()) {
+            return null;
+        }
+        return rows.get(0);
     }
 }

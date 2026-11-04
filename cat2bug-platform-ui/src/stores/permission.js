@@ -8,6 +8,8 @@ import {
   rewriteProjectMenuPaths
 } from '@/utils/project-module-path'
 import { getCurrentProjectId } from '@/utils/store-context'
+import { filterMenuRoutesByTeamModules } from '@/utils/module-page-settings'
+import { useModulePageSettingsStore } from '@/stores/modulePageSettings'
 import { defineStore } from 'pinia'
 
 const devToolsEnabled = process.env.VUE_APP_ENABLE_DEV_TOOLS === 'true'
@@ -191,10 +193,19 @@ export const usePermissionStore = defineStore('permission', {
       this.sidebarRouters = routes
     },
     GenerateRoutes() {
-      return loadPermissionDeps().then(() => Promise.all([
-        getRouters(),
-        resolveCurrentProjectPathKeys()
-      ]).then(([res, pathKeys]) => {
+      return loadPermissionDeps().then(() => {
+        const moduleStore = useModulePageSettingsStore()
+        const pathKeysPromise = resolveCurrentProjectPathKeys()
+        const settingsPromise = pathKeysPromise.then((pathKeys) => {
+          const projectId = (pathKeys && pathKeys.projectId) || getCurrentProjectId()
+          if (!projectId) return null
+          return moduleStore.loadProject(projectId)
+        })
+        return Promise.all([
+          getRouters(),
+          pathKeysPromise,
+          settingsPromise
+        ]).then(([res, pathKeys]) => {
         try {
           const routeData = Array.isArray(res.data) ? res.data : []
           const sdata = JSON.parse(JSON.stringify(routeData))
@@ -210,7 +221,8 @@ export const usePermissionStore = defineStore('permission', {
             rewriteProjectMenuPaths(sdata, pathKeys.teamKey, pathKeys.projectKey)
             stripNamespacedProjectMenuRoutes(rdata)
           }
-          const sidebarRoutes = filterAsyncRouter(sdata)
+          const gatedSidebar = filterMenuRoutesByTeamModules(sdata, moduleStore.settings)
+          const sidebarRoutes = filterAsyncRouter(gatedSidebar)
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
           const asyncRoutes = filterDynamicRoutes(dynamicRoutesRef)
           prefixRouteNamesFn(rewriteRoutes)
@@ -229,7 +241,8 @@ export const usePermissionStore = defineStore('permission', {
           console.error('[GenerateRoutes]', error)
           return Promise.reject(error)
         }
-      }))
+      })
+      })
     }
   }
 })

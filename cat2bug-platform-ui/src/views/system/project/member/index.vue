@@ -87,7 +87,14 @@
           >
             <template #default="{ row }">
               <el-button
-                v-if="row.userId !== 1"
+                v-if="canTransferCreator(row)"
+                size="small"
+                link
+                :icon="$legacyIcon('el-icon-s-custom')"
+                @click="transferCreatorHandle()"
+              >{{$t('project.transfer-creator')}}</el-button>
+              <el-button
+                v-else-if="row.userId !== 1"
                 size="small"
                 link
                 :icon="$legacyIcon('el-icon-delete')"
@@ -170,6 +177,43 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <el-dialog
+      v-model="transferOpen"
+      :title="$t('project.transfer-creator-title')"
+      width="480px"
+      append-to-body
+    >
+      <el-form label-width="100px" size="small">
+        <el-form-item :label="$t('project.transfer-target')">
+          <el-select
+            v-model="transferTargetUserId"
+            filterable
+            clearable
+            style="width: 100%"
+            :filter-method="filterTransferCandidate"
+            popper-class="project-transfer-member-select-dropdown"
+            :placeholder="$t('project.transfer-target-placeholder')"
+          >
+            <el-option
+              v-for="m in filteredTransferCandidates"
+              :key="m.userId"
+              :label="m.nickName || m.userName || String(m.userId)"
+              :value="m.userId"
+            >
+              <member-nameplate :member="m" size="default" />
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <p class="project-transfer-hint">{{ $t('project.transfer-creator-hint') }}</p>
+      </el-form>
+      <template #footer>
+        <el-button size="small" @click="transferOpen = false">{{ $t('cancel') }}</el-button>
+        <el-button type="primary" size="small" :loading="transferSubmitting" @click="confirmTransfer">
+          {{ $t('confirm') }}
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -183,6 +227,7 @@ import {
   listMemberOfProject,
   listProjectRole,
   previewRemoveMemberOfProject,
+  transferProjectCreator,
   updateMemberRoleOfProject,
 } from "@/api/system/project";
 import i18n from "@/utils/i18n/i18n";
@@ -200,7 +245,7 @@ export default {
   setup() {
     const userStore = useUserStore()
     const { id, config } = storeToRefs(userStore)
-    return { id, config }
+    return { id, config, userStore }
   },
   data() {
     return {
@@ -233,6 +278,10 @@ export default {
           },
         ],
       },
+      transferOpen: false,
+      transferSubmitting: false,
+      transferTargetUserId: null,
+      transferFilterKeyword: '',
     }
   },
   created() {
@@ -251,23 +300,48 @@ export default {
         .map((m) => m.userId)
         .filter((id) => id != null && id !== excludeId);
     },
+    filteredTransferCandidates() {
+      const selfId = Number(this.currentUserId)
+      const kw = (this.transferFilterKeyword || '').trim().toLowerCase()
+      return (this.memberList || []).filter((m) => {
+        if (m == null || m.userId == null || Number(m.userId) === selfId) return false
+        if (!kw) return true
+        const nick = (m.nickName || '').toLowerCase()
+        const name = (m.userName || '').toLowerCase()
+        const phone = (m.phoneNumber || '').toLowerCase()
+        const email = (m.email || '').toLowerCase()
+        return nick.includes(kw) || name.includes(kw) || phone.includes(kw) || email.includes(kw)
+      })
+    },
   },
   methods: {
+    isProjectCreator(member) {
+      return member && member.roles && member.roles.filter(r => r.projectCreateBy).length > 0
+    },
+    /** 仅项目创建人本人可转让 */
+    canTransferCreator(row) {
+      if (!this.isProjectCreator(row) || row == null || row.userId == null) {
+        return false
+      }
+      return Number(row.userId) === Number(this.currentUserId)
+    },
     selectRoleOptions(member) {
-      if (member.roles && member.roles.filter(r => r.projectCreateBy).length > 0) {
+      if (this.isProjectCreator(member)) {
         return this.roleOptions.filter(r => r.projectCreateBy);
       }
       return this.roleOptions.filter(r => r.projectCreateBy == false);
     },
     isMemberDisabled(member) {
-      return member.status == 1 || (member.roles && member.roles.filter(r => r.projectCreateBy).length > 0);
+      return member.status == 1 || this.isProjectCreator(member);
     },
     visibleDelete(member) {
-      const roles = member && member.roles ? member.roles : [];
-      return checkPermi(['system:project:member:remove']) && roles.filter(r => r.projectCreateBy).length == 0;
+      return checkPermi(['system:project:member:remove']) && !this.isProjectCreator(member);
+    },
+    filterTransferCandidate(query) {
+      this.transferFilterKeyword = query == null ? '' : String(query)
     },
     shouldProjectOptionSubEscGoBack() {
-      if (this.handoffDialogVisible) return false
+      if (this.handoffDialogVisible || this.transferOpen) return false
       const dlg = this.$refs.addProjectMemberDialog
       return !(dlg && dlg.dialogVisible)
     },
@@ -403,6 +477,45 @@ export default {
           });
       });
     },
+    transferCreatorHandle() {
+      const self = (this.memberList || []).find(m => Number(m.userId) === Number(this.currentUserId))
+      if (!self || !this.canTransferCreator(self)) {
+        this.$modal.msgError(this.$t('project.transfer-creator-only'))
+        return
+      }
+      this.transferTargetUserId = null
+      this.transferFilterKeyword = ''
+      this.transferOpen = true
+    },
+    confirmTransfer() {
+      const self = (this.memberList || []).find(m => Number(m.userId) === Number(this.currentUserId))
+      if (!self || !this.canTransferCreator(self)) {
+        this.$modal.msgError(this.$t('project.transfer-creator-only'))
+        return
+      }
+      if (!this.transferTargetUserId) {
+        this.$modal.msgError(this.$t('project.transfer-target-placeholder'))
+        return
+      }
+      this.transferSubmitting = true
+      transferProjectCreator(this.currentProjectId, this.transferTargetUserId).then(() => {
+        this.$message.success(this.$t('project.transfer-creator-success'))
+        this.transferOpen = false
+        return this.userStore.GetInfo().then(() => {
+          return import('@/stores/permission').then(({ usePermissionStore }) => {
+            const permissionStore = usePermissionStore()
+            permissionStore.SetRoutesRefreshing(true)
+            return permissionStore.GenerateRoutes().finally(() => {
+              permissionStore.SetRoutesRefreshing(false)
+            })
+          })
+        }).catch(() => {}).then(() => this.getMemberList())
+      }).catch(() => {
+        this.$modal.msgError(this.$t('project.transfer-creator-fail'))
+      }).finally(() => {
+        this.transferSubmitting = false
+      })
+    },
   }
 }
 </script>
@@ -417,7 +530,8 @@ export default {
       color: #DCDFE6;
     }
   }
-  .project-member-handoff-hint {
+  .project-member-handoff-hint,
+  .project-transfer-hint {
     margin: 0 0 12px;
     color: var(--text-color-regular);
     line-height: 1.5;
@@ -457,5 +571,42 @@ export default {
   background: #f78989 !important;
   border-color: #f78989 !important;
   color: #fff;
+}
+</style>
+
+<style lang="scss">
+/* 下拉挂到 body，须非 scoped；铭牌两行需撑高 option */
+.project-transfer-member-select-dropdown.el-select-dropdown {
+  min-width: 420px !important;
+}
+.project-transfer-member-select-dropdown .el-select-dropdown__wrap {
+  max-height: 360px !important;
+}
+.project-transfer-member-select-dropdown .el-select-dropdown__item {
+  height: auto;
+  min-height: 60px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  line-height: normal;
+}
+.project-transfer-member-select-dropdown .member-nameplate {
+  width: 100%;
+  padding: 2px 0;
+}
+.project-transfer-member-select-dropdown .member-nameplate-content p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-color-primary);
+}
+.project-transfer-member-select-dropdown .member-nameplate-content span {
+  font-size: 12px;
+  line-height: 16px;
+  height: auto;
+  color: var(--text-color-secondary);
 }
 </style>

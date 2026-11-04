@@ -292,6 +292,13 @@ html.dark {
   /* el-progress：暗色轨道与卡片/边框层级一致，避免纯黑块 */
   --progress-track-bg: rgba(255, 255, 255, 0.1);
   --progress-track-border: transparent;
+  /* 计划执行页统计卡分层（暗色：关键卡略抬起，比率卡贴近页面） */
+  --plan-stat-card-key-bg: #2a2a2f;
+  --plan-stat-card-rate-bg: #222226;
+  --plan-stat-card-border: var(--border-color-light, #3a3a3e);
+  --plan-stat-rate-track: var(--progress-track-bg);
+  --plan-stat-rate-fill: var(--cat2bug-accent, #69b1ff);
+  --plan-stat-hover-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
   --progress-fill-color: #1890ff;
   --progress-fill-success: #67c23a;
   --progress-fill-warning: #e6a23c;
@@ -1461,6 +1468,12 @@ html.dark {
     border-left-color: var(--divider-color, var(--border-color-light)) !important;
   }
 
+  /* 分割线文案默认白底会在暗色页形成深色色块；与页面底色对齐（弹窗内另用 --dialog-bg） */
+  .el-divider__text {
+    background-color: var(--bg-color-page, var(--bg-color-base)) !important;
+    color: var(--text-color-primary) !important;
+  }
+
   .el-select-dropdown {
     background-color: var(--dropdown-bg) !important;
     border-color: var(--border-color-light) !important;
@@ -1580,77 +1593,51 @@ html.dark {
     }
   }
 
-  // 适配 Element UI 数据统计组件 (el-statistic) 在暗黑模式下的文字亮度
+  // 计划统计卡：标题次要色、数值主文字色；语义色保留（勿再用纯白盖掉层次）
   .plan-statistical-block {
     .el-statistic__head,
-    .el-statistic__head * {
-      color: #e5eaf3 !important; // 标题文字更亮，接近白色
+    .el-statistic .head,
+    .el-statistic .title {
+      color: var(--text-color-secondary) !important;
     }
     .el-statistic__content,
     .el-statistic__content-value,
-    .el-statistic__content-value * {
-      color: #ffffff !important; // 数值文字改为纯白色
+    .el-statistic .con,
+    .el-statistic .content {
+      color: var(--text-color-primary) !important;
     }
 
-    // 用例统计语义色：覆盖上方 * 通配，与亮色主题一致
+    .plan-stat-pass,
     .el-statistic__head .plan-stat-pass,
     .el-statistic__content-value .plan-stat-pass,
-    .head .plan-stat-pass,
-    .content .plan-stat-pass {
-      color: var(--plan-stat-pass-color) !important;
-    }
-    .el-statistic__head .plan-stat-fail,
-    .el-statistic__content-value .plan-stat-fail,
-    .head .plan-stat-fail,
-    .content .plan-stat-fail {
-      color: var(--plan-stat-fail-color) !important;
-    }
-    .el-statistic__head .plan-stat-unexec,
-    .el-statistic__content-value .plan-stat-unexec,
-    .head .plan-stat-unexec,
-    .content .plan-stat-unexec {
-      color: var(--plan-stat-unexec-color) !important;
-    }
-    .el-statistic__head .plan-stat-total,
-    .el-statistic__content-value .plan-stat-total,
-    .head .plan-stat-total,
-    .content .plan-stat-total,
-    .el-statistic__head .case-total,
-    .el-statistic__content-value .case-total,
-    .head .case-total,
-    .content .case-total {
-      color: var(--text-color-primary) !important;
-      font-weight: 500;
-    }
-  }
-
-  // 强制覆盖全局暗黑模式下 el-statistic 内部的所有标题和数值文字，确保深度穿透
-  .plan-statistical-block .el-statistic {
-    .title, .title *, .head, .head * {
-      color: #e5eaf3 !important;
-    }
-    .con, .con *, .content, .content * {
-      color: #ffffff !important;
-    }
-
     .head .plan-stat-pass,
     .content .plan-stat-pass,
     .title .plan-stat-pass,
     .con .plan-stat-pass {
       color: var(--plan-stat-pass-color) !important;
     }
+    .plan-stat-fail,
+    .el-statistic__head .plan-stat-fail,
+    .el-statistic__content-value .plan-stat-fail,
     .head .plan-stat-fail,
     .content .plan-stat-fail,
     .title .plan-stat-fail,
     .con .plan-stat-fail {
       color: var(--plan-stat-fail-color) !important;
     }
+    .plan-stat-unexec,
+    .el-statistic__head .plan-stat-unexec,
+    .el-statistic__content-value .plan-stat-unexec,
     .head .plan-stat-unexec,
     .content .plan-stat-unexec,
     .title .plan-stat-unexec,
     .con .plan-stat-unexec {
       color: var(--plan-stat-unexec-color) !important;
     }
+    .plan-stat-total,
+    .case-total,
+    .el-statistic__head .plan-stat-total,
+    .el-statistic__content-value .plan-stat-total,
     .head .plan-stat-total,
     .content .plan-stat-total,
     .title .plan-stat-total,
@@ -1659,42 +1646,44 @@ html.dark {
     .content .case-total,
     .title .case-total,
     .con .case-total {
-      color: var(--text-color-primary) !important;
-      font-weight: 500;
+      color: var(--plan-stat-total-color, var(--cat2bug-primary)) !important;
+      font-weight: 600;
     }
   }
 
-  // 适配用例统计中的“总数”在暗黑模式下与主文字色一致
   .case-total {
-    color: var(--text-color-primary) !important;
-    font-weight: 500;
+    color: var(--plan-stat-total-color, var(--cat2bug-primary)) !important;
+    font-weight: 600;
   }
 
-  // 适配 Element UI 单选按钮组 (el-radio-button) 暗黑模式
+  // 适配 el-radio-button：EP 默认用 outline 描边，父级 overflow:hidden 会裁掉上边；
+  // 改真实 border（box-sizing 内）并关掉 outline，暗色边框才完整可见。
   .el-radio-button {
     .el-radio-button__inner {
       background-color: var(--bg-color-block) !important;
-      border-color: var(--border-color-base) !important;
       color: var(--text-color-regular) !important;
+      outline: none !important;
+      border: 1px solid var(--border-color-base) !important;
       box-shadow: none !important;
+      box-sizing: border-box;
 
       &:hover {
         color: var(--cat2bug-primary) !important;
       }
     }
 
+    & + .el-radio-button .el-radio-button__inner {
+      margin-left: -1px;
+    }
+
     &.is-active {
       .el-radio-button__inner {
+        position: relative;
+        z-index: 1;
         background-color: var(--cat2bug-primary) !important;
         border-color: var(--cat2bug-primary) !important;
         color: #ffffff !important;
-        box-shadow: none !important; // 清除阴影，依靠 border-color 呈现边框
-      }
-    }
-
-    &:first-child {
-      .el-radio-button__inner {
-        border-left: 1px solid var(--border-color-base) !important;
+        box-shadow: none !important;
       }
     }
   }
@@ -2886,6 +2875,7 @@ html.dark {
   }
 
   // 适配左右拖动组件 (multipane-resizer) 暗黑模式
+  // 薯条勿用接近 --drawer-bg(#252529) 的色，否则贴在弹框底上看不见
   .multipane-resizer {
     background-image: linear-gradient(var(--border-color-light), var(--border-color-light)) !important;
 
@@ -2894,11 +2884,11 @@ html.dark {
     }
 
     &:after {
-      border: 1px solid var(--border-color-base) !important;
-      background: linear-gradient(180deg, #2b2b2c 0%, #252529 48%, #252529 52%, #2b2b2c 100%) !important;
+      border: 1px solid #6c6e72 !important;
+      background: linear-gradient(180deg, #4a4a4e 0%, #3a3a3e 48%, #3a3a3e 52%, #4a4a4e 100%) !important;
       box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.5),
-        0 1px 4px rgba(0, 0, 0, 0.4) !important;
+        0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 1px 4px rgba(0, 0, 0, 0.45) !important;
     }
 
     &:hover:before {
@@ -2908,11 +2898,18 @@ html.dark {
     &:hover:after {
       border-color: var(--cat2bug-primary) !important;
       box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.12),
         0 2px 8px rgba(24, 144, 255, 0.4),
         0 4px 14px rgba(24, 144, 255, 0.2) !important;
-      background: linear-gradient(180deg, #363637 0%, #2b2b2c 50%, #363637 100%) !important;
+      background: linear-gradient(180deg, #5a5a5e 0%, #454549 50%, #5a5a5e 100%) !important;
     }
+  }
+
+  /* 合并缺陷：分隔条与抽屉同色（勿整条铺灰），只留 1px 轨道 + 可见薯条 */
+  .merge-defect-drawer .merge-defect-multipane > .multipane-resizer,
+  .merge-defect-drawer .merge-defect-multipane__resizer {
+    background: transparent !important;
+    background-image: none !important;
   }
 
   /* 甘特分隔条：不要整条 background-image 铺灰，只留 1px 轨道 + 小手柄 */
@@ -4216,26 +4213,27 @@ html.dark {
     }
 
     .defect-statistics-value {
-      color: var(--text-color-primary) !important;
+      /* 优先用列表注入的色阶变量，否则回落到主题主文字色 */
+      color: var(--defect-metric-color, var(--text-color-primary)) !important;
     }
   }
 
-  /* 列表标题链接：暗色用强调蓝（与浅色主色链接对应），不要用主文字白 */
+  /* 列表标题链接：与操作列默认蓝同色（品牌主色），hover 再提亮到强调蓝 */
   .table-defect-title,
   .document-title {
     .el-link.el-link--primary {
-      color: var(--cat2bug-accent, #69b1ff) !important;
+      color: var(--cat2bug-primary, #1890ff) !important;
 
       &:hover {
-        color: color-mix(in srgb, var(--cat2bug-accent, #69b1ff) 72%, #ffffff) !important;
+        color: var(--cat2bug-accent, #69b1ff) !important;
       }
 
       &.is-underline:after {
-        border-bottom-color: var(--cat2bug-accent, #69b1ff) !important;
+        border-bottom-color: var(--cat2bug-primary, #1890ff) !important;
       }
 
       &.is-underline:hover:after {
-        border-bottom-color: color-mix(in srgb, var(--cat2bug-accent, #69b1ff) 72%, #ffffff) !important;
+        border-bottom-color: var(--cat2bug-accent, #69b1ff) !important;
       }
     }
   }
@@ -5734,7 +5732,8 @@ html.dark {
     box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #69b1ff) !important;
   }
 
-  // 29. 适配新建/编辑测试计划弹窗 (AddPlanDialog) 暗黑模式
+  // 29. 适配新建/编辑测试计划整页 (plan-form-page / 原 AddPlanDialog) 暗黑模式
+  .plan-form-page,
   .el-dialog {
     // 适配分割线 (el-divider) 文字背景
     .el-divider__text {
@@ -5785,7 +5784,7 @@ html.dark {
       }
     }
 
-    // 适配拖拽分隔条
+    // 适配拖拽分隔条（列表页配合 background-size 画 1px 顶线）
     .custom-resizer > .multipane-resizer {
       background-image: linear-gradient(var(--border-color-light), var(--border-color-light)) !important;
     }
@@ -5839,60 +5838,22 @@ html.dark {
       }
     }
 
-    // 统计卡片面板
+    // 统计卡片面板：背景/强调条由 .plan-stat-card* token 控制，勿再统一刷成同一灰底
     .plan-statistical {
-      .plan-statistical-item {
-        background-color: var(--bg-color-block) !important;
-        border: 1px solid var(--border-color-light) !important;
-        color: var(--text-color-regular) !important;
+      .plan-statistical-item.plan-stat-card {
+        border-color: var(--plan-stat-card-border, var(--border-color-light)) !important;
+        color: var(--text-color-primary) !important;
 
-        &:hover {
-          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.5) !important;
+        &.plan-stat-card--key {
+          background-color: var(--plan-stat-card-key-bg) !important;
+        }
+        &.plan-stat-card--rate,
+        &.plan-stat-card--metric {
+          background-color: var(--plan-stat-card-rate-bg) !important;
         }
 
-        // 倒计时标题与数值
-        .el-statistic {
-          .title, .title *, .head, .head * {
-            color: var(--text-color-secondary) !important;
-          }
-          .con, .con *, .content, .content * {
-            color: var(--text-color-primary) !important;
-          }
-
-          .plan-stat-pass,
-          .head .plan-stat-pass,
-          .content .plan-stat-pass,
-          .title .plan-stat-pass,
-          .con .plan-stat-pass {
-            color: var(--plan-stat-pass-color) !important;
-          }
-          .plan-stat-fail,
-          .head .plan-stat-fail,
-          .content .plan-stat-fail,
-          .title .plan-stat-fail,
-          .con .plan-stat-fail {
-            color: var(--plan-stat-fail-color) !important;
-          }
-          .plan-stat-unexec,
-          .head .plan-stat-unexec,
-          .content .plan-stat-unexec,
-          .title .plan-stat-unexec,
-          .con .plan-stat-unexec {
-            color: var(--plan-stat-unexec-color) !important;
-          }
-          .plan-stat-total,
-          .case-total,
-          .head .plan-stat-total,
-          .content .plan-stat-total,
-          .title .plan-stat-total,
-          .con .plan-stat-total,
-          .head .case-total,
-          .content .case-total,
-          .title .case-total,
-          .con .case-total {
-            color: var(--text-color-primary) !important;
-            font-weight: 500;
-          }
+        &:hover {
+          box-shadow: var(--plan-stat-hover-shadow) !important;
         }
       }
     }
