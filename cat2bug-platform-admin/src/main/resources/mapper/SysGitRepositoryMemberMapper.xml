@@ -18,6 +18,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="nickName"     column="nick_name" />
         <result property="avatar"       column="avatar" />
         <result property="email"        column="email" />
+        <result property="repositoryName" column="repository_name" />
+        <result property="repositorySlug" column="repository_slug" />
     </resultMap>
 
     <sql id="selectMemberVo">
@@ -52,6 +54,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         from sys_git_repository_member m
         inner join sys_git_repository r on r.repository_id = m.repository_id
         where r.project_id = #{projectId} and m.user_id = #{userId}
+    </select>
+
+    <select id="selectByProjectIdAndUserId" resultMap="SysGitRepositoryMemberResult">
+        select m.member_id, m.repository_id, m.user_id, m.role,
+               m.create_by, m.create_time, m.update_by, m.update_time, m.remark,
+               u.user_name, u.nick_name, u.avatar, u.email,
+               r.name as repository_name,
+               r.slug as repository_slug
+        from sys_git_repository_member m
+        inner join sys_git_repository r on r.repository_id = m.repository_id
+        left join sys_user u on u.user_id = m.user_id
+        where r.project_id = #{projectId} and m.user_id = #{userId}
+        order by m.repository_id
     </select>
 
     <!-- 项目侧栏成员预览：跨仓去重，同用户取最高角色（admin > write > read） -->

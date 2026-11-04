@@ -5,12 +5,12 @@ import { applyDefaultImageOnError } from '@/utils/upload-asset'
  * 用法：<img v-img-fallback :src="url" />
  */
 export default {
-  inserted(el) {
+  mounted(el) {
     if (el && el.tagName === 'IMG') {
       applyDefaultImageOnError(el)
     }
   },
-  componentUpdated(el) {
+  updated(el) {
     if (el && el.tagName === 'IMG') {
       applyDefaultImageOnError(el)
     }

@@ -290,6 +290,99 @@ public class SysGitRepositoryMemberServiceImpl implements ISysGitRepositoryMembe
         }
     }
 
+    @Override
+    public List<SysGitRepositoryMember> listAclByProjectMember(Long projectId, Long userId)
+    {
+        if (projectId == null || userId == null)
+        {
+            return Collections.emptyList();
+        }
+        List<SysGitRepositoryMember> rows = memberMapper.selectByProjectIdAndUserId(projectId, userId);
+        return rows != null ? rows : Collections.emptyList();
+    }
+
+    @Override
+    public boolean isLastAdmin(Long repositoryId, Long userId)
+    {
+        if (repositoryId == null || userId == null)
+        {
+            return false;
+        }
+        SysGitRepositoryMember existing = memberMapper.selectByRepositoryIdAndUserId(repositoryId, userId);
+        if (existing == null || !GitRepositoryAclRoles.ADMIN.equals(existing.getRole()))
+        {
+            return false;
+        }
+        return memberMapper.countAdminsByRepositoryId(repositoryId) <= 1;
+    }
+
+    @Override
+    @Transactional
+    public void syncRemoveOnProjectMemberRemoval(Long projectId, Long memberId, Long handoffUserId)
+    {
+        if (projectId == null || memberId == null)
+        {
+            return;
+        }
+        List<SysGitRepositoryMember> rows = listAclByProjectMember(projectId, memberId);
+        for (SysGitRepositoryMember row : rows)
+        {
+            Long repositoryId = row.getRepositoryId();
+            if (isLastAdmin(repositoryId, memberId))
+            {
+                if (handoffUserId == null)
+                {
+                    throw new ApiException(MessageUtils.message("git.repo.member.last-admin"));
+                }
+                if (handoffUserId.equals(memberId))
+                {
+                    throw new ApiException("交接人不能是被移除的成员");
+                }
+                ensureAdminForHandoff(repositoryId, handoffUserId);
+            }
+            memberMapper.deleteByRepositoryIdAndUserId(repositoryId, memberId);
+        }
+    }
+
+    /**
+     * 项目成员移除旁路：确保交接人为仓 admin（已有则升权，无则插入），不做 manage 校验。
+     */
+    private void ensureAdminForHandoff(Long repositoryId, Long handoffUserId)
+    {
+        SysUser user = sysUserMapper.selectUserById(handoffUserId);
+        if (user == null)
+        {
+            throw new ApiException(MessageUtils.message("git.repo.member.user-not-found"));
+        }
+        String operator = SecurityUtils.getUsername();
+        if (StringUtils.isEmpty(operator))
+        {
+            operator = "system";
+        }
+        SysGitRepositoryMember existing = memberMapper.selectByRepositoryIdAndUserId(repositoryId, handoffUserId);
+        if (existing == null)
+        {
+            SysGitRepositoryMember row = new SysGitRepositoryMember();
+            row.setRepositoryId(repositoryId);
+            row.setUserId(handoffUserId);
+            row.setRole(GitRepositoryAclRoles.ADMIN);
+            row.setCreateBy(operator);
+            row.setUpdateBy(operator);
+            row.setCreateTime(DateUtils.getNowDate());
+            row.setUpdateTime(DateUtils.getNowDate());
+            row.setRemark("project-member-remove-handoff");
+            memberMapper.insertSysGitRepositoryMember(row);
+            return;
+        }
+        if (!GitRepositoryAclRoles.ADMIN.equals(existing.getRole()))
+        {
+            existing.setRole(GitRepositoryAclRoles.ADMIN);
+            existing.setUpdateBy(operator);
+            existing.setUpdateTime(DateUtils.getNowDate());
+            memberMapper.updateMemberRole(existing);
+        }
+    }
+
     private void rejectIfLastAdmin(Long repositoryId)
     {
         if (memberMapper.countAdminsByRepositoryId(repositoryId) <= 1)

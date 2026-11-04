@@ -43,6 +43,45 @@ export function addProject(data) {
   })
 }
 
+/** 可作为复制源的项目（当前用户为创建人或管理员，可跨团队） */
+export function listCopySources() {
+  return request({
+    url: '/system/project/copy-sources',
+    method: 'get',
+    silentError: true
+  })
+}
+
+/** 源项目可勾选资源：type=git|cases|modules|documents */
+export function listCopySourceItems(sourceProjectId, params) {
+  return request({
+    url: '/system/project/copy-sources/' + sourceProjectId + '/items',
+    method: 'get',
+    params,
+    silentError: true
+  })
+}
+
+/** 复制体积预估。body: ProjectCopySelection */
+export function estimateProjectCopy(data) {
+  return request({
+    url: '/system/project/copy-estimate',
+    method: 'post',
+    data,
+    timeout: 120000,
+    silentError: true
+  })
+}
+
+/** 复制任务进度 */
+export function getProjectCopyJob(jobId) {
+  return request({
+    url: '/system/project/copy-job/' + jobId,
+    method: 'get',
+    silentError: true
+  })
+}
+
 /** 旧单包出站。同步页已改走 estimatePush / createPushJob。 */
 export function pullProject(projectId, data) {
   return request({
@@ -175,10 +214,19 @@ export function updateMemberRoleOfProject(projectId, memberId, roleIds) {
   })
 }
 
-// 移除项目成员
-export function delMemberOfProject(projectId, memberId) {
+// 移除项目成员前预检（缺陷交接 / Git 最后 admin）
+export function previewRemoveMemberOfProject(projectId, memberId) {
+  return request({
+    url: '/system/project/' + projectId + '/member/' + memberId + '/remove-preview',
+    method: 'get'
+  })
+}
+
+// 移除项目成员（requiresHandoff 时传 handoffUserId）
+export function delMemberOfProject(projectId, memberId, handoffUserId) {
   return request({
     url: '/system/project/'+projectId+'/member/'+memberId,
-    method: 'delete'
+    method: 'delete',
+    params: handoffUserId != null ? { handoffUserId } : undefined
   })
 }

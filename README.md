@@ -2,7 +2,7 @@
   <!-- 与登录页 CatIllustration 同源（login-cat-scene-light/dark.jpg） -->
   <img src="readme/images/login-cat-scene-dark.png" width="550" alt="猫陪我改 BUG — Cat2Bug Platform" style="max-width: 100%; height: auto; margin-top: 50px;" />
 </div>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v1.2.0</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v1.2.1</h1>
 <h4 align="center">轻量化智能BUG管理平台</h4>
 
 ## 平台简介
@@ -28,14 +28,14 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 ## 最新版本更新说明
 
-当前最新版本是1.2.0
+当前最新版本是1.2.1
 
-**运行时要求（1.2.0 后端）**：构建与运行需 **JDK 17+**。后端基于 **Quarkus**（默认 Maven 构建，无需 profile），原 Spring Boot 后端已移除，最后版本保留在 tag `spring-final-1.1.0`。Maven 版本号为 1.2.0。
+**运行时要求（1.2.1 后端）**：构建与运行需 **JDK 17+**。后端基于 **Quarkus**（默认 Maven 构建，无需 profile），原 Spring Boot 后端已移除，最后版本保留在 tag `spring-final-1.1.0`。Maven 版本号为 1.2.1。
 
-* 版本线切换至 1.2.0（承接 1.1.1 能力，后续新特性在本版本上开发）
-* 缺陷列表新增甘特视图：表格 / Excel / 甘特切换；按处理人/交付物分组；拖拽改期与未排期池；依赖连线、关键路径、资源负荷、基线对比、框选批量平移
-* 甘特增强：时间轴缩略图与列宽缩放、条后元信息图层、自动排列与拖动避让、项目工作日历（工作日排期）、计划节点独立权限
-* 缺陷列表新增看板视图：与表格 / Excel / 甘特同级切换；按状态泳道（含未指派）；拖拽映射既有流转；泳道负责人头像直提指派/提测；处理人可选、已创建/通过状态
+* 缺陷 Excel / 看板增加左侧交付物过滤侧栏（含子节点筛选；分视图显隐缓存）
+* 出站选择性分包同步与同步页体验完善（文档树图标、空 Markdown 补文件等）
+* 新建/编辑项目成员下拉：暗色悬停、限高滚动，并隐藏已选成员
+* （1.2.0 已具备）甘特 / 看板视图、版本线切换；详见 `docs/08-版本记录/1.2.0.md`
 * （1.1.1 已具备）可定制工作台、团队级用例/缺陷属性、缺陷批量流转等；详见 `docs/08-版本记录/1.1.1.md` 与上文「内置功能」
 * （1.1.0 已具备）项目源码管理（Git 自托管）、用例可选评审与 Markdown 纪要
 

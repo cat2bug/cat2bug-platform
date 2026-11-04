@@ -18,6 +18,8 @@ import com.cat2bug.system.service.SysMemberInviteService;
 import com.cat2bug.common.exception.ApiException;
 import com.cat2bug.framework.security.AuthContext;
 import com.cat2bug.framework.security.RequiresPermissions;
+import com.cat2bug.common.domain.ProjectCopySelection;
+import com.cat2bug.system.service.ProjectCopyService;
 import com.cat2bug.system.service.SysProjectService;
 import com.cat2bug.system.service.SysUserConfigService;
 import com.cat2bug.system.service.SysRoleService;
@@ -39,6 +41,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.jboss.resteasy.reactive.RestForm;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,6 +82,9 @@ public class ProjectResource {
 
     @Inject
     SysMemberInviteService sysMemberInviteService;
+
+    @Inject
+    ProjectCopyService projectCopyService;
 
     @GET
     @Path("/list")
@@ -180,11 +186,63 @@ public class ProjectResource {
         return sysUserProjectService.selectNotMemberPage(projectId, search, pageNum, pageSize);
     }
 
+    @GET
+    @Path("/copy-sources")
+    @RequiresPermissions("system:project:add")
+    public AjaxResult copySources() {
+        LoginUser loginUser = requireLoginUser();
+        return AjaxResult.success(projectCopyService.listCopySources(loginUser.getUserId()));
+    }
+
+    @GET
+    @Path("/copy-sources/{sourceProjectId}/items")
+    @RequiresPermissions("system:project:add")
+    public AjaxResult copySourceItems(@PathParam("sourceProjectId") Long sourceProjectId,
+                                      @QueryParam("type") String type,
+                                      @QueryParam("search") String search) {
+        LoginUser loginUser = requireLoginUser();
+        return AjaxResult.success(projectCopyService.listCopyItems(
+                loginUser.getUserId(), sourceProjectId, type, search));
+    }
+
+    @POST
+    @Path("/copy-estimate")
+    @RequiresPermissions("system:project:add")
+    public AjaxResult copyEstimate(ProjectCopySelection selection) {
+        LoginUser loginUser = requireLoginUser();
+        return AjaxResult.success(projectCopyService.estimate(loginUser.getUserId(), selection));
+    }
+
+    @GET
+    @Path("/copy-job/{jobId}")
+    @RequiresPermissions("system:project:query")
+    public AjaxResult copyJob(@PathParam("jobId") String jobId) {
+        LoginUser loginUser = requireLoginUser();
+        return AjaxResult.success(projectCopyService.getJob(jobId, loginUser.getUserId()));
+    }
+
     @POST
     @RequiresPermissions("system:project:add")
     public AjaxResult add(SysProject sysProject) {
         LoginUser loginUser = requireLoginUser();
-        return toAjax(sysProjectService.insertSysProject(sysProject, loginUser.getUserId()));
+        ProjectCopySelection selection = sysProject != null ? sysProject.getCopySelection() : null;
+        boolean copying = selection != null && selection.hasWork();
+        if (copying && sysProject.getTeamId() != null) {
+            selection.setTargetTeamId(sysProject.getTeamId());
+            Map<String, Object> estimated = projectCopyService.estimate(loginUser.getUserId(), selection);
+            if (Boolean.TRUE.equals(estimated.get("overQuota"))) {
+                throw new ApiException(400, "复制内容超出项目最大空间，请减少勾选项");
+            }
+        }
+        int rows = sysProjectService.insertSysProject(sysProject, loginUser.getUserId());
+        if (!copying) {
+            return toAjax(rows);
+        }
+        String jobId = projectCopyService.startCopy(sysProject.getProjectId(), loginUser.getUserId(), selection);
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("project", sysProject);
+        body.put("copyJobId", jobId);
+        return AjaxResult.success(body);
     }
 
     @PUT
@@ -331,13 +389,24 @@ public class ProjectResource {
         return toAjax(sysUserProjectRoleService.updateSysUserProjectRole(projectId, memberId, roleIds));
     }
 
+    @GET
+    @Path("/{projectId}/member/{memberId}/remove-preview")
+    @RequiresPermissions("system:project:member:remove")
+    public AjaxResult previewRemoveMember(@PathParam("projectId") Long projectId,
+                                          @PathParam("memberId") Long memberId) {
+        requireLoginUser();
+        return AjaxResult.success(sysUserProjectService.previewRemoveMember(projectId, memberId));
+    }
+
     @DELETE
     @Path("/{projectId}/member/{memberId}")
     @RequiresPermissions("system:project:member:remove")
     public AjaxResult removeMember(@PathParam("projectId") Long projectId,
-                                   @PathParam("memberId") Long memberId) {
+                                   @PathParam("memberId") Long memberId,
+                                   @QueryParam("handoffUserId") Long handoffUserId) {
         LoginUser loginUser = requireLoginUser();
-        return toAjax(sysUserProjectService.deleteMember(projectId, memberId, loginUser.getUserId()));
+        return toAjax(sysUserProjectService.deleteMember(
+                projectId, memberId, loginUser.getUserId(), handoffUserId));
     }
 
     private LoginUser requireLoginUser() {

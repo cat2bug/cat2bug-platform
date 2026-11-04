@@ -254,8 +254,9 @@ export default {
         { isBuiltinVisible: this.isBuiltinDefectFieldVisible }
       )
     },
-    /** 表单重置后补全自定义字段默认值（由 AddDefect / EditDefectDialog 在 open 时调用） */
+    /** 打开新建/编辑时：按最新个人显示字段序重排，并补自定义字段默认值 */
     refreshCustomFieldDefaults() {
+      this.rebuildOrderedFormFields()
       this.applyCustomFieldDefaults(this.orderedFormFields)
     },
     /**

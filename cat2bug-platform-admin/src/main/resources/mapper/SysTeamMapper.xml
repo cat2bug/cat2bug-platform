@@ -20,14 +20,18 @@
         <result property="lockRemark" column="lock_remark"/>
         <result property="defectBuiltinFieldConfig" column="defect_builtin_field_config"/>
         <result property="caseReviewTemplate" column="case_review_template"/>
+        <result property="planId" column="plan_id"/>
+        <result property="planName" column="plan_name"/>
     </resultMap>
 
     <sql id="selectSysTeamVo">
         select t.team_id, t.team_name, t.team_key, t.team_icon, t.create_by, t.create_time, t.update_by, t.update_time,
                t.introduce, t.is_del, t.is_lock, t.lock_remark, t.defect_builtin_field_config, t.case_review_template,
+               t.plan_id, pl.plan_name,
                IFNULL(p.project_count, 0) as project_count,
                IFNULL(m.member_count, 0) as member_count
         from sys_team t
+        LEFT JOIN sys_team_plan pl ON pl.plan_id = t.plan_id
         LEFT JOIN (
             select count(team_id) as project_count, team_id
             from sys_project group by team_id
@@ -54,10 +58,11 @@
 
     <select id="selectSysTeamList" resultMap="SysTeamResult">
         select t.team_id, t.team_name, t.team_key, t.team_icon, t.create_by, t.create_time, t.update_by, t.update_time,
-               t.introduce, t.is_del, t.is_lock, t.lock_remark,
+               t.introduce, t.is_del, t.is_lock, t.lock_remark, t.plan_id, pl.plan_name,
                IFNULL(p.project_count, 0) as project_count,
                IFNULL(m.member_count, 0) as member_count
         from sys_team t
+        LEFT JOIN sys_team_plan pl ON pl.plan_id = t.plan_id
         LEFT JOIN (
             select count(team_id) as project_count, team_id
             from sys_project group by team_id
@@ -123,6 +128,7 @@
             <if test="introduce != null">introduce,</if>
             <if test="defectBuiltinFieldConfig != null">defect_builtin_field_config,</if>
             <if test="caseReviewTemplate != null">case_review_template,</if>
+            <if test="planId != null">plan_id,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="teamName != null">#{teamName},</if>
@@ -135,6 +141,7 @@
             <if test="introduce != null">#{introduce},</if>
             <if test="defectBuiltinFieldConfig != null">#{defectBuiltinFieldConfig},</if>
             <if test="caseReviewTemplate != null">#{caseReviewTemplate},</if>
+            <if test="planId != null">#{planId},</if>
         </trim>
     </insert>
 
@@ -151,6 +158,7 @@
             <if test="lockRemark != null">lock_remark = #{lockRemark},</if>
             <if test="defectBuiltinFieldConfig != null">defect_builtin_field_config = #{defectBuiltinFieldConfig},</if>
             <if test="caseReviewTemplate != null">case_review_template = #{caseReviewTemplate},</if>
+            <if test="planId != null">plan_id = #{planId},</if>
         </trim>
         where team_id = #{teamId}
     </update>

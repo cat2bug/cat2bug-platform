@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysTeamPlanMapper">
+
+    <resultMap id="SysTeamPlanResult" type="com.cat2bug.common.domain.SysTeamPlan">
+        <result property="planId" column="plan_id"/>
+        <result property="planName" column="plan_name"/>
+        <result property="maxMembers" column="max_members"/>
+        <result property="maxProjects" column="max_projects"/>
+        <result property="maxProjectBytes" column="max_project_bytes"/>
+        <result property="systemDefault" column="is_system_default"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectVo">
+        select plan_id, plan_name, max_members, max_projects, max_project_bytes, is_system_default,
+               remark, create_by, create_time, update_by, update_time
+        from sys_team_plan
+    </sql>
+
+    <select id="selectAll" resultMap="SysTeamPlanResult">
+        <include refid="selectVo"/>
+        order by is_system_default desc, plan_id
+    </select>
+
+    <select id="selectByPlanId" resultMap="SysTeamPlanResult">
+        <include refid="selectVo"/>
+        where plan_id = #{planId}
+    </select>
+
+    <select id="selectSystemDefault" resultMap="SysTeamPlanResult">
+        <include refid="selectVo"/>
+        where is_system_default = 1
+        order by plan_id
+        limit 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="planId">
+        insert into sys_team_plan
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="planName != null">plan_name,</if>
+            <if test="maxMembers != null">max_members,</if>
+            <if test="maxProjects != null">max_projects,</if>
+            <if test="maxProjectBytes != null">max_project_bytes,</if>
+            <if test="systemDefault != null">is_system_default,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="planName != null">#{planName},</if>
+            <if test="maxMembers != null">#{maxMembers},</if>
+            <if test="maxProjects != null">#{maxProjects},</if>
+            <if test="maxProjectBytes != null">#{maxProjectBytes},</if>
+            <if test="systemDefault != null">#{systemDefault},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+    <update id="update">
+        update sys_team_plan
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="planName != null">plan_name = #{planName},</if>
+            <if test="maxMembers != null">max_members = #{maxMembers},</if>
+            <if test="maxProjects != null">max_projects = #{maxProjects},</if>
+            <if test="maxProjectBytes != null">max_project_bytes = #{maxProjectBytes},</if>
+            <if test="systemDefault != null">is_system_default = #{systemDefault},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where plan_id = #{planId}
+    </update>
+
+    <select id="countTeamsByPlanId" resultType="int">
+        select count(1) from sys_team where plan_id = #{planId}
+    </select>
+</mapper>

@@ -24,6 +24,10 @@ public class SysProject {
     private List<SysUser> members;
     /** 列表查询：仅返回当前用户参与的项目（「我参与的」） */
     private Boolean memberOnly;
+    /** 已用存储字节 */
+    private Long usedBytes;
+    /** 新建请求可选：复制勾选，不入库 */
+    private ProjectCopySelection copySelection;
 
     public Long getProjectId() {
         return projectId;
@@ -175,5 +179,21 @@ public class SysProject {
 
     public void setMemberOnly(Boolean memberOnly) {
         this.memberOnly = memberOnly;
+    }
+
+    public Long getUsedBytes() {
+        return usedBytes;
+    }
+
+    public void setUsedBytes(Long usedBytes) {
+        this.usedBytes = usedBytes;
+    }
+
+    public ProjectCopySelection getCopySelection() {
+        return copySelection;
+    }
+
+    public void setCopySelection(ProjectCopySelection copySelection) {
+        this.copySelection = copySelection;
     }
 }

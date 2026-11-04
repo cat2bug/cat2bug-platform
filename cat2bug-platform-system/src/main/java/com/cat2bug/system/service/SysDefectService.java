@@ -618,6 +618,92 @@ public class SysDefectService {
         }
     }
 
+    /**
+     * 未终态（非通过/关闭）且 handle_by 含指定成员的缺陷，按唯一/多人处理人分类。
+     */
+    public MemberHandlerImpact findOpenHandlerImpact(Long projectId, Long memberId) {
+        MemberHandlerImpact impact = new MemberHandlerImpact();
+        if (projectId == null || memberId == null) {
+            return impact;
+        }
+        SysDefect query = new SysDefect();
+        query.setProjectId(projectId);
+        Map<String, Object> params = new HashMap<>();
+        params.put("handleById", memberId);
+        params.put("defectStates", List.of(
+                DefectConstants.STATE_PROCESSING,
+                DefectConstants.STATE_AUDIT,
+                DefectConstants.STATE_REJECTED,
+                DefectConstants.STATE_CREATED));
+        params.put("delFlag", "0");
+        query.setParams(params);
+        List<SysDefect> rows = sysDefectMapper.selectAllSysDefectList(query);
+        if (rows == null) {
+            return impact;
+        }
+        for (SysDefect defect : rows) {
+            List<Long> handlers = defect.getHandleBy();
+            if (handlers == null || handlers.isEmpty() || !handlers.contains(memberId)) {
+                continue;
+            }
+            if (handlers.size() == 1) {
+                impact.soleHandlers.add(defect);
+            } else {
+                impact.multiHandlers.add(defect);
+            }
+        }
+        return impact;
+    }
+
+    /**
+     * 项目成员移除：唯一处理人改派为交接人（状态不变 + ASSIGN 日志）；多人则静默摘掉被删人。
+     * 终态缺陷不改。requiresHandoff 时 handoffUserId 必填。
+     */
+    @Transactional
+    public void applyHandleByOnProjectMemberRemoval(Long projectId, Long memberId, Long handoffUserId) {
+        MemberHandlerImpact impact = findOpenHandlerImpact(projectId, memberId);
+        if (!impact.soleHandlers.isEmpty()) {
+            if (handoffUserId == null) {
+                throw new ApiException(400, "移除成员前须指定交接处理人");
+            }
+            if (handoffUserId.equals(memberId)) {
+                throw new ApiException(400, "交接人不能是被移除的成员");
+            }
+            List<Long> next = List.of(handoffUserId);
+            for (SysDefect defect : impact.soleHandlers) {
+                SysDefect patch = new SysDefect();
+                patch.setDefectId(defect.getDefectId());
+                patch.setHandleBy(next);
+                doUpdateSysDefect(patch);
+
+                SysDefectLog log = new SysDefectLog();
+                log.setDefectId(defect.getDefectId());
+                log.setReceiveBy(next);
+                log.setDefectLogType(DefectLogState.ASSIGN);
+                log.setDefectLogDescribe("因项目成员移除而改派处理人");
+                insertLog(log);
+            }
+        }
+        for (SysDefect defect : impact.multiHandlers) {
+            List<Long> handlers = defect.getHandleBy();
+            if (handlers == null) {
+                continue;
+            }
+            List<Long> next = handlers.stream()
+                    .filter(id -> id != null && !id.equals(memberId))
+                    .collect(Collectors.toList());
+            SysDefect patch = new SysDefect();
+            patch.setDefectId(defect.getDefectId());
+            patch.setHandleBy(next);
+            doUpdateSysDefect(patch);
+        }
+    }
+
+    public static final class MemberHandlerImpact {
+        public final List<SysDefect> soleHandlers = new ArrayList<>();
+        public final List<SysDefect> multiHandlers = new ArrayList<>();
+    }
+
     private int doUpdateSysDefect(SysDefect defect) {
         if (defect.getDefectId() == null) {
             throw new ApiException("缺陷ID不能为空");

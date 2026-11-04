@@ -68,6 +68,9 @@ public class TeamResource {
     @Inject
     SysMemberInviteService sysMemberInviteService;
 
+    @Inject
+    com.cat2bug.system.service.SysTeamPlanService sysTeamPlanService;
+
     @GET
     @Path("/list")
     @RequiresPermissions("system:team:list")
@@ -100,6 +103,14 @@ public class TeamResource {
     @RequiresPermissions("system:team:query")
     public AjaxResult getInfo(@PathParam("teamId") Long teamId) {
         return AjaxResult.success(sysTeamService.selectSysTeamByTeamId(teamId));
+    }
+
+    /** 当前团队套餐与人数/项目数余量（新建项目配额条） */
+    @GET
+    @Path("/{teamId}/quota")
+    public AjaxResult quota(@PathParam("teamId") Long teamId) {
+        requireLoginUser();
+        return AjaxResult.success(sysTeamPlanService.getQuotaInfo(teamId));
     }
 
     @GET

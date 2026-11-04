@@ -21,6 +21,7 @@
         <result property="updateTime" column="update_time"/>
         <result property="lock" column="is_lock"/>
         <result property="lockRemark" column="lock_remark"/>
+        <result property="usedBytes" column="used_bytes"/>
     </resultMap>
 
     <sql id="selectSysProjectFrom">
@@ -56,7 +57,7 @@
 
     <select id="selectSysProjectList" resultMap="SysProjectResult">
         select distinct p.project_id, p.team_id, p.project_state, p.project_name, p.project_key, p.project_icon, p.project_introduce,
-               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark,
+               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark, IFNULL(p.used_bytes, 0) as used_bytes,
                IFNULL(up.collect, 0) as collect, t.team_name, t.team_key, t.team_icon
         <include refid="selectSysProjectFrom"/>
         <include refid="selectSysProjectWhere"/>
@@ -91,7 +92,7 @@
 
     <select id="selectAdminSysProjectList" resultMap="SysProjectResult">
         select distinct p.project_id, p.team_id, p.project_state, p.project_name, p.project_key, p.project_icon, p.project_introduce,
-               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark,
+               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark, IFNULL(p.used_bytes, 0) as used_bytes,
                0 as collect, t.team_name, t.team_key, t.team_icon
         from sys_project p
         LEFT JOIN sys_team t on p.team_id = t.team_id
@@ -102,7 +103,7 @@
 
     <select id="selectSysProjectByProjectId" resultMap="SysProjectResult">
         select distinct p.project_id, p.team_id, p.project_state, p.project_name, p.project_key, p.project_icon, p.project_introduce,
-               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark,
+               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark, IFNULL(p.used_bytes, 0) as used_bytes,
                IFNULL(up.collect, 0) as collect, t.team_name, t.team_key, t.team_icon
         <include refid="selectSysProjectFrom"/>
         where p.project_id = #{projectId}
@@ -110,7 +111,7 @@
 
     <select id="selectSysProjectByTeamAndProjectKey" resultMap="SysProjectResult">
         select p.project_id, p.team_id, p.project_state, p.project_name, p.project_key, p.project_icon, p.project_introduce,
-               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark,
+               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark, IFNULL(p.used_bytes, 0) as used_bytes,
                t.team_name, t.team_key, t.team_icon
         from sys_project p
         INNER JOIN sys_team t ON p.team_id = t.team_id
@@ -121,6 +122,27 @@
         select count(1) from sys_project
         where team_id = #{teamId} AND project_key = #{projectKey} AND project_state > 0
         <if test="excludeProjectId != null"> AND project_id != #{excludeProjectId}</if>
+    </select>
+
+    <select id="countActiveByTeamId" resultType="int">
+        select count(1) from sys_project where team_id = #{teamId} AND project_state > 0
+    </select>
+
+    <update id="updateUsedBytes">
+        update sys_project set used_bytes = #{usedBytes} where project_id = #{projectId}
+    </update>
+
+    <select id="selectCopySourceProjects" resultMap="SysProjectResult">
+        select distinct p.project_id, p.team_id, p.project_state, p.project_name, p.project_key, p.project_icon, p.project_introduce,
+               p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark, IFNULL(p.used_bytes, 0) as used_bytes,
+               0 as collect, t.team_name, t.team_key, t.team_icon
+        from sys_project p
+        join sys_team t on t.team_id = p.team_id
+        join sys_user_project up on up.project_id = p.project_id and up.user_id = #{userId}
+        join sys_user_project_role upr on upr.user_project_id = up.user_project_id
+        where p.project_state > 0
+          and upr.role_id in (11, 6)
+        order by p.create_time desc
     </select>
 
     <insert id="insertSysProject" useGeneratedKeys="true" keyProperty="projectId">
@@ -163,6 +185,7 @@
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="lock != null">is_lock = #{lock},</if>
             <if test="lockRemark != null">lock_remark = #{lockRemark},</if>
+            <if test="usedBytes != null">used_bytes = #{usedBytes},</if>
         </trim>
         where project_id = #{projectId}
     </update>

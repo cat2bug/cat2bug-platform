@@ -58,26 +58,17 @@
           <el-table-column
             :label="$t('role')"
             align="left"
-            width="280"
+            min-width="220"
           >
             <template #default="{ row }">
-              <el-select
+              <member-role-select
                 v-if="row.userId !== 1"
-                class="member-operate"
                 v-model="row.roleIds"
-                multiple
+                :options="selectRoleOptions(row)"
                 :placeholder="$t('member.please-select-role')"
                 :disabled="isMemberDisabled(row) || isCreateBy(row)"
-                @change="roleChangeHandle(row)"
-              >
-                <el-option
-                  v-for="item in selectRoleOptions(row)"
-                  :key="item.roleId"
-                  :label="item.roleName"
-                  :value="item.roleId"
-                  :disabled="item.status == 1"
-                ></el-option>
-              </el-select>
+                @change="(ids) => roleChangeHandle(row, ids)"
+              />
             </template>
           </el-table-column>
           <el-table-column :label="$t('email')" align="left" key="email" prop="email" :show-overflow-tooltip="true" width="300">
@@ -145,6 +136,7 @@ import {listMember, listTeamRole, updateMemberTeamRole, updateMemberTeamRoleIds}
 import CreateTeamMember from "@/views/system/team/option/member/CreateTeamMember";
 import InviteTeamMember from "@/views/system/team/option/member/InviteTeamMember";
 import MemberNameplate from "@/components/MemberNameplate";
+import MemberRoleSelect from "@/components/MemberRoleSelect";
 import {getUser} from "@/api/system/user";
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
@@ -163,7 +155,7 @@ const TEAM_MEMBER_KBD_SCOPE = 'team-member'
 export default {
   name: "TeamMemberManage",
   mixins: [pageActionHints, listQueryKeyboardNav, teamMemberListKbd],
-  components: { CreateTeamMember, InviteTeamMember, MemberNameplate },
+  components: { CreateTeamMember, InviteTeamMember, MemberNameplate, MemberRoleSelect },
   setup() {
     const userStore = useUserStore()
     const { config } = storeToRefs(userStore)
@@ -324,19 +316,33 @@ export default {
       this.loading = true;
       listMember(this.getTeamId(),this.queryParams).then(res => {
         this.loading = false;
-        this.memberList = res.rows;
+        this.memberList = (res.rows || []).map(row => {
+          const ids = Array.isArray(row.roleIds)
+            ? row.roleIds
+            : (row.roles || []).map(r => r.roleId).filter(id => id != null)
+          return { ...row, roleIds: ids }
+        });
         this.total = res.total;
       });
     },
     /** 更新用户权限 */
-    roleChangeHandle(member) {
+    roleChangeHandle(member, roleIds) {
+      const ids = Array.isArray(roleIds) ? roleIds : (member.roleIds || [])
+      if (!ids.length) {
+        this.$modal.msgError(this.$t('member.please-select-role'))
+        this.getMemberList()
+        return
+      }
+      member.roleIds = ids
       updateMemberTeamRoleIds(
         this.getTeamId(),
         member.userId,
-        member.roleIds
+        ids
       ).then(res=>{
         this.$message.success(this.$i18n.t('update.success'));
         this.getMemberList();
+      }).catch(() => {
+        this.getMemberList()
       });
     },
     /** 返回 */
@@ -379,21 +385,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  :deep(.member-operate .el-input__inner), :deep(.member-operate .el-select__tags){
-    min-width: 250px;
-    display: flex;
-    justify-content: center;
-    background-color: #00000000;
-    border-width: 0;
-  }
-  :deep(.member-operate .el-select__tags){
-    flex-wrap: inherit !important;
-    overflow-x: auto !important;
-    > span {
-      display: flex;
-      margin-right: auto;
-    }
-  }
   :deep(.el-table){
     span[teamLock="1"] {
       text-decoration: line-through;

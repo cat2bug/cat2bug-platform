@@ -49,25 +49,17 @@
           <el-table-column
             :label="$t('role')"
             align="left"
+            min-width="220"
           >
             <template #default="{ row }">
-              <el-select
+              <member-role-select
                 v-if="row.userId !== 1"
-                class="member-operate"
                 v-model="row.roleIds"
-                multiple
+                :options="selectRoleOptions(row)"
                 :placeholder="$t('member.please-select-role')"
                 :disabled="isMemberDisabled(row)"
-                @change="roleChangeHandle(row)"
-              >
-                <el-option
-                  v-for="item in selectRoleOptions(row)"
-                  :key="item.roleId"
-                  :label="item.roleName"
-                  :value="item.roleId"
-                  :disabled="item.status == 1"
-                ></el-option>
-              </el-select>
+                @change="(ids) => roleChangeHandle(row, ids)"
+              />
             </template>
           </el-table-column>
           <el-table-column :label="$t('email')" align="left" key="email" prop="email" :show-overflow-tooltip="true" width="300">
@@ -116,31 +108,95 @@
       </el-col>
     </el-row>
     <add-project-member ref="addProjectMemberDialog" @invite="getMemberList" />
+
+    <el-dialog
+      v-model="handoffDialogVisible"
+      :title="$t('project.remove-member-handoff-title')"
+      width="520px"
+      append-to-body
+      :close-on-click-modal="false"
+      @closed="resetHandoffDialog"
+    >
+      <p class="project-member-handoff-hint">{{ $t('project.remove-member-handoff-hint') }}</p>
+      <div
+        v-if="handoffPreview && handoffPreview.soleHandlerDefects && handoffPreview.soleHandlerDefects.length"
+        class="project-member-handoff-block"
+      >
+        <div class="project-member-handoff-block__title">
+          {{ $t('project.remove-member-sole-defects', { count: handoffPreview.soleHandlerDefects.length }) }}
+        </div>
+        <ul class="project-member-handoff-list">
+          <li v-for="d in handoffPreview.soleHandlerDefects.slice(0, 20)" :key="d.defectId">
+            #{{ d.projectNum }} {{ d.defectName }}
+          </li>
+          <li v-if="handoffPreview.soleHandlerDefects.length > 20">…</li>
+        </ul>
+      </div>
+      <div
+        v-if="handoffPreview && handoffPreview.lastAdminRepositories && handoffPreview.lastAdminRepositories.length"
+        class="project-member-handoff-block"
+      >
+        <div class="project-member-handoff-block__title">
+          {{ $t('project.remove-member-last-admin-repos', { count: handoffPreview.lastAdminRepositories.length }) }}
+        </div>
+        <ul class="project-member-handoff-list">
+          <li v-for="r in handoffPreview.lastAdminRepositories" :key="r.repositoryId">
+            {{ r.name || r.slug }}
+          </li>
+        </ul>
+      </div>
+      <p
+        v-if="handoffPreview && handoffPreview.multiHandlerDefectCount > 0"
+        class="project-member-handoff-multi"
+      >
+        {{ $t('project.remove-member-multi-hint', { count: handoffPreview.multiHandlerDefectCount }) }}
+      </p>
+      <el-form ref="handoffForm" :model="handoffForm" :rules="handoffRules" label-width="90px">
+        <el-form-item :label="$t('project.remove-member-handoff-user')" prop="handoffUserIds">
+          <select-project-member
+            ref="handoffMemberSelect"
+            v-model:memberId="handoffForm.handoffUserIds"
+            :project-id="currentProjectId"
+            :multiple="false"
+            :is-head="false"
+            :enabled-member-ids="handoffEnabledMemberIds"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="handoffDialogVisible = false">{{ $t('cancel') }}</el-button>
+        <el-button type="danger" :loading="handoffSubmitting" @click="submitHandoffRemove">
+          {{ $t('project.remove-member-confirm') }}
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import {updateMemberTeamRole} from "@/api/system/team";
 import AddProjectMember from "@/views/system/project/member/AddProjectMember";
 import MemberNameplate from "@/components/MemberNameplate";
+import MemberRoleSelect from "@/components/MemberRoleSelect";
+import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import {
   delMemberOfProject,
   listMemberOfProject,
-  listProjectRole, updateMemberRoleOfProject,
+  listProjectRole,
+  previewRemoveMemberOfProject,
+  updateMemberRoleOfProject,
 } from "@/api/system/project";
-import {strFormat} from "@/utils";
 import i18n from "@/utils/i18n/i18n";
 import {checkPermi} from "@/utils/permission";
 import projectOptionSubListKbd from '@/mixins/project-option-sub-list-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-option-sub-kbd'
-import { storeToRefs } from 'pinia';
+import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user'
 
 export default {
   name: "ProjectMemberManage",
   mixins: [projectOptionSubListKbd],
-  components: { AddProjectMember, MemberNameplate },
+  components: { AddProjectMember, MemberNameplate, MemberRoleSelect, SelectProjectMember },
   setup() {
     const userStore = useUserStore()
     const { id, config } = storeToRefs(userStore)
@@ -148,36 +204,52 @@ export default {
   },
   data() {
     return {
-      // 遮罩层
       loading: true,
-      // 总条数
       total: 0,
-      // 显示搜索条件
       showSearch: true,
       memberSearch: null,
-      // 成员列表
       memberList:[],
-      // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
         params: {},
       },
-      // 角色选项
       roleOptions: [],
+      handoffDialogVisible: false,
+      handoffSubmitting: false,
+      handoffPreview: null,
+      handoffTargetMember: null,
+      handoffForm: {
+        handoffUserIds: [],
+      },
+      handoffRules: {
+        handoffUserIds: [
+          {
+            type: 'array',
+            required: true,
+            min: 1,
+            message: i18n.t('project.remove-member-handoff-required').toString(),
+            trigger: 'change',
+          },
+        ],
+      },
     }
   },
   created() {
     this.getRoleList();
   },
   computed: {
-    /** 获取当前用户id */
     currentUserId() {
       return this.id;
     },
-    /** 获取项目id */
     currentProjectId() {
       return parseInt(this.config.currentProjectId);
+    },
+    handoffEnabledMemberIds() {
+      const excludeId = this.handoffTargetMember && this.handoffTargetMember.userId;
+      return (this.memberList || [])
+        .map((m) => m.userId)
+        .filter((id) => id != null && id !== excludeId);
     },
   },
   methods: {
@@ -195,6 +267,7 @@ export default {
       return checkPermi(['system:project:member:remove']) && roles.filter(r => r.projectCreateBy).length == 0;
     },
     shouldProjectOptionSubEscGoBack() {
+      if (this.handoffDialogVisible) return false
       const dlg = this.$refs.addProjectMemberDialog
       return !(dlg && dlg.dialogVisible)
     },
@@ -229,7 +302,6 @@ export default {
       if (!checkPermi(['system:project:list'])) return
       this.addMemberHandle()
     },
-    /** 获取角色 */
     getRoleList() {
       listProjectRole(0).then(res => {
         this.roleOptions = res.rows?res.rows.map(r=>{
@@ -239,27 +311,35 @@ export default {
         this.getMemberList();
       });
     },
-
-    /** 搜索用户 */
     memberSearchHandle(e){
       this.queryParams.params.search=e;
       this.getMemberList();
     },
-    /** 获取团队成员列表 */
     getMemberList() {
       this.loading = true;
       listMemberOfProject(this.currentProjectId,this.queryParams).then(res => {
         this.loading = false;
-        this.memberList = res.rows;
+        this.memberList = (res.rows || []).map(row => {
+          const ids = Array.isArray(row.roleIds)
+            ? row.roleIds
+            : (row.roles || []).map(r => r.roleId).filter(id => id != null)
+          return { ...row, roleIds: ids }
+        });
         this.total = res.total;
       });
     },
-    /** 更新用户权限 */
-    roleChangeHandle(member) {
+    roleChangeHandle(member, roleIds) {
+      const ids = Array.isArray(roleIds) ? roleIds : (member.roleIds || [])
+      if (!ids.length) {
+        this.$modal.msgError(this.$t('member.please-select-role'))
+        this.getMemberList()
+        return
+      }
+      member.roleIds = ids
       updateMemberRoleOfProject(
         this.currentProjectId,
         member.userId,
-        member.roleIds
+        ids
       ).then(()=>{
         this.$message.success(this.$i18n.t('update.success').toString());
         this.getMemberList();
@@ -267,26 +347,60 @@ export default {
         this.getMemberList();
       });
     },
-    /** 添加成员按钮操作 */
     addMemberHandle() {
       this.$refs.addProjectMemberDialog.open();
     },
-    /** 移除成员按钮操作 */
     deleteHandle(member) {
-      let _this = this;
-      this.$modal.confirm(this.$i18n.t('project.is-delete-member'),
-        this.$i18n.t('prompted').toString(),
-        {
-          confirmButtonText: i18n.t('delete').toString(),
-          cancelButtonText: i18n.t('cancel').toString(),
-          confirmButtonClass: 'delete-button',
-          type: "warning",
-        }).then(() => {
-          delMemberOfProject(_this.currentProjectId,member.userId).then(()=>{
-            _this.$message.success(this.$i18n.t('delete.success').toString());
-            _this.getMemberList();
+      previewRemoveMemberOfProject(this.currentProjectId, member.userId).then((res) => {
+        const preview = res.data || res;
+        if (preview && preview.requiresHandoff) {
+          this.handoffTargetMember = member;
+          this.handoffPreview = preview;
+          this.handoffForm.handoffUserIds = [];
+          this.handoffDialogVisible = true;
+          return;
+        }
+        this.$modal.confirm(this.$i18n.t('project.is-delete-member'),
+          this.$i18n.t('prompted').toString(),
+          {
+            confirmButtonText: i18n.t('delete').toString(),
+            cancelButtonText: i18n.t('cancel').toString(),
+            confirmButtonClass: 'delete-button',
+            type: "warning",
+          }).then(() => {
+            return delMemberOfProject(this.currentProjectId, member.userId);
+          }).then(()=>{
+            this.$message.success(this.$i18n.t('delete.success').toString());
+            this.getMemberList();
+          }).catch(() => {});
+      }).catch(() => {});
+    },
+    resetHandoffDialog() {
+      this.handoffPreview = null;
+      this.handoffTargetMember = null;
+      this.handoffForm.handoffUserIds = [];
+      this.handoffSubmitting = false;
+      this.$refs.handoffMemberSelect?.clear?.();
+      this.$refs.handoffForm?.clearValidate?.();
+    },
+    submitHandoffRemove() {
+      this.$refs.handoffForm.validate((valid) => {
+        if (!valid) return;
+        const handoffUserId = Array.isArray(this.handoffForm.handoffUserIds)
+          ? this.handoffForm.handoffUserIds[0]
+          : this.handoffForm.handoffUserIds;
+        if (!handoffUserId || !this.handoffTargetMember) return;
+        this.handoffSubmitting = true;
+        delMemberOfProject(this.currentProjectId, this.handoffTargetMember.userId, handoffUserId)
+          .then(() => {
+            this.$message.success(this.$i18n.t('delete.success').toString());
+            this.handoffDialogVisible = false;
+            this.getMemberList();
           })
-      }).catch(() => {
+          .catch(() => {})
+          .finally(() => {
+            this.handoffSubmitting = false;
+          });
       });
     },
   }
@@ -297,26 +411,40 @@ export default {
   .member-tools>* {
     margin-left: 10px;
   }
-  :deep(.member-operate .el-input__inner), :deep(.member-operate .el-select__tags){
-    min-width: 250px;
-    display: flex;
-    justify-content: center;
-    background-color: #00000000;
-    border-width: 0;
-  }
-  :deep(.member-operate .el-select__tags){
-    flex-wrap: inherit !important;
-    overflow-x: auto !important;
-    > span {
-      display: flex;
-      margin-right: auto;
-    }
-  }
   :deep(.el-table){
     span[teamLock="1"] {
       text-decoration: line-through;
       color: #DCDFE6;
     }
+  }
+  .project-member-handoff-hint {
+    margin: 0 0 12px;
+    color: var(--text-color-regular);
+    line-height: 1.5;
+  }
+  .project-member-handoff-block {
+    margin-bottom: 12px;
+    padding: 8px 10px;
+    background: var(--bg-color-base);
+    border: 1px solid var(--border-color-light);
+    border-radius: 4px;
+  }
+  .project-member-handoff-block__title {
+    font-weight: 600;
+    color: var(--text-color-primary);
+    margin-bottom: 6px;
+  }
+  .project-member-handoff-list {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--text-color-regular);
+    max-height: 160px;
+    overflow: auto;
+  }
+  .project-member-handoff-multi {
+    margin: 0 0 12px;
+    color: var(--text-color-secondary);
+    font-size: 13px;
   }
 </style>
 <style>

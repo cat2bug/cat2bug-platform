@@ -48,6 +48,9 @@ public class SysTeamService {
     SysCaseTypeService sysCaseTypeService;
 
     @Inject
+    SysTeamPlanService sysTeamPlanService;
+
+    @Inject
     SysUserConfigMapper sysUserConfigMapper;
 
     @Inject
@@ -110,6 +113,13 @@ public class SysTeamService {
         String now = LocalDateTime.now().format(TIME_FMT);
         sysTeam.setCreateBy(username);
         sysTeam.setCreateTime(now);
+        if (sysTeam.getPlanId() == null) {
+            var def = sysTeamPlanService.listAll().stream()
+                    .filter(p -> Boolean.TRUE.equals(p.getSystemDefault()))
+                    .findFirst()
+                    .orElse(null);
+            sysTeam.setPlanId(def != null && def.getPlanId() != null ? def.getPlanId() : 1L);
+        }
         if (sysTeamMapper.insertSysTeam(sysTeam) != 1) {
             throw new ApiException("创建团队失败");
         }
@@ -160,6 +170,7 @@ public class SysTeamService {
         if (batchUserRoleVo.getRoleIds() == null || batchUserRoleVo.getRoleIds().length == 0) {
             throw new ApiException("角色不能为空");
         }
+        sysTeamPlanService.assertCanAddMembers(batchUserRoleVo.getTeamId(), batchUserRoleVo.getMemberIds().length);
         String now = LocalDateTime.now().format(TIME_FMT);
         for (Long memberId : batchUserRoleVo.getMemberIds()) {
             SysUserTeam sysUserTeam = new SysUserTeam();
@@ -184,6 +195,7 @@ public class SysTeamService {
 
     @Transactional
     public int insertSysUser(Long teamId, SysUser user) {
+        sysTeamPlanService.assertCanAddMembers(teamId, 1);
         user.setPhoneNumber(StringUtils.trimToNull(user.getPhoneNumber()));
         user.setEmail(StringUtils.trimToNull(user.getEmail()));
         if (!sysUserService.checkUserNameUnique(user)) {

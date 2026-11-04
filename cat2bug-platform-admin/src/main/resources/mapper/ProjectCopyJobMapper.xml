@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.ProjectCopyJobMapper">
+
+    <resultMap id="ProjectCopyJobResult" type="com.cat2bug.common.domain.ProjectCopyJob">
+        <result property="jobId" column="job_id"/>
+        <result property="sourceProjectId" column="source_project_id"/>
+        <result property="targetProjectId" column="target_project_id"/>
+        <result property="state" column="state"/>
+        <result property="percent" column="percent"/>
+        <result property="selectionJson" column="selection_json"/>
+        <result property="itemsJson" column="items_json"/>
+        <result property="estimatedBytes" column="estimated_bytes"/>
+        <result property="actualBytes" column="actual_bytes"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.cat2bug.common.domain.ProjectCopyJob">
+        insert into sys_project_copy_job (
+            job_id, source_project_id, target_project_id, state, percent,
+            selection_json, items_json, estimated_bytes, actual_bytes, error_message,
+            create_by, create_time, update_time
+        ) values (
+            #{jobId}, #{sourceProjectId}, #{targetProjectId}, #{state}, #{percent},
+            #{selectionJson}, #{itemsJson}, #{estimatedBytes}, #{actualBytes}, #{errorMessage},
+            #{createBy}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.cat2bug.common.domain.ProjectCopyJob">
+        update sys_project_copy_job
+        set state = #{state},
+            percent = #{percent},
+            items_json = #{itemsJson},
+            actual_bytes = #{actualBytes},
+            error_message = #{errorMessage},
+            update_time = #{updateTime}
+        where job_id = #{jobId}
+    </update>
+
+    <select id="selectByJobId" resultMap="ProjectCopyJobResult">
+        select job_id, source_project_id, target_project_id, state, percent,
+               selection_json, items_json, estimated_bytes, actual_bytes, error_message,
+               create_by, create_time, update_time
+        from sys_project_copy_job
+        where job_id = #{jobId}
+    </select>
+
+    <select id="countCreatorOrAdmin" resultType="int">
+        select count(1)
+        from sys_user_project up
+        join sys_user_project_role upr on upr.user_project_id = up.user_project_id
+        where up.user_id = #{userId}
+          and up.project_id = #{projectId}
+          and upr.role_id in (11, 6)
+    </select>
+
+    <insert id="insertAiAccountBlankKey">
+        insert into ai_account (ai_url, model_name, max_completion_tokens, api_key, create_by, project_id, account_name)
+        values (#{aiUrl}, #{modelName}, #{maxCompletionTokens}, '', #{createBy}, #{projectId}, #{accountName})
+    </insert>
+
+    <insert id="copyMcpServers">
+        insert into sys_project_mcp_server (
+            project_id, name, endpoint_url, transport, enabled, auth_type, auth_header,
+            auth_secret_cipher, timeout_ms, max_result_chars, allowlist_json, tools_catalog_json,
+            create_by, create_time, update_by, update_time
+        )
+        select #{targetProjectId}, name, endpoint_url, transport, enabled, auth_type, auth_header,
+               null, timeout_ms, max_result_chars, allowlist_json, tools_catalog_json,
+               create_by, CURRENT_TIMESTAMP, update_by, CURRENT_TIMESTAMP
+        from sys_project_mcp_server
+        where project_id = #{sourceProjectId}
+    </insert>
+
+    <select id="selectGitKind" resultType="string">
+        select kind from sys_git_repository where repository_id = #{repositoryId}
+    </select>
+
+    <update id="updateGitKind">
+        update sys_git_repository set kind = #{kind} where repository_id = #{repositoryId}
+    </update>
+</mapper>

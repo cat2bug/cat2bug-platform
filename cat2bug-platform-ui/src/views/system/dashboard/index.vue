@@ -11,6 +11,13 @@
           <div class="workbench-hello__line">
             <span class="workbench-hello__salute">{{ greetingSalute }}</span>
             <span class="workbench-hello__name" :title="displayName">{{ displayName }}</span>
+            <span v-if="greetingRoleTags.length" class="workbench-hello__roles">
+              <span
+                v-for="role in greetingRoleTags"
+                :key="role.key"
+                class="workbench-hello__role-tag"
+              >{{ role.label }}</span>
+            </span>
           </div>
           <div class="workbench-hello__date">{{ greetingMeta }}</div>
         </div>
@@ -463,6 +470,28 @@ export default {
     displayName() {
       const u = useUserStore()
       return u.nickName || u.name || ''
+    },
+    /** 当前项目角色；优先接口返回的 projectRoleKeys */
+    greetingRoleTags() {
+      const fromApi = Array.isArray(this.projectRoleKeys) ? this.projectRoleKeys : []
+      const fromStore = (useUserStore().roles || []).filter(k => String(k).startsWith('project.'))
+      const keys = fromApi.length ? fromApi : fromStore
+      const seen = new Set()
+      const tags = []
+      for (const raw of keys) {
+        const key = String(raw || '').trim()
+        if (!key || key === 'ROLE_DEFAULT' || seen.has(key)) continue
+        seen.add(key)
+        let label = key
+        try {
+          if (this.$te && this.$te(key)) label = this.$t(key)
+          else if (key.startsWith('project.')) label = this.$t(key)
+        } catch (e) {
+          label = key
+        }
+        tags.push({ key, label })
+      }
+      return tags
     },
     greetingSalute() {
       const hour = new Date().getHours()
@@ -1189,7 +1218,8 @@ html:not(.dark) .workbench-hello {
 }
 .workbench-hello__line {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   min-width: 0;
 }
@@ -1201,11 +1231,32 @@ html:not(.dark) .workbench-hello {
 }
 .workbench-hello__name {
   min-width: 0;
+  max-width: 40%;
   font-size: 17px;
   font-weight: 650;
   color: var(--text-color-primary);
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.workbench-hello__roles {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.workbench-hello__role-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--el-color-primary-light-9, rgba(64, 158, 255, 0.16));
+  color: var(--el-color-primary, #409eff);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 22px;
   white-space: nowrap;
 }
 .workbench-hello__date {

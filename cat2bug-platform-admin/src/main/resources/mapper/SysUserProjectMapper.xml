@@ -47,16 +47,36 @@
         <include refid="projectMemberWhere"/>
     </select>
 
+    <!-- 先按用户分页，再联角色；避免 LIMIT 截在「用户×角色」行上导致多角色丢半截 -->
     <select id="selectSysUserListByProjectId" resultMap="SysUserMemberResult">
         select u.user_id, u.dept_id, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.sex, u.status,
                upr.role_id, r.role_name, r.role_key, r.role_sort, r.data_scope, r.status as role_status
         from sys_user u
-        left join sys_user_project up on u.user_id = up.user_id
+        inner join (
+            select u2.user_id
+            from sys_user u2
+            left join sys_user_project up2 on u2.user_id = up2.user_id
+            <where>
+                up2.project_id = #{projectId} and u2.del_flag = '0'
+                <if test="search != null and search != ''">
+                    AND u2.nick_name like concat('%', #{search}, '%')
+                </if>
+                <if test="roleId != null and roleId != 0">
+                    AND EXISTS (
+                        SELECT 1 FROM sys_user_project_role upr_f
+                        WHERE upr_f.user_project_id = up2.user_project_id
+                          AND upr_f.role_id = #{roleId}
+                    )
+                </if>
+            </where>
+            group by u2.user_id
+            order by u2.user_id
+            limit #{limit} offset #{offset}
+        ) page_users on page_users.user_id = u.user_id
+        left join sys_user_project up on u.user_id = up.user_id and up.project_id = #{projectId}
         left join sys_user_project_role upr on up.user_project_id = upr.user_project_id
         left join sys_role r on r.role_id = upr.role_id
-        <include refid="projectMemberWhere"/>
         order by u.user_id
-        limit #{limit} offset #{offset}
     </select>
 
     <!-- 全局已注册用户 − 已在项目（未锁定）成员；空 search 不返回全库 -->

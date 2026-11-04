@@ -518,6 +518,7 @@ export const constantRoutes = [
         path: '/system/project/add-project',
         component: () => import('@/views/system/project/add'),
         name: 'ProjectAdd',
+        permissions: ['system:project:add'],
         meta: { title: i18n.global.t('project.create-project'), titleI18nKey:'project.create-project', icon: 'user' }
       }
     ]

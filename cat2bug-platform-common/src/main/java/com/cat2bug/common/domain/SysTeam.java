@@ -18,6 +18,10 @@ public class SysTeam {
     private String lockRemark;
     private String defectBuiltinFieldConfig;
     private String caseReviewTemplate;
+    /** 绑定的团队套餐 ID */
+    private Long planId;
+    /** 列表展示：套餐名称（非表字段） */
+    private String planName;
 
     public Long getTeamId() {
         return teamId;
@@ -145,5 +149,21 @@ public class SysTeam {
 
     public void setCaseReviewTemplate(String caseReviewTemplate) {
         this.caseReviewTemplate = caseReviewTemplate;
+    }
+
+    public Long getPlanId() {
+        return planId;
+    }
+
+    public void setPlanId(Long planId) {
+        this.planId = planId;
+    }
+
+    public String getPlanName() {
+        return planName;
+    }
+
+    public void setPlanName(String planName) {
+        this.planName = planName;
     }
 }

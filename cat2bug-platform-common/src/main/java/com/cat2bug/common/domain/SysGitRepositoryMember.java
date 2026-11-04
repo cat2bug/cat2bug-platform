@@ -37,6 +37,12 @@ public class SysGitRepositoryMember extends BaseEntity
     /** 邮箱（列表 join，非持久化） */
     private String email;
 
+    /** 仓库显示名（按项目查 ACL 时 join，非持久化） */
+    private String repositoryName;
+
+    /** 仓库 slug（按项目查 ACL 时 join，非持久化） */
+    private String repositorySlug;
+
     public Long getMemberId()
     {
         return memberId;
@@ -115,6 +121,26 @@ public class SysGitRepositoryMember extends BaseEntity
     public void setEmail(String email)
     {
         this.email = email;
+    }
+
+    public String getRepositoryName()
+    {
+        return repositoryName;
+    }
+
+    public void setRepositoryName(String repositoryName)
+    {
+        this.repositoryName = repositoryName;
+    }
+
+    public String getRepositorySlug()
+    {
+        return repositorySlug;
+    }
+
+    public void setRepositorySlug(String repositorySlug)
+    {
+        this.repositorySlug = repositorySlug;
     }
 
     @Override

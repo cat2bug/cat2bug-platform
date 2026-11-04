@@ -4,6 +4,7 @@ import com.cat2bug.common.api.AjaxResult;
 import com.cat2bug.common.api.TableDataInfo;
 import com.cat2bug.common.domain.SysTeam;
 import com.cat2bug.framework.security.RequiresPermissions;
+import com.cat2bug.system.service.SysTeamPlanService;
 import com.cat2bug.system.service.SysTeamService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -14,6 +15,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import java.util.Map;
 
 @Path("/admin/team")
 @Produces(MediaType.APPLICATION_JSON)
@@ -22,6 +24,9 @@ public class AdminTeamResource {
 
     @Inject
     SysTeamService sysTeamService;
+
+    @Inject
+    SysTeamPlanService sysTeamPlanService;
 
     @GET
     @Path("/list")
@@ -41,6 +46,18 @@ public class AdminTeamResource {
         updateTeam.setLock(team.getLock());
         updateTeam.setLockRemark(team.getLockRemark());
         return toAjax(sysTeamService.updateSysTeam(updateTeam));
+    }
+
+    @PUT
+    @Path("/{teamId}/plan")
+    @RequiresPermissions("admin:team:plan")
+    public AjaxResult bindPlan(@PathParam("teamId") Long teamId, Map<String, Object> body) {
+        Object raw = body == null ? null : body.get("planId");
+        if (raw == null) {
+            return AjaxResult.error("planId 不能为空");
+        }
+        Long planId = raw instanceof Number ? ((Number) raw).longValue() : Long.parseLong(String.valueOf(raw));
+        return toAjax(sysTeamPlanService.bindTeamPlan(teamId, planId));
     }
 
     private AjaxResult toAjax(int rows) {

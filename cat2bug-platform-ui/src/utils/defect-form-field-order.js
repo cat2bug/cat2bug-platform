@@ -1,5 +1,9 @@
 import { TableOptions } from '@/views/system/defect/list/table-options'
-import { buildDefectTableColumnDefaults } from '@/utils/defect-custom-field-columns'
+import {
+  buildDefectTableColumnDefaults,
+  hasDefectTableColumnCache,
+  mergeDefectTableColumnPrefs
+} from '@/utils/defect-custom-field-columns'
 import { normalizeFieldRow } from '@/components/DefectCustomField/format'
 import {
   ALL_BUILTIN_FIELD_KEYS,
@@ -97,14 +101,45 @@ function appendMissingCustomFields(out, seen, customFields) {
   })
 }
 
+function pushFromTableColumns(out, seen, columns, isBuiltinVisible, customByFieldKey) {
+  ;(columns || []).forEach(col => {
+    const tableKey = col && col.key
+    if (!tableKey) return
+    if (String(tableKey).startsWith('custom:')) {
+      tryPushCustomFromTableKey(out, seen, tableKey, customByFieldKey)
+    } else {
+      tryPushBuiltinFromTableKey(out, seen, tableKey, isBuiltinVisible)
+    }
+  })
+}
+
+function pushFromTeamOrderedKeys(out, seen, orderedKeys, isBuiltinVisible, customByFieldKey) {
+  ;(orderedKeys || []).forEach(fieldKey => {
+    const fk = String(fieldKey)
+    if (customByFieldKey.has(fk)) {
+      tryPushCustomFromTableKey(out, seen, `custom:${fk}`, customByFieldKey)
+      return
+    }
+    if (DEFECT_FORM_SKIP_BUILTIN_KEYS.has(fk)) return
+    if (fk === 'planStartTime' || fk === 'planEndTime') {
+      pushPlanTimeField(out, seen, isBuiltinVisible)
+      return
+    }
+    if (!isBuiltinVisible(fk)) return
+    pushBuiltinFormField(out, seen, fk, fk)
+  })
+}
+
 /**
- * 按团队「缺陷属性」顺序解析新增/编辑表单字段（内置 + 自定义）。
- * 不以个人「显示字段」本地缓存决定显隐/顺序，避免换账号仍看到默认属性。
- * @param {object|null} _localCache 保留参数兼容旧调用，表单侧忽略
+ * 解析新增/编辑表单字段顺序（内置 + 自定义）。
+ * 优先：用户隔离的「显示字段」field-list 缓存 key 序（与列表/Excel 一致）；
+ * 回退：团队「缺陷属性」orderedEnabledFieldKeys。
+ * 显隐仍只跟团队启用，不因列表 visible=false 隐藏表单字段。
+ * @param {object|null} localCache 本地缓存（$cache.local）
  * @param {object|null} layout listColumnLayout 数据
  * @param {{ isBuiltinVisible: (fieldKey: string) => boolean }} options
  */
-export function resolveOrderedDefectFormFields(_localCache, layout, options = {}) {
+export function resolveOrderedDefectFormFields(localCache, layout, options = {}) {
   const isBuiltinVisible =
     typeof options.isBuiltinVisible === 'function'
       ? options.isBuiltinVisible
@@ -115,42 +150,37 @@ export function resolveOrderedDefectFormFields(_localCache, layout, options = {}
   const out = []
   const seen = new Set()
 
-  /* 优先：团队字段管理 orderedEnabledFieldKeys */
-  if (layout && layout.orderedEnabledFieldKeys && layout.orderedEnabledFieldKeys.length) {
-    layout.orderedEnabledFieldKeys.forEach(fieldKey => {
-      const fk = String(fieldKey)
-      if (customByFieldKey.has(fk)) {
-        tryPushCustomFromTableKey(out, seen, `custom:${fk}`, customByFieldKey)
-        return
-      }
-      if (DEFECT_FORM_SKIP_BUILTIN_KEYS.has(fk)) return
-      if (fk === 'planStartTime' || fk === 'planEndTime') {
-        pushPlanTimeField(out, seen, isBuiltinVisible)
-        return
-      }
-      if (!isBuiltinVisible(fk)) return
-      pushBuiltinFormField(out, seen, fk, fk)
-    })
+  const defaults = buildDefectTableColumnDefaults(
+    TableOptions.map(c => ({ ...c })),
+    layout || {}
+  )
+
+  /* 优先：个人显示字段序（对象数组缓存）；string[] 旧缓存无序信息，merge 仍返回团队序 */
+  if (hasDefectTableColumnCache(localCache) && defaults && defaults.length) {
+    const merged = mergeDefectTableColumnPrefs(localCache, defaults)
+    pushFromTableColumns(out, seen, merged, isBuiltinVisible, customByFieldKey)
     appendMissingBuiltinFields(out, seen, isBuiltinVisible)
     appendMissingCustomFields(out, seen, customFields)
     return out
   }
 
-  /* 回退：由列布局 defaults 推导（仍不读个人显示字段缓存） */
-  const defaults = buildDefectTableColumnDefaults(
-    TableOptions.map(c => ({ ...c })),
-    layout || {}
-  )
+  /* 回退：团队字段管理 orderedEnabledFieldKeys */
+  if (layout && layout.orderedEnabledFieldKeys && layout.orderedEnabledFieldKeys.length) {
+    pushFromTeamOrderedKeys(
+      out,
+      seen,
+      layout.orderedEnabledFieldKeys,
+      isBuiltinVisible,
+      customByFieldKey
+    )
+    appendMissingBuiltinFields(out, seen, isBuiltinVisible)
+    appendMissingCustomFields(out, seen, customFields)
+    return out
+  }
+
+  /* 再回退：团队 defaults 推导 */
   if (defaults && defaults.length) {
-    defaults.forEach(col => {
-      const tableKey = col && col.key
-      if (!tableKey) return
-      if (String(tableKey).startsWith('custom:')) {
-        tryPushCustomFromTableKey(out, seen, tableKey, customByFieldKey)
-      } else {
-        tryPushBuiltinFromTableKey(out, seen, tableKey, isBuiltinVisible)
-      }
-    })
+    pushFromTableColumns(out, seen, defaults, isBuiltinVisible, customByFieldKey)
   }
 
   appendMissingBuiltinFields(out, seen, isBuiltinVisible)

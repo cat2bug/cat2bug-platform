@@ -37,6 +37,12 @@ public interface SysGitRepositoryMemberMapper
     int countByProjectIdAndUserId(@Param("projectId") Long projectId, @Param("userId") Long userId);
 
     /**
+     * 用户在指定项目下的全部仓 ACL（含仓库 name/slug，挂在 remark 外字段需用扩展查询）
+     */
+    List<SysGitRepositoryMember> selectByProjectIdAndUserId(@Param("projectId") Long projectId,
+                                                            @Param("userId") Long userId);
+
+    /**
      * 项目下各仓库 ACL 成员去重预览（同用户多仓取最高角色；仅启用项目内的仓库）
      */
     List<SysGitRepositoryMember> selectDistinctMembersByProjectId(@Param("projectId") Long projectId);

@@ -43,6 +43,22 @@ public interface ISysGitRepositoryMemberService
     int deleteMember(Long repositoryId, Long userId);
 
     /**
+     * 项目成员移除路径：列出该用户在本项目各仓的 ACL（不做仓 manage 校验）。
+     */
+    List<SysGitRepositoryMember> listAclByProjectMember(Long projectId, Long userId);
+
+    /**
+     * 用户是否为该仓最后一位 admin（不做 manage 校验）。
+     */
+    boolean isLastAdmin(Long repositoryId, Long userId);
+
+    /**
+     * 项目成员移除路径：同步清理该用户在本项目各仓 ACL。
+     * 若某仓其为最后 admin，须提供 handoffUserId，先确保交接人为 admin 再删被删用户；不做仓 manage 校验。
+     */
+    void syncRemoveOnProjectMemberRemoval(Long projectId, Long memberId, Long handoffUserId);
+
+    /**
      * 创建/导入成功后写入创建者 admin（幂等）
      */
     void ensureCreatorAdmin(Long repositoryId, Long userId);

@@ -18,6 +18,14 @@ export function listMember(teamId,query) {
   })
 }
 
+/** 团队套餐与人数/项目数余量 */
+export function getTeamQuota(teamId) {
+  return request({
+    url: '/system/team/' + teamId + '/quota',
+    method: 'get'
+  })
+}
+
 // 查询非团队成员
 export function listNotMember(teamId,query) {
   return request({

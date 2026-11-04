@@ -34,9 +34,16 @@ public interface SysProjectMapper {
                                    @Param("projectKey") String projectKey,
                                    @Param("excludeProjectId") Long excludeProjectId);
 
+    int countActiveByTeamId(@Param("teamId") Long teamId);
+
     int insertSysProject(SysProject sysProject);
 
     int updateSysProject(SysProject sysProject);
+
+    int updateUsedBytes(@Param("projectId") Long projectId, @Param("usedBytes") Long usedBytes);
+
+    /** 当前用户担任创建人或项目管理员的项目（可跨团队）。 */
+    List<SysProject> selectCopySourceProjects(@Param("userId") Long userId);
 
     int deleteSysProjectByProjectId(@Param("projectId") Long projectId);
 }

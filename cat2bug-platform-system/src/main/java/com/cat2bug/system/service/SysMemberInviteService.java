@@ -79,6 +79,9 @@ public class SysMemberInviteService {
     SysUserTeamMapper sysUserTeamMapper;
 
     @Inject
+    SysTeamPlanService sysTeamPlanService;
+
+    @Inject
     SysUserTeamRoleMapper sysUserTeamRoleMapper;
 
     @Inject
@@ -331,6 +334,7 @@ public class SysMemberInviteService {
             result.setMessage("已是团队成员");
             return result;
         }
+        sysTeamPlanService.assertCanAddMembers(invite.getTeamId(), 1);
 
         String now = LocalDateTime.now().format(TIME_FMT);
         SysUserTeam sysUserTeam = new SysUserTeam();

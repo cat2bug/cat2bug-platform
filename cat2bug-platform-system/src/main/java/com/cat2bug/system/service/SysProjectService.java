@@ -44,6 +44,9 @@ public class SysProjectService {
     SysCaseTypeService sysCaseTypeService;
 
     @Inject
+    SysTeamPlanService sysTeamPlanService;
+
+    @Inject
     ProjectMembershipAuth projectMembershipAuth;
 
     public TableDataInfo selectProjectPage(Long userId, SysProject query, Integer pageNum, Integer pageSize) {
@@ -120,6 +123,7 @@ public class SysProjectService {
         if (sysProjectMapper.countByTeamIdAndProjectKey(sysProject.getTeamId(), projectKey, null) != 0) {
             throw new ApiException(400, MessageUtils.message("project.path-key-duplicate"));
         }
+        sysTeamPlanService.assertCanCreateProject(sysProject.getTeamId());
         sysProject.setProjectKey(projectKey);
         String now = LocalDateTime.now().format(TIME_FMT);
         sysProject.setProjectState(1);

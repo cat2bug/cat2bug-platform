@@ -184,18 +184,30 @@
         <include refid="teamMemberWhere"/>
     </select>
 
+    <!-- 先按用户分页，再联角色；避免 LIMIT 截断多角色 -->
     <select id="selectSysUserListByTeamId" resultMap="SysUserResult">
         select u.user_id, u.dept_id, u.nick_name, u.user_name, u.email, u.avatar, u.phonenumber, u.sex,
                tr.team_lock as status, d.dept_name, d.leader,
                r.role_id, r.role_name, r.role_key, r.role_sort, r.data_scope, r.status as role_status
         from sys_user u
+        inner join (
+            select u2.user_id
+            from sys_user u2
+            left join sys_user_team tr2 on tr2.user_id = u2.user_id
+            where u2.del_flag = '0' and tr2.team_id = #{teamId}
+              AND u2.user_type = '00'
+            <if test="search != null and search != ''">
+                and u2.nick_name like concat('%', #{search}, '%')
+            </if>
+            group by u2.user_id
+            order by max(u2.create_time)
+            limit #{limit} offset #{offset}
+        ) page_users on page_users.user_id = u.user_id
         left join sys_dept d on u.dept_id = d.dept_id
-        left join sys_user_team tr on tr.user_id = u.user_id
+        left join sys_user_team tr on tr.user_id = u.user_id and tr.team_id = #{teamId}
         left join sys_user_team_role utr on tr.user_team_id = utr.user_team_id
         left join sys_role r on r.role_id = utr.role_id
-        <include refid="teamMemberWhere"/>
         order by u.create_time
-        limit #{limit} offset #{offset}
     </select>
 
     <sql id="teamNotMemberWhere">
